@@ -1,0 +1,23 @@
+# Normalisasi akhir baris: simpan LF di repositori untuk semua berkas teks.
+# Mencegah "seluruh berkas berubah" saat berpindah Windows <-> Linux/macOS.
+* text=auto eol=lf
+
+# Skrip bawaan Windows tetap memakai CRLF agar kompatibel dengan cmd/PowerShell.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Berkas biner — jangan diubah akhir barisnya.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.pdf binary
+*.zip binary
+*.xlsx binary
