@@ -3,6 +3,7 @@ import "server-only";
 import { Resend } from "resend";
 
 import { catatPengiriman } from "@/features/notifikasi/infrastructure/notifikasi-repository";
+import { kirimPesanWhatsApp } from "@/features/notifikasi/infrastructure/whatsapp-baileys";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 
@@ -83,48 +84,6 @@ async function kirimEmail(target: string, subjek: string, pesan: string): Promis
   }
 }
 
-async function kirimWhatsApp(target: string, pesan: string): Promise<Bukti> {
-  const apiUrl = env.WHATSAPP_API_URL;
-  const token = env.WHATSAPP_TOKEN;
-
-  if (!apiUrl || !token) {
-    logger.warn("[notifikasi] WhatsApp API belum dikonfigurasi; pesan dilewati.", { target });
-    return {
-      sukses: false,
-      dilewati: true,
-      respons: null,
-      pesanError: "WhatsApp API belum dikonfigurasi.",
-    };
-  }
-
-  try {
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ phone: target, message: pesan }),
-    });
-    const respons = (await response.json().catch(() => null)) as unknown;
-
-    return {
-      sukses: response.ok,
-      dilewati: false,
-      respons,
-      pesanError: response.ok ? undefined : `Provider menolak: HTTP ${response.status}`,
-    };
-  } catch (error) {
-    return {
-      sukses: false,
-      dilewati: false,
-      respons: null,
-      pesanError:
-        error instanceof Error ? error.message : "Kesalahan pengiriman WhatsApp tidak diketahui.",
-    };
-  }
-}
-
 /**
  * Kirim satu notifikasi lalu catat bukti pengiriman.
  *
@@ -135,7 +94,7 @@ export async function kirimNotifikasi(input: KirimNotifikasiInput): Promise<Hasi
   const hasil =
     input.kanal === "email"
       ? await kirimEmail(input.target, input.subjek ?? "Notifikasi Desa", input.pesan)
-      : await kirimWhatsApp(input.target, input.pesan);
+      : await kirimPesanWhatsApp(input.target, input.pesan);
 
   try {
     await catatPengiriman({

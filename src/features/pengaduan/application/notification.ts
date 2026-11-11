@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 
+import { kirimPesanWhatsApp } from "@/features/notifikasi/infrastructure/whatsapp-baileys";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 
@@ -129,75 +130,42 @@ export async function notifyStatusChangeWhatsApp(
   data?: unknown;
   error?: string;
 }> {
-  const whatsappApiUrl = env.WHATSAPP_API_URL;
-  const whatsappToken = env.WHATSAPP_TOKEN;
+  const pesan = `Halo, status pengaduan ${nomorTiket} telah berubah dari ${formatStatusForNotifikasi(statusLama)} menjadi ${formatStatusForNotifikasi(statusBaru)}. Terima kasih.`;
+  const hasil = await kirimPesanWhatsApp(telepon, pesan);
 
-  if (!whatsappApiUrl || !whatsappToken) {
+  if (hasil.dilewati) {
     logger.warn(
-      `[notifikasi-wa] Konfigurasi WhatsApp API tidak lengkap; pesan untuk pengaduan ${nomorTiket} dilewati.`,
+      `[notifikasi-wa] WhatsApp belum tertaut; pesan untuk pengaduan ${nomorTiket} dilewati.`,
       {},
     );
     return {
       success: false,
-      message: "Pengiriman WhatsApp dilewati karena belum dikonfigurasi.",
+      message: "Pengiriman WhatsApp dilewati karena WhatsApp belum tertaut.",
+      error: hasil.pesanError,
       skipped: true,
     };
   }
 
-  try {
-    const response = await fetch(whatsappApiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${whatsappToken}`,
-      },
-      body: JSON.stringify({
-        phone: telepon,
-        message: `Halo, status pengaduan ${nomorTiket} telah berubah dari ${formatStatusForNotifikasi(statusLama)} menjadi ${formatStatusForNotifikasi(statusBaru)}. Terima kasih.`,
-      }),
+  if (!hasil.sukses) {
+    logger.warn(`[notifikasi-wa] Gagal mengirim pesan WhatsApp untuk pengaduan ${nomorTiket}.`, {
+      error: hasil.pesanError,
     });
-
-    const result = (await response.json().catch(() => null)) as unknown;
-
-    if (!response.ok) {
-      logger.warn(
-        `[notifikasi-wa] Provider WhatsApp menolak pesan untuk pengaduan ${nomorTiket}.`,
-        {
-          status: response.status,
-        },
-      );
-      return {
-        success: false,
-        message: "Provider WhatsApp menolak pengiriman pesan.",
-        error: `HTTP ${response.status}`,
-        skipped: false,
-        data: result,
-      };
-    }
-
-    logger.info(`[notifikasi-wa] Pesan WhatsApp pengaduan ${nomorTiket} berhasil dikirim.`, {});
-    return {
-      success: true,
-      message: "Pesan WhatsApp berhasil dikirim.",
-      data: result,
-      skipped: false,
-    };
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Kesalahan pengiriman WhatsApp tidak diketahui.";
-    logger.warn(
-      `[notifikasi-wa] Gagal menghubungi provider WhatsApp untuk pengaduan ${nomorTiket}.`,
-      {
-        error: message,
-      },
-    );
     return {
       success: false,
       message: "Gagal mengirim notifikasi WhatsApp.",
-      error: message,
+      error: hasil.pesanError,
       skipped: false,
+      data: hasil.respons,
     };
   }
+
+  logger.info(`[notifikasi-wa] Pesan WhatsApp pengaduan ${nomorTiket} berhasil dikirim.`, {});
+  return {
+    success: true,
+    message: "Pesan WhatsApp berhasil dikirim.",
+    data: hasil.respons,
+    skipped: false,
+  };
 }
 
 /** Format status sesuai enum domain pengaduan. */

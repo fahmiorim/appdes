@@ -4,25 +4,25 @@ import { cariPlugin, envBelumSiap, PLUGIN_MANIFEST } from "./plugin";
 
 describe("plugin domain", () => {
   it("mencari plugin berdasarkan slug dan menolak slug asing", () => {
-    expect(cariPlugin("whatsapp-gateway")?.nama).toBe("WhatsApp Gateway");
+    expect(cariPlugin("whatsapp-gateway")?.nama).toBe("WhatsApp (Baileys)");
     expect(cariPlugin("tidak-ada")).toBeUndefined();
   });
 
-  it("setiap manifest memiliki slug unik dan environment wajib", () => {
+  it("setiap manifest memiliki slug unik; WhatsApp tidak butuh env", () => {
     const slugs = PLUGIN_MANIFEST.map((plugin) => plugin.slug);
     expect(new Set(slugs).size).toBe(slugs.length);
-    expect(PLUGIN_MANIFEST.every((plugin) => plugin.envKeys.length > 0)).toBe(true);
+    expect(cariPlugin("whatsapp-gateway")?.envKeys).toEqual([]);
   });
 
   it("melaporkan environment yang kosong atau hanya spasi", () => {
-    const plugin = cariPlugin("whatsapp-gateway");
+    const plugin = cariPlugin("email-resend");
     if (!plugin) throw new Error("manifest tidak ditemukan");
 
+    expect(envBelumSiap(plugin, { RESEND_API_KEY: "re_123", RESEND_FROM: "   " })).toEqual([
+      "RESEND_FROM",
+    ]);
     expect(
-      envBelumSiap(plugin, { WHATSAPP_API_URL: "https://wa.contoh", WHATSAPP_TOKEN: "   " }),
-    ).toEqual(["WHATSAPP_TOKEN"]);
-    expect(
-      envBelumSiap(plugin, { WHATSAPP_API_URL: "https://wa.contoh", WHATSAPP_TOKEN: "token" }),
+      envBelumSiap(plugin, { RESEND_API_KEY: "re_123", RESEND_FROM: "desa@contoh.id" }),
     ).toEqual([]);
   });
 });

@@ -12,7 +12,7 @@ vi.mock("@/features/desa/application/resolve-village", () => ({
 }));
 vi.mock("@/features/audit/application/audit-use-cases", () => ({ recordAuditEvent: vi.fn() }));
 vi.mock("@/lib/env", () => ({
-  env: { WHATSAPP_API_URL: "", WHATSAPP_TOKEN: "", RESEND_API_KEY: "", RESEND_FROM: "" },
+  env: { RESEND_API_KEY: "", RESEND_FROM: "" },
 }));
 vi.mock("../infrastructure/plugin-repository", () => ({
   listStatusPlugin: vi.fn(),
@@ -27,10 +27,18 @@ describe("ubahStatusPlugin", () => {
   });
 
   it("menolak aktivasi bila environment wajib belum terisi", async () => {
-    await expect(ubahStatusPlugin("whatsapp-gateway", true)).rejects.toThrow("WHATSAPP_API_URL");
+    await expect(ubahStatusPlugin("email-resend", true)).rejects.toThrow("RESEND_API_KEY");
 
     expect(repo.simpanStatusPlugin).not.toHaveBeenCalled();
     expect(audit.recordAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("mengaktifkan WhatsApp tanpa environment karena memakai Baileys", async () => {
+    const hasil = await ubahStatusPlugin("whatsapp-gateway", true);
+
+    expect(hasil.aktif).toBe(true);
+    expect(hasil.envKurang).toEqual([]);
+    expect(repo.simpanStatusPlugin).toHaveBeenCalledWith(3, "whatsapp-gateway", true);
   });
 
   it("menonaktifkan plugin tanpa memerlukan environment", async () => {

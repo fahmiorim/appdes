@@ -9,16 +9,20 @@ export interface PluginManifest {
   slug: string;
   nama: string;
   deskripsi: string;
-  /** Environment yang wajib terisi sebelum plugin boleh diaktifkan. */
+  /**
+   * Environment yang wajib terisi sebelum plugin boleh diaktifkan.
+   * Kosong bila plugin tidak membutuhkan kredensial (mis. WhatsApp via Baileys).
+   */
   envKeys: readonly string[];
 }
 
 export const PLUGIN_MANIFEST: readonly PluginManifest[] = [
   {
     slug: "whatsapp-gateway",
-    nama: "WhatsApp Gateway",
-    deskripsi: "Kirim notifikasi warga melalui penyedia WhatsApp.",
-    envKeys: ["WHATSAPP_API_URL", "WHATSAPP_TOKEN"],
+    nama: "WhatsApp (Baileys)",
+    deskripsi:
+      "Kirim notifikasi warga melalui WhatsApp Web; tautkan perangkat dengan memindai QR di log server.",
+    envKeys: [],
   },
   {
     slug: "email-resend",

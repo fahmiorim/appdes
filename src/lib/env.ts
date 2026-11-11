@@ -65,9 +65,15 @@ const envSchema = z
     /** Passphrase BSrE — JANGAN disimpan di basis data atau log. */
     TTE_PASSWORD: z.string().optional(),
     TTE_SSL: z.string().trim().optional(),
-    /** Endpoint URL dan Token untuk WhatsApp Provider. */
-    WHATSAPP_API_URL: z.string().url().optional(),
-    WHATSAPP_TOKEN: z.string().optional(),
+    /**
+     * Folder sesi Baileys (WhatsApp Web). Default `storage/whatsapp-auth`.
+     * Kosongkan untuk memakai default; isi bila sesi disimpan di volume lain.
+     */
+    WHATSAPP_AUTH_DIR: z
+      .string()
+      .trim()
+      .optional()
+      .transform((value) => value || undefined),
     /** Token webhook masuk; webhook menolak semua permintaan bila kosong. */
     EMAIL_WEBHOOK_TOKEN: z
       .string()

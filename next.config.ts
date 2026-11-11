@@ -22,6 +22,12 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+
+  /**
+   * Baileys adalah paket Node murni (soket, fs, crypto). Jangan di-bundle;
+   * biarkan di-resolve saat runtime oleh proses server yang persisten.
+   */
+  serverExternalPackages: ["@whiskeysockets/baileys", "pino"],
 };
 
 export default nextConfig;
