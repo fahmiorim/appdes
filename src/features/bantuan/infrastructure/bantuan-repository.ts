@@ -238,41 +238,53 @@ async function listWilayahCounts(
     db
       .select({
         programId: bantuanPeserta.programId,
-        regionId: residents.regionId,
+        regionId: regions.id,
       })
       .from(bantuanPeserta)
       .innerJoin(
         residents,
         and(eq(bantuanPeserta.residentId, residents.id), eq(residents.villageId, villageId)),
       )
+      .leftJoin(
+        regions,
+        and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
+      )
       .where(and(...filters)),
     db
       .select({
         programId: bantuanPeserta.programId,
-        regionId: families.regionId,
+        regionId: regions.id,
       })
       .from(bantuanPeserta)
       .innerJoin(
         families,
         and(eq(bantuanPeserta.familyId, families.id), eq(families.villageId, villageId)),
       )
+      .leftJoin(
+        regions,
+        and(eq(families.regionId, regions.id), eq(regions.villageId, villageId)),
+      )
       .where(and(...filters)),
     db
       .select({
         programId: bantuanPeserta.programId,
-        regionId: rumahTangga.regionId,
+        regionId: regions.id,
       })
       .from(bantuanPeserta)
       .innerJoin(
         rumahTangga,
         and(eq(bantuanPeserta.rtmId, rumahTangga.id), eq(rumahTangga.villageId, villageId)),
       )
+      .leftJoin(
+        regions,
+        and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)),
+      )
       .where(and(...filters)),
     // Wilayah kelompok = domisili anggotanya.
     db
       .select({
         programId: bantuanPeserta.programId,
-        regionId: residents.regionId,
+        regionId: regions.id,
       })
       .from(bantuanPeserta)
       .innerJoin(
@@ -283,8 +295,16 @@ async function listWilayahCounts(
         ),
       )
       .innerJoin(
+        kelompok,
+        and(eq(kelompok.id, kelompokAnggota.kelompokId), eq(kelompok.villageId, villageId)),
+      )
+      .innerJoin(
         residents,
         and(eq(kelompokAnggota.residentId, residents.id), eq(residents.villageId, villageId)),
+      )
+      .leftJoin(
+        regions,
+        and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
       )
       .where(and(...filters)),
   ]);
