@@ -211,15 +211,13 @@ export async function setRolePermissions(
 
     await tx.delete(rolePermissions).where(eq(rolePermissions.roleId, roleId));
     if (perms.length > 0) {
-      await tx
-        .insert(rolePermissions)
-        .values(
-          perms.map((permission) => ({
-            roleId,
-            moduleId: permission.moduleId,
-            access: permission.access,
-          })),
-        );
+      await tx.insert(rolePermissions).values(
+        perms.map((permission) => ({
+          roleId,
+          moduleId: permission.moduleId,
+          access: permission.access,
+        })),
+      );
     }
   });
 }
