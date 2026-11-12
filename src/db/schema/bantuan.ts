@@ -1,5 +1,6 @@
 import {
   date,
+  foreignKey,
   index,
   int,
   mysqlTable,
@@ -58,6 +59,7 @@ export const bantuanProgram = mysqlTable(
   },
   (t) => [
     uniqueIndex("bantuan_program_village_slug_uq").on(t.villageId, t.slug),
+    uniqueIndex("bantuan_program_village_id_uq").on(t.villageId, t.id),
     index("bantuan_program_village_sasaran_idx").on(t.villageId, t.sasaran),
   ],
 );
@@ -80,18 +82,16 @@ export const bantuanPeserta = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    programId: int("program_id")
-      .notNull()
-      .references(() => bantuanProgram.id, { onDelete: "cascade" }),
+    programId: int("program_id").notNull(),
 
     /** Sasaran: penduduk. */
-    residentId: int("resident_id").references(() => residents.id, { onDelete: "cascade" }),
+    residentId: int("resident_id"),
     /** Sasaran: keluarga (Kartu Keluarga). */
-    familyId: int("family_id").references(() => families.id, { onDelete: "cascade" }),
+    familyId: int("family_id"),
     /** Sasaran: rumah tangga (RTM). */
-    rtmId: int("rtm_id").references(() => rumahTangga.id, { onDelete: "cascade" }),
+    rtmId: int("rtm_id"),
     /** Sasaran: kelompok. */
-    kelompokId: int("kelompok_id").references(() => kelompok.id, { onDelete: "cascade" }),
+    kelompokId: int("kelompok_id"),
 
     /** Nomor Kartu Peserta (KKS/PKH/dll.) sebagai identitas cetak. */
     cardNumber: varchar("card_number", { length: 60 }),
@@ -114,5 +114,35 @@ export const bantuanPeserta = mysqlTable(
     uniqueIndex("bantuan_peserta_program_rtm_uq").on(t.programId, t.rtmId),
     uniqueIndex("bantuan_peserta_program_kelompok_uq").on(t.programId, t.kelompokId),
     index("bantuan_peserta_program_idx").on(t.programId),
+    index("bantuan_peserta_village_program_idx").on(t.villageId, t.programId),
+    index("bantuan_peserta_village_resident_idx").on(t.villageId, t.residentId),
+    index("bantuan_peserta_village_family_idx").on(t.villageId, t.familyId),
+    index("bantuan_peserta_village_rtm_idx").on(t.villageId, t.rtmId),
+    index("bantuan_peserta_village_kelompok_idx").on(t.villageId, t.kelompokId),
+    foreignKey({
+      name: "bantuan_peserta_program_tenant_fk",
+      columns: [t.villageId, t.programId],
+      foreignColumns: [bantuanProgram.villageId, bantuanProgram.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "bantuan_peserta_resident_tenant_fk",
+      columns: [t.villageId, t.residentId],
+      foreignColumns: [residents.villageId, residents.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "bantuan_peserta_family_tenant_fk",
+      columns: [t.villageId, t.familyId],
+      foreignColumns: [families.villageId, families.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "bantuan_peserta_rtm_tenant_fk",
+      columns: [t.villageId, t.rtmId],
+      foreignColumns: [rumahTangga.villageId, rumahTangga.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "bantuan_peserta_kelompok_tenant_fk",
+      columns: [t.villageId, t.kelompokId],
+      foreignColumns: [kelompok.villageId, kelompok.id],
+    }).onDelete("cascade"),
   ],
 );
