@@ -268,6 +268,13 @@ describe("B2 Suplemen daftar dan jumlah", () => {
     expect(rows.some((row) => row.label.includes(nomorKeluargaB))).toBe(false);
     expect(rows.every((row) => !row.label.includes("bocor"))).toBe(true);
 
+    const referensiPendudukLintasDesa = rows.find((row) => row.pendudukId === null && row.label === "Penduduk tidak tersedia");
+    const referensiKeluargaLintasDesa = rows.find((row) => row.keluargaId === null && row.label === "KK tidak tersedia");
+    expect(referensiPendudukLintasDesa).toBeDefined();
+    expect(referensiPendudukLintasDesa?.pendudukId).toBeNull();
+    expect(referensiKeluargaLintasDesa).toBeDefined();
+    expect(referensiKeluargaLintasDesa?.keluargaId).toBeNull();
+
     await expect(listSuplemenTerdata(desaA, suplemenB)).resolves.toEqual([]);
   });
 
