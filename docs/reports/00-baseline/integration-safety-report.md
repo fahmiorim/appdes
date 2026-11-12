@@ -5,6 +5,7 @@
 > **Jenis task:** implementasi guard integration test
 > **Base:** `origin/main` @ `c7c2ffc`
 > **Branch:** `task/phase-0-integration-safety`
+> **Commit implementasi:** `f2d33bd515dd3cecb519733d77a2d5a8f9f73131`
 > **Lingkungan verifikasi:** Windows, Git Bash, Node `v26.2.0`, MySQL lokal `127.0.0.1:3306`
 
 ## 1. Ringkasan
