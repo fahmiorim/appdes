@@ -141,6 +141,13 @@ async function listMemberCounts(
       kelompok,
       and(eq(kelompok.id, kelompokAnggota.kelompokId), eq(kelompok.villageId, villageId)),
     )
+    .innerJoin(
+      residents,
+      and(
+        eq(residents.id, kelompokAnggota.residentId),
+        eq(residents.villageId, villageId),
+      ),
+    )
     .where(
       and(
         eq(kelompokAnggota.villageId, villageId),
