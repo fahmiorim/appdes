@@ -90,9 +90,9 @@ export async function listKelompok(params: ListKelompokParams): Promise<Kelompok
       .select({ kelompok: kelompok, categoryName: kelompokMaster.name })
       .from(kelompok)
       .leftJoin(
-      kelompokMaster,
-      and(eq(kelompok.categoryId, kelompokMaster.id), eq(kelompokMaster.villageId, villageId)),
-    )
+        kelompokMaster,
+        and(eq(kelompok.categoryId, kelompokMaster.id), eq(kelompokMaster.villageId, villageId)),
+      )
       .where(where)
       .orderBy(asc(kelompok.name), asc(kelompok.id))
       .limit(pageSize)
