@@ -107,10 +107,7 @@ export async function listRumahTangga(
         rt: regions.rt,
       })
       .from(rumahTangga)
-      .leftJoin(
-        regions,
-        and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+      .leftJoin(regions, and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(where)
       .orderBy(asc(rumahTangga.number), asc(rumahTangga.id))
       .limit(pageSize)
