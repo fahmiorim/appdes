@@ -4,6 +4,7 @@ import { and, asc, count, eq, inArray, like, ne, or, sql, type SQL } from "drizz
 import { alias } from "drizzle-orm/mysql-core";
 
 import { db } from "@/db";
+import { validationError } from "@/lib/errors";
 import {
   bloodTypes,
   citizenships,
@@ -123,6 +124,42 @@ function buildWhere(villageId: number, filter: PendudukFilter): SQL {
 
 function blankToNull(value: string): string | null {
   return value === "" ? null : value;
+}
+
+/**
+ * Verifikasi bahwa foreign reference tenant-scoped milik desa pemanggil.
+ *
+ * ID global saja tidak cukup: families dan regions masing-masing membawa
+ * villageId sendiri. Pesan error sengaja generik agar tidak membocorkan
+ * keberadaan record tenant lain.
+ */
+export async function validatePendudukTenantReferences(
+  villageId: number,
+  input: Pick<PendudukFormInput, "familyId" | "regionId">,
+): Promise<void> {
+  if (input.familyId !== null) {
+    const [family] = await db
+      .select({ id: families.id })
+      .from(families)
+      .where(and(eq(families.id, input.familyId), eq(families.villageId, villageId)))
+      .limit(1);
+
+    if (!family) {
+      throw validationError("Kartu Keluarga atau wilayah tidak valid untuk desa ini.");
+    }
+  }
+
+  if (input.regionId !== null) {
+    const [region] = await db
+      .select({ id: regions.id })
+      .from(regions)
+      .where(and(eq(regions.id, input.regionId), eq(regions.villageId, villageId)))
+      .limit(1);
+
+    if (!region) {
+      throw validationError("Kartu Keluarga atau wilayah tidak valid untuk desa ini.");
+    }
+  }
 }
 
 export async function listPenduduk(params: ListPendudukParams): Promise<PendudukListResult> {
@@ -257,8 +294,11 @@ export async function getPendudukDetailById(villageId: number, id: number) {
       citizenship: citizenships,
     })
     .from(residents)
-    .leftJoin(families, eq(residents.familyId, families.id))
-    .leftJoin(regions, eq(residents.regionId, regions.id))
+    .leftJoin(
+      families,
+      and(eq(residents.familyId, families.id), eq(families.villageId, villageId)),
+    )
+    .leftJoin(regions, and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)))
     .leftJoin(religions, eq(residents.religionId, religions.id))
     .leftJoin(educations, eq(residents.educationId, educations.id))
     .leftJoin(occupations, eq(residents.occupationId, occupations.id))
@@ -356,7 +396,10 @@ export async function getPendudukSuratData(
     .from(residents)
     .leftJoin(religions, eq(residents.religionId, religions.id))
     .leftJoin(occupations, eq(residents.occupationId, occupations.id))
-    .leftJoin(families, eq(residents.familyId, families.id))
+    .leftJoin(
+      families,
+      and(eq(residents.familyId, families.id), eq(families.villageId, villageId)),
+    )
     .where(and(eq(residents.villageId, villageId), eq(residents.id, id)))
     .limit(1);
   if (!row) return null;
@@ -488,7 +531,11 @@ export async function listPendudukSuratByIds(
   });
 }
 
-export async function updatePenduduk(id: number, input: PendudukFormInput): Promise<void> {
+export async function updatePenduduk(
+  villageId: number,
+  id: number,
+  input: PendudukFormInput,
+): Promise<void> {
   await db
     .update(residents)
     .set({
@@ -516,9 +563,11 @@ export async function updatePenduduk(id: number, input: PendudukFormInput): Prom
       fatherNationalId: input.fatherNationalId,
       motherNationalId: input.motherNationalId,
     })
-    .where(eq(residents.id, id));
+    .where(and(eq(residents.id, id), eq(residents.villageId, villageId)));
 }
 
-export async function deletePenduduk(id: number): Promise<void> {
-  await db.delete(residents).where(eq(residents.id, id));
+export async function deletePenduduk(villageId: number, id: number): Promise<void> {
+  await db
+    .delete(residents)
+    .where(and(eq(residents.id, id), eq(residents.villageId, villageId)));
 }
