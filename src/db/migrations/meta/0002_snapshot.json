@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "a43f21d8-62ce-4ef9-93c6-5c4a71bd98ef",
-  "prevId": "1ddbfe09-e6b9-4c2c-bec6-2e6aa76ac7b5",
+  "id": "1ddbfe09-e6b9-4c2c-bec6-2e6aa76ac7b5",
+  "prevId": "c58a3bce-5b99-4435-b8fe-d64670657153",
   "tables": {
     "agenda_kegiatan": {
       "name": "agenda_kegiatan",
@@ -1404,46 +1404,6 @@
             "program_id"
           ],
           "isUnique": false
-        },
-        "bantuan_peserta_village_program_idx": {
-          "name": "bantuan_peserta_village_program_idx",
-          "columns": [
-            "village_id",
-            "program_id"
-          ],
-          "isUnique": false
-        },
-        "bantuan_peserta_village_resident_idx": {
-          "name": "bantuan_peserta_village_resident_idx",
-          "columns": [
-            "village_id",
-            "resident_id"
-          ],
-          "isUnique": false
-        },
-        "bantuan_peserta_village_family_idx": {
-          "name": "bantuan_peserta_village_family_idx",
-          "columns": [
-            "village_id",
-            "family_id"
-          ],
-          "isUnique": false
-        },
-        "bantuan_peserta_village_rtm_idx": {
-          "name": "bantuan_peserta_village_rtm_idx",
-          "columns": [
-            "village_id",
-            "rtm_id"
-          ],
-          "isUnique": false
-        },
-        "bantuan_peserta_village_kelompok_idx": {
-          "name": "bantuan_peserta_village_kelompok_idx",
-          "columns": [
-            "village_id",
-            "kelompok_id"
-          ],
-          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -1460,76 +1420,66 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "bantuan_peserta_program_tenant_fk": {
-          "name": "bantuan_peserta_program_tenant_fk",
+        "bantuan_peserta_program_id_bantuan_program_id_fk": {
+          "name": "bantuan_peserta_program_id_bantuan_program_id_fk",
           "tableFrom": "bantuan_peserta",
           "tableTo": "bantuan_program",
           "columnsFrom": [
-            "village_id",
             "program_id"
           ],
           "columnsTo": [
-            "village_id",
             "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "bantuan_peserta_resident_tenant_fk": {
-          "name": "bantuan_peserta_resident_tenant_fk",
+        "bantuan_peserta_resident_id_residents_id_fk": {
+          "name": "bantuan_peserta_resident_id_residents_id_fk",
           "tableFrom": "bantuan_peserta",
           "tableTo": "residents",
           "columnsFrom": [
-            "village_id",
             "resident_id"
           ],
           "columnsTo": [
-            "village_id",
             "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "bantuan_peserta_family_tenant_fk": {
-          "name": "bantuan_peserta_family_tenant_fk",
+        "bantuan_peserta_family_id_families_id_fk": {
+          "name": "bantuan_peserta_family_id_families_id_fk",
           "tableFrom": "bantuan_peserta",
           "tableTo": "families",
           "columnsFrom": [
-            "village_id",
             "family_id"
           ],
           "columnsTo": [
-            "village_id",
             "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "bantuan_peserta_rtm_tenant_fk": {
-          "name": "bantuan_peserta_rtm_tenant_fk",
+        "bantuan_peserta_rtm_id_rtm_id_fk": {
+          "name": "bantuan_peserta_rtm_id_rtm_id_fk",
           "tableFrom": "bantuan_peserta",
           "tableTo": "rtm",
           "columnsFrom": [
-            "village_id",
             "rtm_id"
           ],
           "columnsTo": [
-            "village_id",
             "id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "bantuan_peserta_kelompok_tenant_fk": {
-          "name": "bantuan_peserta_kelompok_tenant_fk",
+        "bantuan_peserta_kelompok_id_kelompok_id_fk": {
+          "name": "bantuan_peserta_kelompok_id_kelompok_id_fk",
           "tableFrom": "bantuan_peserta",
           "tableTo": "kelompok",
           "columnsFrom": [
-            "village_id",
             "kelompok_id"
           ],
           "columnsTo": [
-            "village_id",
             "id"
           ],
           "onDelete": "cascade",
@@ -1646,14 +1596,6 @@
             "sasaran"
           ],
           "isUnique": false
-        },
-        "bantuan_program_village_id_uq": {
-          "name": "bantuan_program_village_id_uq",
-          "columns": [
-            "village_id",
-            "id"
-          ],
-          "isUnique": true
         }
       },
       "foreignKeys": {
@@ -10010,14 +9952,6 @@
             "category_id"
           ],
           "isUnique": false
-        },
-        "kelompok_village_id_uq": {
-          "name": "kelompok_village_id_uq",
-          "columns": [
-            "village_id",
-            "id"
-          ],
-          "isUnique": true
         }
       },
       "foreignKeys": {
