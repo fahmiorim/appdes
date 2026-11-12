@@ -17,12 +17,17 @@ let familyB = 0;
 let rtmB = 0;
 let kelompokB = 0;
 
+function idDari(baris: { id: number } | undefined, label: string): number {
+  if (baris?.id === undefined) throw new Error(`Seed uji gagal: ${label} tidak terbentuk.`);
+  return baris.id;
+}
+
 beforeAll(async () => {
   await siapkanDatabaseUji(db, { migrationsFolder: MIGRATIONS_FOLDER });
   const [a] = await db.insert(villages).values({ name: "Bantuan Tenant A", code: "BTA" }).$returningId();
   const [b] = await db.insert(villages).values({ name: "Bantuan Tenant B", code: "BTB" }).$returningId();
-  desaA = a.id;
-  desaB = b.id;
+  desaA = idDari(a, "desa A");
+  desaB = idDari(b, "desa B");
 
   const [program] = await db.insert(bantuanProgram).values({
     villageId: desaA,
@@ -30,14 +35,14 @@ beforeAll(async () => {
     slug: "program-a",
     sasaran: 1,
   }).$returningId();
-  programA = program.id;
+  programA = idDari(program, "program A");
   const [programOther] = await db.insert(bantuanProgram).values({
     villageId: desaB,
     name: "Program B",
     slug: "program-b",
     sasaran: 1,
   }).$returningId();
-  programB = programOther.id;
+  programB = idDari(programOther, "program B");
 
   const [ra] = await db.insert(residents).values({
     villageId: desaA,
@@ -49,14 +54,14 @@ beforeAll(async () => {
     name: "Penduduk B",
     gender: "male",
   }).$returningId();
-  residentA = ra.id;
-  residentB = rb.id;
+  residentA = idDari(ra, "resident A");
+  residentB = idDari(rb, "resident B");
   const [family] = await db.insert(families).values({ villageId: desaB, number: "1234567890123456" }).$returningId();
-  familyB = family.id;
+  familyB = idDari(family, "family B");
   const [rtm] = await db.insert(rumahTangga).values({ villageId: desaB, number: "RTM-B2-001" }).$returningId();
-  rtmB = rtm.id;
+  rtmB = idDari(rtm, "rtm B");
   const [group] = await db.insert(kelompok).values({ villageId: desaB, name: "Kelompok B", slug: "kelompok-b", type: "kelompok" }).$returningId();
-  kelompokB = group.id;
+  kelompokB = idDari(group, "kelompok B");
 });
 
 afterAll(async () => {
@@ -67,11 +72,11 @@ afterAll(async () => {
 describe("B2 Bantuan composite tenant FK", () => {
   it("memasang lima composite FK dengan pasangan kolom dan aksi delete yang benar", async () => {
     const result = (await db.execute(sql`
-      SELECT CONSTRAINT_NAME AS nama,
-             TABLE_NAME AS tabel,
-             GROUP_CONCAT(COLUMN_NAME ORDER BY ORDINAL_POSITION) AS kolom,
-             GROUP_CONCAT(REFERENCED_COLUMN_NAME ORDER BY ORDINAL_POSITION) AS referensi,
-             DELETE_RULE AS aturan
+      SELECT k.CONSTRAINT_NAME AS nama,
+             k.TABLE_NAME AS tabel,
+             GROUP_CONCAT(k.COLUMN_NAME ORDER BY k.ORDINAL_POSITION) AS kolom,
+             GROUP_CONCAT(k.REFERENCED_COLUMN_NAME ORDER BY k.ORDINAL_POSITION) AS referensi,
+             r.DELETE_RULE AS aturan
       FROM information_schema.KEY_COLUMN_USAGE k
       JOIN information_schema.REFERENTIAL_CONSTRAINTS r
         ON r.CONSTRAINT_SCHEMA = k.CONSTRAINT_SCHEMA
@@ -85,7 +90,7 @@ describe("B2 Bantuan composite tenant FK", () => {
           'bantuan_peserta_rtm_tenant_fk',
           'bantuan_peserta_kelompok_tenant_fk'
         )
-      GROUP BY CONSTRAINT_NAME, TABLE_NAME, DELETE_RULE
+      GROUP BY k.CONSTRAINT_NAME, k.TABLE_NAME, r.DELETE_RULE
     `)) as unknown as [Array<{nama:string;tabel:string;kolom:string;referensi:string;aturan:string}>,unknown];
     expect(result[0]).toHaveLength(5);
     for (const row of result[0]) {
@@ -132,6 +137,6 @@ describe("B2 Bantuan composite tenant FK", () => {
       rtmId: null,
       kelompokId: null,
     }).$returningId();
-    expect(inserted.id).toBeGreaterThan(0);
+    expect(idDari(inserted, "peserta")).toBeGreaterThan(0);
   });
 });
