@@ -54,6 +54,7 @@ export async function POST(request: Request) {
   try {
     rawBody = await bacaTeksTerbatas(request, BATAS_BODY);
   } catch (error) {
+    console.error("Email webhook body read failed:", error);
     if (error instanceof BodyLimitError) {
       return NextResponse.json({ error: "Payload terlalu besar." }, { status: 413 });
     }
