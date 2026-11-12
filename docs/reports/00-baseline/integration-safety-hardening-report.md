@@ -5,6 +5,7 @@
 > **Jenis task:** perbaikan temuan review integration test safety
 > **Base:** `origin/main` @ `c7c2ffc` (via `task/phase-0-integration-safety` @ `2cb2a83`)
 > **Branch:** `task/phase-0-integration-safety-hardening`
+> **Commit implementasi:** `8c389358f0b15e526f9fc86423f9e5f720469ba9`
 > **Lingkungan verifikasi:** Windows, Git Bash, Node `v26.2.0`, MySQL lokal `127.0.0.1:3306`
 
 ## 1. Ringkasan
