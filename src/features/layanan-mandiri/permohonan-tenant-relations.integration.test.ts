@@ -118,9 +118,7 @@ afterAll(async () => {
   if (!fixture) return;
   // Surat desa B menjadi child dari jenis surat B dengan FK RESTRICT.
   await db.delete(letters).where(eq(letters.id, fixture.letterB));
-  await db
-    .delete(villages)
-    .where(inArray(villages.id, [fixture.villageA, fixture.villageB]));
+  await db.delete(villages).where(inArray(villages.id, [fixture.villageA, fixture.villageB]));
 });
 
 function dataUji(): Fixture {
