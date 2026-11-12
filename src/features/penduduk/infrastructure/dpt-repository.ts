@@ -156,7 +156,7 @@ export async function listDpt(
         umurPemilihan: sql<number>`TIMESTAMPDIFF(YEAR, ${residents.birthDate}, ${election.tanggal})`,
       })
       .from(residents)
-      .leftJoin(regions, eq(regions.id, residents.regionId))
+      .leftJoin(regions, and(eq(regions.id, residents.regionId), eq(regions.villageId, villageId)))
       .leftJoin(religions, eq(religions.id, residents.religionId))
       .leftJoin(educations, eq(educations.id, residents.educationId))
       .leftJoin(occupations, eq(occupations.id, residents.occupationId))
@@ -169,7 +169,7 @@ export async function listDpt(
     db
       .select({ count: count() })
       .from(residents)
-      .leftJoin(regions, eq(regions.id, residents.regionId))
+      .leftJoin(regions, and(eq(regions.id, residents.regionId), eq(regions.villageId, villageId)))
       .where(whereClause),
   ]);
 
@@ -215,7 +215,7 @@ export async function listDptRingkas(
   return db
     .select({ dusun: regions.dusun, gender: residents.gender })
     .from(residents)
-    .leftJoin(regions, eq(regions.id, residents.regionId))
+    .leftJoin(regions, and(eq(regions.id, residents.regionId), eq(regions.villageId, villageId)))
     .where(whereClause)
     .orderBy(regions.dusun, residents.name);
 }
@@ -244,7 +244,7 @@ export async function listDptExport(villageId: number, params: ListDptParams): P
       umurPemilihan: sql<number>`TIMESTAMPDIFF(YEAR, ${residents.birthDate}, ${election.tanggal})`,
     })
     .from(residents)
-    .leftJoin(regions, eq(regions.id, residents.regionId))
+    .leftJoin(regions, and(eq(regions.id, residents.regionId), eq(regions.villageId, villageId)))
     .leftJoin(religions, eq(religions.id, residents.religionId))
     .leftJoin(educations, eq(educations.id, residents.educationId))
     .leftJoin(occupations, eq(occupations.id, residents.occupationId))
