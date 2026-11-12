@@ -137,7 +137,8 @@ export function parseKonfigTte(env: Readonly<Record<string, string | undefined>>
     username: (env.TTE_USERNAME ?? "").trim(),
     nik: (env.TTE_NIK ?? "").trim(),
     password: env.TTE_PASSWORD ?? "",
-    ssl: (env.TTE_SSL ?? "true").trim().toLowerCase() !== "false",
+    // Verifikasi sertifikat TLS selalu aktif. TTE_SSL=false diabaikan demi keamanan.
+    ssl: true,
     timeout: Number(env.TTE_TIMEOUT ?? "30000"),
   };
 }
@@ -191,7 +192,8 @@ export function gabungKonfigTte(
     nik: tersimpan.nik,
     // Passphrase tidak pernah dibaca dari basis data.
     password: envConfig.password,
-    ssl: tersimpan.ssl,
+    // Konfigurasi tenant tidak boleh menonaktifkan verifikasi TLS.
+    ssl: true,
     timeout: tersimpan.timeout ?? envConfig.timeout,
   };
 }
@@ -306,7 +308,24 @@ function cariPdfBase64(nilai: unknown, kedalaman = 0): Uint8Array | null {
  */
 export function buatKlienBsre(fetchImpl: FetchTte = fetch): KlienTte {
   return async (permintaan, config) => {
-    const endpoint = `${config.api.replace(/\/+$/, "")}/api/sign/pdf`;
+    let baseUrl: URL;
+    try {
+      baseUrl = new URL(config.api);
+    } catch {
+      throw new Error("URL API TTE tidak valid.");
+    }
+
+    if (
+      baseUrl.protocol !== "https:" ||
+      baseUrl.username !== "" ||
+      baseUrl.password !== "" ||
+      baseUrl.search !== "" ||
+      baseUrl.hash !== ""
+    ) {
+      throw new Error("URL API TTE wajib menggunakan HTTPS dan tidak boleh memuat kredensial, query, atau fragment.");
+    }
+
+    const endpoint = new URL("/api/sign/pdf", baseUrl).toString();
     const otorisasi = `Basic ${btoa(`${config.username}:${config.password}`)}`;
     const timeoutMs = config.timeout ?? 30_000;
 
@@ -332,7 +351,15 @@ export function buatKlienBsre(fetchImpl: FetchTte = fetch): KlienTte {
       const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
       try {
-        const respons = await fetchImpl(url, { ...init, signal: controller.signal });
+        const respons = await fetchImpl(url, {
+          ...init,
+          redirect: "manual",
+          signal: controller.signal,
+        });
+
+        if (respons.status >= 300 && respons.status < 400) {
+          throw new Error("Redirect provider TTE ditolak demi keamanan.");
+        }
 
         // Don't retry on 4xx (client errors) - only on network errors, timeouts, 5xx
         if (!respons.ok && respons.status >= 500 && attempt < maxRetries) {
@@ -402,9 +429,19 @@ export function buatKlienBsre(fetchImpl: FetchTte = fetch): KlienTte {
     const url = cariUrlBerkas(json);
     if (!url) throw new Error("Respons provider TTE tidak memuat berkas hasil tanda tangan.");
 
-    const absolut = new URL(url, `${config.api.replace(/\/+$/, "")}/`).toString();
+    let urlBerkas: URL;
+    try {
+      urlBerkas = new URL(url, baseUrl);
+    } catch {
+      throw new Error("URL berkas hasil TTE tidak valid.");
+    }
+
+    if (urlBerkas.protocol !== "https:" || urlBerkas.origin !== baseUrl.origin) {
+      throw new Error("URL berkas hasil TTE harus HTTPS dan berasal dari origin provider yang sama.");
+    }
+
     const berkas = await fetchWithRetry(
-      absolut,
+      urlBerkas.toString(),
       {
         headers: { Authorization: otorisasi, Accept: "application/pdf" },
       },
@@ -436,10 +473,24 @@ export async function testKoneksi(
   config: KonfigTte,
   fetchImpl: FetchTte = fetch,
 ): Promise<HasilTestKoneksi> {
-  const base = config.api.replace(/\/+$/, "");
-  if (!base) {
-    return { ok: false, pesan: "URL API belum diisi." };
+  let baseUrl: URL;
+  try {
+    baseUrl = new URL(config.api);
+  } catch {
+    return { ok: false, pesan: "URL API tidak valid." };
   }
+
+  if (
+    baseUrl.protocol !== "https:" ||
+    baseUrl.username !== "" ||
+    baseUrl.password !== "" ||
+    baseUrl.search !== "" ||
+    baseUrl.hash !== ""
+  ) {
+    return { ok: false, pesan: "URL API TTE wajib HTTPS dan tidak boleh memuat kredensial, query, atau fragment." };
+  }
+
+  const base = baseUrl.origin;
 
   const otorisasi = `Basic ${btoa(`${config.username}:${config.password}`)}`;
 
@@ -458,8 +509,13 @@ export async function testKoneksi(
           Authorization: otorisasi,
           Accept: "application/json",
         },
+        redirect: "manual",
         signal: controller.signal,
       });
+
+      if (resp.status >= 300 && resp.status < 400) {
+        return { ok: false, pesan: "Redirect provider TTE ditolak demi keamanan." };
+      }
 
       if (resp.ok) {
         const contentType = (resp.headers.get("content-type") ?? "").toLowerCase();
@@ -492,6 +548,7 @@ export async function testKoneksi(
         Authorization: otorisasi,
         Accept: "application/json, text/html",
       },
+      redirect: "manual",
       signal: controller.signal,
     });
 
