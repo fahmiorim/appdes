@@ -84,11 +84,13 @@ export async function listBantuanDiterimaWarga(
     and(eq(bantuanProgram.sasaran, SASARAN_PENDUDUK), eq(bantuanPeserta.residentId, residentId)),
     and(
       eq(bantuanProgram.sasaran, SASARAN_KELUARGA),
+      isNotNull(families.id),
       isNotNull(residents.familyId),
       eq(bantuanPeserta.familyId, residents.familyId),
     ),
     and(
       eq(bantuanProgram.sasaran, SASARAN_RUMAH_TANGGA),
+      isNotNull(rumahTangga.id),
       isNotNull(residents.rtmId),
       eq(bantuanPeserta.rtmId, residents.rtmId),
     ),
@@ -122,6 +124,14 @@ export async function listBantuanDiterimaWarga(
       ),
     )
     .innerJoin(residents, and(eq(residents.id, residentId), eq(residents.villageId, villageId)))
+    .leftJoin(
+      families,
+      and(eq(families.id, residents.familyId), eq(families.villageId, villageId)),
+    )
+    .leftJoin(
+      rumahTangga,
+      and(eq(rumahTangga.id, residents.rtmId), eq(rumahTangga.villageId, villageId)),
+    )
     .leftJoin(
       kelompok,
       and(eq(kelompok.id, bantuanPeserta.kelompokId), eq(kelompok.villageId, villageId)),
@@ -946,6 +956,45 @@ export async function insertPeserta(
   sasaranId: number,
   input: PesertaFormInput,
 ): Promise<void> {
+  const [program] = await db
+    .select({ id: bantuanProgram.id })
+    .from(bantuanProgram)
+    .where(and(eq(bantuanProgram.id, programId), eq(bantuanProgram.villageId, villageId)))
+    .limit(1);
+  if (!program) throw new Error("Program bantuan tidak ditemukan pada desa aktif.");
+
+  let sasaranValid = false;
+  if (sasaran === SASARAN_KELUARGA) {
+    const [target] = await db
+      .select({ id: families.id })
+      .from(families)
+      .where(and(eq(families.id, sasaranId), eq(families.villageId, villageId)))
+      .limit(1);
+    sasaranValid = Boolean(target);
+  } else if (sasaran === SASARAN_RUMAH_TANGGA) {
+    const [target] = await db
+      .select({ id: rumahTangga.id })
+      .from(rumahTangga)
+      .where(and(eq(rumahTangga.id, sasaranId), eq(rumahTangga.villageId, villageId)))
+      .limit(1);
+    sasaranValid = Boolean(target);
+  } else if (sasaran === SASARAN_KELOMPOK) {
+    const [target] = await db
+      .select({ id: kelompok.id })
+      .from(kelompok)
+      .where(and(eq(kelompok.id, sasaranId), eq(kelompok.villageId, villageId)))
+      .limit(1);
+    sasaranValid = Boolean(target);
+  } else {
+    const [target] = await db
+      .select({ id: residents.id })
+      .from(residents)
+      .where(and(eq(residents.id, sasaranId), eq(residents.villageId, villageId)))
+      .limit(1);
+    sasaranValid = Boolean(target);
+  }
+  if (!sasaranValid) throw new Error("Sasaran bantuan tidak ditemukan pada desa aktif.");
+
   const values: typeof bantuanPeserta.$inferInsert = {
     villageId,
     programId,
