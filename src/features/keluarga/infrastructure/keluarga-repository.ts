@@ -8,6 +8,7 @@ import {
   desc,
   eq,
   inArray,
+  isNull,
   like,
   ne,
   or,
@@ -516,7 +517,7 @@ export async function listLogAnggotaKk(
       users,
       and(
         eq(familyMemberLogs.actorId, users.id),
-        or(eq(users.villageId, villageId), eq(users.villageId, null)),
+        or(eq(users.villageId, villageId), isNull(users.villageId)),
       ),
     )
     .where(and(eq(familyMemberLogs.villageId, villageId), eq(familyMemberLogs.familyId, familyId)))
