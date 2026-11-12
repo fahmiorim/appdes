@@ -10,10 +10,12 @@ import {
   educations,
   families,
   familyRelations,
+  letters,
   maritalStatuses,
   occupations,
   regions,
   religions,
+  residentMutations,
   residents,
 } from "@/db/schema";
 import {
@@ -519,6 +521,16 @@ export async function updatePenduduk(id: number, input: PendudukFormInput): Prom
     .where(eq(residents.id, id));
 }
 
-export async function deletePenduduk(id: number): Promise<void> {
-  await db.delete(residents).where(eq(residents.id, id));
+export async function deletePenduduk(villageId: number, id: number): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx
+      .update(letters)
+      .set({ residentId: null })
+      .where(and(eq(letters.villageId, villageId), eq(letters.residentId, id)));
+    await tx
+      .update(residentMutations)
+      .set({ residentId: null })
+      .where(and(eq(residentMutations.villageId, villageId), eq(residentMutations.residentId, id)));
+    await tx.delete(residents).where(and(eq(residents.villageId, villageId), eq(residents.id, id)));
+  });
 }

@@ -142,7 +142,14 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (fixture === null) return;
-  await db.delete(villages).where(inArray(villages.id, [fixture.villageA, fixture.villageB]));
+  const villageIds = [fixture.villageA, fixture.villageB];
+
+  // Composite tenant FKs sengaja RESTRICT penghapusan KK/RTM selama masih ada
+  // penduduk yang merujuknya. Bersihkan berurutan sebelum cascade desa.
+  await db.delete(residents).where(inArray(residents.villageId, villageIds));
+  await db.delete(families).where(inArray(families.villageId, villageIds));
+  await db.delete(rumahTangga).where(inArray(rumahTangga.villageId, villageIds));
+  await db.delete(villages).where(inArray(villages.id, villageIds));
 });
 
 describe("bantuan yang diterima warga (integrasi)", () => {

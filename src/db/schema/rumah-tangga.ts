@@ -1,4 +1,12 @@
-import { index, int, mysqlTable, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import {
+  foreignKey,
+  index,
+  int,
+  mysqlTable,
+  timestamp,
+  uniqueIndex,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { regions } from "./region";
 import { villages } from "./village";
@@ -26,7 +34,7 @@ export const rumahTangga = mysqlTable(
     number: varchar("number", { length: 32 }).notNull(),
 
     address: varchar("address", { length: 255 }),
-    regionId: int("region_id").references(() => regions.id, { onDelete: "set null" }),
+    regionId: int("region_id"),
 
     /** Kelas sosial ekonomi rumah tangga (1 = terendah), bila diketahui. */
     kelasSosial: int("kelas_sosial"),
@@ -42,6 +50,12 @@ export const rumahTangga = mysqlTable(
   },
   (t) => [
     uniqueIndex("rtm_village_number_uq").on(t.villageId, t.number),
+    uniqueIndex("rtm_village_id_uq").on(t.villageId, t.id),
+    foreignKey({
+      name: "rtm_region_tenant_fk",
+      columns: [t.villageId, t.regionId],
+      foreignColumns: [regions.villageId, regions.id],
+    }).onDelete("restrict"),
     index("rtm_region_idx").on(t.regionId),
   ],
 );

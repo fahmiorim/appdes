@@ -1,4 +1,12 @@
-import { index, int, mysqlTable, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import {
+  foreignKey,
+  index,
+  int,
+  mysqlTable,
+  timestamp,
+  uniqueIndex,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { regions } from "./region";
 import { villages } from "./village";
@@ -26,7 +34,7 @@ export const families = mysqlTable(
     number: varchar("number", { length: 16 }).notNull(),
 
     address: varchar("address", { length: 255 }),
-    regionId: int("region_id").references(() => regions.id, { onDelete: "set null" }),
+    regionId: int("region_id"),
 
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
@@ -36,6 +44,12 @@ export const families = mysqlTable(
   },
   (t) => [
     uniqueIndex("families_village_number_uq").on(t.villageId, t.number),
+    uniqueIndex("families_village_id_uq").on(t.villageId, t.id),
+    foreignKey({
+      name: "families_region_tenant_fk",
+      columns: [t.villageId, t.regionId],
+      foreignColumns: [regions.villageId, regions.id],
+    }).onDelete("restrict"),
     index("families_region_idx").on(t.regionId),
   ],
 );

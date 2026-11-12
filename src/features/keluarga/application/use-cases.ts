@@ -215,7 +215,7 @@ export async function deleteKeluarga(id: number): Promise<void> {
   const existing = await findKeluargaById(villageId, id);
   if (!existing) throw notFound("Kartu Keluarga tidak ditemukan.");
 
-  await deleteKeluargaRow(id);
+  await deleteKeluargaRow(villageId, id);
 
   await recordAuditEvent({
     villageId,

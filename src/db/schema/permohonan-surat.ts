@@ -1,4 +1,12 @@
-import { index, int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  foreignKey,
+  index,
+  int,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { letterTypes } from "./letter-types";
 import { letters } from "./letters";
@@ -19,15 +27,11 @@ export const permohonanSurat = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    residentId: int("resident_id")
-      .notNull()
-      .references(() => residents.id, { onDelete: "cascade" }),
-    letterTypeId: int("letter_type_id")
-      .notNull()
-      .references(() => letterTypes.id, { onDelete: "cascade" }),
+    residentId: int("resident_id").notNull(),
+    letterTypeId: int("letter_type_id").notNull(),
 
     /** Surat dinas yang dibuat dari permohonan ini (bila sudah diproses). */
-    letterId: int("letter_id").references(() => letters.id, { onDelete: "set null" }),
+    letterId: int("letter_id"),
 
     /** Nomor antrian yang diberikan saat permohonan dikirim. */
     noAntrian: varchar("no_antrian", { length: 30 }),
@@ -52,6 +56,21 @@ export const permohonanSurat = mysqlTable(
     index("permohonan_surat_village_status_idx").on(table.villageId, table.status),
     index("permohonan_surat_village_created_idx").on(table.villageId, table.createdAt),
     index("permohonan_surat_letter_idx").on(table.letterId),
+    foreignKey({
+      name: "permohonan_surat_resident_tenant_fk",
+      columns: [table.villageId, table.residentId],
+      foreignColumns: [residents.villageId, residents.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "permohonan_surat_type_tenant_fk",
+      columns: [table.villageId, table.letterTypeId],
+      foreignColumns: [letterTypes.villageId, letterTypes.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "permohonan_surat_letter_tenant_fk",
+      columns: [table.villageId, table.letterId],
+      foreignColumns: [letters.villageId, letters.id],
+    }).onDelete("restrict"),
   ],
 );
 

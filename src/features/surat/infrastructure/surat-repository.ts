@@ -9,6 +9,7 @@ import {
   letters,
   letterTypes,
   outgoingLetters,
+  permohonanSurat,
   residents,
 } from "@/db/schema";
 import { ARSIP_MAKS_EKSPOR, ARSIP_PER_HALAMAN } from "@/features/surat/domain/arsip-nomor";
@@ -204,7 +205,13 @@ export async function updateSuratDraft(
 }
 
 export async function deleteSurat(villageId: number, id: number): Promise<void> {
-  await db.delete(letters).where(and(eq(letters.villageId, villageId), eq(letters.id, id)));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(permohonanSurat)
+      .set({ letterId: null })
+      .where(and(eq(permohonanSurat.villageId, villageId), eq(permohonanSurat.letterId, id)));
+    await tx.delete(letters).where(and(eq(letters.villageId, villageId), eq(letters.id, id)));
+  });
 }
 
 export async function issueSuratRecord(

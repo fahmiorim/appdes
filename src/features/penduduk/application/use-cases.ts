@@ -165,7 +165,7 @@ export async function deletePenduduk(id: number): Promise<void> {
   const existing = await findPendudukById(villageId, id);
   if (!existing) throw notFound("Data penduduk tidak ditemukan.");
 
-  await deletePendudukRow(id);
+  await deletePendudukRow(villageId, id);
 
   await recordAuditEvent({
     villageId,
