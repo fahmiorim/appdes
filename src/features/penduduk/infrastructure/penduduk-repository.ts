@@ -4,7 +4,6 @@ import { and, asc, count, eq, inArray, like, ne, or, sql, type SQL } from "drizz
 import { alias } from "drizzle-orm/mysql-core";
 
 import { db } from "@/db";
-import { validationError } from "@/lib/errors";
 import {
   bloodTypes,
   citizenships,
@@ -25,6 +24,7 @@ import {
   type PendudukListRow,
 } from "@/features/penduduk/domain/penduduk";
 import { formatWilayahLabel } from "@/features/wilayah/domain/wilayah";
+import { validationError } from "@/lib/errors";
 
 export interface ListPendudukParams {
   villageId: number;
@@ -172,14 +172,18 @@ export async function listPenduduk(params: ListPendudukParams): Promise<Penduduk
         resident: residents,
         religionName: religions.name,
         familyNumber: families.number,
+        joinedRegionId: regions.id,
         dusun: regions.dusun,
         rw: regions.rw,
         rt: regions.rt,
       })
       .from(residents)
       .leftJoin(religions, eq(residents.religionId, religions.id))
-      .leftJoin(families, eq(residents.familyId, families.id))
-      .leftJoin(regions, eq(residents.regionId, regions.id))
+      .leftJoin(
+        families,
+        and(eq(residents.familyId, families.id), eq(families.villageId, villageId)),
+      )
+      .leftJoin(regions, and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(where)
       .orderBy(asc(residents.name), asc(residents.id))
       .limit(pageSize)
@@ -187,8 +191,11 @@ export async function listPenduduk(params: ListPendudukParams): Promise<Penduduk
     db
       .select({ value: count() })
       .from(residents)
-      .leftJoin(families, eq(residents.familyId, families.id))
-      .leftJoin(regions, eq(residents.regionId, regions.id))
+      .leftJoin(
+        families,
+        and(eq(residents.familyId, families.id), eq(families.villageId, villageId)),
+      )
+      .leftJoin(regions, and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(where),
   ]);
 
@@ -199,7 +206,10 @@ export async function listPenduduk(params: ListPendudukParams): Promise<Penduduk
       ...toDto(row.resident),
       religionName: row.religionName ?? null,
       familyNumber: row.familyNumber ?? null,
-      regionLabel: formatRegionLabel(row.resident.regionId, row.dusun, row.rw, row.rt),
+      regionLabel:
+        row.joinedRegionId === null
+          ? null
+          : formatRegionLabel(row.resident.regionId, row.dusun, row.rw, row.rt),
     })),
     total,
     page,
@@ -294,10 +304,7 @@ export async function getPendudukDetailById(villageId: number, id: number) {
       citizenship: citizenships,
     })
     .from(residents)
-    .leftJoin(
-      families,
-      and(eq(residents.familyId, families.id), eq(families.villageId, villageId)),
-    )
+    .leftJoin(families, and(eq(residents.familyId, families.id), eq(families.villageId, villageId)))
     .leftJoin(regions, and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)))
     .leftJoin(religions, eq(residents.religionId, religions.id))
     .leftJoin(educations, eq(residents.educationId, educations.id))
@@ -396,10 +403,7 @@ export async function getPendudukSuratData(
     .from(residents)
     .leftJoin(religions, eq(residents.religionId, religions.id))
     .leftJoin(occupations, eq(residents.occupationId, occupations.id))
-    .leftJoin(
-      families,
-      and(eq(residents.familyId, families.id), eq(families.villageId, villageId)),
-    )
+    .leftJoin(families, and(eq(residents.familyId, families.id), eq(families.villageId, villageId)))
     .where(and(eq(residents.villageId, villageId), eq(residents.id, id)))
     .limit(1);
   if (!row) return null;
@@ -567,7 +571,5 @@ export async function updatePenduduk(
 }
 
 export async function deletePenduduk(villageId: number, id: number): Promise<void> {
-  await db
-    .delete(residents)
-    .where(and(eq(residents.id, id), eq(residents.villageId, villageId)));
+  await db.delete(residents).where(and(eq(residents.id, id), eq(residents.villageId, villageId)));
 }
