@@ -54,7 +54,6 @@ export async function POST(request: Request) {
   try {
     rawBody = await bacaTeksTerbatas(request, BATAS_BODY);
   } catch (error) {
-    console.error("Email webhook body read failed:", error);
     if (error instanceof BodyLimitError) {
       return NextResponse.json({ error: "Payload terlalu besar." }, { status: 413 });
     }
@@ -74,7 +73,7 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.json({ error: "Payload JSON tidak valid." }, { status: 400 });
   }
-  const parsed = pesanEmailMasukSchema.safeParse(body);
+  const parsed = pesanEmailMasukSchema.omit({ token: true }).safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Payload email tidak valid." }, { status: 400 });
   }
