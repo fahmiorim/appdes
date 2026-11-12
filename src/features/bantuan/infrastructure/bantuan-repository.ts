@@ -118,10 +118,7 @@ export async function listBantuanDiterimaWarga(
     .from(bantuanPeserta)
     .innerJoin(
       bantuanProgram,
-      and(
-        eq(bantuanProgram.id, bantuanPeserta.programId),
-        eq(bantuanProgram.villageId, villageId),
-      ),
+      and(eq(bantuanProgram.id, bantuanPeserta.programId), eq(bantuanProgram.villageId, villageId)),
     )
     .innerJoin(residents, and(eq(residents.id, residentId), eq(residents.villageId, villageId)))
     .leftJoin(
@@ -256,14 +253,11 @@ async function listWilayahCounts(
         regionId: regions.id,
       })
       .from(bantuanPeserta)
-      .innerJoin(
-        residents,
-        and(eq(bantuanPeserta.residentId, residents.id), eq(residents.villageId, villageId)),
-      )
-      .leftJoin(
-        regions,
-        and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+    .innerJoin(
+      residents,
+      and(eq(bantuanPeserta.residentId, residents.id), eq(residents.villageId, villageId)),
+    )
+      .leftJoin(regions, and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(and(...filters)),
     db
       .select({
@@ -275,10 +269,7 @@ async function listWilayahCounts(
         families,
         and(eq(bantuanPeserta.familyId, families.id), eq(families.villageId, villageId)),
       )
-      .leftJoin(
-        regions,
-        and(eq(families.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+      .leftJoin(regions, and(eq(families.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(and(...filters)),
     db
       .select({
@@ -290,10 +281,7 @@ async function listWilayahCounts(
         rumahTangga,
         and(eq(bantuanPeserta.rtmId, rumahTangga.id), eq(rumahTangga.villageId, villageId)),
       )
-      .leftJoin(
-        regions,
-        and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+      .leftJoin(regions, and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(and(...filters)),
     // Wilayah kelompok = domisili anggotanya.
     db
@@ -317,10 +305,7 @@ async function listWilayahCounts(
         residents,
         and(eq(kelompokAnggota.residentId, residents.id), eq(residents.villageId, villageId)),
       )
-      .leftJoin(
-        regions,
-        and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+      .leftJoin(regions, and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(and(...filters)),
   ]);
 
@@ -500,10 +485,7 @@ export async function listPesertaProgram(
       .from(bantuanPeserta)
       .innerJoin(
         bantuanProgram,
-        and(
-          eq(bantuanProgram.id, bantuanPeserta.programId),
-          eq(bantuanProgram.villageId, villageId),
-        ),
+        and(eq(bantuanProgram.id, bantuanPeserta.programId), eq(bantuanProgram.villageId, villageId)),
       )
       .innerJoin(
         families,
@@ -529,10 +511,7 @@ export async function listPesertaProgram(
       .from(bantuanPeserta)
       .innerJoin(
         bantuanProgram,
-        and(
-          eq(bantuanProgram.id, bantuanPeserta.programId),
-          eq(bantuanProgram.villageId, villageId),
-        ),
+        and(eq(bantuanProgram.id, bantuanPeserta.programId), eq(bantuanProgram.villageId, villageId)),
       )
       .innerJoin(
         rumahTangga,
@@ -556,10 +535,7 @@ export async function listPesertaProgram(
       .from(bantuanPeserta)
       .innerJoin(
         bantuanProgram,
-        and(
-          eq(bantuanProgram.id, bantuanPeserta.programId),
-          eq(bantuanProgram.villageId, villageId),
-        ),
+        and(eq(bantuanProgram.id, bantuanPeserta.programId), eq(bantuanProgram.villageId, villageId)),
       )
       .innerJoin(
         kelompok,
@@ -574,10 +550,7 @@ export async function listPesertaProgram(
     .from(bantuanPeserta)
       .innerJoin(
         bantuanProgram,
-        and(
-          eq(bantuanProgram.id, bantuanPeserta.programId),
-          eq(bantuanProgram.villageId, villageId),
-        ),
+        and(eq(bantuanProgram.id, bantuanPeserta.programId), eq(bantuanProgram.villageId, villageId)),
       )
     .innerJoin(
         residents,
@@ -621,19 +594,13 @@ export async function listSebaranWilayah(
       .from(bantuanPeserta)
       .innerJoin(
         bantuanProgram,
-        and(
-          eq(bantuanProgram.id, bantuanPeserta.programId),
-          eq(bantuanProgram.villageId, villageId),
-        ),
+        and(eq(bantuanProgram.id, bantuanPeserta.programId), eq(bantuanProgram.villageId, villageId)),
       )
       .innerJoin(
         families,
         and(eq(bantuanPeserta.familyId, families.id), eq(families.villageId, villageId)),
       )
-      .leftJoin(
-        regions,
-        and(eq(families.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+      .leftJoin(regions, and(eq(families.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(and(...filters))
       .groupBy(regions.id, regions.dusun, regions.rw, regions.rt);
   } else if (program.sasaran === SASARAN_RUMAH_TANGGA) {
@@ -642,19 +609,13 @@ export async function listSebaranWilayah(
       .from(bantuanPeserta)
       .innerJoin(
         bantuanProgram,
-        and(
-          eq(bantuanProgram.id, bantuanPeserta.programId),
-          eq(bantuanProgram.villageId, villageId),
-        ),
+        and(eq(bantuanProgram.id, bantuanPeserta.programId), eq(bantuanProgram.villageId, villageId)),
       )
       .innerJoin(
         rumahTangga,
         and(eq(bantuanPeserta.rtmId, rumahTangga.id), eq(rumahTangga.villageId, villageId)),
       )
-      .leftJoin(
-        regions,
-        and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+      .leftJoin(regions, and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(and(...filters))
       .groupBy(regions.id, regions.dusun, regions.rw, regions.rt);
   } else if (program.sasaran === SASARAN_KELOMPOK) {
@@ -664,10 +625,7 @@ export async function listSebaranWilayah(
       .from(bantuanPeserta)
       .innerJoin(
         bantuanProgram,
-        and(
-          eq(bantuanProgram.id, bantuanPeserta.programId),
-          eq(bantuanProgram.villageId, villageId),
-        ),
+        and(eq(bantuanProgram.id, bantuanPeserta.programId), eq(bantuanProgram.villageId, villageId)),
       )
       .innerJoin(
         kelompokAnggota,
@@ -684,10 +642,7 @@ export async function listSebaranWilayah(
         residents,
         and(eq(kelompokAnggota.residentId, residents.id), eq(residents.villageId, villageId)),
       )
-      .leftJoin(
-        regions,
-        and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+      .leftJoin(regions, and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(and(...filters))
       .groupBy(regions.id, regions.dusun, regions.rw, regions.rt);
   } else {
@@ -696,19 +651,13 @@ export async function listSebaranWilayah(
       .from(bantuanPeserta)
       .innerJoin(
         bantuanProgram,
-        and(
-          eq(bantuanProgram.id, bantuanPeserta.programId),
-          eq(bantuanProgram.villageId, villageId),
-        ),
+        and(eq(bantuanProgram.id, bantuanPeserta.programId), eq(bantuanProgram.villageId, villageId)),
       )
-      .innerJoin(
-        residents,
-        and(eq(bantuanPeserta.residentId, residents.id), eq(residents.villageId, villageId)),
-      )
-      .leftJoin(
-        regions,
-        and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+    .innerJoin(
+      residents,
+      and(eq(bantuanPeserta.residentId, residents.id), eq(residents.villageId, villageId)),
+    )
+      .leftJoin(regions, and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(and(...filters))
       .groupBy(regions.id, regions.dusun, regions.rw, regions.rt);
   }
@@ -781,10 +730,7 @@ export async function listRumahTanggaSasaran(
       dusun: regions.dusun,
     })
     .from(rumahTangga)
-    .leftJoin(
-        regions,
-        and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+    .leftJoin(regions, and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)))
     .where(eq(rumahTangga.villageId, villageId))
     .orderBy(asc(rumahTangga.number));
 
@@ -905,10 +851,7 @@ async function listTakenIds(
     .from(bantuanPeserta)
     .innerJoin(
       bantuanProgram,
-      and(
-        eq(bantuanProgram.id, bantuanPeserta.programId),
-        eq(bantuanProgram.villageId, villageId),
-      ),
+      and(eq(bantuanProgram.id, bantuanPeserta.programId), eq(bantuanProgram.villageId, villageId)),
     )
     .where(
       and(
@@ -951,10 +894,7 @@ export async function findPendudukSasaran(
       rt: regions.rt,
     })
     .from(residents)
-    .leftJoin(
-        regions,
-        and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+    .leftJoin(regions, and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)))
     .where(and(eq(residents.villageId, villageId), eq(residents.id, residentId)))
     .limit(1);
 
