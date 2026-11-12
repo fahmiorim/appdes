@@ -1,7 +1,6 @@
 import "server-only";
 
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
-import { requireUser } from "@/lib/dal";
 import { GRUP_AKSES_RESOURCE, type RoleFormInput } from "@/features/rbac/domain/grup";
 import { fromCrudPermissions, toCrudPermissions } from "@/features/rbac/domain/permission";
 import {
@@ -14,7 +13,7 @@ import {
   setRolePermissions,
   updateRole,
 } from "@/features/rbac/infrastructure/rbac-repository";
-import { requirePermission } from "@/lib/dal";
+import { requirePermission, requireUser } from "@/lib/dal";
 import { conflict, notFound } from "@/lib/errors";
 
 /** Pastikan role yang diakses berada pada desa yang sama. */
