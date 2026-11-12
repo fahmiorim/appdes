@@ -46,7 +46,10 @@ export async function getRoleDetail(id: number) {
 
   const role = await getScopedRole(id, villageId);
 
-  const [modules, levels] = await Promise.all([listModules(villageId), listLevelsByRole(id, villageId)]);
+  const [modules, levels] = await Promise.all([
+    listModules(villageId),
+    listLevelsByRole(id, villageId),
+  ]);
 
   const permissions = modules.map((m) => {
     const level = levels.get(m.id) ?? null;
