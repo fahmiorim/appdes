@@ -58,7 +58,7 @@ describe("saveRolePermissions", () => {
 
     await saveRolePermissions(2, [izinBaca]);
 
-    expect(repo.setRolePermissions).toHaveBeenCalledWith(2, [{ moduleId: 1, access: "read" }]);
+    expect(repo.setRolePermissions).toHaveBeenCalledWith(7, 2, [{ moduleId: 1, access: "read" }]);
   });
 
   it("menolak grup desa lain sebelum mengubah izin", async () => {

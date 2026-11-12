@@ -254,7 +254,7 @@ export async function setujuiMutasiData(id: number) {
   const step = nextMutasiStep(mutasi);
   if (!step) throw conflict("Mutasi sudah selesai diverifikasi.");
 
-  const role = user.roleId === null ? null : await findRoleById(user.roleId);
+  const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
   if (!roleCanApproveMutasiStep(step, role?.slug ?? null, user.permissions.isSuperadmin)) {
     throw forbidden(`Tahap ${MUTASI_STEP_LABELS[step]} bukan wewenang role Anda.`);
   }
@@ -278,7 +278,7 @@ export async function tolakMutasiData(id: number, catatanPenolakan: string) {
   const step = nextMutasiStep(mutasi);
   if (!step) throw conflict("Mutasi sudah selesai diverifikasi.");
 
-  const role = user.roleId === null ? null : await findRoleById(user.roleId);
+  const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
   if (!roleCanApproveMutasiStep(step, role?.slug ?? null, user.permissions.isSuperadmin)) {
     throw forbidden(`Tahap ${MUTASI_STEP_LABELS[step]} bukan wewenang role Anda.`);
   }
@@ -302,7 +302,7 @@ export async function getMutasiPageData(inventarisId?: number) {
     satuan: item.satuan,
   }));
 
-  const role = user.roleId === null ? null : await findRoleById(user.roleId);
+  const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
   const approverSteps = MUTASI_STEPS.filter((step) =>
     roleCanApproveMutasiStep(step, role?.slug ?? null, user.permissions.isSuperadmin),
   );

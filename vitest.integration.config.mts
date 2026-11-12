@@ -41,6 +41,7 @@ export default defineConfig({
       "src/features/pesan-warga/integrasi-pesan-warga.test.ts",
       "src/features/rumah-tangga/infrastructure/rumah-tangga-tenant-isolation.integration.test.ts",
       "src/features/statistik/infrastructure/statistik-tenant-isolation.integration.test.ts",
+      "src/features/rbac/infrastructure/rbac-tenant-isolation.integration.test.ts",
       "src/features/surat/infrastructure/penomoran-archive.integration.test.ts",
     ],
     setupFiles: ["./src/testing/setup-integration.ts"],
