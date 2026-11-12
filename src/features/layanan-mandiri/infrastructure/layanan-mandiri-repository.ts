@@ -19,7 +19,7 @@ import {
   type SyaratSuratWarga,
 } from "@/features/layanan-mandiri/domain/layanan-mandiri";
 import { parseSyaratIds } from "@/features/surat/domain/isian";
-import { conflict } from "@/lib/errors";
+import { conflict, notFound } from "@/lib/errors";
 
 export async function listSuratMandiri(villageId: number) {
   return db
@@ -113,12 +113,25 @@ export async function listPermohonanWarga(villageId: number, residentId: number)
       verificationToken: letters.verificationToken,
     })
     .from(permohonanSurat)
-    .leftJoin(letterTypes, eq(permohonanSurat.letterTypeId, letterTypes.id))
-    .leftJoin(letters, eq(permohonanSurat.letterId, letters.id))
+    .leftJoin(
+      letterTypes,
+      and(eq(permohonanSurat.letterTypeId, letterTypes.id), eq(letterTypes.villageId, villageId)),
+    )
+    .leftJoin(letters, and(eq(permohonanSurat.letterId, letters.id), eq(letters.villageId, villageId)))
     .where(
       and(eq(permohonanSurat.villageId, villageId), eq(permohonanSurat.residentId, residentId)),
     )
     .orderBy(desc(permohonanSurat.createdAt));
+}
+
+/** Penduduk berdasarkan ID dan tenant; dipakai untuk validasi identitas kiosk/session. */
+export async function findPendudukById(villageId: number, residentId: number) {
+  const [row] = await db
+    .select({ id: residents.id })
+    .from(residents)
+    .where(and(eq(residents.villageId, villageId), eq(residents.id, residentId)))
+    .limit(1);
+  return row ?? null;
 }
 
 /** Penduduk desa berdasarkan NIK. */
@@ -211,9 +224,15 @@ export async function listPermohonan(villageId: number) {
       letterNumber: letters.number,
     })
     .from(permohonanSurat)
-    .leftJoin(letterTypes, eq(permohonanSurat.letterTypeId, letterTypes.id))
-    .leftJoin(residents, eq(permohonanSurat.residentId, residents.id))
-    .leftJoin(letters, eq(permohonanSurat.letterId, letters.id))
+    .leftJoin(
+      letterTypes,
+      and(eq(permohonanSurat.letterTypeId, letterTypes.id), eq(letterTypes.villageId, villageId)),
+    )
+    .leftJoin(
+      residents,
+      and(eq(permohonanSurat.residentId, residents.id), eq(residents.villageId, villageId)),
+    )
+    .leftJoin(letters, and(eq(permohonanSurat.letterId, letters.id), eq(letters.villageId, villageId)))
     .where(eq(permohonanSurat.villageId, villageId))
     .orderBy(desc(permohonanSurat.createdAt));
 }
@@ -228,21 +247,45 @@ export async function buatPermohonan(data: {
   syarat?: string;
   noAntrian?: string;
 }) {
-  const [row] = await db
-    .insert(permohonanSurat)
-    .values({
-      villageId: data.villageId,
-      residentId: data.residentId,
-      letterTypeId: data.letterTypeId,
-      isianForm: data.isianForm || null,
-      noHpAktif: data.noHpAktif || null,
-      keterangan: data.keterangan || null,
-      syarat: data.syarat || null,
-      status: 1,
-      noAntrian: data.noAntrian || `AN-${Date.now()}`,
-    })
-    .$returningId();
-  return row?.id;
+  // Pertahanan terakhir di boundary persistence: kedua foreign reference
+  // harus benar-benar dimiliki tenant yang sama sebelum row dibuat.
+  return db.transaction(async (tx) => {
+    const [resident] = await tx
+      .select({ id: residents.id })
+      .from(residents)
+      .where(and(eq(residents.id, data.residentId), eq(residents.villageId, data.villageId)))
+      .limit(1);
+    if (!resident) throw notFound("Penduduk tidak ditemukan pada desa ini.");
+
+    const [letterType] = await tx
+      .select({ id: letterTypes.id })
+      .from(letterTypes)
+      .where(
+        and(
+          eq(letterTypes.id, data.letterTypeId),
+          eq(letterTypes.villageId, data.villageId),
+          eq(letterTypes.isActive, true),
+        ),
+      )
+      .limit(1);
+    if (!letterType) throw notFound("Jenis surat tidak ditemukan atau sedang tidak aktif.");
+
+    const [row] = await tx
+      .insert(permohonanSurat)
+      .values({
+        villageId: data.villageId,
+        residentId: data.residentId,
+        letterTypeId: data.letterTypeId,
+        isianForm: data.isianForm || null,
+        noHpAktif: data.noHpAktif || null,
+        keterangan: data.keterangan || null,
+        syarat: data.syarat || null,
+        status: 1,
+        noAntrian: data.noAntrian || `AN-${Date.now()}`,
+      })
+      .$returningId();
+    return row?.id;
+  });
 }
 
 function validStatus(status: number): PermohonanStatus {
@@ -304,20 +347,29 @@ export async function tautkanSuratPermohonan(
   id: number,
   letterId: number,
 ): Promise<void> {
-  const [result] = await db
-    .update(permohonanSurat)
-    .set({ letterId, status: 2 })
-    .where(
-      and(
-        eq(permohonanSurat.villageId, villageId),
-        eq(permohonanSurat.id, id),
-        eq(permohonanSurat.status, 1),
-      ),
-    );
+  await db.transaction(async (tx) => {
+    const [letter] = await tx
+      .select({ id: letters.id })
+      .from(letters)
+      .where(and(eq(letters.id, letterId), eq(letters.villageId, villageId)))
+      .limit(1);
+    if (!letter) throw notFound("Surat dinas tidak ditemukan pada desa ini.");
 
-  if (result.affectedRows === 0) {
-    throw conflict("Permohonan tidak ditemukan atau sudah diproses.");
-  }
+    const [result] = await tx
+      .update(permohonanSurat)
+      .set({ letterId, status: 2 })
+      .where(
+        and(
+          eq(permohonanSurat.villageId, villageId),
+          eq(permohonanSurat.id, id),
+          eq(permohonanSurat.status, 1),
+        ),
+      );
+
+    if (result.affectedRows === 0) {
+      throw conflict("Permohonan tidak ditemukan atau sudah diproses.");
+    }
+  });
 }
 
 /** Batalkan permohonan oleh pemilik (warga). Hanya diperbolehkan sebelum diambil. */
