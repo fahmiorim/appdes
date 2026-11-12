@@ -301,27 +301,24 @@ afterAll(async () => {
 });
 
 describe("B2 DTKS daftar dan count", () => {
-  it(
-    "hanya menghitung DTKS desa sendiri dan menyembunyikan identitas RTM/KK desa lain",
-    async () => {
-      const { desaA, dtksA, dtksLegacyA, dusunB } = dataUji();
+  it("hanya menghitung DTKS desa sendiri dan menyembunyikan identitas RTM/KK desa lain", async () => {
+    const { desaA, dtksA, dtksLegacyA, dusunB } = dataUji();
 
-      const hasil = await listDtks(desaA, params());
+    const hasil = await listDtks(desaA, params());
 
-      expect(hasil.total).toBe(2);
-      expect(hasil.rows.map((row) => row.id).sort()).toEqual([dtksA, dtksLegacyA].sort());
-      expect(hasil.rows.some((row) => row.rtmNumber === `RB${RUN}`)).toBe(false);
-      expect(hasil.rows.some((row) => row.keluargaNumber === `KB${RUN}`)).toBe(false);
-      expect(hasil.rows.some((row) => row.dusun === dusunB)).toBe(false);
-      expect(hasil.rows.every((row) => row.villageId === desaA)).toBe(true);
+    expect(hasil.total).toBe(2);
+    expect(hasil.rows.map((row) => row.id).sort()).toEqual([dtksA, dtksLegacyA].sort());
+    expect(hasil.rows.some((row) => row.rtmNumber === `RB${RUN}`)).toBe(false);
+    expect(hasil.rows.some((row) => row.keluargaNumber === `KB${RUN}`)).toBe(false);
+    expect(hasil.rows.some((row) => row.dusun === dusunB)).toBe(false);
+    expect(hasil.rows.every((row) => row.villageId === desaA)).toBe(true);
 
-      const legacy = hasil.rows.find((row) => row.id === dtksLegacyA);
-      expect(legacy?.rtmNumber).toBe("-");
-      expect(legacy?.keluargaNumber).toBeNull();
-      expect(legacy?.dusun).toBeNull();
-      expect(legacy?.anggotaCount).toBe(0);
-    },
-  );
+    const legacy = hasil.rows.find((row) => row.id === dtksLegacyA);
+    expect(legacy?.rtmNumber).toBe("-");
+    expect(legacy?.keluargaNumber).toBeNull();
+    expect(legacy?.dusun).toBeNull();
+    expect(legacy?.anggotaCount).toBe(0);
+  });
 
   it("tidak mengembalikan DTKS desa lain saat daftar diminta dari desa B", async () => {
     const { desaB, dtksB } = dataUji();
