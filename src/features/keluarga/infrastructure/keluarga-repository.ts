@@ -123,10 +123,7 @@ export async function listKeluarga(params: ListKeluargaParams): Promise<Keluarga
           eq(head.familyRelationId, HEAD_OF_FAMILY_RELATION_ID),
         ),
       )
-      .leftJoin(
-        regions,
-        and(eq(families.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+      .leftJoin(regions, and(eq(families.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(where)
       .orderBy(asc(families.number), asc(families.id))
       .limit(pageSize)
@@ -427,10 +424,7 @@ export async function findKeluargaDetail(
       rt: regions.rt,
     })
     .from(families)
-    .leftJoin(
-        regions,
-        and(eq(families.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+    .leftJoin(regions, and(eq(families.regionId, regions.id), eq(regions.villageId, villageId)))
     .where(and(eq(families.villageId, villageId), eq(families.id, id)))
     .limit(1);
 
@@ -508,10 +502,7 @@ export async function listLogAnggotaKk(
     .from(familyMemberLogs)
     .innerJoin(
       families,
-      and(
-        eq(families.id, familyMemberLogs.familyId),
-        eq(families.villageId, villageId),
-      ),
+      and(eq(families.id, familyMemberLogs.familyId), eq(families.villageId, villageId)),
     )
     .leftJoin(
       users,
