@@ -18,7 +18,10 @@ export async function GET(request: Request) {
     const nik = url.searchParams.get("nik")?.trim();
     if (!nik || !/^\\d{16}$/.test(nik)) {
       return privateNoStore(
-        NextResponse.json({ ok: false, message: "NIK harus 16 digit." }, { status: 400 }),
+        NextResponse.json(
+          { ok: false, message: "NIK harus 16 digit." },
+          { status: 400 },
+        ),
       );
     }
 
@@ -26,7 +29,10 @@ export async function GET(request: Request) {
 
     if (!matched) {
       return privateNoStore(
-        NextResponse.json({ ok: false, message: "NIK tidak ditemukan." }, { status: 404 }),
+        NextResponse.json(
+          { ok: false, message: "NIK tidak ditemukan." },
+          { status: 404 },
+        ),
       );
     }
 
@@ -42,7 +48,10 @@ export async function GET(request: Request) {
     }
     console.error("Gagal lookup NIK:", error);
     return privateNoStore(
-      NextResponse.json({ ok: false, message: "Server error" }, { status: 500 }),
+      NextResponse.json(
+        { ok: false, message: "Server error" },
+        { status: 500 },
+      ),
     );
   }
 }
