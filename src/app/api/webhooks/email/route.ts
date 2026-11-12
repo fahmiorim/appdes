@@ -12,7 +12,12 @@ const BATAS_BODY = 32_768;
 const TOLERANSI_WAKTU_DETIK = 300;
 const JENDELA_REPLAY_MS = 10 * 60_000;
 
-function signatureSah(rawBody: string, timestamp: string, eventId: string, signature: string): boolean {
+function signatureSah(
+  rawBody: string,
+  timestamp: string,
+  eventId: string,
+  signature: string,
+): boolean {
   if (!/^\d{10}$/.test(timestamp) || !/^[a-f0-9]{64}$/i.test(signature)) return false;
 
   const waktu = Number(timestamp);
@@ -53,7 +58,10 @@ export async function POST(request: Request) {
   }
 
   if (!signatureSah(rawBody, timestamp, eventId, signature)) {
-    return NextResponse.json({ error: "Signature webhook tidak valid atau kedaluwarsa." }, { status: 401 });
+    return NextResponse.json(
+      { error: "Signature webhook tidak valid atau kedaluwarsa." },
+      { status: 401 },
+    );
   }
 
   let body: unknown;
@@ -74,7 +82,10 @@ export async function POST(request: Request) {
     jendelaMs: JENDELA_REPLAY_MS,
   });
   if (replay.dibatasi) {
-    return NextResponse.json({ error: "Event webhook sudah pernah diproses." }, { status: 409 });
+    return NextResponse.json(
+      { error: "Event webhook sudah pernah diproses." },
+      { status: 409 },
+    );
   }
 
   let desa;
