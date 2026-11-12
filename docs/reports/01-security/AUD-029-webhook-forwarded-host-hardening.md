@@ -23,11 +23,11 @@ Remediasi pada branch ini menambahkan autentikasi HMAC-SHA256 bertimestamp, dedu
 **Sebelum:** token rahasia statis dikirim sebagai properti JSON `token`. Signature tidak mencakup isi payload; request valid yang tertangkap dapat dikirim ulang tanpa batas.
 
 **Sesudah:**
-- Signature HMAC-SHA256 dihitung dari `<timestamp>.<event-id>.<raw-body>` dengan `EMAIL_WEBHOOK_TOKEN` sebagai secret.
+- Signature HMAC-SHA256 dihitung dari `<timestamp>.<event-id>.<normalized-host>.<raw-body>` dengan `EMAIL_WEBHOOK_TOKEN` sebagai secret. Host dinormalisasi menjadi lowercase tanpa port dan trailing dot, sehingga signature tidak dapat dipindahkan ke tenant lain.
 - Header wajib: `X-Email-Webhook-Timestamp` (Unix detik), `X-Email-Webhook-Id` (8–128 karakter), dan `X-Email-Webhook-Signature` (64 karakter hex).
 - Timestamp dengan selisih lebih dari 5 menit ditolak.
 - Perbandingan signature memakai `timingSafeEqual`.
-- Event ID dibatasi satu kali per 10 menit melalui `batasiPermintaan`, yang menyimpan hash key dan timestamp dalam `rate_limit_entries` melalui transaksi dan row lock MySQL. Deduplikasi berlaku lintas instance; tidak diperlukan tabel/migration baru.
+- Pasangan host + event ID dibatasi satu kali per 10 menit melalui `batasiPermintaan`, yang menyimpan hash key dan timestamp dalam `rate_limit_entries` melalui transaksi dan row lock MySQL. Deduplikasi berlaku lintas instance per host; tidak diperlukan tabel/migration baru.
 - Signature diverifikasi sebelum parsing payload dan sebelum resolusi tenant / penyimpanan pesan.
 - Event duplikat mendapat HTTP 409; signature invalid/kedaluwarsa mendapat HTTP 401.
 
@@ -48,7 +48,8 @@ Remediasi pada branch ini menambahkan autentikasi HMAC-SHA256 bertimestamp, dedu
 Test route webhook mencakup:
 - signature tidak valid ditolak sebelum tenant lookup dan penyimpanan;
 - signature dengan timestamp lebih dari 5 menit ditolak;
-- event ID yang sudah pernah dipakai ditolak HTTP 409;
+- event ID yang sudah pernah dipakai pada host yang sama ditolak HTTP 409;
+- signature untuk host desa A ditolak ketika Host diubah menjadi desa B;
 - `X-Forwarded-Host` palsu diabaikan dan tenant diambil dari `Host`;
 - host yang tidak dikenal ditolak tanpa menyimpan pesan.
 
@@ -57,19 +58,19 @@ Test route webhook mencakup:
 **Integrasi provider email wajib diperbarui sebelum perubahan ini di-deploy.** Provider tidak lagi mengirim `token` pada body. Provider harus:
 1. membuat event ID unik untuk setiap event;
 2. mengirim timestamp Unix dalam detik;
-3. menghitung HMAC-SHA256 dengan secret `EMAIL_WEBHOOK_TOKEN` atas string `timestamp.event-id.raw-body`;
+3. menormalisasi Host menjadi lowercase tanpa port dan trailing dot, lalu menghitung HMAC-SHA256 dengan secret `EMAIL_WEBHOOK_TOKEN` atas string `timestamp.event-id.normalized-host.raw-body`;
 4. mengirim hasil hex pada header `X-Email-Webhook-Signature`.
 
 Reverse proxy harus meneruskan header `Host` asli domain tenant yang telah divalidasi. Jangan mengandalkan `X-Forwarded-Host` untuk pemilihan tenant. Jika konfigurasi proxy saat ini mengganti Host menjadi hostname upstream, perbaiki konfigurasi proxy terlebih dahulu dan uji host tenant pada staging.
 
-Event ID disimpan melalui tabel `rate_limit_entries` selama jendela 10 menit. Pengiriman ulang event ID yang sama dalam jendela tersebut akan menerima 409; provider hanya boleh retry menggunakan event ID yang sama jika sebelumnya belum diterima, dan harus memperlakukan 409 sebagai duplicate yang sudah diproses.
+Event ID disimpan melalui tabel `rate_limit_entries` selama jendela 10 menit. Pengiriman ulang pasangan Host + event ID yang sama dalam jendela tersebut akan menerima 409. Catatan reliabilitas: event ID dicatat sebelum penyimpanan pesan; bila proses penyimpanan gagal setelah reservasi replay berhasil, retry dengan pasangan yang sama akan tertolak sampai jendela 10 menit berakhir. Untuk jaminan exactly-once yang atomik diperlukan penyimpanan event ID dalam transaksi yang sama dengan pesan (di luar cakupan perubahan tanpa schema).
 
 ## 5. Validasi dan batasan
 
 | Pemeriksaan | Status |
 |---|---|
 | Audit kode webhook / resolver host | PASS — temuan di atas terkonfirmasi |
-| Regression test route | PASS — 5 test route; termasuk signature invalid, timestamp kedaluwarsa, replay, Host vs forwarded host, dan unknown host |
+| Regression test route | Ditambah 1 test lintas-host; menunggu CI terbaru |
 | Typecheck | PASS |
 | Lint | PASS |
 | Format check (Prettier) | PASS |
@@ -81,7 +82,7 @@ Event ID disimpan melalui tabel `rate_limit_entries` selama jendela 10 menit. Pe
 | Konfigurasi provider webhook aktual | NOT TESTED — provider perlu migrasi kontrak |
 | Merge / deploy | Tidak dilakukan |
 
-CI GitHub Actions run [43306744570](https://github.com/fahmiorim/appdes/actions/runs/43306744570) pada commit `66e818d742d79171e5efa1c1faeaabfbd3a0677a` selesai dengan status **success** untuk seluruh job (quality/unit, integration MySQL 8, dan ringkasan).
+CI GitHub Actions run [43306744570](https://github.com/fahmiorim/appdes/actions/runs/43306744570) pada commit `66e818d742d79171e5efa1c1faeaabfbd3a0677a` selesai dengan status **success** untuk seluruh job. Commit terbaru menambahkan pengikatan signature ke Host dan regression test lintas-host; CI untuk revisi tersebut harus lulus sebelum PR dinyatakan final.
 
 ## 6. Kesimpulan
 
