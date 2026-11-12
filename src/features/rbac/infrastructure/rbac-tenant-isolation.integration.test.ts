@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import mysql, { type ResultSetHeader } from "mysql2/promise";
-import { inArray } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
@@ -28,6 +28,7 @@ interface Fixture {
   moduleA: number;
   moduleB: number;
   globalAdmin: number;
+  globalAdminCreated: boolean;
 }
 
 let fixture: Fixture | null = null;
@@ -69,15 +70,26 @@ async function seedFixture(): Promise<Fixture> {
     .insert(roles)
     .values({ villageId: villageB, name: `Role B ${RUN}`, slug: `role-b-${RUN}` })
     .$returningId();
-  const [globalAdminRow] = await db
-    .insert(roles)
-    .values({
-      villageId: null,
-      name: `Administrator ${RUN}`,
-      slug: "administrator",
-      isSystem: true,
-    })
-    .$returningId();
+  const [existingGlobalAdmin] = await db
+    .select({ id: roles.id })
+    .from(roles)
+    .where(and(isNull(roles.villageId), eq(roles.slug, "administrator")))
+    .limit(1);
+  let globalAdmin = existingGlobalAdmin?.id ?? 0;
+  let globalAdminCreated = false;
+  if (!existingGlobalAdmin) {
+    const [globalAdminRow] = await db
+      .insert(roles)
+      .values({
+        villageId: null,
+        name: `Administrator ${RUN}`,
+        slug: "administrator",
+        isSystem: true,
+      })
+      .$returningId();
+    globalAdmin = pastiId(globalAdminRow, "global administrator");
+    globalAdminCreated = true;
+  }
 
   const [moduleARow] = await db
     .insert(modules)
@@ -90,7 +102,6 @@ async function seedFixture(): Promise<Fixture> {
 
   const roleA = pastiId(roleARow, "role A");
   const roleB = pastiId(roleBRow, "role B");
-  const globalAdmin = pastiId(globalAdminRow, "global administrator");
   const moduleA = pastiId(moduleARow, "module A");
   const moduleB = pastiId(moduleBRow, "module B");
 
@@ -105,7 +116,16 @@ async function seedFixture(): Promise<Fixture> {
     [roleA, moduleB],
   );
 
-  return { villageA, villageB, roleA, roleB, moduleA, moduleB, globalAdmin };
+  return {
+    villageA,
+    villageB,
+    roleA,
+    roleB,
+    moduleA,
+    moduleB,
+    globalAdmin,
+    globalAdminCreated,
+  };
 }
 
 beforeAll(async () => {
@@ -115,7 +135,9 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (!fixture) return;
-  const roleIds = [fixture.roleA, fixture.roleB, fixture.globalAdmin];
+  const roleIds = fixture.globalAdminCreated
+    ? [fixture.roleA, fixture.roleB, fixture.globalAdmin]
+    : [fixture.roleA, fixture.roleB];
   const moduleIds = [fixture.moduleA, fixture.moduleB];
   await db.delete(rolePermissions).where(inArray(rolePermissions.roleId, roleIds));
   await db.delete(roles).where(inArray(roles.id, roleIds));
