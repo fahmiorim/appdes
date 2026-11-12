@@ -52,18 +52,16 @@ const moduleColumns = {
 
 export async function findRoleById(
   roleId: number,
-  villageId?: number | null,
+  villageId: number | null,
 ): Promise<RoleRecord | null> {
   const tenantFilter =
-    villageId === undefined
-      ? undefined
-      : villageId === null
-        ? isNull(roles.villageId)
-        : or(eq(roles.villageId, villageId), isNull(roles.villageId));
+    villageId === null
+      ? isNull(roles.villageId)
+      : or(eq(roles.villageId, villageId), isNull(roles.villageId));
   const [row] = await db
     .select(roleColumns)
     .from(roles)
-    .where(tenantFilter ? and(eq(roles.id, roleId), tenantFilter) : eq(roles.id, roleId))
+    .where(and(eq(roles.id, roleId), tenantFilter))
     .limit(1);
   return row ?? null;
 }
@@ -122,25 +120,34 @@ export async function listRoles(villageId?: number): Promise<RoleRecord[]> {
     .orderBy(roles.createdAt, roles.name);
 }
 
-export async function getRoleBySlug(slug: string): Promise<RoleRecord | null> {
-  const [row] = await db.select(roleColumns).from(roles).where(eq(roles.slug, slug)).limit(1);
+export async function getRoleBySlug(
+  slug: string,
+  villageId: number | null,
+): Promise<RoleRecord | null> {
+  const tenantFilter =
+    villageId === null
+      ? isNull(roles.villageId)
+      : or(eq(roles.villageId, villageId), isNull(roles.villageId));
+  const [row] = await db
+    .select(roleColumns)
+    .from(roles)
+    .where(and(eq(roles.slug, slug), tenantFilter))
+    .limit(1);
   return row ?? null;
 }
 
 export async function getRoleById(
   id: number,
-  villageId?: number | null,
+  villageId: number | null,
 ): Promise<RoleRecord | null> {
   const tenantFilter =
-    villageId === undefined
-      ? undefined
-      : villageId === null
-        ? isNull(roles.villageId)
-        : or(eq(roles.villageId, villageId), isNull(roles.villageId));
+    villageId === null
+      ? isNull(roles.villageId)
+      : or(eq(roles.villageId, villageId), isNull(roles.villageId));
   const [row] = await db
     .select(roleColumns)
     .from(roles)
-    .where(tenantFilter ? and(eq(roles.id, id), tenantFilter) : eq(roles.id, id))
+    .where(and(eq(roles.id, id), tenantFilter))
     .limit(1);
   return row ?? null;
 }
