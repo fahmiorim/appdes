@@ -188,7 +188,7 @@ Dijalankan pada branch integrasi, database disposable
 | AUD gabungan | 3 file AUD dijalankan satu rangkaian | **PASS** — 37 test (10 + 15 + 12) |
 | AUD-003 mandiri (branch #3) | `penduduk-tenant-references.integration.test.ts` | **PASS** — 15 test |
 | AUD-007 mandiri (branch #5) | `riwayat-penduduk-tenant-isolation.integration.test.ts` | **PASS** — 12 test |
-| GitHub Actions / status check PR | — | **NOT TESTED** — `gh` tidak tersedia/terautentikasi di environment ini |
+| GitHub Actions pada head PR #3/#5/#7 | — | **PASS** — workflow CI completed success; job Integration test (MySQL 8) dan Unit test/quality check PASS. PR #8 dan branch integrasi tidak memiliki workflow run terdeteksi |
 | Production-scale test | — | **NOT TESTED** — dilarang/ tidak tersedia |
 
 Kegagalan yang benar-benar teramati sebelum perbaikan: kedua suite AUD gagal
@@ -237,7 +237,8 @@ pada database disposable, dan build. Jangan merge #8 sebelum #7.
 - [x] Laporan task diperbarui dengan catatan rekonsiliasi.
 - [x] Tidak ada secret/data pribadi dalam diff atau laporan.
 - [x] `main` tidak diubah; tidak ada merge/deploy/force push.
-- [ ] Status check CI GitHub diverifikasi (NOT TESTED — `gh` tidak tersedia).
+- [x] CI GitHub pada head PR #3, #5, dan #7 diverifikasi — workflow dan seluruh job utama PASS.
+- [ ] Workflow CI pada PR #8 dan branch integrasi belum tersedia/terdeteksi.
 - [ ] Reviewer menyetujui urutan integrasi.
 
 ## 13. Checklist sebelum production deployment
@@ -261,8 +262,9 @@ pada database disposable, dan build. Jangan merge #8 sebelum #7.
 - Pada saat laporan awal dibuat, environment Freebuff tidak memiliki akses `gh`,
   sehingga deskripsi/komentar PR belum diperbarui dan CI belum diverifikasi.
   Setelah review lanjutan melalui GitHub, deskripsi PR #3, #5, #7, dan #8 telah
-  diselaraskan dengan hasil integrasi. Status CI tetap NOT TESTED karena tidak
-  ada status check maupun workflow run yang terdeteksi pada commit terkait.
+  diselaraskan dengan hasil integrasi. Workflow CI pada head PR #3, #5, dan #7
+  terverifikasi PASS. PR #8 dan branch integrasi tidak memiliki workflow run
+  terdeteksi; hasil test lokal branch integrasi tetap dicatat pada bagian 9.
 - Pengujian memakai data sintetis kecil, bukan volume production.
 - Modul di luar diff keempat PR tidak diaudit menyeluruh; temuan F7 dicatat
   sebagai follow-up, bukan diklaim selesai.
