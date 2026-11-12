@@ -34,6 +34,11 @@ jobs:
       - name: Install dependency
         run: npm ci
 
+      - name: Diagnose Prettier output (temporary)
+        run: |
+          npx prettier --write src/features/statistik/infrastructure/statistik-repository.ts src/features/statistik/infrastructure/statistik-tenant-isolation.integration.test.ts
+          git --no-pager diff -- src/features/statistik/infrastructure/statistik-repository.ts src/features/statistik/infrastructure/statistik-tenant-isolation.integration.test.ts
+
       - name: Typecheck
         run: npm run typecheck
 
