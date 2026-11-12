@@ -204,31 +204,33 @@ describe("bantuan yang diterima warga (integrasi)", () => {
 
   it("tidak membaca referensi penduduk dan wilayah desa lain pada detail, sebaran, atau agregat", async () => {
     if (fixture === null) throw new Error("Fixture integrasi tidak siap.");
+    const current = fixture;
 
-    const program = await findBantuanById(fixture.villageA, fixture.crossTenantReferenceProgramId);
+    const program = await findBantuanById(current.villageA, current.crossTenantReferenceProgramId);
     expect(program).not.toBeNull();
     if (!program) throw new Error("Program uji tidak ditemukan.");
 
-    const peserta = await listPesertaProgram(fixture.villageA, program);
+    const peserta = await listPesertaProgram(current.villageA, program);
     expect(peserta).toEqual([]);
 
-    const sebaran = await listSebaranWilayah(fixture.villageA, program);
+    const sebaran = await listSebaranWilayah(current.villageA, program);
     expect(sebaran.some((row) => row.label.includes("Dusun Lintas"))).toBe(false);
 
     const daftar = await listBantuan({
-      villageId: fixture.villageA,
+      villageId: current.villageA,
       search: "",
       page: 1,
       pageSize: 50,
     });
-    const ringkasan = daftar.rows.find((row) => row.id === fixture.crossTenantReferenceProgramId);
+    const ringkasan = daftar.rows.find((row) => row.id === current.crossTenantReferenceProgramId);
     expect(ringkasan?.wilayahCount).toBe(0);
   });
 
   it("membatasi update dan delete program berdasarkan desa pada repository", async () => {
     if (fixture === null) throw new Error("Fixture integrasi tidak siap.");
+    const current = fixture;
 
-    const before = await findBantuanById(fixture.villageA, fixture.crossTenantReferenceProgramId);
+    const before = await findBantuanById(current.villageA, current.crossTenantReferenceProgramId);
     expect(before).not.toBeNull();
 
     const input: BantuanFormInput = {
@@ -241,14 +243,14 @@ describe("bantuan yang diterima warga (integrasi)", () => {
     };
 
     await updateBantuan(
-      fixture.villageB,
-      fixture.crossTenantReferenceProgramId,
+      current.villageB,
+      current.crossTenantReferenceProgramId,
       `tenant-bypass-${RUN}`,
       input,
     );
-    await deleteBantuan(fixture.villageB, fixture.crossTenantReferenceProgramId);
+    await deleteBantuan(current.villageB, current.crossTenantReferenceProgramId);
 
-    const after = await findBantuanById(fixture.villageA, fixture.crossTenantReferenceProgramId);
+    const after = await findBantuanById(current.villageA, current.crossTenantReferenceProgramId);
     expect(after?.name).toBe(before?.name);
     expect(after?.slug).toBe(before?.slug);
   });
