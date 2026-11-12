@@ -42,7 +42,12 @@ export const computeEffectivePermissions = cache(
 
     if (!role) return EMPTY_PERMISSIONS;
 
-    if (role.slug === SUPERADMIN_SLUG && role.isSystem && role.villageId === null && villageId === null) {
+    if (
+      role.slug === SUPERADMIN_SLUG &&
+      role.isSystem &&
+      role.villageId === null &&
+      villageId === null
+    ) {
       return { isSuperadmin: true, levelByResource: new Map() };
     }
 
