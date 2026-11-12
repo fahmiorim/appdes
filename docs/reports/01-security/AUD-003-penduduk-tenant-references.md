@@ -151,3 +151,21 @@ Catatan validasi:
 Foreign reference penduduk pada create/update, jalur riwayat kelahiran/kedatangan, daftar/count penduduk, laporan kependudukan, dan DPT telah dibatasi tenant serta dilindungi regression test dua tenant. Seluruh pemeriksaan yang diminta berstatus PASS; build dan full integration suite belum dijalankan dan dilaporkan sebagai SKIPPED.
 
 Status: **siap review**. Belum siap merge atau production tanpa persetujuan maintainer.
+
+## Rekonsiliasi dengan AUD-002 (review integrasi)
+
+- Commit `a1cf097` mengganti seed baris legacy lintas desa pada test ini agar
+  tidak lagi bergantung pada insert yang kini ditolak composite FK AUD-002.
+  Baris tersebut disisipkan lewat koneksi terpisah dengan
+  `FOREIGN_KEY_CHECKS = 0`, lalu nilainya selalu dikembalikan di blok
+  `finally`. Assertion tidak diubah atau dilonggarkan.
+- Alasan: migration AUD-002 tidak melakukan backfill, sehingga data legacy
+  lintas desa tetap mungkin ada dan justru harus dibuktikan tidak bocor saat
+  dibaca. Tanpa penyesuaian ini, suite AUD-003 gagal pada tahap seed ketika
+  seluruh PR digabungkan.
+- Teardown test kini menghapus penduduk, KK, dan wilayah sebelum desa agar FK
+  composite `RESTRICT` tidak memblokir cleanup.
+- Validasi gabungan AUD-002 + AUD-003 + AUD-007 dijalankan pada branch
+  `task/AUD-002-003-007-integration`: seluruh 12 file integration (71 test)
+  PASS, demikian pula typecheck, lint, format, unit test, dan build. Rincian
+  ada di `docs/reports/01-security/TENANT-SECURITY-INTEGRATION-REVIEW.md`.

@@ -132,3 +132,22 @@ npx vitest run --config vitest.integration.config.mts \
 Seluruh JOIN `resident_mutations -> residents` yang membaca identitas penduduk telah dibatasi tenant, pencarian/pagination/count/ekspor konsisten, dan jalur tulis mutasi tidak lagi dapat menyimpan pasangan tenant-resident yang tidak konsisten. Regression test dua tenant lulus 12/12.
 
 Status: **siap review**. Belum siap merge atau production tanpa persetujuan maintainer.
+
+## Rekonsiliasi dengan AUD-002 (review integrasi)
+
+- Commit `7df8c62` mengganti seed mutasi legacy lintas tenant pada test ini agar
+  tidak lagi bergantung pada insert yang kini ditolak composite FK
+  `resident_mutations_resident_tenant_fk`. Baris tersebut disisipkan lewat
+  koneksi terpisah dengan `FOREIGN_KEY_CHECKS = 0`, lalu nilainya selalu
+  dikembalikan di blok `finally`. Assertion tidak diubah atau dilonggarkan.
+- Alasan: migration AUD-002 tidak melakukan backfill, sehingga mutasi legacy
+  lintas desa tetap mungkin ada dan harus dibuktikan tidak membocorkan nama/NIK
+  penduduk desa lain.
+- Teardown test kini menghapus mutasi dan penduduk sebelum desa agar FK
+  composite `RESTRICT` tidak memblokir cleanup.
+- Dengan AUD-002 terpasang, tulisan mutasi lintas tenant juga ditolak database;
+  pengujian application-layer tetap dipertahankan sebagai pertahanan berlapis.
+- Validasi gabungan AUD-002 + AUD-003 + AUD-007 dijalankan pada branch
+  `task/AUD-002-003-007-integration`: seluruh 12 file integration (71 test)
+  PASS, demikian pula typecheck, lint, format, unit test, dan build. Rincian
+  ada di `docs/reports/01-security/TENANT-SECURITY-INTEGRATION-REVIEW.md`.
