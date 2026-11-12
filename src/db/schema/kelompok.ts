@@ -1,5 +1,6 @@
 import {
   boolean,
+  foreignKey,
   index,
   int,
   mysqlTable,
@@ -82,6 +83,7 @@ export const kelompok = mysqlTable(
   (t) => [
     uniqueIndex("kelompok_village_slug_uq").on(t.villageId, t.slug),
     uniqueIndex("kelompok_village_type_code_uq").on(t.villageId, t.code),
+    uniqueIndex("kelompok_village_id_uq").on(t.villageId, t.id),
     index("kelompok_village_type_idx").on(t.villageId, t.type),
     index("kelompok_category_idx").on(t.categoryId),
   ],
