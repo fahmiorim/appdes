@@ -38,17 +38,17 @@ const EMPTY_PERMISSIONS: EffectivePermissions = {
  */
 export const computeEffectivePermissions = cache(
   async (roleId: number, villageId: number | null): Promise<EffectivePermissions> => {
-    const role = await findRoleById(roleId);
+    const role = await findRoleById(roleId, villageId);
 
     if (!role) return EMPTY_PERMISSIONS;
 
-    if (role.slug === SUPERADMIN_SLUG) {
+    if (role.slug === SUPERADMIN_SLUG && role.isSystem && role.villageId === null && villageId === null) {
       return { isSuperadmin: true, levelByResource: new Map() };
     }
 
     const [modules, levelById] = await Promise.all([
       listModules(villageId),
-      listLevelsByRole(roleId),
+      listLevelsByRole(roleId, villageId),
     ]);
 
     return {
