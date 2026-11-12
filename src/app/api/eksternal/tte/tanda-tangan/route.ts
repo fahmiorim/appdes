@@ -97,7 +97,10 @@ export async function POST(request: NextRequest) {
   });
 
   if (!hasil.ok) {
-    return jsonGalat(422, "Tanda tangan elektronik tidak dapat diproses.", hasil.alasan);
+    // Detail kegagalan (status HTTP provider, host, atau kode jaringan internal)
+    // tidak boleh keluar lewat API: cukup pesan generik untuk pemanggil.
+    console.warn(`TTE eksternal gagal untuk desa ${auth.apiKey.villageId}: ${hasil.alasan}`);
+    return jsonGalat(422, "Tanda tangan elektronik tidak dapat diproses.");
   }
 
   const filename = `tte-${nomor.replace(/[^a-zA-Z0-9._-]+/g, "-")}.pdf`;

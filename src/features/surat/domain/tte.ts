@@ -4,10 +4,20 @@
  * OpenSID memanggil server BSRE (`api/sign/pdf`) setelah verifikasi Kepala
  * Desa untuk menimpa berkas PDF surat dengan hasil tanda tangan elektronik.
  *
- * Lapisan ini murni (tanpa I/O implisit): konfigurasi desa dibaca dari
+ * Lapisan ini tidak melakukan I/O implisit: konfigurasi desa dibaca dari
  * `tte_config` oleh pemanggil, kredensial rahasia tetap berasal dari
- * environment (`TTE_PASSWORD`), dan klien jaringan dapat disuntik agar dapat
+ * environment (`TTE_PASSWORD`), dan transport jaringan disuntik agar dapat
  * diuji tanpa server BSRE.
+ *
+ * Hardening jaringan:
+ * - URL provider wajib HTTPS, tanpa kredensial/query/fragment, dan tidak boleh
+ *   menunjuk alamat internal (lihat `tte-jaringan.ts` / `tte-alamat.ts`).
+ * - URL berkas hasil provider wajib satu origin dengan provider.
+ * - Alamat IP hasil resolusi dipakai ulang saat koneksi (`TransportTte`) agar
+ *   tidak ada resolusi DNS kedua yang dapat berubah (DNS rebinding).
+ * - Redirect tidak diikuti, respons dibatasi ukurannya, dan seluruh operasi
+ *   tunduk pada satu batas waktu total.
+ * - Verifikasi sertifikat TLS tidak dapat dimatikan oleh konfigurasi.
  *
  * Mode `nonaktif` (default) dan `manual` tidak pernah memblokir penerbitan
  * surat. Kegagalan provider juga hanya dicatat; surat tetap terbit.
@@ -15,21 +25,31 @@
 
 import { z } from "zod";
 
+import {
+  periksaUrlProviderStatis,
+  validasiUrlBerkas,
+  validasiUrlProvider,
+  type DependensiTte,
+  type PermintaanHttpTte,
+  type ResponsTte,
+} from "./tte-jaringan";
+
 /** Mode adapter yang dikenal. `manual` menandai surat setelah ttd basah. */
 export type ModeTte = "nonaktif" | "manual" | "bsre";
 
 export interface KonfigTte {
   mode: ModeTte;
-  /** Base URL server BSRE, mis. `https://tte.example.go.id`. */
+  /** Base URL server BSRE, mis. `https://tte.example.go.id`. Wajib HTTPS. */
   api: string;
   username: string;
   /** NIK penanda tangan yang dikirim ke provider BSrE. */
   nik: string;
   /** Passphrase/kredensial — jangan pernah dicetak ke log. */
   password: string;
-  /** `false` untuk melewatkan verifikasi sertifikat TLS (demo/openluk). */
-  ssl: boolean;
-  /** Timeout permintaan jaringan dalam milidetik. Default 30000 (30 detik). */
+  /**
+   * Batas waktu total satu operasi TTE (termasuk retry dan unduhan) dalam
+   * milidetik. Default 30000.
+   */
   timeout: number;
 }
 
@@ -45,12 +65,16 @@ export interface KonfigTteTersimpan {
   api: string;
   username: string;
   nik: string;
-  ssl: boolean;
   aktif: boolean;
-  /** Timeout permintaan jaringan dalam milidetik. Disimpan untuk kompatibilitas; diisi dari env saat runtime. */
+  /** Timeout operasi (ms). Disimpan untuk kompatibilitas; diisi dari env saat runtime. */
   timeout?: number;
 }
 
+/**
+ * Skema konfigurasi tersimpan. Field `ssl` lama tetap diterima agar baris
+ * `tte_config` yang sudah ada tidak rusak, tetapi nilainya **diabaikan**:
+ * verifikasi sertifikat TLS selalu aktif.
+ */
 export const konfigTteTersimpanSchema = z.object({
   provider: z.literal("bsre").default("bsre"),
   mode: z.enum(["nonaktif", "manual", "bsre"]).default("nonaktif"),
@@ -62,26 +86,33 @@ export const konfigTteTersimpanSchema = z.object({
     .regex(/^\d{16}$/, "NIK penanda tangan harus 16 digit.")
     .or(z.literal(""))
     .default(""),
-  ssl: z.boolean().default(true),
+  ssl: z.boolean().optional(),
   aktif: z.boolean().default(false),
   timeout: z.number().optional(),
 });
 
 /** Skema isian form admin (nilai mentah dari FormData). */
-export const konfigTteFormSchema = z.object({
-  mode: z.enum(["nonaktif", "manual", "bsre"], {
-    message: "Pilih mode TTE yang valid.",
-  }),
-  api: z.string().trim().max(300, "URL API maksimal 300 karakter."),
-  username: z.string().trim().max(150, "Username maksimal 150 karakter."),
-  nik: z
-    .string()
-    .trim()
-    .regex(/^\d{16}$/, "NIK penanda tangan harus 16 digit.")
-    .or(z.literal("")),
-  ssl: z.boolean(),
-  aktif: z.boolean(),
-});
+export const konfigTteFormSchema = z
+  .object({
+    mode: z.enum(["nonaktif", "manual", "bsre"], {
+      message: "Pilih mode TTE yang valid.",
+    }),
+    api: z.string().trim().max(300, "URL API maksimal 300 karakter."),
+    username: z.string().trim().max(150, "Username maksimal 150 karakter."),
+    nik: z
+      .string()
+      .trim()
+      .regex(/^\d{16}$/, "NIK penanda tangan harus 16 digit.")
+      .or(z.literal("")),
+    aktif: z.boolean(),
+  })
+  .superRefine((nilai, ctx) => {
+    if (nilai.api === "") return;
+    const { masalah } = periksaUrlProviderStatis(nilai.api);
+    if (masalah.length > 0) {
+      ctx.addIssue({ code: "custom", path: ["api"], message: masalah[0] });
+    }
+  });
 
 export type KonfigTteFormInput = z.infer<typeof konfigTteFormSchema>;
 
@@ -92,7 +123,6 @@ export const KONFIG_TTE_DEFAULT: KonfigTteTersimpan = {
   api: "",
   username: "",
   nik: "",
-  ssl: true,
   aktif: false,
 };
 
@@ -110,6 +140,24 @@ export type HasilTte =
   | { ok: true; mode: "bsre"; suratId: number; pdf: Uint8Array }
   | { ok: false; mode: ModeTte; alasan: string };
 
+/** Batas byte respons PDF hasil tanda tangan (20 MB, sama dengan batas API). */
+export const BATAS_RESPONS_PDF = 20 * 1024 * 1024;
+
+/** Batas byte respons JSON metadata provider (1 MB). */
+export const BATAS_RESPONS_JSON = 1024 * 1024;
+
+/** Jumlah percobaan ulang tambahan setelah percobaan pertama. */
+const MAKS_PERCOBAAN = 3;
+
+/** Jeda dasar backoff eksponensial (1s, 2s, 4s). */
+const JEDA_DASAR_MS = 1000;
+
+/** Batas waktu total bawaan bila konfigurasi tidak masuk akal. */
+const BATAS_WAKTU_BAWAAN_MS = 30_000;
+
+/** Batas atas batas waktu agar satu permintaan tidak menahan server terlalu lama. */
+const BATAS_WAKTU_MAKS_MS = 5 * 60_000;
+
 /** Konfigurasi TTE tidak lengkap untuk mode bsre. */
 export function siapTte(config: KonfigTte): boolean {
   return (
@@ -125,6 +173,8 @@ export function siapTte(config: KonfigTte): boolean {
  * Baca konfigurasi TTE dari lingkungan (variabel `TTE_*`). Nilai tak dikenal
  * jatuh aman ke mode `nonaktif` — penerbitan surat tidak pernah gagal karena
  * salah ketik konfigurasi.
+ *
+ * `TTE_SSL` tidak lagi dibaca: verifikasi sertifikat TLS selalu aktif.
  */
 export function parseKonfigTte(env: Readonly<Record<string, string | undefined>>): KonfigTte {
   const modeRaw = (env.TTE_MODE ?? "").trim().toLowerCase();
@@ -137,9 +187,7 @@ export function parseKonfigTte(env: Readonly<Record<string, string | undefined>>
     username: (env.TTE_USERNAME ?? "").trim(),
     nik: (env.TTE_NIK ?? "").trim(),
     password: env.TTE_PASSWORD ?? "",
-    // Verifikasi sertifikat TLS selalu aktif. TTE_SSL=false diabaikan demi keamanan.
-    ssl: true,
-    timeout: Number(env.TTE_TIMEOUT ?? "30000"),
+    timeout: Number(env.TTE_TIMEOUT ?? String(BATAS_WAKTU_BAWAAN_MS)),
   };
 }
 
@@ -192,8 +240,6 @@ export function gabungKonfigTte(
     nik: tersimpan.nik,
     // Passphrase tidak pernah dibaca dari basis data.
     password: envConfig.password,
-    // Konfigurasi tenant tidak boleh menonaktifkan verifikasi TLS.
-    ssl: true,
     timeout: tersimpan.timeout ?? envConfig.timeout,
   };
 }
@@ -201,13 +247,19 @@ export function gabungKonfigTte(
 /**
  * Daftar alasan konfigurasi belum siap dipakai, untuk ditampilkan di admin.
  * Kosong berarti konfigurasi BSrE lengkap.
+ *
+ * Memakai aturan URL yang sama dengan validasi runtime agar konfigurasi yang
+ * lolos di form tidak gagal saat surat ditandatangani.
  */
 export function masalahKonfigTte(config: KonfigTte): string[] {
   if (config.mode !== "bsre") return [];
 
   const masalah: string[] = [];
-  if (config.api === "") masalah.push("URL API BSrE belum diisi.");
-  else if (!/^https?:\/\/.+/i.test(config.api)) masalah.push("URL API BSrE harus http(s).");
+  if (config.api === "") {
+    masalah.push("URL API BSrE belum diisi.");
+  } else {
+    masalah.push(...periksaUrlProviderStatis(config.api).masalah);
+  }
   if (config.username === "") masalah.push("Username BSrE belum diisi.");
   if (config.nik.length !== 16) masalah.push("NIK penanda tangan harus 16 digit.");
   if (config.password === "") {
@@ -217,11 +269,20 @@ export function masalahKonfigTte(config: KonfigTte): string[] {
   return masalah;
 }
 
+/** Alamat tujuan koneksi: alamat pertama hasil validasi DNS/IP.
+ *
+ * `validasiUrlProvider` sudah menolak daftar kosong; helper ini hanya
+ * mempersempit tipe agar indeks tidak diakses tanpa pemeriksaan.
+ */
+function alamatTujuan(daftar: readonly { alamat: string }[]): string {
+  const alamat = daftar[0];
+  if (!alamat) throw new Error("Host provider TTE tidak dapat diresolusi.");
+  return alamat.alamat;
+}
+
 /** Klien jaringan BSrE: menerima PDF, mengembalikan PDF bertanda tangan. */
 export type KlienTte =
   ((permintaan: PermintaanTte, config: KonfigTte) => Promise<Uint8Array>) | null;
-
-export type FetchTte = (input: string, init?: RequestInit) => Promise<Response>;
 
 /** Apakah byte diawali tanda tangan berkas PDF (`%PDF-`). */
 export function adalahPdf(bytes: Uint8Array): boolean {
@@ -292,42 +353,105 @@ function cariPdfBase64(nilai: unknown, kedalaman = 0): Uint8Array | null {
   return null;
 }
 
+function batasWaktuOperasi(config: KonfigTte): number {
+  const nilai = Number(config.timeout);
+  if (!Number.isFinite(nilai) || nilai <= 0) return BATAS_WAKTU_BAWAAN_MS;
+  return Math.min(Math.trunc(nilai), BATAS_WAKTU_MAKS_MS);
+}
+
+/** Jeda yang tetap menghormati batas waktu total operasi. */
+function tunda(ms: number, batas: AbortSignal): Promise<void> {
+  return new Promise<void>((selesai, gagal) => {
+    if (batas.aborted) {
+      gagal(new Error("Permintaan TTE melewati batas waktu."));
+      return;
+    }
+
+    const padaAbort = () => {
+      clearTimeout(timer);
+      gagal(new Error("Permintaan TTE melewati batas waktu."));
+    };
+    const timer = setTimeout(() => {
+      batas.removeEventListener("abort", padaAbort);
+      selesai();
+    }, ms);
+
+    batas.addEventListener("abort", padaAbort, { once: true });
+  });
+}
+
 /**
- * Klien BSrE berbasis `fetch`.
+ * Kirim satu permintaan ke alamat yang sudah divalidasi.
+ *
+ * Redirect tidak pernah diikuti (3xx langsung gagal). Retry hanya untuk 5xx
+ * dan kegagalan jaringan, maksimal `MAKS_PERCOBAAN`, dan tetap dibatasi sinyal
+ * waktu total operasi.
+ */
+async function kirimTte(
+  deps: DependensiTte,
+  url: URL,
+  permintaan: PermintaanHttpTte,
+  alamat: string,
+): Promise<ResponsTte> {
+  let percobaan = 0;
+
+  for (;;) {
+    let respons: ResponsTte;
+    try {
+      respons = await deps.transport(url, permintaan, alamat);
+    } catch (error) {
+      if (permintaan.signal.aborted) {
+        throw new Error("Permintaan TTE melewati batas waktu.");
+      }
+      if (percobaan < MAKS_PERCOBAAN) {
+        await tunda(JEDA_DASAR_MS * 2 ** percobaan, permintaan.signal);
+        percobaan += 1;
+        continue;
+      }
+      const kode = (error as NodeJS.ErrnoException | undefined)?.code;
+      throw new Error(
+        kode ? `Koneksi ke provider TTE gagal (${kode}).` : "Koneksi ke provider TTE gagal.",
+      );
+    }
+
+    if (respons.status >= 300 && respons.status < 400) {
+      throw new Error("Redirect provider TTE ditolak demi keamanan.");
+    }
+
+    if (respons.status >= 500 && percobaan < MAKS_PERCOBAAN) {
+      await tunda(JEDA_DASAR_MS * 2 ** percobaan, permintaan.signal);
+      percobaan += 1;
+      continue;
+    }
+
+    return respons;
+  }
+}
+
+/**
+ * Klien BSrE berbasis transport HTTPS ter-pin.
  *
  * Alur mengikuti perilaku OpenSID: kirim PDF ke `POST {api}/api/sign/pdf`
  * dengan Basic Auth dan form-data (`file`, `nik`, `passphrase`). Respons dapat
  * berupa PDF langsung, atau JSON berisi URL/base64 berkas hasil tanda tangan.
  *
+ * Path prefix pada `api` dipertahankan: `https://host/bsre` menghasilkan
+ * endpoint `https://host/bsre/api/sign/pdf`.
+ *
  * Catatan kontrak: nama field mengikuti API BSrE yang dipakai OpenSID. Bila
  * provider desa memakai varian lain, cukup ganti implementasi `KlienTte` di
  * application layer tanpa mengubah pemanggil.
- *
- * Retry: hingga 3 kali dengan backoff eksponensial (1s, 2s, 4s) saat timeout
- * atau kesalahan jaringan (bukan 4xx/5xx HTTP yang tidak timeout).
  */
-export function buatKlienBsre(fetchImpl: FetchTte = fetch): KlienTte {
+export function buatKlienBsre(deps: DependensiTte): KlienTte {
   return async (permintaan, config) => {
-    let baseUrl: URL;
-    try {
-      baseUrl = new URL(config.api);
-    } catch {
-      throw new Error("URL API TTE tidak valid.");
-    }
-
-    if (
-      baseUrl.protocol !== "https:" ||
-      baseUrl.username !== "" ||
-      baseUrl.password !== "" ||
-      baseUrl.search !== "" ||
-      baseUrl.hash !== ""
-    ) {
-      throw new Error("URL API TTE wajib menggunakan HTTPS dan tidak boleh memuat kredensial, query, atau fragment.");
-    }
-
-    const endpoint = new URL("/api/sign/pdf", baseUrl).toString();
+    const provider = await validasiUrlProvider(config.api, deps.resolver);
+    // Base dengan trailing slash agar path prefix provider tidak terbuang.
+    const dasar = new URL(
+      provider.url.href.endsWith("/") ? provider.url.href : `${provider.url.href}/`,
+    );
+    const endpoint = new URL("api/sign/pdf", dasar);
+    const batas = AbortSignal.timeout(batasWaktuOperasi(config));
     const otorisasi = `Basic ${btoa(`${config.username}:${config.password}`)}`;
-    const timeoutMs = config.timeout ?? 30_000;
 
     const form = new FormData();
     form.set(
@@ -338,87 +462,43 @@ export function buatKlienBsre(fetchImpl: FetchTte = fetch): KlienTte {
     form.set("nik", config.nik);
     form.set("passphrase", config.password);
 
-    // Retry configuration
-    const maxRetries = 3;
-    const baseDelayMs = 1000;
+    // Serialisasi multipart memakai Request agar boundary dan header tetap
+    // sesuai standar, lalu body dikirim lewat transport ter-pin.
+    const rakitan = new Request("https://tte.invalid/", { method: "POST", body: form });
+    const tipeKonten = rakitan.headers.get("content-type") ?? "multipart/form-data";
+    const isi = new Uint8Array(await rakitan.arrayBuffer());
 
-    async function fetchWithRetry(
-      url: string,
-      init: RequestInit,
-      attempt: number,
-    ): Promise<Response> {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-      try {
-        const respons = await fetchImpl(url, {
-          ...init,
-          redirect: "manual",
-          signal: controller.signal,
-        });
-
-        if (respons.status >= 300 && respons.status < 400) {
-          throw new Error("Redirect provider TTE ditolak demi keamanan.");
-        }
-
-        // Don't retry on 4xx (client errors) - only on network errors, timeouts, 5xx
-        if (!respons.ok && respons.status >= 500 && attempt < maxRetries) {
-          const delay = baseDelayMs * 2 ** attempt;
-          const { promise, resolve } = Promise.withResolvers<void>();
-          setTimeout(resolve, delay);
-          await promise;
-          return fetchWithRetry(url, init, attempt + 1);
-        }
-
-        return respons;
-      } catch (error) {
-        // Retry on abort (timeout) or network errors
-        const isAbort =
-          error instanceof Error &&
-          (error.name === "AbortError" ||
-            (error instanceof DOMException && error.name === "AbortError"));
-
-        if (attempt < maxRetries && isAbort) {
-          const delay = baseDelayMs * 2 ** attempt;
-          const { promise, resolve } = Promise.withResolvers<void>();
-          setTimeout(resolve, delay);
-          await promise;
-          return fetchWithRetry(url, init, attempt + 1);
-        }
-        throw error;
-      } finally {
-        clearTimeout(timeoutId);
-      }
-    }
-
-    // First request: sign PDF
-    const respons = await fetchWithRetry(
+    const respons = await kirimTte(
+      deps,
       endpoint,
       {
         method: "POST",
         headers: {
           Authorization: otorisasi,
           Accept: "application/pdf, application/json",
+          "Content-Type": tipeKonten,
+          "Content-Length": String(isi.byteLength),
         },
-        body: form,
+        body: isi,
+        signal: batas,
       },
-      0,
+      alamatTujuan(provider.alamat),
     );
 
-    if (!respons.ok) {
+    if (respons.status < 200 || respons.status >= 300) {
       throw new Error(`Provider TTE menolak permintaan (HTTP ${respons.status}).`);
     }
 
-    const contentType = (respons.headers.get("content-type") ?? "").toLowerCase();
+    const contentType = (respons.header("content-type") ?? "").toLowerCase();
     if (contentType.includes("application/pdf")) {
-      const bytes = new Uint8Array(await respons.arrayBuffer());
+      const bytes = await respons.baca(BATAS_RESPONS_PDF);
       if (!adalahPdf(bytes)) throw new Error("Provider TTE mengembalikan berkas bukan PDF.");
       return bytes;
     }
 
     let json: unknown;
     try {
-      json = await respons.json();
+      json = JSON.parse(new TextDecoder().decode(await respons.baca(BATAS_RESPONS_JSON)));
     } catch {
       throw new Error("Respons provider TTE tidak dapat dibaca.");
     }
@@ -429,34 +509,33 @@ export function buatKlienBsre(fetchImpl: FetchTte = fetch): KlienTte {
     const url = cariUrlBerkas(json);
     if (!url) throw new Error("Respons provider TTE tidak memuat berkas hasil tanda tangan.");
 
-    let urlBerkas: URL;
-    try {
-      urlBerkas = new URL(url, baseUrl);
-    } catch {
-      throw new Error("URL berkas hasil TTE tidak valid.");
-    }
-
-    if (urlBerkas.protocol !== "https:" || urlBerkas.origin !== baseUrl.origin) {
-      throw new Error("URL berkas hasil TTE harus HTTPS dan berasal dari origin provider yang sama.");
-    }
-
-    const berkas = await fetchWithRetry(
-      urlBerkas.toString(),
+    // Origin wajib sama dan alamat tetap yang sudah divalidasi → tidak ada
+    // resolusi DNS kedua (DNS rebinding) dan tidak ada Authorization lintas origin.
+    const berkas = validasiUrlBerkas(url, provider);
+    const responsBerkas = await kirimTte(
+      deps,
+      berkas.url,
       {
-        headers: { Authorization: otorisasi, Accept: "application/pdf" },
+        method: "GET",
+        headers: {
+          Authorization: otorisasi,
+          Accept: "application/pdf",
+        },
+        signal: batas,
       },
-      0,
+      alamatTujuan(berkas.alamat),
     );
 
-    if (!berkas.ok) {
-      throw new Error(`Gagal mengunduh berkas TTE (HTTP ${berkas.status}).`);
+    if (responsBerkas.status < 200 || responsBerkas.status >= 300) {
+      throw new Error(`Gagal mengunduh berkas TTE (HTTP ${responsBerkas.status}).`);
     }
 
-    const bytes = new Uint8Array(await berkas.arrayBuffer());
+    const bytes = await responsBerkas.baca(BATAS_RESPONS_PDF);
     if (!adalahPdf(bytes)) throw new Error("Berkas TTE yang diunduh bukan PDF.");
     return bytes;
   };
 }
+
 /**
  * Cek koneksi ke provider BSrE.
  *
@@ -471,99 +550,80 @@ export interface HasilTestKoneksi {
 
 export async function testKoneksi(
   config: KonfigTte,
-  fetchImpl: FetchTte = fetch,
+  deps: DependensiTte,
 ): Promise<HasilTestKoneksi> {
-  let baseUrl: URL;
+  const statis = periksaUrlProviderStatis(config.api);
+  if (!statis.url) {
+    return { ok: false, pesan: statis.masalah[0] ?? "URL API tidak valid." };
+  }
+
+  let provider;
   try {
-    baseUrl = new URL(config.api);
-  } catch {
-    return { ok: false, pesan: "URL API tidak valid." };
+    provider = await validasiUrlProvider(config.api, deps.resolver);
+  } catch (error) {
+    return {
+      ok: false,
+      pesan: error instanceof Error ? error.message : "URL API tidak valid.",
+    };
   }
 
-  if (
-    baseUrl.protocol !== "https:" ||
-    baseUrl.username !== "" ||
-    baseUrl.password !== "" ||
-    baseUrl.search !== "" ||
-    baseUrl.hash !== ""
-  ) {
-    return { ok: false, pesan: "URL API TTE wajib HTTPS dan tidak boleh memuat kredensial, query, atau fragment." };
-  }
-
-  const base = baseUrl.origin;
-
+  const dasar = new URL(
+    provider.url.href.endsWith("/") ? provider.url.href : `${provider.url.href}/`,
+  );
+  const batas = AbortSignal.timeout(batasWaktuOperasi(config));
   const otorisasi = `Basic ${btoa(`${config.username}:${config.password}`)}`;
 
-  // Coba beberapa endpoint yang umum dipakai provider untuk health check
-  const endpoints = [`${base}/api/sign/status`, `${base}/api/version`, `${base}/api/health`];
+  const periksa = async (url: URL): Promise<HasilTestKoneksi | null> => {
+    const respons = await deps.transport(
+      url,
+      {
+        method: "GET",
+        headers: { Authorization: otorisasi, Accept: "application/json, text/html" },
+        signal: batas,
+      },
+      alamatTujuan(provider.alamat),
+    );
 
-  const controller = new AbortController();
-  const timeoutMs = config.timeout ?? 30_000;
-  setTimeout(() => controller.abort(), timeoutMs);
+    if (respons.status >= 300 && respons.status < 400) {
+      return { ok: false, pesan: "Redirect provider TTE ditolak demi keamanan." };
+    }
+    if (respons.status === 401 || respons.status === 403) {
+      return { ok: false, pesan: `Kredensial ditolak (HTTP ${respons.status}).` };
+    }
+    if (respons.status >= 200 && respons.status < 300) {
+      // Body dibaca dengan batas agar respons besar tidak menahan proses.
+      await respons.baca(BATAS_RESPONS_JSON).catch(() => new Uint8Array());
+      return { ok: true, pesan: `Provider merespons HTTP ${respons.status}.` };
+    }
+    return null;
+  };
+
+  const endpoints = ["api/sign/status", "api/version", "api/health"].map(
+    (jalur) => new URL(jalur, dasar),
+  );
 
   for (const url of endpoints) {
+    if (batas.aborted) return { ok: false, pesan: "Koneksi timeout." };
     try {
-      const resp = await fetchImpl(url, {
-        method: "GET",
-        headers: {
-          Authorization: otorisasi,
-          Accept: "application/json",
-        },
-        redirect: "manual",
-        signal: controller.signal,
-      });
-
-      if (resp.status >= 300 && resp.status < 400) {
-        return { ok: false, pesan: "Redirect provider TTE ditolak demi keamanan." };
-      }
-
-      if (resp.ok) {
-        const contentType = (resp.headers.get("content-type") ?? "").toLowerCase();
-        if (contentType.includes("application/json")) {
-          try {
-            const data = await resp.json();
-            return { ok: true, pesan: JSON.stringify(data) };
-          } catch {
-            return { ok: true, pesan: `HTTP ${resp.status}` };
-          }
-        }
-        return { ok: true, pesan: `HTTP ${resp.status}` };
-      }
-
-      if (resp.status === 401 || resp.status === 403) {
-        return { ok: false, pesan: `Kredensial ditolak (HTTP ${resp.status}).` };
-      }
-    } catch (err) {
-      if (err instanceof Error && err.name === "AbortError") {
-        return { ok: false, pesan: "Koneksi timeout." };
-      }
+      const hasil = await periksa(url);
+      if (hasil) return hasil;
+    } catch {
+      if (batas.aborted) return { ok: false, pesan: "Koneksi timeout." };
     }
   }
 
-  // Coba endpoint utama sebagai fallback
+  if (batas.aborted) return { ok: false, pesan: "Koneksi timeout." };
+
+  // Fallback: endpoint utama provider.
   try {
-    const resp = await fetchImpl(`${base}/`, {
-      method: "GET",
-      headers: {
-        Authorization: otorisasi,
-        Accept: "application/json, text/html",
-      },
-      redirect: "manual",
-      signal: controller.signal,
-    });
-
-    if (resp.ok) {
-      return { ok: true, pesan: `Endpoint tersedia (HTTP ${resp.status}).` };
-    }
-
-    if (resp.status === 401 || resp.status === 403) {
-      return { ok: false, pesan: `Kredensial ditolak (HTTP ${resp.status}).` };
-    }
-
-    return { ok: false, pesan: `HTTP ${resp.status}.` };
+    const hasil = await periksa(new URL("./", dasar));
+    if (hasil) return hasil;
   } catch {
+    if (batas.aborted) return { ok: false, pesan: "Koneksi timeout." };
     return { ok: false, pesan: "Tidak dapat terhubung ke server TTE." };
   }
+
+  return { ok: false, pesan: "Provider TTE tidak merespons dengan status yang dikenal." };
 }
 
 /**

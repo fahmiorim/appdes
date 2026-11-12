@@ -23,6 +23,9 @@
 # misc
 .DS_Store
 *.pem
+# Pengecualian: sertifikat self-signed khusus test transport TTE lokal.
+# Bukan secret — lihat src/testing/fixtures/tte-lokal/README.md.
+!src/testing/fixtures/tte-lokal/*.pem
 
 # debug
 npm-debug.log*

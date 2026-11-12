@@ -64,7 +64,8 @@ const envSchema = z
     TTE_NIK: z.string().trim().optional(),
     /** Passphrase BSrE — JANGAN disimpan di basis data atau log. */
     TTE_PASSWORD: z.string().optional(),
-    TTE_SSL: z.string().trim().optional(),
+    // TTE_SSL sengaja tidak ada: verifikasi sertifikat TLS tidak dapat
+    // dimatikan lewat environment maupun konfigurasi desa.
     /**
      * Folder sesi Baileys (WhatsApp Web). Default `storage/whatsapp-auth`.
      * Kosongkan untuk memakai default; isi bila sesi disimpan di volume lain.

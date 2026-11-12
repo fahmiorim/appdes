@@ -7,7 +7,6 @@ import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-m
 import { hasPermission } from "@/features/rbac/application/authorization";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import {
-  buatKlienBsre,
   gabungKonfigTte,
   KONFIG_TTE_DEFAULT,
   konfigTteFormSchema,
@@ -20,6 +19,7 @@ import {
   type KonfigTteFormInput,
   type KonfigTteTersimpan,
 } from "@/features/surat/domain/tte";
+import { buatKlienBsreNode } from "@/features/surat/infrastructure/tte-https";
 import {
   getKonfigTteTersimpan,
   simpanKonfigTteTersimpan,
@@ -61,7 +61,6 @@ export async function getKonfigurasiTtePageData(): Promise<KonfigurasiTtePageDat
     username: tersimpan.username,
     nik: tersimpan.nik,
     password: envConfig.password,
-    ssl: tersimpan.ssl,
     timeout: tersimpan.timeout ?? envConfig.timeout,
   };
   return {
@@ -85,7 +84,6 @@ export async function simpanKonfigurasiTteData(input: KonfigTteFormInput): Promi
     api: parsed.api,
     username: parsed.username,
     nik: parsed.nik,
-    ssl: parsed.ssl,
     aktif: parsed.aktif,
   };
 
@@ -137,7 +135,7 @@ export async function tandatanganiPdfTte(input: {
       nomor: input.nomor,
       pdf: input.pdf,
     },
-    buatKlienBsre(),
+    buatKlienBsreNode(),
   );
 }
 

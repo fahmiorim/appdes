@@ -2,17 +2,22 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   adalahPdf,
+  BATAS_RESPONS_JSON,
+  BATAS_RESPONS_PDF,
   buatKlienBsre,
   gabungKonfigTte,
   KONFIG_TTE_DEFAULT,
+  konfigTteFormSchema,
   masalahKonfigTte,
   parseKonfigTte,
   parseKonfigTteTersimpan,
   serializeKonfigTteTersimpan,
   siapTte,
   tandaiTte,
-  type FetchTte,
+  testKoneksi,
+  type KonfigTte,
 } from "./tte";
+import type { ResponsTte, TransportTte } from "./tte-jaringan";
 
 const PDF_PALSU = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x37]); // "%PDF-1.7"
 
@@ -23,22 +28,92 @@ const PERMINTAAN = {
   pdf: PDF_PALSU,
 };
 
-const KONFIG_LENGKAP = {
-  mode: "bsre" as const,
-  api: "https://tte.example.go.id",
+const KONFIG_LENGKAP: KonfigTte = {
+  mode: "bsre",
+  api: "https://tte.example.go.id/bsre",
   username: "desa",
   nik: "3201010101010001",
   password: "rahasia",
-  ssl: true,
   timeout: 30000,
 };
+
+const ALAMAT_PUBLIK = [{ alamat: "93.184.216.34", family: 4 }];
+
+interface PanggilanTransport {
+  url: string;
+  method: string;
+  alamat: string;
+  headers: Record<string, string>;
+  body?: Uint8Array;
+}
+
+function responsPdf(bytes: Uint8Array, status = 200): ResponsTte {
+  return {
+    status,
+    header: (nama) => (nama.toLowerCase() === "content-type" ? "application/pdf" : null),
+    baca: async (maks) => {
+      if (bytes.byteLength > maks) throw new Error("Respons provider TTE melebihi batas ukuran.");
+      return bytes;
+    },
+  };
+}
+
+function responsJson(data: unknown, status = 200): ResponsTte {
+  const bytes = new TextEncoder().encode(JSON.stringify(data));
+  return {
+    status,
+    header: (nama) => (nama.toLowerCase() === "content-type" ? "application/json" : null),
+    baca: async (maks) => {
+      if (bytes.byteLength > maks) throw new Error("Respons provider TTE melebihi batas ukuran.");
+      return bytes;
+    },
+  };
+}
+
+/** Transport palsu: seluruh respons diambil dari antrean, panggilan dicatat. */
+function transportAntre(...respons: Array<ResponsTte | Error>): {
+  transport: TransportTte;
+  panggilan: PanggilanTransport[];
+} {
+  const panggilan: PanggilanTransport[] = [];
+  const transport: TransportTte = async (url, permintaan, alamat) => {
+    panggilan.push({
+      url: url.href,
+      method: permintaan.method,
+      alamat,
+      headers: permintaan.headers,
+      body: permintaan.body,
+    });
+    const berikut = respons.shift();
+    if (!berikut) throw new Error("Transport palsu kehabisan respons.");
+    if (berikut instanceof Error) throw berikut;
+    return berikut;
+  };
+  return { transport, panggilan };
+}
+
+function buatKlien(
+  transport: TransportTte,
+  resolver: () => Promise<{ alamat: string; family: number }[]> = async () => ALAMAT_PUBLIK,
+) {
+  const klien = buatKlienBsre({ transport, resolver });
+  if (!klien) throw new Error("klien BSrE seharusnya selalu tersedia");
+  return klien;
+}
+
+/** Ambil entri ke-`indeks` tanpa akses indeks yang mungkin kosong. */
+function entri<T>(daftar: readonly T[], indeks: number): T {
+  const item = daftar[indeks];
+  if (item === undefined) throw new Error(`Panggilan transport ke-${indeks} tidak ada.`);
+  return item;
+}
 
 describe("parseKonfigTte", () => {
   it("tanpa variabel apa pun → mode nonaktif", () => {
     const config = parseKonfigTte({});
 
     expect(config.mode).toBe("nonaktif");
-    expect(config.ssl).toBe(true);
+    expect(config.timeout).toBe(30000);
     expect(siapTte(config)).toBe(false);
   });
 
@@ -62,14 +137,17 @@ describe("parseKonfigTte", () => {
       TTE_USERNAME: "desa",
       TTE_NIK: "3201010101010001",
       TTE_PASSWORD: "rahasia",
+      TTE_TIMEOUT: "45000",
     });
 
     expect(siapTte(lengkap)).toBe(true);
+    expect(lengkap.timeout).toBe(45000);
   });
 
-  it("selalu mewajibkan verifikasi TLS meskipun TTE_SSL=false", () => {
-    expect(parseKonfigTte({ TTE_SSL: "false" }).ssl).toBe(true);
-    expect(parseKonfigTte({ TTE_SSL: "TRUE" }).ssl).toBe(true);
+  it("TTE_SSL tidak lagi dibaca karena verifikasi TLS selalu aktif", () => {
+    const config = parseKonfigTte({ TTE_SSL: "false" });
+    expect("ssl" in config).toBe(false);
+    expect(parseKonfigTte({ TTE_SSL: "TRUE" })).not.toHaveProperty("ssl");
   });
 });
 
@@ -82,20 +160,39 @@ describe("konfigurasi tersimpan", () => {
         api: "https://tte.example.go.id",
         username: "desa",
         nik: "3201010101010001",
-        ssl: false,
         aktif: true,
       }),
     );
 
     expect(tersimpan?.mode).toBe("bsre");
-    expect(tersimpan?.ssl).toBe(false);
+    expect(tersimpan?.aktif).toBe(true);
     expect(parseKonfigTteTersimpan("{bukan json")).toBeNull();
     expect(parseKonfigTteTersimpan("")).toBeNull();
   });
 
+  it("baris lama dengan field ssl tetap terbaca dan nilainya diabaikan", () => {
+    const lama = JSON.stringify({
+      provider: "bsre",
+      mode: "bsre",
+      api: "https://tte.example.go.id",
+      username: "desa",
+      nik: "3201010101010001",
+      ssl: false,
+      aktif: true,
+    });
+
+    const tersimpan = parseKonfigTteTersimpan(lama);
+    // Baris lama tetap terbaca walau memuat field ssl yang sudah tidak dipakai.
+    expect(tersimpan).not.toBeNull();
+    expect(tersimpan?.mode).toBe("bsre");
+    expect(tersimpan?.aktif).toBe(true);
+    expect(parseKonfigTte({ TTE_SSL: "false" })).not.toHaveProperty("ssl");
+  });
+
   it("NIK bukan 16 digit membuat konfigurasi tersimpan ditolak", () => {
-    const json = JSON.stringify({ ...KONFIG_TTE_DEFAULT, nik: "123" });
-    expect(parseKonfigTteTersimpan(json)).toBeNull();
+    expect(
+      parseKonfigTteTersimpan(JSON.stringify({ ...KONFIG_TTE_DEFAULT, nik: "123" })),
+    ).toBeNull();
   });
 
   it("konfigurasi desa nonaktif memaksa mode nonaktif", () => {
@@ -105,7 +202,6 @@ describe("konfigurasi tersimpan", () => {
       api: "https://tte.example.go.id",
       username: "desa",
       nik: "3201010101010001",
-      ssl: true,
       aktif: false,
     });
 
@@ -119,14 +215,15 @@ describe("konfigurasi tersimpan", () => {
       api: "https://tte-desa.example.go.id",
       username: "operator",
       nik: "3201010101010001",
-      ssl: false,
       aktif: true,
+      timeout: 15000,
     });
 
     expect(hasil.api).toBe("https://tte-desa.example.go.id");
     expect(hasil.username).toBe("operator");
     expect(hasil.password).toBe("rahasia-env");
-    expect(hasil.ssl).toBe(true);
+    expect(hasil.timeout).toBe(15000);
+    expect(hasil).not.toHaveProperty("ssl");
   });
 });
 
@@ -136,199 +233,364 @@ describe("masalahKonfigTte", () => {
   });
 
   it("menyebut seluruh bagian yang kurang", () => {
-    const masalah = masalahKonfigTte(parseKonfigTte({ TTE_MODE: "bsre" }));
+    const masalah = masalahKonfigTte(parseKonfigTte({ TTE_MODE: "bsre" })).join(" ");
 
-    expect(masalah.join(" ")).toContain("URL API");
-    expect(masalah.join(" ")).toContain("Username");
-    expect(masalah.join(" ")).toContain("NIK");
-    expect(masalah.join(" ")).toContain("Passphrase");
+    expect(masalah).toContain("URL API");
+    expect(masalah).toContain("Username");
+    expect(masalah).toContain("NIK");
+    expect(masalah).toContain("Passphrase");
+  });
+
+  it("memakai aturan URL yang sama dengan runtime", () => {
+    expect(
+      masalahKonfigTte({ ...KONFIG_LENGKAP, api: "http://tte.example.go.id" }).join(" "),
+    ).toContain("HTTPS");
+    expect(
+      masalahKonfigTte({ ...KONFIG_LENGKAP, api: "https://10.0.0.9/bsre" }).join(" "),
+    ).toContain("IP internal");
+    expect(masalahKonfigTte(KONFIG_LENGKAP)).toEqual([]);
+  });
+});
+
+describe("konfigTteFormSchema", () => {
+  const isian = {
+    mode: "bsre" as const,
+    api: "https://tte.example.go.id/bsre",
+    username: "desa",
+    nik: "3201010101010001",
+    aktif: true,
+  };
+
+  it("menerima konfigurasi HTTPS publik", () => {
+    expect(konfigTteFormSchema.safeParse(isian).success).toBe(true);
+  });
+
+  it.each([
+    "http://tte.example.go.id",
+    "https://127.0.0.1/bsre",
+    "https://169.254.169.254/",
+    "https://metadata.google.internal/",
+    "https://user:pass@tte.example.go.id/",
+  ])("menolak isian yang juga ditolak runtime: %s", (api) => {
+    const hasil = konfigTteFormSchema.safeParse({ ...isian, api });
+    expect(hasil.success).toBe(false);
+  });
+
+  it("URL kosong boleh disimpan untuk mode nonaktif", () => {
+    expect(konfigTteFormSchema.safeParse({ ...isian, mode: "nonaktif", api: "" }).success).toBe(
+      true,
+    );
   });
 });
 
 describe("buatKlienBsre", () => {
-  it("mengirim PDF dan mengembalikan PDF langsung", async () => {
-    const fetchPalsu = vi.fn<FetchTte>(async () => {
-      return new Response(PDF_PALSU, { headers: { "content-type": "application/pdf" } });
-    });
+  it("mengirim PDF ke endpoint dengan alamat hasil validasi dan path prefix", async () => {
+    const { transport, panggilan } = transportAntre(responsPdf(PDF_PALSU));
+    const hasil = await buatKlien(transport)(PERMINTAAN, KONFIG_LENGKAP);
 
-    const klien = buatKlienBsre(fetchPalsu);
-    const hasil = await klien?.(PERMINTAAN, KONFIG_LENGKAP);
+    expect(adalahPdf(hasil)).toBe(true);
+    expect(panggilan).toHaveLength(1);
+    expect(entri(panggilan, 0).url).toBe("https://tte.example.go.id/bsre/api/sign/pdf");
+    expect(entri(panggilan, 0).method).toBe("POST");
+    expect(entri(panggilan, 0).alamat).toBe("93.184.216.34");
+    expect(entri(panggilan, 0).headers.Authorization).toBe(`Basic ${btoa("desa:rahasia")}`);
+    expect(entri(panggilan, 0).headers["Content-Type"]).toContain("multipart/form-data");
 
-    expect(adalahPdf(hasil ?? new Uint8Array())).toBe(true);
-    const [url, init] = fetchPalsu.mock.calls[0] ?? [];
-    expect(url).toBe("https://tte.example.go.id/api/sign/pdf");
-    expect(init?.method).toBe("POST");
-    expect(init?.body).toBeInstanceOf(FormData);
+    const isi = new TextDecoder().decode(entri(panggilan, 0).body);
+    expect(isi).toContain("%PDF-1.7");
+    expect(isi).toContain("3201010101010001");
+    expect(isi).toContain("007-SK-10-2026.pdf");
   });
 
-  it("menolak URL unduhan absolut dari origin lain", async () => {
-    const fetchPalsu = vi.fn<FetchTte>(async () =>
-      new Response(JSON.stringify({ data: { file: "https://attacker.example/hasil.pdf" } }), {
-        headers: { "content-type": "application/json" },
-      }),
+  it("mempertahankan path prefix saat base URL berakhiran slash", async () => {
+    const { transport, panggilan } = transportAntre(responsPdf(PDF_PALSU));
+    await buatKlien(transport)(PERMINTAAN, {
+      ...KONFIG_LENGKAP,
+      api: "https://tte.example.go.id/",
+    });
+
+    expect(entri(panggilan, 0).url).toBe("https://tte.example.go.id/api/sign/pdf");
+  });
+
+  it("mengunduh berkas relatif dari origin yang sama tanpa resolusi DNS ulang", async () => {
+    const resolver = vi.fn(async () => ALAMAT_PUBLIK);
+    const { transport, panggilan } = transportAntre(
+      responsJson({ data: { file: "unduh/hasil.pdf" } }),
+      responsPdf(PDF_PALSU),
     );
 
-    await expect(buatKlienBsre(fetchPalsu)?.(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow(
+    const hasil = await buatKlien(transport, resolver)(PERMINTAAN, KONFIG_LENGKAP);
+
+    expect(adalahPdf(hasil)).toBe(true);
+    expect(resolver).toHaveBeenCalledTimes(1);
+    expect(entri(panggilan, 1).url).toBe("https://tte.example.go.id/bsre/unduh/hasil.pdf");
+    expect(entri(panggilan, 1).alamat).toBe("93.184.216.34");
+    expect(entri(panggilan, 1).method).toBe("GET");
+    // Authorization tidak pernah dikirim ke origin lain; origin sudah dipastikan sama.
+    expect(entri(panggilan, 1).headers.Authorization).toBe(
+      entri(panggilan, 0).headers.Authorization,
+    );
+  });
+
+  it("menolak URL unduhan dari origin lain tanpa mengirim kredensial", async () => {
+    const { transport, panggilan } = transportAntre(
+      responsJson({ data: { file: "https://attacker.example/hasil.pdf" } }),
+    );
+
+    await expect(buatKlien(transport)(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow(
       "origin provider yang sama",
     );
-    expect(fetchPalsu).toHaveBeenCalledTimes(1);
+    expect(panggilan).toHaveLength(1);
   });
 
-  it("menolak endpoint TTE non-HTTPS", async () => {
-    const fetchPalsu = vi.fn<FetchTte>();
-    await expect(
-      buatKlienBsre(fetchPalsu)?.(PERMINTAAN, { ...KONFIG_LENGKAP, api: "http://tte.example.go.id" }),
-    ).rejects.toThrow("wajib menggunakan HTTPS");
-    expect(fetchPalsu).not.toHaveBeenCalled();
-  });
-
-  it("menolak redirect provider tanpa mengikuti tujuan redirect", async () => {
-    const fetchPalsu = vi.fn<FetchTte>(async () =>
-      new Response(null, { status: 302, headers: { location: "https://attacker.example/" } }),
+  it("menolak URL protokol-relatif dan HTTP pada respons berkas", async () => {
+    const protokolRelatif = transportAntre(
+      responsJson({ data: { file: "//attacker.example/hasil.pdf" } }),
+    );
+    await expect(buatKlien(protokolRelatif.transport)(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow(
+      "origin provider yang sama",
     );
 
-    await expect(buatKlienBsre(fetchPalsu)?.(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow(
+    const http = transportAntre(
+      responsJson({ data: { file: "http://tte.example.go.id/hasil.pdf" } }),
+    );
+    await expect(buatKlien(http.transport)(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow("HTTPS");
+  });
+
+  it("menerima PDF base64 pada respons JSON tanpa permintaan kedua", async () => {
+    const base64 = Buffer.from(PDF_PALSU).toString("base64");
+    const { transport, panggilan } = transportAntre(responsJson({ data: { pdf: base64 } }));
+
+    const hasil = await buatKlien(transport)(PERMINTAAN, KONFIG_LENGKAP);
+
+    expect(adalahPdf(hasil)).toBe(true);
+    expect(panggilan).toHaveLength(1);
+  });
+
+  it("menolak endpoint non-HTTPS, IP internal, dan host internal sebelum menghubungi jaringan", async () => {
+    const { transport, panggilan } = transportAntre();
+
+    await expect(
+      buatKlien(transport)(PERMINTAAN, { ...KONFIG_LENGKAP, api: "http://tte.example.go.id" }),
+    ).rejects.toThrow("wajib menggunakan HTTPS");
+    await expect(
+      buatKlien(transport)(PERMINTAAN, { ...KONFIG_LENGKAP, api: "https://10.0.0.9/bsre" }),
+    ).rejects.toThrow("IP internal");
+    await expect(
+      buatKlien(transport)(PERMINTAAN, {
+        ...KONFIG_LENGKAP,
+        api: "https://metadata.google.internal",
+      }),
+    ).rejects.toThrow("host internal");
+
+    expect(panggilan).toHaveLength(0);
+  });
+
+  it("menolak host yang resolve ke alamat internal", async () => {
+    const { transport, panggilan } = transportAntre();
+
+    await expect(
+      buatKlien(transport, async () => [
+        { alamat: "93.184.216.34", family: 4 },
+        { alamat: "127.0.0.1", family: 4 },
+      ])(PERMINTAAN, KONFIG_LENGKAP),
+    ).rejects.toThrow("alamat internal");
+
+    expect(panggilan).toHaveLength(0);
+  });
+
+  it("menolak redirect tanpa mengikuti tujuan redirect", async () => {
+    const { transport, panggilan } = transportAntre(responsPdf(PDF_PALSU, 302));
+
+    await expect(buatKlien(transport)(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow(
       "Redirect provider TTE ditolak",
     );
-    expect(fetchPalsu).toHaveBeenCalledTimes(1);
-    expect(fetchPalsu.mock.calls[0]?.[1]?.redirect).toBe("manual");
+    expect(panggilan).toHaveLength(1);
   });
 
-  it("mengunduh berkas dari URL pada respons JSON", async () => {
-    const fetchPalsu = vi
-      .fn<FetchTte>()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ data: { file: "/unduh/hasil.pdf" } }), {
-          headers: { "content-type": "application/json" },
-        }),
-      )
-      .mockResolvedValueOnce(
-        new Response(PDF_PALSU, { headers: { "content-type": "application/pdf" } }),
-      );
+  it("melempar galat saat provider menolak dan tidak retry pada 4xx", async () => {
+    const { transport, panggilan } = transportAntre(responsPdf(PDF_PALSU, 401));
 
-    const hasil = await buatKlienBsre(fetchPalsu)?.(PERMINTAAN, KONFIG_LENGKAP);
-
-    expect(adalahPdf(hasil ?? new Uint8Array())).toBe(true);
-    expect(fetchPalsu.mock.calls[1]?.[0]).toBe("https://tte.example.go.id/unduh/hasil.pdf");
-  });
-
-  it("menerima PDF base64 pada respons JSON", async () => {
-    const base64 = Buffer.from(PDF_PALSU).toString("base64");
-    const fetchPalsu = vi.fn<FetchTte>(async () => {
-      return new Response(JSON.stringify({ data: { pdf: base64 } }), {
-        headers: { "content-type": "application/json" },
-      });
-    });
-
-    const hasil = await buatKlienBsre(fetchPalsu)?.(PERMINTAAN, KONFIG_LENGKAP);
-
-    expect(adalahPdf(hasil ?? new Uint8Array())).toBe(true);
-  });
-
-  it("melempar galat saat provider menolak", async () => {
-    const fetchPalsu = vi.fn<FetchTte>(async () => new Response("gagal", { status: 401 }));
-
-    await expect(buatKlienBsre(fetchPalsu)?.(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow(
-      "HTTP 401",
-    );
+    await expect(buatKlien(transport)(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow("HTTP 401");
+    expect(panggilan).toHaveLength(1);
   });
 
   it("menolak respons yang bukan PDF", async () => {
-    const fetchPalsu = vi.fn<FetchTte>(async () => {
-      return new Response("bukan pdf", { headers: { "content-type": "application/pdf" } });
+    const { transport } = transportAntre({
+      status: 200,
+      header: () => "text/html",
+      baca: async () => new TextEncoder().encode("<html>galat</html>"),
     });
 
-    await expect(buatKlienBsre(fetchPalsu)?.(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow(
-      "bukan PDF",
+    await expect(buatKlien(transport)(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow(
+      "tidak dapat dibaca",
     );
   });
 
-  it("menggunakan timeout dari konfigurasi", async () => {
-    let capturedSignal: AbortSignal | null = null;
-    const fetchPalsu = vi.fn<FetchTte>(async (_url, init) => {
-      capturedSignal = init?.signal ?? null;
-      return new Response(PDF_PALSU, { headers: { "content-type": "application/pdf" } });
-    });
+  it("menolak PDF yang isinya bukan berkas PDF", async () => {
+    const { transport } = transportAntre(responsPdf(new TextEncoder().encode("bukan pdf")));
 
-    const configDenganTimeout = { ...KONFIG_LENGKAP, timeout: 12345 };
-    await buatKlienBsre(fetchPalsu)?.(PERMINTAAN, configDenganTimeout);
-
-    expect(capturedSignal).not.toBeNull();
-    // Verify timeout is set correctly by checking AbortSignal.timeout was used
-    // The actual timeout value is tested via the signal's behavior
+    await expect(buatKlien(transport)(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow("bukan PDF");
   });
 
-  it("retry saat timeout (AbortError) lalu berhasil", async () => {
-    const abortError = new Error("Aborted");
-    abortError.name = "AbortError";
-    const fetchPalsu = vi
-      .fn<FetchTte>()
-      // Panggilan pertama timeout, panggilan kedua berhasil.
-      .mockRejectedValueOnce(abortError)
-      .mockResolvedValueOnce(
-        new Response(PDF_PALSU, { headers: { "content-type": "application/pdf" } }),
-      );
+  it("menerapkan batas ukuran berbeda untuk PDF dan JSON", async () => {
+    const batas: number[] = [];
+    const transport: TransportTte = async (url) => {
+      const permintaanTandaTangan = url.pathname.endsWith("sign/pdf");
+      return {
+        status: 200,
+        header: () => (permintaanTandaTangan ? "application/json" : "application/pdf"),
+        baca: async (maks) => {
+          batas.push(maks);
+          return permintaanTandaTangan
+            ? new TextEncoder().encode(JSON.stringify({ data: { file: "unduh/hasil.pdf" } }))
+            : PDF_PALSU;
+        },
+      };
+    };
 
-    const hasil = await buatKlienBsre(fetchPalsu)?.(PERMINTAAN, {
-      ...KONFIG_LENGKAP,
-      timeout: 100,
-    });
+    await buatKlien(transport)(PERMINTAAN, KONFIG_LENGKAP);
 
-    expect(adalahPdf(hasil ?? new Uint8Array())).toBe(true);
-    expect(fetchPalsu).toHaveBeenCalledTimes(2);
+    expect(batas).toEqual([BATAS_RESPONS_JSON, BATAS_RESPONS_PDF]);
+    expect(BATAS_RESPONS_PDF).toBeGreaterThan(BATAS_RESPONS_JSON);
   });
 
-  it("retry saat 5xx lalu berhasil", async () => {
-    const fetchPalsu = vi
-      .fn<FetchTte>()
-      // Panggilan pertama gagal 5xx, panggilan kedua berhasil.
-      .mockResolvedValueOnce(new Response("server error", { status: 500 }))
-      .mockResolvedValueOnce(
-        new Response(PDF_PALSU, { headers: { "content-type": "application/pdf" } }),
-      );
-
-    const hasil = await buatKlienBsre(fetchPalsu)?.(PERMINTAAN, {
-      ...KONFIG_LENGKAP,
-      timeout: 100,
+  it("meneruskan kegagalan saat respons melebihi batas ukuran", async () => {
+    const { transport } = transportAntre({
+      status: 200,
+      header: () => "application/pdf",
+      baca: async () => {
+        throw new Error("Respons provider TTE melebihi batas ukuran.");
+      },
     });
 
-    expect(adalahPdf(hasil ?? new Uint8Array())).toBe(true);
-    expect(fetchPalsu).toHaveBeenCalledTimes(2);
+    await expect(buatKlien(transport)(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow(
+      "melebihi batas ukuran",
+    );
   });
 
-  it("tidak retry pada 4xx (client error)", async () => {
-    const fetchPalsu = vi.fn<FetchTte>(async () => new Response("not found", { status: 404 }));
+  it("menghentikan operasi saat batas waktu total habis, tanpa retry berlarut", async () => {
+    const transport: TransportTte = (_url, permintaan) =>
+      new Promise((_, gagal) => {
+        permintaan.signal.addEventListener("abort", () => gagal(new Error("aborted")), {
+          once: true,
+        });
+      });
 
+    const mulai = Date.now();
     await expect(
-      buatKlienBsre(fetchPalsu)?.(PERMINTAAN, { ...KONFIG_LENGKAP, timeout: 100 }),
-    ).rejects.toThrow("HTTP 404");
-
-    expect(fetchPalsu).toHaveBeenCalledTimes(1);
+      buatKlien(transport)(PERMINTAAN, { ...KONFIG_LENGKAP, timeout: 60 }),
+    ).rejects.toThrow("batas waktu");
+    expect(Date.now() - mulai).toBeLessThan(1000);
   });
 
-  it("gagal setelah max retries saat timeout terus-menerus", async () => {
-    const abortError = new Error("Aborted");
-    abortError.name = "AbortError";
-    const fetchPalsu = vi.fn<FetchTte>().mockRejectedValue(abortError);
+  it("batas waktu juga menutup jeda retry 5xx", async () => {
+    const { transport, panggilan } = transportAntre(
+      ...Array.from({ length: 4 }, () => responsPdf(PDF_PALSU, 503)),
+    );
 
-    // Override setTimeout temporarily to speed up test without vi.useFakeTimers()
-    const origSetTimeout = globalThis.setTimeout;
+    const mulai = Date.now();
+    await expect(
+      buatKlien(transport)(PERMINTAAN, { ...KONFIG_LENGKAP, timeout: 250 }),
+    ).rejects.toThrow("batas waktu");
 
-    globalThis.setTimeout = ((fn: () => void) => {
-      fn();
-      return 0;
-    }) as unknown as typeof setTimeout;
+    // Percobaan pertama + satu jeda retry, lalu dibatalkan oleh batas waktu total.
+    expect(panggilan).toHaveLength(1);
+    expect(Date.now() - mulai).toBeLessThan(2000);
+  });
+});
 
-    try {
-      await expect(
-        buatKlienBsre(fetchPalsu)?.(PERMINTAAN, { ...KONFIG_LENGKAP, timeout: 10 }),
-      ).rejects.toThrow("Aborted");
+describe("testKoneksi", () => {
+  it("melaporkan status provider yang merespons, dengan path prefix dan alamat ter-pin", async () => {
+    const { transport, panggilan } = transportAntre(responsPdf(PDF_PALSU));
 
-      // Initial + 3 retries = 4 calls
-      expect(fetchPalsu).toHaveBeenCalledTimes(4);
-    } finally {
-      globalThis.setTimeout = origSetTimeout;
-    }
+    const hasil = await testKoneksi(KONFIG_LENGKAP, {
+      transport,
+      resolver: async () => ALAMAT_PUBLIK,
+    });
+
+    expect(hasil).toEqual({ ok: true, pesan: "Provider merespons HTTP 200." });
+    expect(entri(panggilan, 0).url).toBe("https://tte.example.go.id/bsre/api/sign/status");
+    expect(entri(panggilan, 0).alamat).toBe("93.184.216.34");
+    expect(entri(panggilan, 0).method).toBe("GET");
+  });
+
+  it("melaporkan kredensial ditolak", async () => {
+    const { transport } = transportAntre(responsPdf(PDF_PALSU, 401));
+
+    const hasil = await testKoneksi(KONFIG_LENGKAP, {
+      transport,
+      resolver: async () => ALAMAT_PUBLIK,
+    });
+
+    expect(hasil.ok).toBe(false);
+    expect(hasil.pesan).toContain("Kredensial ditolak");
+  });
+
+  it("menolak redirect", async () => {
+    const { transport } = transportAntre(responsPdf(PDF_PALSU, 301));
+
+    const hasil = await testKoneksi(KONFIG_LENGKAP, {
+      transport,
+      resolver: async () => ALAMAT_PUBLIK,
+    });
+
+    expect(hasil.pesan).toContain("Redirect provider TTE ditolak");
+  });
+
+  it("mencoba endpoint cadangan lalu fallback ke root provider", async () => {
+    const { transport, panggilan } = transportAntre(
+      responsPdf(PDF_PALSU, 404),
+      responsPdf(PDF_PALSU, 404),
+      responsPdf(PDF_PALSU, 404),
+      responsPdf(PDF_PALSU, 404),
+    );
+
+    const hasil = await testKoneksi(KONFIG_LENGKAP, {
+      transport,
+      resolver: async () => ALAMAT_PUBLIK,
+    });
+
+    expect(hasil.ok).toBe(false);
+    expect(hasil.pesan).toContain("tidak merespons dengan status yang dikenal");
+    expect(panggilan.map((p) => p.url)).toEqual([
+      "https://tte.example.go.id/bsre/api/sign/status",
+      "https://tte.example.go.id/bsre/api/version",
+      "https://tte.example.go.id/bsre/api/health",
+      "https://tte.example.go.id/bsre/",
+    ]);
+  });
+
+  it("berhenti saat batas waktu habis tanpa menunggu endpoint lain", async () => {
+    const transport: TransportTte = (_url, permintaan) =>
+      new Promise((_, gagal) => {
+        permintaan.signal.addEventListener("abort", () => gagal(new Error("aborted")), {
+          once: true,
+        });
+      });
+
+    const mulai = Date.now();
+    const hasil = await testKoneksi(
+      { ...KONFIG_LENGKAP, timeout: 60 },
+      { transport, resolver: async () => ALAMAT_PUBLIK },
+    );
+
+    expect(hasil.ok).toBe(false);
+    expect(hasil.pesan).toContain("timeout");
+    expect(Date.now() - mulai).toBeLessThan(1000);
+  });
+
+  it("menolak URL yang tidak lolos validasi tanpa menghubungi jaringan", async () => {
+    const transport = vi.fn<TransportTte>();
+
+    const hasil = await testKoneksi(
+      { ...KONFIG_LENGKAP, api: "https://127.0.0.1/bsre" },
+      { transport, resolver: async () => ALAMAT_PUBLIK },
+    );
+
+    expect(hasil.ok).toBe(false);
+    expect(hasil.pesan).toContain("IP internal");
+    expect(transport).not.toHaveBeenCalled();
   });
 });
 
@@ -352,6 +614,13 @@ describe("tandaiTte", () => {
     }
   });
 
+  it("mode bsre tanpa klien mengembalikan alasan konfigurasi", async () => {
+    const hasil = await tandaiTte(KONFIG_LENGKAP, PERMINTAAN, null);
+
+    expect(hasil.ok).toBe(false);
+    if (!hasil.ok) expect(hasil.alasan).toContain("belum lengkap");
+  });
+
   it("bsre lengkap mengembalikan PDF bertanda tangan", async () => {
     const hasil = await tandaiTte(KONFIG_LENGKAP, PERMINTAAN, async () => PDF_PALSU);
 
@@ -360,6 +629,15 @@ describe("tandaiTte", () => {
       expect(hasil.suratId).toBe(7);
       expect(adalahPdf(hasil.pdf)).toBe(true);
     }
+  });
+
+  it("PDF hasil yang tidak sah tidak diterima", async () => {
+    const hasil = await tandaiTte(KONFIG_LENGKAP, PERMINTAAN, async () =>
+      new TextEncoder().encode("bukan pdf"),
+    );
+
+    expect(hasil.ok).toBe(false);
+    if (!hasil.ok) expect(hasil.alasan).toContain("bukan PDF");
   });
 
   it("kegagalan klien tidak melempar ke pemanggil", async () => {
