@@ -773,7 +773,9 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
 
     // Desa lain tidak melihat junction tersebut dan tidak dapat melepasnya.
     expect(await listLampiranTerpasang(desaA, dtksB2)).toEqual([]);
-    await lepasLampiran(desaA, dtksB2, lampiranB);
+    await expect(lepasLampiran(desaA, dtksB2, lampiranB)).rejects.toThrow(
+      /Data DTKS tidak ditemukan/,
+    );
     expect(await listLampiranTerpasang(desaB, dtksB2)).toHaveLength(1);
 
     await lepasLampiran(desaB, dtksB2, lampiranB);
