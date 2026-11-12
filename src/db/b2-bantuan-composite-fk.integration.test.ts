@@ -10,8 +10,12 @@ const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../migrations", import.meta.
 let desaA = 0;
 let desaB = 0;
 let programA = 0;
+let programB = 0;
 let residentA = 0;
 let residentB = 0;
+let familyB = 0;
+let rtmB = 0;
+let kelompokB = 0;
 
 beforeAll(async () => {
   await siapkanDatabaseUji(db, { migrationsFolder: MIGRATIONS_FOLDER });
@@ -27,6 +31,13 @@ beforeAll(async () => {
     sasaran: 1,
   }).$returningId();
   programA = program.id;
+  const [programOther] = await db.insert(bantuanProgram).values({
+    villageId: desaB,
+    name: "Program B",
+    slug: "program-b",
+    sasaran: 1,
+  }).$returningId();
+  programB = programOther.id;
 
   const [ra] = await db.insert(residents).values({
     villageId: desaA,
@@ -40,6 +51,12 @@ beforeAll(async () => {
   }).$returningId();
   residentA = ra.id;
   residentB = rb.id;
+  const [family] = await db.insert(families).values({ villageId: desaB, number: "1234567890123456" }).$returningId();
+  familyB = family.id;
+  const [rtm] = await db.insert(rumahTangga).values({ villageId: desaB, number: "RTM-B2-001" }).$returningId();
+  rtmB = rtm.id;
+  const [group] = await db.insert(kelompok).values({ villageId: desaB, name: "Kelompok B", slug: "kelompok-b", type: "kelompok" }).$returningId();
+  kelompokB = group.id;
 });
 
 afterAll(async () => {
@@ -79,12 +96,31 @@ describe("B2 Bantuan composite tenant FK", () => {
     }
   });
 
-  it("menolak peserta yang menghubungkan program desa A ke penduduk desa B", async () => {
-    await expect(db.insert(bantuanPeserta).values({
-      villageId: desaA,
-      programId: programA,
-      residentId: residentB,
-    })).rejects.toMatchObject({ code: "ER_NO_REFERENCED_ROW_2" });
+  it("menolak referensi program dan semua jenis sasaran lintas tenant", async () => {
+    const attempts = [
+      () => db.insert(bantuanPeserta).values({ villageId: desaA, programId: programB }),
+      () => db.insert(bantuanPeserta).values({ villageId: desaA, programId: programA, residentId: residentB }),
+      () => db.insert(bantuanPeserta).values({ villageId: desaA, programId: programA, familyId: familyB }),
+      () => db.insert(bantuanPeserta).values({ villageId: desaA, programId: programA, rtmId: rtmB }),
+      () => db.insert(bantuanPeserta).values({ villageId: desaA, programId: programA, kelompokId: kelompokB }),
+    ];
+    for (const attempt of attempts) {
+      let error: unknown;
+      try {
+        await attempt();
+      } catch (caught) {
+        error = caught;
+      }
+      let current = error;
+      let code: unknown;
+      for (let depth = 0; depth < 5 && current && typeof current === "object"; depth += 1) {
+        const value = current as { code?: unknown; errno?: unknown; cause?: unknown };
+        code = value.code ?? value.errno;
+        if (code !== undefined) break;
+        current = value.cause;
+      }
+      expect([1452, "ER_NO_REFERENCED_ROW_2"]).toContain(code);
+    }
   });
 
   it("menerima peserta sah dan tetap mengizinkan target nullable", async () => {
