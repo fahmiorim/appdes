@@ -91,10 +91,7 @@ export async function listKelompok(params: ListKelompokParams): Promise<Kelompok
       .from(kelompok)
       .leftJoin(
       kelompokMaster,
-      and(
-        eq(kelompok.categoryId, kelompokMaster.id),
-        eq(kelompokMaster.villageId, villageId),
-      ),
+      and(eq(kelompok.categoryId, kelompokMaster.id), eq(kelompokMaster.villageId, villageId)),
     )
       .where(where)
       .orderBy(asc(kelompok.name), asc(kelompok.id))
@@ -143,10 +140,7 @@ async function listMemberCounts(
     )
     .innerJoin(
       residents,
-      and(
-        eq(residents.id, kelompokAnggota.residentId),
-        eq(residents.villageId, villageId),
-      ),
+      and(eq(residents.id, kelompokAnggota.residentId), eq(residents.villageId, villageId)),
     )
     .where(
       and(
@@ -182,10 +176,7 @@ async function listLeaders(
     )
     .innerJoin(
       residents,
-      and(
-        eq(kelompokAnggota.residentId, residents.id),
-        eq(residents.villageId, villageId),
-      ),
+      and(eq(kelompokAnggota.residentId, residents.id), eq(residents.villageId, villageId)),
     )
     .where(
       and(
@@ -247,20 +238,12 @@ export async function kelompokCodeExists(
   return rows.length > 0;
 }
 
-async function assertKategoriTenant(
-  villageId: number,
-  categoryId: number | null,
-): Promise<void> {
+async function assertKategoriTenant(villageId: number, categoryId: number | null): Promise<void> {
   if (categoryId === null) return;
   const [category] = await db
     .select({ id: kelompokMaster.id })
     .from(kelompokMaster)
-    .where(
-      and(
-        eq(kelompokMaster.id, categoryId),
-        eq(kelompokMaster.villageId, villageId),
-      ),
-    )
+    .where(and(eq(kelompokMaster.id, categoryId), eq(kelompokMaster.villageId, villageId)))
     .limit(1);
   if (!category) throw new Error("Kategori kelompok tidak ditemukan pada desa aktif.");
 }
@@ -319,9 +302,7 @@ export async function updateKelompok(
  * `ON DELETE CASCADE` pada baris keanggotaan saja.
  */
 export async function deleteKelompok(villageId: number, id: number): Promise<void> {
-  await db
-    .delete(kelompok)
-    .where(and(eq(kelompok.villageId, villageId), eq(kelompok.id, id)));
+  await db.delete(kelompok).where(and(eq(kelompok.villageId, villageId), eq(kelompok.id, id)));
 }
 
 /** Jumlah anggota sebuah kelompok (dipakai penjaga hapus di use-case). */
@@ -367,10 +348,7 @@ export async function listKelompokMembers(
     )
     .innerJoin(
       residents,
-      and(
-        eq(kelompokAnggota.residentId, residents.id),
-        eq(residents.villageId, villageId),
-      ),
+      and(eq(kelompokAnggota.residentId, residents.id), eq(residents.villageId, villageId)),
     )
     .where(
       and(eq(kelompokAnggota.villageId, villageId), eq(kelompokAnggota.kelompokId, kelompokId)),
@@ -449,7 +427,8 @@ export async function addKelompokMember(
     .from(residents)
     .where(and(eq(residents.id, residentId), eq(residents.villageId, villageId)))
     .limit(1);
-  if (!group || !resident) throw new Error("Kelompok atau penduduk tidak ditemukan pada desa aktif.");
+  if (!group || !resident)
+    throw new Error("Kelompok atau penduduk tidak ditemukan pada desa aktif.");
 
   await db.insert(kelompokAnggota).values({
     villageId,
@@ -534,10 +513,7 @@ export async function listKelompokAnggotaPublik(
     )
     .innerJoin(
       residents,
-      and(
-        eq(kelompokAnggota.residentId, residents.id),
-        eq(residents.villageId, villageId),
-      ),
+      and(eq(kelompokAnggota.residentId, residents.id), eq(residents.villageId, villageId)),
     )
     .where(and(eq(kelompokAnggota.villageId, villageId), eq(kelompokAnggota.tampilPublik, true)));
 
@@ -624,24 +600,15 @@ export async function listLaporanAnggota(
     .from(kelompokAnggota)
     .innerJoin(
       kelompok,
-      and(
-        eq(kelompokAnggota.kelompokId, kelompok.id),
-        eq(kelompok.villageId, villageId),
-      ),
+      and(eq(kelompokAnggota.kelompokId, kelompok.id), eq(kelompok.villageId, villageId)),
     )
     .innerJoin(
       residents,
-      and(
-        eq(kelompokAnggota.residentId, residents.id),
-        eq(residents.villageId, villageId),
-      ),
+      and(eq(kelompokAnggota.residentId, residents.id), eq(residents.villageId, villageId)),
     )
     .leftJoin(
       kelompokMaster,
-      and(
-        eq(kelompok.categoryId, kelompokMaster.id),
-        eq(kelompokMaster.villageId, villageId),
-      ),
+      and(eq(kelompok.categoryId, kelompokMaster.id), eq(kelompokMaster.villageId, villageId)),
     )
     .where(and(eq(kelompokAnggota.villageId, villageId), ...filters));
 
