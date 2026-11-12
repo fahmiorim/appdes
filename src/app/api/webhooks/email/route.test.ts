@@ -38,14 +38,17 @@ function request(
   const rawBody = JSON.stringify(body);
   const timestamp = options.timestamp ?? String(Math.floor(Date.now() / 1000));
   const eventId = options.eventId ?? "event-00000001";
+  const host = options.host ?? "desa.example.test";
   const signature =
     options.signature ??
-    createHmac("sha256", secret).update(`${timestamp}.${eventId}.${rawBody}`).digest("hex");
+    createHmac("sha256", secret)
+      .update(`${timestamp}.${eventId}.${host.toLowerCase()}.${rawBody}`)
+      .digest("hex");
 
   return new Request("https://desa.example.test/api/webhooks/email", {
     method: "POST",
     headers: {
-      host: options.host ?? "desa.example.test",
+      host,
       ...(options.forwardedHost ? { "x-forwarded-host": options.forwardedHost } : {}),
       "content-type": "application/json",
       "x-email-webhook-timestamp": timestamp,
@@ -95,10 +98,28 @@ describe("POST /api/webhooks/email", () => {
     const response = await POST(request());
 
     expect(response.status).toBe(409);
-    expect(batasiPermintaan).toHaveBeenCalledWith("email-webhook-event:event-00000001", {
+    expect(batasiPermintaan).toHaveBeenCalledWith("email-webhook-event:desa.example.test:event-00000001", {
       batas: 1,
       jendelaMs: 600_000,
     });
+    expect(resolveVillageByHost).not.toHaveBeenCalled();
+    expect(terimaPesanEmailWebhook).not.toHaveBeenCalled();
+  });
+
+  it("rejects a signed event when Host is changed to another tenant", async () => {
+    const signedForA = request(payload, { host: "desa-a.example.test" });
+    const altered = new Request("https://desa-b.example.test/api/webhooks/email", {
+      method: "POST",
+      headers: {
+        ...Object.fromEntries(signedForA.headers.entries()),
+        host: "desa-b.example.test",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const response = await POST(altered);
+
+    expect(response.status).toBe(401);
     expect(resolveVillageByHost).not.toHaveBeenCalled();
     expect(terimaPesanEmailWebhook).not.toHaveBeenCalled();
   });
