@@ -1,4 +1,5 @@
 import {
+  foreignKey,
   index,
   int,
   json,
@@ -35,7 +36,10 @@ export const suplemen = mysqlTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (t) => [uniqueIndex("suplemen_village_slug_uq").on(t.villageId, t.slug)],
+  (t) => [
+    uniqueIndex("suplemen_village_slug_uq").on(t.villageId, t.slug),
+    uniqueIndex("suplemen_village_id_uq").on(t.villageId, t.id),
+  ],
 );
 
 export const suplemenTerdata = mysqlTable(
@@ -46,16 +50,17 @@ export const suplemenTerdata = mysqlTable(
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
 
-    suplemenId: int("id_suplemen")
-      .notNull()
-      .references(() => suplemen.id, { onDelete: "cascade" }),
+    suplemenId: int("id_suplemen").notNull(),
 
-    pendudukId: int("penduduk_id").references(() => residents.id, {
-      onDelete: "set null",
-    }),
-    keluargaId: int("keluarga_id").references(() => families.id, {
-      onDelete: "set null",
-    }),
+    /**
+     * Referensi opsional ke penduduk/keluarga.
+     *
+     * FK composite memakai `RESTRICT` karena menyertakan `village_id NOT NULL`;
+     * pelepasan referensi saat penduduk/keluarga dihapus dilakukan transaksi
+     * aplikasi. Lihat migration `0002_b2_dtks_suplemen_composite_fk`.
+     */
+    pendudukId: int("penduduk_id"),
+    keluargaId: int("keluarga_id"),
 
     /** Data isian dinamis (tergantung bentuk suplemen). */
     dataFormIsian: json("data_form_isian"),
@@ -70,6 +75,24 @@ export const suplemenTerdata = mysqlTable(
     index("suplemen_terdata_suplemen_idx").on(t.suplemenId),
     index("suplemen_terdata_penduduk_idx").on(t.pendudukId),
     index("suplemen_terdata_keluarga_idx").on(t.keluargaId),
+    index("suplemen_terdata_village_suplemen_idx").on(t.villageId, t.suplemenId),
+    index("suplemen_terdata_village_penduduk_idx").on(t.villageId, t.pendudukId),
+    index("suplemen_terdata_village_keluarga_idx").on(t.villageId, t.keluargaId),
+    foreignKey({
+      name: "suplemen_terdata_suplemen_tenant_fk",
+      columns: [t.villageId, t.suplemenId],
+      foreignColumns: [suplemen.villageId, suplemen.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "suplemen_terdata_penduduk_tenant_fk",
+      columns: [t.villageId, t.pendudukId],
+      foreignColumns: [residents.villageId, residents.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "suplemen_terdata_keluarga_tenant_fk",
+      columns: [t.villageId, t.keluargaId],
+      foreignColumns: [families.villageId, families.id],
+    }).onDelete("restrict"),
   ],
 );
 

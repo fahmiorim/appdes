@@ -18,6 +18,7 @@ import { db } from "@/db";
 import {
   bloodTypes,
   citizenships,
+  dtks,
   educations,
   families,
   familyMemberLogs,
@@ -27,6 +28,7 @@ import {
   regions,
   religions,
   residents,
+  suplemenTerdata,
   users,
 } from "@/db/schema";
 import {
@@ -322,8 +324,10 @@ export async function updateKeluarga(id: number, input: KeluargaFormInput): Prom
 /**
  * Hapus KK.
  *
- * Referensi penduduk dilepas dalam transaksi sebelum KK dihapus agar
- * `village_id` tetap terjaga pada composite foreign key.
+ * Referensi penduduk, DTKS, dan Suplemen dilepas dalam transaksi sebelum KK
+ * dihapus agar `village_id` tetap terjaga pada composite foreign key. Ketiganya
+ * memakai FK `RESTRICT` (bukan `SET NULL`) karena composite FK menyertakan
+ * `village_id NOT NULL`; `SET NULL` akan ikut mengosongkan kolom desa.
  */
 export async function deleteKeluarga(villageId: number, id: number): Promise<void> {
   await db.transaction(async (tx) => {
@@ -331,6 +335,14 @@ export async function deleteKeluarga(villageId: number, id: number): Promise<voi
       .update(residents)
       .set({ familyId: null })
       .where(and(eq(residents.villageId, villageId), eq(residents.familyId, id)));
+    await tx
+      .update(dtks)
+      .set({ keluargaId: null })
+      .where(and(eq(dtks.villageId, villageId), eq(dtks.keluargaId, id)));
+    await tx
+      .update(suplemenTerdata)
+      .set({ keluargaId: null })
+      .where(and(eq(suplemenTerdata.villageId, villageId), eq(suplemenTerdata.keluargaId, id)));
     await tx.delete(families).where(and(eq(families.villageId, villageId), eq(families.id, id)));
   });
 }

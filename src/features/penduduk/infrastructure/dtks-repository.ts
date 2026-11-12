@@ -436,10 +436,16 @@ export async function listLampiranTerpasang(
     .from(dtksRefLampiran)
     .innerJoin(
       dtksLampiran,
-      and(eq(dtksRefLampiran.lampiranId, dtksLampiran.id), eq(dtksLampiran.villageId, villageId)),
+      and(
+        eq(dtksRefLampiran.lampiranId, dtksLampiran.id),
+        eq(dtksRefLampiran.villageId, dtksLampiran.villageId),
+      ),
     )
-    .innerJoin(dtks, and(eq(dtksRefLampiran.dtksId, dtks.id), eq(dtks.villageId, villageId)))
-    .where(eq(dtksRefLampiran.dtksId, dtksId))
+    .innerJoin(
+      dtks,
+      and(eq(dtksRefLampiran.dtksId, dtks.id), eq(dtksRefLampiran.villageId, dtks.villageId)),
+    )
+    .where(and(eq(dtksRefLampiran.dtksId, dtksId), eq(dtksRefLampiran.villageId, villageId)))
     .orderBy(desc(dtksLampiran.createdAt));
 }
 
@@ -490,7 +496,7 @@ export async function tautkanLampiran(
   lampiranId: number,
 ): Promise<void> {
   await pastikanLampiranDanDtksSatuDesa(villageId, dtksId, lampiranId);
-  await db.insert(dtksRefLampiran).ignore().values({ dtksId, lampiranId }).execute();
+  await db.insert(dtksRefLampiran).ignore().values({ villageId, dtksId, lampiranId }).execute();
 }
 
 export async function lepasLampiran(
@@ -501,7 +507,13 @@ export async function lepasLampiran(
   await pastikanLampiranDanDtksSatuDesa(villageId, dtksId, lampiranId);
   await db
     .delete(dtksRefLampiran)
-    .where(and(eq(dtksRefLampiran.dtksId, dtksId), eq(dtksRefLampiran.lampiranId, lampiranId)));
+    .where(
+      and(
+        eq(dtksRefLampiran.villageId, villageId),
+        eq(dtksRefLampiran.dtksId, dtksId),
+        eq(dtksRefLampiran.lampiranId, lampiranId),
+      ),
+    );
 }
 
 // --- Pengaturan program -----------------------------------------------------

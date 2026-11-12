@@ -356,6 +356,12 @@ describe("AUD-002 composite tenant foreign keys", () => {
     expect(nama).toEqual([
       "bulanan_anak_kia_tenant_fk",
       "bulanan_anak_posyandu_tenant_fk",
+      "dtks_anggota_dtks_tenant_fk",
+      "dtks_anggota_penduduk_tenant_fk",
+      "dtks_keluarga_tenant_fk",
+      "dtks_ref_lampiran_dtks_tenant_fk",
+      "dtks_ref_lampiran_lampiran_tenant_fk",
+      "dtks_rtm_tenant_fk",
       "families_region_tenant_fk",
       "ibu_hamil_kia_tenant_fk",
       "ibu_hamil_posyandu_tenant_fk",
@@ -373,6 +379,9 @@ describe("AUD-002 composite tenant foreign keys", () => {
       "residents_region_tenant_fk",
       "residents_rtm_tenant_fk",
       "rtm_region_tenant_fk",
+      "suplemen_terdata_keluarga_tenant_fk",
+      "suplemen_terdata_penduduk_tenant_fk",
+      "suplemen_terdata_suplemen_tenant_fk",
     ]);
   });
 
