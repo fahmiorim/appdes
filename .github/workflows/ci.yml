@@ -34,11 +34,6 @@ jobs:
       - name: Install dependency
         run: npm ci
 
-      - name: Diagnose Prettier output (AUD-006)
-        run: |
-          npx prettier src/features/layanan-mandiri/permohonan-tenant-relations.integration.test.ts > /tmp/aud006-formatted.ts
-          diff -u src/features/layanan-mandiri/permohonan-tenant-relations.integration.test.ts /tmp/aud006-formatted.ts || true
-
       - name: Typecheck
         run: npm run typecheck
 
