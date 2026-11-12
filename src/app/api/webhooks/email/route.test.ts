@@ -98,10 +98,13 @@ describe("POST /api/webhooks/email", () => {
     const response = await POST(request());
 
     expect(response.status).toBe(409);
-    expect(batasiPermintaan).toHaveBeenCalledWith("email-webhook-event:desa.example.test:event-00000001", {
+    expect(batasiPermintaan).toHaveBeenCalledWith(
+      "email-webhook-event:desa.example.test:event-00000001",
+      {
       batas: 1,
-      jendelaMs: 600_000,
-    });
+        jendelaMs: 600_000,
+      },
+    );
     expect(resolveVillageByHost).not.toHaveBeenCalled();
     expect(terimaPesanEmailWebhook).not.toHaveBeenCalled();
   });
