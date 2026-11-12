@@ -7,9 +7,11 @@ import { db } from "@/db";
 import { kelompok, kelompokAnggota, kelompokMaster, residents, villages } from "@/db/schema";
 import {
   addKelompokMember,
+  countKelompokAnggota,
   deleteKategori,
   deleteKelompok,
   findKategoriById,
+  kelompokMemberExists,
   listKelompok,
   listKelompokAnggotaPublik,
   listKelompokMembers,
@@ -143,6 +145,8 @@ describe("isolasi tenant repository kelompok", () => {
     expect(daftar.rows[0]?.categoryName).toBeNull();
     expect(daftar.rows[0]?.leaderName).toBeNull();
     expect(daftar.rows[0]?.memberCount).toBe(1);
+    expect(await countKelompokAnggota(current.villageA, current.groupA)).toBe(1);
+    expect(await kelompokMemberExists(current.villageA, current.groupA, current.residentB)).toBe(false);
 
     const anggota = await listKelompokMembers(current.villageA, current.groupA);
     expect(anggota).toHaveLength(1);
