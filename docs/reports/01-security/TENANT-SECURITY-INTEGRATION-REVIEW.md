@@ -258,9 +258,11 @@ pada database disposable, dan build. Jangan merge #8 sebelum #7.
 
 ## 14. Batasan review ini
 
-- Tidak ada akses `gh`, sehingga deskripsi/komentar PR tidak diperbarui dan
-  status check CI tidak diverifikasi. Perubahan hanya tersedia sebagai commit
-  branch (sudah di-push untuk #3 dan #5; branch integrasi di-push terpisah).
+- Pada saat laporan awal dibuat, environment Freebuff tidak memiliki akses `gh`,
+  sehingga deskripsi/komentar PR belum diperbarui dan CI belum diverifikasi.
+  Setelah review lanjutan melalui GitHub, deskripsi PR #3, #5, #7, dan #8 telah
+  diselaraskan dengan hasil integrasi. Status CI tetap NOT TESTED karena tidak
+  ada status check maupun workflow run yang terdeteksi pada commit terkait.
 - Pengujian memakai data sintetis kecil, bukan volume production.
 - Modul di luar diff keempat PR tidak diaudit menyeluruh; temuan F7 dicatat
   sebagai follow-up, bukan diklaim selesai.
