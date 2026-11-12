@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented on branch `task/AUD-021-02-private-no-store`. Draft PR and CI validation pending.
+Implemented on branch `task/AUD-021-02-private-no-store`. Draft PR #21; CI passed after the final route reconciliation.
 
 ## Finding
 
@@ -18,12 +18,13 @@ Four authenticated/private Route Handlers did not explicitly set a cache policy 
 - Added `privateNoStore()` in `src/lib/response-headers.ts`.
 - Set `Cache-Control: private, no-store` on successful responses and error/authentication responses from all four handlers.
 - Preserved existing authentication, authorization, tenant scoping, response bodies, status codes, and download metadata.
+- The Bantuan export route also retains the safe shared `toCsv()` serializer from AUD-021-01, so applying no-store headers does not restore the old unsafe CSV builder.
 - Added helper coverage in `src/lib/response-headers.test.ts`.
 - Extended NIK route tests to assert the cache policy for 401, 400, 404, 200, and 403 responses.
 
 ## Validation
 
-- Automated CI: pending.
+- Automated CI: PASS — [run 43308154639](https://github.com/fahmiorim/appdes/actions/runs/43308154639), all jobs successful after the final route reconciliation.
 - No database changes or migrations.
 - No merge or deployment performed.
 
