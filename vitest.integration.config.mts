@@ -22,6 +22,8 @@ export default defineConfig({
   test: {
     environment: "node",
     include: [
+      "src/db/b2-dtks-suplemen-composite-fk.integration.test.ts",
+      "src/db/b2-migration-guard-rollback.integration.test.ts",
       "src/db/tenant-composite-fk.integration.test.ts",
       "src/features/bantuan/integrasi-warga.test.ts",
       "src/features/database/infrastructure/verifikasi-restore.integration.test.ts",

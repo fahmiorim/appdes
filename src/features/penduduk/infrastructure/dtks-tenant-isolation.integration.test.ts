@@ -221,21 +221,23 @@ beforeAll(async () => {
     .insert(dtks)
     .values({ villageId: desaB, rtmId: rtmB, keluargaId: keluargaB, status: "draf" })
     .$returningId();
-  // DTKS desa A menunjuk RTM dan KK desa B (relasi legacy lintas desa).
-  const [dtksLegacyARow] = await db
-    .insert(dtks)
-    .values({ villageId: desaA, rtmId: rtmB, keluargaId: keluargaB, status: "draf" })
-    .$returningId();
+  // Simulasikan DTKS legacy desa A yang merujuk RTM/KK desa B.
+  const dtksLegacyA = await sisipkanLegacy(
+    "INSERT INTO dtks (village_id, rtm_id, keluarga_id, status) VALUES (?, ?, ?, 'draf')",
+    [desaA, rtmB, keluargaB],
+  );
   const dtksA = pastiId(dtksARow, "DTKS A");
   const dtksB = pastiId(dtksBRow, "DTKS B");
-  const dtksLegacyA = pastiId(dtksLegacyARow, "DTKS legacy A");
 
   await db.insert(dtksAnggota).values([
     { villageId: desaA, dtksId: dtksA, pendudukId: anggotaA, statusAnggota: "aktif" },
     { villageId: desaB, dtksId: dtksB, pendudukId: anggotaB, statusAnggota: "aktif" },
-    // Anggota tercatat di desa B tetapi menunjuk DTKS desa A.
-    { villageId: desaB, dtksId: dtksA, pendudukId: anggotaB, statusAnggota: "aktif" },
   ]);
+  // Baris legacy lintas desa hanya disisipkan pada koneksi fixture disposable.
+  await sisipkanLegacy(
+    "INSERT INTO dtks_anggota (village_id, dtks_id, penduduk_id, status_anggota) VALUES (?, ?, ?, 'aktif')",
+    [desaB, dtksA, anggotaB],
+  );
 
   const [lampiranARow] = await db
     .insert(dtksLampiran)
@@ -248,11 +250,14 @@ beforeAll(async () => {
   const lampiranA = pastiId(lampiranARow, "lampiran A");
   const lampiranB = pastiId(lampiranBRow, "lampiran B");
 
-  await db.insert(dtksRefLampiran).values([
-    { dtksId: dtksA, lampiranId: lampiranA },
-    // Relasi legacy: lampiran desa B ditautkan ke DTKS desa A.
-    { dtksId: dtksA, lampiranId: lampiranB },
-  ]);
+  await db
+    .insert(dtksRefLampiran)
+    .values({ villageId: desaA, dtksId: dtksA, lampiranId: lampiranA });
+  // Junction legacy: village/DTKS A menunjuk lampiran milik desa B.
+  await sisipkanLegacy(
+    "INSERT INTO dtks_ref_lampiran (village_id, dtks_id, lampiran_id) VALUES (?, ?, ?)",
+    [desaA, dtksA, lampiranB],
+  );
 
   fixture = {
     desaA,

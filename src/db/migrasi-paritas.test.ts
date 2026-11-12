@@ -60,9 +60,23 @@ function tabelMigrasi(): Set<string> {
   return hasil;
 }
 
-/** Nama kolom per tabel, dibaca dari badan `CREATE TABLE` pada seluruh migrasi. */
+/**
+ * Nama kolom per tabel, dibaca dari badan `CREATE TABLE` dan `ALTER TABLE ... ADD`
+ * pada seluruh migrasi.
+ *
+ * `ALTER TABLE ... ADD` diperlukan karena kolom yang ditambahkan ke tabel lama
+ * (mis. `dtks_ref_lampiran.village_id` pada migration 0002) tidak muncul di
+ * badan `CREATE TABLE` mana pun. Tanpa cabang ini, paritas snapshot vs SQL
+ * gagal palsu; dengan cabang ini, kolom tetap wajib ada di suatu migration.
+ */
 function kolomMigrasi(): Map<string, Set<string>> {
   const hasil = new Map<string, Set<string>>();
+  const tambah = (tabel: string, kolom: string) => {
+    const kumpulan = hasil.get(tabel) ?? new Set<string>();
+    kumpulan.add(kolom);
+    hasil.set(tabel, kumpulan);
+  };
+
   for (const isi of sqlMigrasi()) {
     for (const tabel of isi.matchAll(
       /CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)` \(\n([\s\S]*?)\n\);/g,
@@ -70,12 +84,18 @@ function kolomMigrasi(): Map<string, Set<string>> {
       const nama = tabel[1];
       const badan = tabel[2];
       if (!nama || badan === undefined) continue;
-      const kolom = hasil.get(nama) ?? new Set<string>();
       for (const baris of badan.split("\n")) {
         const cocok = /^\t`([a-z0-9_]+)`/.exec(baris);
-        if (cocok?.[1]) kolom.add(cocok[1]);
+        if (cocok?.[1]) tambah(nama, cocok[1]);
       }
-      hasil.set(nama, kolom);
+    }
+
+    for (const tambahan of isi.matchAll(
+      /ALTER TABLE `([a-z0-9_]+)` ADD (?:COLUMN )?`([a-z0-9_]+)`/g,
+    )) {
+      const nama = tambahan[1];
+      const kolom = tambahan[2];
+      if (nama && kolom) tambah(nama, kolom);
     }
   }
   return hasil;
