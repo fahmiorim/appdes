@@ -69,14 +69,19 @@ Event ID disimpan melalui tabel `rate_limit_entries` selama jendela 10 menit. Pe
 | Pemeriksaan | Status |
 |---|---|
 | Audit kode webhook / resolver host | PASS — temuan di atas terkonfirmasi |
-| Regression test route | Ditambahkan; menunggu CI |
-| Typecheck, lint, format, unit test | Menunggu CI |
-| Integration test MySQL 8 | Menunggu CI |
+| Regression test route | PASS — 5 test route; termasuk signature invalid, timestamp kedaluwarsa, replay, Host vs forwarded host, dan unknown host |
+| Typecheck | PASS |
+| Lint | PASS |
+| Format check (Prettier) | PASS |
+| Unit test | PASS — 187 file, 1.704 test |
+| Integration test MySQL 8 | PASS — 16 file, 108 test pada database disposable `desa_test_ci` |
 | Perubahan schema / migration | Tidak ada |
 | Database development / production | Tidak disentuh |
 | Konfigurasi reverse proxy aktual | NOT TESTED — perlu verifikasi di staging |
 | Konfigurasi provider webhook aktual | NOT TESTED — provider perlu migrasi kontrak |
 | Merge / deploy | Tidak dilakukan |
+
+CI GitHub Actions run [43306744570](https://github.com/fahmiorim/appdes/actions/runs/43306744570) pada commit `66e818d742d79171e5efa1c1faeaabfbd3a0677a` selesai dengan status **success** untuk seluruh job (quality/unit, integration MySQL 8, dan ringkasan).
 
 ## 6. Kesimpulan
 
