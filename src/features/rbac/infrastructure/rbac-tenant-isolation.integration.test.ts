@@ -1,19 +1,19 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import mysql, { type ResultSetHeader } from "mysql2/promise";
 import { and, eq, inArray, isNull } from "drizzle-orm";
+import mysql, { type ResultSetHeader } from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
 import { modules, rolePermissions, roles, villages } from "@/db/schema";
+import { computeEffectivePermissions } from "@/features/rbac/application/authorization";
 import {
+  deleteRole,
   getRoleById,
   listLevelsByRole,
   setRolePermissions,
   updateRole,
-  deleteRole,
 } from "@/features/rbac/infrastructure/rbac-repository";
-import { computeEffectivePermissions } from "@/features/rbac/application/authorization";
 import { validasiDatabaseUji } from "@/testing/db-test-guard";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
@@ -147,7 +147,10 @@ describe("isolasi tenant repository dan authorization RBAC", () => {
     expect(permissionsA.levelByResource.has(`modul-a-${RUN}`)).toBe(true);
     expect(permissionsA.levelByResource.has(`modul-b-${RUN}`)).toBe(false);
 
-    const permissionsWrongTenant = await computeEffectivePermissions(current.roleB, current.villageA);
+    const permissionsWrongTenant = await computeEffectivePermissions(
+      current.roleB,
+      current.villageA,
+    );
     expect(permissionsWrongTenant.levelByResource.size).toBe(0);
 
     const adminForTenant = await computeEffectivePermissions(current.globalAdmin, current.villageA);
