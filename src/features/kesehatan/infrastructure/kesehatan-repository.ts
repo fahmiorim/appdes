@@ -90,13 +90,13 @@ export async function deleteKia(id: number, villageId: number): Promise<void> {
   const [h] = await db
     .select({ id: ibuHamil.id })
     .from(ibuHamil)
-    .where(eq(ibuHamil.kiaId, id))
+    .where(and(eq(ibuHamil.villageId, villageId), eq(ibuHamil.kiaId, id)))
     .limit(1);
   if (h) throw new Error("KIA terkait masih digunakan pada ibu hamil/anak");
   const [a] = await db
     .select({ id: bulananAnak.id })
     .from(bulananAnak)
-    .where(eq(bulananAnak.kiaId, id))
+    .where(and(eq(bulananAnak.villageId, villageId), eq(bulananAnak.kiaId, id)))
     .limit(1);
   if (a) throw new Error("KIA terkait masih digunakan pada ibu hamil/anak");
   await db.delete(kia).where(and(eq(kia.id, id), eq(kia.villageId, villageId)));

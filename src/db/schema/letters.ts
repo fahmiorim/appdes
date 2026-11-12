@@ -1,11 +1,13 @@
 import {
   boolean,
+  foreignKey,
   index,
   int,
   mysqlEnum,
   mysqlTable,
   text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/mysql-core";
 
@@ -32,10 +34,8 @@ export const letters = mysqlTable(
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
 
-    typeId: int("type_id")
-      .notNull()
-      .references(() => letterTypes.id, { onDelete: "restrict" }),
-    residentId: int("resident_id").references(() => residents.id, { onDelete: "set null" }),
+    typeId: int("type_id").notNull(),
+    residentId: int("resident_id"),
 
     /** Salinan nama jenis surat saat surat dibuat (denormalisasi arsip). */
     typeName: varchar("type_name", { length: 150 }).notNull(),
@@ -99,6 +99,17 @@ export const letters = mysqlTable(
   (table) => [
     index("letters_village_type_year_idx").on(table.villageId, table.typeId, table.year),
     index("letters_village_status_idx").on(table.villageId, table.status),
+    uniqueIndex("letters_village_id_uq").on(table.villageId, table.id),
+    foreignKey({
+      name: "letters_type_tenant_fk",
+      columns: [table.villageId, table.typeId],
+      foreignColumns: [letterTypes.villageId, letterTypes.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "letters_resident_tenant_fk",
+      columns: [table.villageId, table.residentId],
+      foreignColumns: [residents.villageId, residents.id],
+    }).onDelete("restrict"),
   ],
 );
 

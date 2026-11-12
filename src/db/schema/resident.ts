@@ -1,5 +1,6 @@
 import {
   date,
+  foreignKey,
   index,
   int,
   mysqlEnum,
@@ -52,7 +53,7 @@ export const residents = mysqlTable(
     birthPlace: varchar("birth_place", { length: 100 }),
     birthDate: date("birth_date", { mode: "string" }),
 
-    familyId: int("family_id").references(() => families.id, { onDelete: "set null" }),
+    familyId: int("family_id"),
 
     /**
      * Rumah tangga tempat penduduk bernaung.
@@ -61,7 +62,7 @@ export const residents = mysqlTable(
      * berada di satu rumah tangga. `rtmLevel` menyimpan perannya
      * (1 = kepala rumah tangga, 2 = anggota; lihat domain rumah-tangga).
      */
-    rtmId: int("rtm_id").references(() => rumahTangga.id, { onDelete: "set null" }),
+    rtmId: int("rtm_id"),
     rtmLevel: int("rtm_level"),
 
     religionId: int("religion_id").references(() => religions.id, { onDelete: "set null" }),
@@ -92,7 +93,7 @@ export const residents = mysqlTable(
       .default("permanent"),
     lifeStatus: mysqlEnum("life_status", LIFE_STATUSES).notNull().default("alive"),
 
-    regionId: int("region_id").references(() => regions.id, { onDelete: "set null" }),
+    regionId: int("region_id"),
     address: varchar("address", { length: 255 }),
 
     phone: varchar("phone", { length: 30 }),
@@ -111,6 +112,22 @@ export const residents = mysqlTable(
   },
   (t) => [
     uniqueIndex("residents_village_national_id_uq").on(t.villageId, t.nationalId),
+    uniqueIndex("residents_village_id_uq").on(t.villageId, t.id),
+    foreignKey({
+      name: "residents_family_tenant_fk",
+      columns: [t.villageId, t.familyId],
+      foreignColumns: [families.villageId, families.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "residents_rtm_tenant_fk",
+      columns: [t.villageId, t.rtmId],
+      foreignColumns: [rumahTangga.villageId, rumahTangga.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "residents_region_tenant_fk",
+      columns: [t.villageId, t.regionId],
+      foreignColumns: [regions.villageId, regions.id],
+    }).onDelete("restrict"),
     index("residents_village_name_idx").on(t.villageId, t.name),
     index("residents_village_family_idx").on(t.villageId, t.familyId),
     index("residents_village_life_status_idx").on(t.villageId, t.lifeStatus),

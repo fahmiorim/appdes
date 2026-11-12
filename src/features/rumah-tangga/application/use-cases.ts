@@ -200,7 +200,7 @@ export async function deleteRumahTangga(id: number): Promise<void> {
   const existing = await findRumahTanggaById(villageId, id);
   if (!existing) throw notFound("Rumah Tangga tidak ditemukan.");
 
-  await deleteRumahTanggaRow(id);
+  await deleteRumahTanggaRow(villageId, id);
 }
 
 /**

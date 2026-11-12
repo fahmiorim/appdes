@@ -80,7 +80,10 @@ export const letterTypes = mysqlTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [uniqueIndex("letter_types_village_code_unique").on(table.villageId, table.code)],
+  (table) => [
+    uniqueIndex("letter_types_village_code_unique").on(table.villageId, table.code),
+    uniqueIndex("letter_types_village_id_uq").on(table.villageId, table.id),
+  ],
 );
 
 export type LetterType = typeof letterTypes.$inferSelect;
