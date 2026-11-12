@@ -130,7 +130,7 @@ export async function updateBantuan(id: number, input: BantuanFormInput): Promis
   await getScopedProgram(villageId, id);
 
   const slug = await slugBebas(villageId, input.nama, id);
-  await updateBantuanRow(id, slug, input);
+  await updateBantuanRow(villageId, id, slug, input);
 }
 
 /**
@@ -152,7 +152,7 @@ export async function deleteBantuan(id: number): Promise<void> {
     );
   }
 
-  await deleteBantuanRow(id);
+  await deleteBantuanRow(villageId, id);
 }
 
 /**
