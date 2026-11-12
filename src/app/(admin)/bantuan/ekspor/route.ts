@@ -18,7 +18,7 @@ interface BantuanCsvRow {
 
 function buildBantuanCsv(rows: Array<BantuanCsvRow>): string {
   // Header baris CSV
-  const header = "Nama Program,Sasaran,Asal Dana,Nama Sasaran,Identitas,No Kartu,Tanggal Daftar\n";
+  const header = "Nama Program,Sasaran,Asal Dana,Nama Sasaran,Identitas,No Kartu,Tanggal Daftar\\n";
 
   // Build data rows
   const dataRows = rows.map((row) => {
@@ -35,7 +35,7 @@ function buildBantuanCsv(rows: Array<BantuanCsvRow>): string {
   });
 
   // Gabungkan header dan data
-  return header + dataRows.join("\n");
+  return header + dataRows.join("\\n");
 }
 
 export async function GET(request: Request) {
@@ -77,10 +77,12 @@ export async function GET(request: Request) {
 
   const filename = `rekap-bantuan-${program.slug}.csv`;
 
-  return privateNoStore(new NextResponse(buildBantuanCsv(csvRows), {
-    headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${filename}"`,
-    },
-  }));
+  return privateNoStore(
+    new NextResponse(buildBantuanCsv(csvRows), {
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+      },
+    }),
+  );
 }
