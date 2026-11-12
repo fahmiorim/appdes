@@ -34,6 +34,12 @@ jobs:
       - name: Install dependency
         run: npm ci
 
+      - name: Temporary webhook Prettier diagnostic
+        run: |
+          npx prettier --write src/app/api/webhooks/email/route.ts
+          git diff -- src/app/api/webhooks/email/route.ts
+          cat src/app/api/webhooks/email/route.ts
+
       - name: Typecheck
         run: npm run typecheck
 
