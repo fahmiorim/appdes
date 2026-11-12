@@ -190,7 +190,7 @@ export async function updateRumahTangga(id: number, input: RumahTanggaFormInput)
   const existing = await findRumahTanggaById(villageId, id);
   if (!existing) throw notFound("Rumah Tangga tidak ditemukan.");
 
-  await updateRumahTanggaRow(id, input);
+  await updateRumahTanggaRow(villageId, id, input);
 }
 
 export async function deleteRumahTangga(id: number): Promise<void> {
