@@ -1,6 +1,7 @@
 # AUD-002 — Rollback Runbook
 
-**Status:** Drafted; SQL has not been executed against MySQL.  
+**Status:** Rehearsed on disposable MySQL 8.0.30; see
+`AUD-002-rollback-verification.md`.
 **Scope:** Recovery from a fully and successfully applied
 `0001_aud002_composite_tenant_fk.sql` back to the original single-column
 foreign keys from `0000_baseline.sql`.
@@ -49,14 +50,18 @@ development database for the first rehearsal.
 5. Confirm exactly 19 original FK names exist, and no `*_tenant_fk` names
    remain for the AUD-002 relations.
 6. Confirm the original `ON DELETE` actions match `0000_baseline.sql`.
-7. Confirm all 8 AUD-002 unique keys and 3 AUD-002 composite indexes are absent.
-8. Run the application's typecheck, unit tests, integration tests, and build
+7. Confirm all 8 AUD-002 unique keys, 3 explicitly-created composite indexes,
+   and 14 implicit MySQL FK-support indexes are absent. `DROP FOREIGN KEY` does
+   not remove those implicit indexes; the inverse SQL drops them by name.
+8. Compare all affected-table columns, indexes, and FK definitions against a
+   fresh baseline schema; inspect all schema objects for unintended changes.
+9. Run the application's typecheck, unit tests, integration tests, and build
    against the rolled-back schema and the chosen application version.
-9. Exercise deletes for family, RTM, resident, letter, and region records using
-   fixtures that cover nullable references, cascade, and restrict behavior.
-10. Re-run the AUD-002 preflight. Any cross-tenant result after rollback is
+10. Exercise deletes for family, RTM, resident, letter, and region records using
+    fixtures that cover nullable references, cascade, and restrict behavior.
+11. Re-run the AUD-002 preflight. Any cross-tenant result after rollback is
     expected to be detectable and must be treated as a security finding.
-11. Restore the clone from backup and verify application connectivity.
+12. Restore the clone from backup and verify application connectivity.
 
 A rehearsal is **PASS** only when all checks succeed and the backup restore is
 proven. Record MySQL version, dataset size, elapsed time for each DDL statement,
@@ -147,14 +152,31 @@ ORDER BY TABLE_NAME, INDEX_NAME;
 
 Expected result for the second query after a complete rollback: **zero rows**.
 
+Also inspect all indexes on the affected tables (do not restrict to the 11
+explicit names above), because InnoDB creates supporting indexes for composite
+FKs when no existing index has the required leading columns. AUD-002 creates 14
+such implicit indexes whose names match the composite FK constraints. They must
+be absent after rollback; compare full `information_schema.STATISTICS` output
+with the baseline to ensure no baseline index was lost.
+
+## Rehearsal result
+
+See `AUD-002-rollback-verification.md` for command-level output and full
+comparison. On disposable MySQL 8.0.30, forward migration, inverse migration,
+controlled stop-on-error failure, and full backup restore were exercised. A
+fresh baseline database was compared with the restored-and-inversed database:
+all table columns, all FK names/columns/referenced columns/delete/update actions,
+and all indexes matched exactly. The rehearsal used an empty baseline schema
+plus one small synthetic fixture; production-scale lock duration remains
+unmeasured.
+
 ## Current validation status
 
-- Inverse DDL authored by comparing the forward migration with the baseline
-  migration definitions.
-- Object names and original `ON DELETE` rules cross-checked against
-  `0000_baseline.sql`.
-- MySQL execution, forward-then-inverse rehearsal, failure injection, lock
-  measurement, and restore drill: **NOT RUN**.
+- Inverse DDL executed on a disposable database and compared against baseline:
+  **PASS**.
+- Controlled mid-script failure and stop-on-error behavior: **PASS**.
+- Full database backup restore into a fresh disposable database: **PASS**.
 - Production: **NOT ACCESSED**.
 
-Do not mark rollback readiness as complete until the required rehearsal passes.
+Rollback DDL has passed this rehearsal, but it is still non-atomic and must only
+be run against the fully applied AUD-002 schema with a verified backup.

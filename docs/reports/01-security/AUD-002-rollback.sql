@@ -24,7 +24,8 @@
 --   * 19 original single-column FKs exist with baseline delete actions.
 --   * 19 *_tenant_fk constraints no longer exist.
 --   * 8 *_village_id_uq unique keys no longer exist.
---   * 3 AUD-002 composite indexes no longer exist.
+--   * 3 explicitly-created AUD-002 composite indexes no longer exist.
+--   * 14 implicit MySQL child indexes created for composite FKs no longer exist.
 --
 -- Execute statement-by-statement with stop-on-error. Do not continue after
 -- any failed ALTER; inspect information_schema before deciding next action.
@@ -137,12 +138,30 @@ ALTER TABLE `rtm`
   FOREIGN KEY (`region_id`) REFERENCES `regions`(`id`)
   ON DELETE SET NULL ON UPDATE NO ACTION;
 
--- 3. Remove only the three indexes introduced by AUD-002.
+-- 3. Drop the implicit indexes MySQL created for composite foreign keys whose
+--    child table had no index with (village_id, parent_id) as a leading prefix.
+--    These indexes survive DROP FOREIGN KEY and are not part of the baseline.
+DROP INDEX `bulanan_anak_kia_tenant_fk` ON `bulanan_anak`;
+DROP INDEX `bulanan_anak_posyandu_tenant_fk` ON `bulanan_anak`;
+DROP INDEX `families_region_tenant_fk` ON `families`;
+DROP INDEX `ibu_hamil_kia_tenant_fk` ON `ibu_hamil`;
+DROP INDEX `ibu_hamil_posyandu_tenant_fk` ON `ibu_hamil`;
+DROP INDEX `kia_anak_tenant_fk` ON `kia`;
+DROP INDEX `kia_ibu_tenant_fk` ON `kia`;
+DROP INDEX `letters_resident_tenant_fk` ON `letters`;
+DROP INDEX `permohonan_surat_letter_tenant_fk` ON `permohonan_surat`;
+DROP INDEX `permohonan_surat_resident_tenant_fk` ON `permohonan_surat`;
+DROP INDEX `permohonan_surat_type_tenant_fk` ON `permohonan_surat`;
+DROP INDEX `residents_region_tenant_fk` ON `residents`;
+DROP INDEX `residents_rtm_tenant_fk` ON `residents`;
+DROP INDEX `rtm_region_tenant_fk` ON `rtm`;
+
+-- 4. Remove only the three indexes introduced explicitly by AUD-002.
 DROP INDEX `resident_mutations_village_resident_idx` ON `resident_mutations`;
 DROP INDEX `resident_mutations_village_from_region_idx` ON `resident_mutations`;
 DROP INDEX `resident_mutations_village_to_region_idx` ON `resident_mutations`;
 
--- 4. Remove the eight parent unique keys introduced by AUD-002.
+-- 5. Remove the eight parent unique keys introduced by AUD-002.
 ALTER TABLE `families` DROP INDEX `families_village_id_uq`;
 ALTER TABLE `kia` DROP INDEX `kia_village_id_uq`;
 ALTER TABLE `posyandu` DROP INDEX `posyandu_village_id_uq`;
@@ -152,7 +171,8 @@ ALTER TABLE `regions` DROP INDEX `regions_village_id_uq`;
 ALTER TABLE `residents` DROP INDEX `residents_village_id_uq`;
 ALTER TABLE `rtm` DROP INDEX `rtm_village_id_uq`;
 
--- 5. Verify manually using information_schema:
+-- 6. Verify manually using information_schema. Include both explicit AUD-002
+--    indexes and implicit indexes named after *_tenant_fk constraints:
 --    SELECT TABLE_NAME, CONSTRAINT_NAME, COLUMN_NAME, REFERENCED_TABLE_NAME,
 --           REFERENCED_COLUMN_NAME
 --    FROM information_schema.KEY_COLUMN_USAGE
