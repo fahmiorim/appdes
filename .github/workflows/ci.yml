@@ -34,11 +34,6 @@ jobs:
       - name: Install dependency
         run: npm ci
 
-      - name: Diagnose Prettier output (temporary)
-        run: |
-          npx prettier --write src/features/rbac/infrastructure/rbac-repository.ts src/features/rbac/infrastructure/rbac-tenant-isolation.integration.test.ts src/features/rbac/application/authorization.ts src/features/rbac/application/grup-use-cases.ts
-          git --no-pager diff -- src/features/rbac/infrastructure/rbac-repository.ts src/features/rbac/infrastructure/rbac-tenant-isolation.integration.test.ts src/features/rbac/application/authorization.ts src/features/rbac/application/grup-use-cases.ts
-
       - name: Typecheck
         run: npm run typecheck
 
