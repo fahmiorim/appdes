@@ -16,6 +16,8 @@ const dnsPalsu = vi.hoisted(() => {
     dibatalkan: 0,
     resolve4: 0,
     resolve6: 0,
+    ecancelled: 0,
+    pending: [] as Array<(error: Error) => void>,
   };
 
   class ResolverPalsu {
@@ -26,7 +28,7 @@ const dnsPalsu = vi.hoisted(() => {
     resolve4(): Promise<string[]> {
       state.resolve4 += 1;
       if (state.mode === "normal") return Promise.resolve(["93.184.216.34"]);
-      return new Promise<string[]>(() => {});
+      return new Promise<string[]>((_, reject) => state.pending.push(reject));
     }
 
     resolve6(): Promise<string[]> {
@@ -37,6 +39,11 @@ const dnsPalsu = vi.hoisted(() => {
 
     cancel(): void {
       state.dibatalkan += 1;
+      const pending = state.pending.splice(0);
+      for (const reject of pending) {
+        state.ecancelled += 1;
+        reject(Object.assign(new Error("query cancelled"), { code: "ECANCELLED" }));
+      }
     }
   }
 
@@ -51,6 +58,8 @@ beforeEach(() => {
   dnsPalsu.state.dibatalkan = 0;
   dnsPalsu.state.resolve4 = 0;
   dnsPalsu.state.resolve6 = 0;
+  dnsPalsu.state.ecancelled = 0;
+  dnsPalsu.state.pending = [];
 });
 
 describe("buatPenjagaKonkurensi", () => {
@@ -127,6 +136,8 @@ describe("buatResolverDns", () => {
 
     await expect(janji).rejects.toThrow("batas waktu");
     expect(dnsPalsu.state.dibatalkan).toBeGreaterThan(0);
+    // c-ares rejects in-flight resolve4/resolve6 with ECANCELLED when cancel() runs.
+    expect(dnsPalsu.state.ecancelled).toBe(2);
   });
 
   it("menyelesaikan resolusi normal dan memetakan family A/AAAA", async () => {
