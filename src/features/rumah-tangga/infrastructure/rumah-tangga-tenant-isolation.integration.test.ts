@@ -171,7 +171,9 @@ describe("isolasi tenant repository rumah tangga", () => {
 
     await updateRumahTangga(current.villageB, current.rtmA, input);
     await deleteRumahTangga(current.villageB, current.rtmA);
-    await setAnggotaRumahTangga(current.villageA, current.residentB, current.rtmB, 2);
+    await expect(
+      setAnggotaRumahTangga(current.villageA, current.residentB, current.rtmB, 2),
+    ).rejects.toThrow(/tidak ditemukan pada desa aktif/);
 
     const after = await findRumahTanggaById(current.villageA, current.rtmA);
     expect(after?.address).toBe(before?.address);
