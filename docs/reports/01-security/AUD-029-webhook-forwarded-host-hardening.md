@@ -70,11 +70,11 @@ Event ID disimpan melalui tabel `rate_limit_entries` selama jendela 10 menit. Pe
 | Pemeriksaan | Status |
 |---|---|
 | Audit kode webhook / resolver host | PASS — temuan di atas terkonfirmasi |
-| Regression test route | Ditambah 1 test lintas-host; menunggu CI terbaru |
+| Regression test route | PASS — 6 test route, termasuk signature lintas-host |
 | Typecheck | PASS |
 | Lint | PASS |
 | Format check (Prettier) | PASS |
-| Unit test | PASS — 187 file, 1.704 test |
+| Unit test | PASS — 187 file, 1.705 test |
 | Integration test MySQL 8 | PASS — 16 file, 108 test pada database disposable `desa_test_ci` |
 | Perubahan schema / migration | Tidak ada |
 | Database development / production | Tidak disentuh |
@@ -82,7 +82,7 @@ Event ID disimpan melalui tabel `rate_limit_entries` selama jendela 10 menit. Pe
 | Konfigurasi provider webhook aktual | NOT TESTED — provider perlu migrasi kontrak |
 | Merge / deploy | Tidak dilakukan |
 
-CI GitHub Actions run [43306744570](https://github.com/fahmiorim/appdes/actions/runs/43306744570) pada commit `66e818d742d79171e5efa1c1faeaabfbd3a0677a` selesai dengan status **success** untuk seluruh job. Commit terbaru menambahkan pengikatan signature ke Host dan regression test lintas-host; CI untuk revisi tersebut harus lulus sebelum PR dinyatakan final.
+CI GitHub Actions run [43308530606](https://github.com/fahmiorim/appdes/actions/runs/43308530606) pada commit `ee6e9ba9eccf4dfa3f83b054b3ccb737224e71a2` selesai dengan status **success** untuk seluruh job: typecheck, lint, Prettier, 187 file / 1.705 unit test, dan 16 file / 108 integration test pada `desa_test_ci`.
 
 ## 6. Kesimpulan
 
