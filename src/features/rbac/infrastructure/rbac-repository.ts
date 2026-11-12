@@ -104,14 +104,10 @@ export async function listLevelsByRole(
   return new Map(rows.map((row) => [row.moduleId, row.access]));
 }
 
-export async function listRoles(villageId?: number): Promise<RoleRecord[]> {
-  const query = db.select(roleColumns).from(roles);
-
-  if (villageId === undefined) {
-    return query.orderBy(roles.createdAt, roles.name);
-  }
-
-  return query
+export async function listRoles(villageId: number | null): Promise<RoleRecord[]> {
+  return db
+    .select(roleColumns)
+    .from(roles)
     .where(
       villageId === null
         ? isNull(roles.villageId)
