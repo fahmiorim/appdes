@@ -1,11 +1,15 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import mysql, { type ResultSetHeader } from "mysql2/promise";
 import { inArray } from "drizzle-orm";
+import mysql, { type ResultSetHeader } from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
 import { families, regions, residents, villages } from "@/db/schema";
+import {
+  HEAD_OF_FAMILY_RELATION_ID,
+  type KeluargaFormInput,
+} from "@/features/keluarga/domain/keluarga";
 import {
   deleteKeluarga,
   findKeluargaById,
@@ -16,7 +20,6 @@ import {
   listKeluargaMembers,
   updateKeluarga,
 } from "@/features/keluarga/infrastructure/keluarga-repository";
-import { HEAD_OF_FAMILY_RELATION_ID, type KeluargaFormInput } from "@/features/keluarga/domain/keluarga";
 import { validasiDatabaseUji } from "@/testing/db-test-guard";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
@@ -94,10 +97,7 @@ async function seedFixture(): Promise<Fixture> {
     "INSERT INTO residents (village_id, family_id, family_relation_id, name, gender, birth_date) VALUES (?, ?, ?, ?, 'female', '1990-01-01')",
     [villageB, familyA, HEAD_OF_FAMILY_RELATION_ID, foreignResidentName],
   );
-  await sisipkanLegacy(
-    "UPDATE families SET region_id = ? WHERE id = ?",
-    [regionB, familyA],
-  );
+  await sisipkanLegacy("UPDATE families SET region_id = ? WHERE id = ?", [regionB, familyA]);
 
   return { villageA, villageB, familyA, familyB, foreignResidentName };
 }
