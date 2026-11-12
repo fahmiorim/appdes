@@ -209,7 +209,7 @@ export async function updateKelompok(id: number, input: KelompokFormInput): Prom
   }
 
   const slug = await slugUnik(villageId, input.nama, id);
-  await updateKelompokRow(id, slug, input);
+  await updateKelompokRow(villageId, id, slug, input);
 
   await recordAuditEvent({
     villageId,
@@ -234,7 +234,7 @@ export async function deleteKelompok(id: number): Promise<void> {
     );
   }
 
-  await deleteKelompokRow(id);
+  await deleteKelompokRow(villageId, id);
 
   await recordAuditEvent({
     villageId,
@@ -350,7 +350,7 @@ export async function updateKategori(id: number, input: KategoriKelompokFormInpu
     });
   }
 
-  await updateKategoriRow(id, input);
+  await updateKategoriRow(villageId, id, input);
 }
 
 export async function deleteKategori(id: number): Promise<void> {
@@ -366,5 +366,5 @@ export async function deleteKategori(id: number): Promise<void> {
     );
   }
 
-  await deleteKategoriRow(id);
+  await deleteKategoriRow(villageId, id);
 }
