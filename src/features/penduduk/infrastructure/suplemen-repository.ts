@@ -44,7 +44,7 @@ export async function listSuplemen(
         sasaran: suplemen.sasaran,
         keterangan: suplemen.keterangan,
         updatedAt: suplemen.updatedAt,
-        terdataCount: sql<number>`(SELECT COUNT(*) FROM suplemen_terdata WHERE suplemen_terdata.id_suplemen = suplemen.id)`,
+        terdataCount: sql<number>`(SELECT COUNT(*) FROM suplemen_terdata WHERE suplemen_terdata.id_suplemen = suplemen.id AND suplemen_terdata.village_id = ${villageId})`,
       })
       .from(suplemen)
       .where(where)
@@ -121,8 +121,20 @@ export async function listSuplemenTerdata(
       createdAt: suplemenTerdata.createdAt,
     })
     .from(suplemenTerdata)
-    .leftJoin(residents, eq(suplemenTerdata.pendudukId, residents.id))
-    .leftJoin(families, eq(suplemenTerdata.keluargaId, families.id))
+    // Parent suplemen dan data terdata harus satu desa; identitas penduduk/KK
+    // hanya dibaca dari tenant yang sama.
+    .innerJoin(
+      suplemen,
+      and(eq(suplemen.id, suplemenTerdata.suplemenId), eq(suplemen.villageId, villageId)),
+    )
+    .leftJoin(
+      residents,
+      and(eq(suplemenTerdata.pendudukId, residents.id), eq(residents.villageId, villageId)),
+    )
+    .leftJoin(
+      families,
+      and(eq(suplemenTerdata.keluargaId, families.id), eq(families.villageId, villageId)),
+    )
     .where(
       and(eq(suplemenTerdata.villageId, villageId), eq(suplemenTerdata.suplemenId, suplemenId)),
     )
@@ -181,6 +193,35 @@ export async function addSuplemenTerdataImpor(
   sasaranId: { pendudukId: number | null; keluargaId: number | null },
   isian: Record<string, string>,
 ): Promise<boolean> {
+  // Impor tidak boleh melewati validasi kepemilikan: parent suplemen dan
+  // sasaran harus berada pada desa yang sama. Tepat satu sasaran wajib diisi.
+  const punyaPenduduk = sasaranId.pendudukId !== null;
+  const punyaKeluarga = sasaranId.keluargaId !== null;
+  if (punyaPenduduk === punyaKeluarga) {
+    throw new Error("Sasaran impor harus salah satu: penduduk atau keluarga.");
+  }
+
+  const parent = await getSuplemenById(villageId, suplemenId);
+  if (!parent) throw new Error("Suplemen tidak ditemukan.");
+
+  if (sasaranId.pendudukId !== null) {
+    const [resident] = await db
+      .select({ id: residents.id })
+      .from(residents)
+      .where(and(eq(residents.id, sasaranId.pendudukId), eq(residents.villageId, villageId)))
+      .limit(1);
+    if (!resident) throw new Error("Penduduk tidak ditemukan.");
+  }
+
+  if (sasaranId.keluargaId !== null) {
+    const [family] = await db
+      .select({ id: families.id })
+      .from(families)
+      .where(and(eq(families.id, sasaranId.keluargaId), eq(families.villageId, villageId)))
+      .limit(1);
+    if (!family) throw new Error("Keluarga tidak ditemukan.");
+  }
+
   const kolomCek = sasaranId.pendudukId
     ? eq(suplemenTerdata.pendudukId, sasaranId.pendudukId)
     : eq(suplemenTerdata.keluargaId, sasaranId.keluargaId!);
@@ -227,6 +268,10 @@ export async function listSuplemenRekap(villageId: number) {
   const terdataRows = await db
     .select({ suplemenId: suplemenTerdata.suplemenId, jumlah: count() })
     .from(suplemenTerdata)
+    .innerJoin(
+      suplemen,
+      and(eq(suplemen.id, suplemenTerdata.suplemenId), eq(suplemen.villageId, villageId)),
+    )
     .where(eq(suplemenTerdata.villageId, villageId))
     .groupBy(suplemenTerdata.suplemenId);
   const terdataBySuplemen = new Map(
