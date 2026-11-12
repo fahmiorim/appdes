@@ -499,6 +499,13 @@ export async function listPesertaProgram(
       .select({ ...cardColumns, targetName: families.number, targetIdentity: families.number })
       .from(bantuanPeserta)
       .innerJoin(
+        bantuanProgram,
+        and(
+          eq(bantuanProgram.id, bantuanPeserta.programId),
+          eq(bantuanProgram.villageId, villageId),
+        ),
+      )
+      .innerJoin(
         families,
         and(eq(bantuanPeserta.familyId, families.id), eq(families.villageId, villageId)),
       )
@@ -521,6 +528,13 @@ export async function listPesertaProgram(
       })
       .from(bantuanPeserta)
       .innerJoin(
+        bantuanProgram,
+        and(
+          eq(bantuanProgram.id, bantuanPeserta.programId),
+          eq(bantuanProgram.villageId, villageId),
+        ),
+      )
+      .innerJoin(
         rumahTangga,
         and(eq(bantuanPeserta.rtmId, rumahTangga.id), eq(rumahTangga.villageId, villageId)),
       )
@@ -541,6 +555,13 @@ export async function listPesertaProgram(
       .select({ ...cardColumns, targetName: kelompok.name, targetIdentity: kelompok.code })
       .from(bantuanPeserta)
       .innerJoin(
+        bantuanProgram,
+        and(
+          eq(bantuanProgram.id, bantuanPeserta.programId),
+          eq(bantuanProgram.villageId, villageId),
+        ),
+      )
+      .innerJoin(
         kelompok,
         and(eq(bantuanPeserta.kelompokId, kelompok.id), eq(kelompok.villageId, villageId)),
       )
@@ -551,6 +572,13 @@ export async function listPesertaProgram(
   const rows = await db
     .select({ ...cardColumns, targetName: residents.name, targetIdentity: residents.nationalId })
     .from(bantuanPeserta)
+      .innerJoin(
+        bantuanProgram,
+        and(
+          eq(bantuanProgram.id, bantuanPeserta.programId),
+          eq(bantuanProgram.villageId, villageId),
+        ),
+      )
     .innerJoin(
         residents,
         and(eq(bantuanPeserta.residentId, residents.id), eq(residents.villageId, villageId)),
@@ -592,6 +620,13 @@ export async function listSebaranWilayah(
       .select(regionColumns)
       .from(bantuanPeserta)
       .innerJoin(
+        bantuanProgram,
+        and(
+          eq(bantuanProgram.id, bantuanPeserta.programId),
+          eq(bantuanProgram.villageId, villageId),
+        ),
+      )
+      .innerJoin(
         families,
         and(eq(bantuanPeserta.familyId, families.id), eq(families.villageId, villageId)),
       )
@@ -605,6 +640,13 @@ export async function listSebaranWilayah(
     rows = await db
       .select(regionColumns)
       .from(bantuanPeserta)
+      .innerJoin(
+        bantuanProgram,
+        and(
+          eq(bantuanProgram.id, bantuanPeserta.programId),
+          eq(bantuanProgram.villageId, villageId),
+        ),
+      )
       .innerJoin(
         rumahTangga,
         and(eq(bantuanPeserta.rtmId, rumahTangga.id), eq(rumahTangga.villageId, villageId)),
@@ -620,6 +662,13 @@ export async function listSebaranWilayah(
     rows = await db
       .select(regionColumns)
       .from(bantuanPeserta)
+      .innerJoin(
+        bantuanProgram,
+        and(
+          eq(bantuanProgram.id, bantuanPeserta.programId),
+          eq(bantuanProgram.villageId, villageId),
+        ),
+      )
       .innerJoin(
         kelompokAnggota,
         and(
@@ -645,6 +694,13 @@ export async function listSebaranWilayah(
     rows = await db
       .select(regionColumns)
       .from(bantuanPeserta)
+      .innerJoin(
+        bantuanProgram,
+        and(
+          eq(bantuanProgram.id, bantuanPeserta.programId),
+          eq(bantuanProgram.villageId, villageId),
+        ),
+      )
       .innerJoin(
         residents,
         and(eq(bantuanPeserta.residentId, residents.id), eq(residents.villageId, villageId)),
