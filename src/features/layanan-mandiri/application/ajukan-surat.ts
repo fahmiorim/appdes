@@ -10,6 +10,7 @@ import {
 } from "@/features/layanan-mandiri/domain/layanan-mandiri";
 import {
   buatPermohonan,
+  findPendudukById,
   getSuratUntukWarga,
   listPermohonanWarga,
   listSuratUntukWarga,
@@ -65,7 +66,11 @@ export async function simpanPermohonanSurat(
   residentId: number,
   input: AjukanSuratInput,
 ): Promise<{ id: number; noAntrian: string }> {
-  const jenis = await getSuratUntukWarga(villageId, input.letterTypeId);
+  const [penduduk, jenis] = await Promise.all([
+    findPendudukById(villageId, residentId),
+    getSuratUntukWarga(villageId, input.letterTypeId),
+  ]);
+  if (!penduduk) throw notFound("Penduduk tidak ditemukan pada desa ini.");
   if (!jenis) throw notFound("Jenis surat tidak ditemukan atau sedang tidak aktif.");
 
   const fields = parseIsianFields(jenis.formIsian);
