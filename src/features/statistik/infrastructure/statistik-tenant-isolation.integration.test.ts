@@ -6,7 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
 import { regions, residents, villages } from "@/db/schema";
-import { bantuanPeserta, bantuanProgram } from "@/db/schema/bantuan";
+import { bantuanProgram } from "@/db/schema/bantuan";
 import {
   getStatistikBantuan,
   getStatistikPenduduk,
@@ -75,19 +75,6 @@ async function seedFixture(): Promise<Fixture> {
     lifeStatus: "alive",
     birthDate: "1980-01-01",
   });
-  const [residentBRow] = await db
-    .insert(residents)
-    .values({
-      villageId: villageB,
-      regionId: regionB,
-      name: `Penduduk B ${RUN}`,
-      gender: "male",
-      lifeStatus: "alive",
-      birthDate: "1985-01-01",
-    })
-    .$returningId();
-  const residentB = pastiId(residentBRow, "resident B");
-
   // Penduduk desa A dengan region legacy milik desa B.
   await sisipkanLegacy(
     "INSERT INTO residents (village_id, region_id, name, gender, life_status, birth_date) VALUES (?, ?, ?, 'female', 'alive', '1990-01-01')",
@@ -105,13 +92,6 @@ async function seedFixture(): Promise<Fixture> {
     .$returningId();
   const programA = pastiId(programRow, "program A");
 
-  // Peserta desa A yang menunjuk penduduk desa B (relasi legacy tidak konsisten).
-  await db.insert(bantuanPeserta).values({
-    villageId: villageA,
-    programId: programA,
-    residentId: residentB,
-  });
-
   return { villageA, villageB, foreignRegionName, programA };
 }
 
@@ -123,7 +103,6 @@ beforeAll(async () => {
 afterAll(async () => {
   if (!fixture) return;
   const villageIds = [fixture.villageA, fixture.villageB];
-  await db.delete(bantuanPeserta).where(inArray(bantuanPeserta.villageId, villageIds));
   await db.delete(bantuanProgram).where(inArray(bantuanProgram.villageId, villageIds));
   await db.delete(residents).where(inArray(residents.villageId, villageIds));
   await db.delete(regions).where(inArray(regions.villageId, villageIds));
@@ -146,7 +125,7 @@ describe("isolasi tenant repository statistik", () => {
     expect(statistik.summary.female).toBe(0);
   });
 
-  it("tidak membaca gender dan wilayah penduduk lintas desa pada statistik bantuan", async () => {
+  it("tidak menampilkan peserta lintas desa karena relasi tersebut ditolak oleh composite FK", async () => {
     if (!fixture) throw new Error("Fixture integrasi tidak siap.");
     const current = fixture;
 
@@ -155,7 +134,7 @@ describe("isolasi tenant repository statistik", () => {
       page: 1,
       perPage: 20,
     });
-    expect(semua.summary.total).toBe(1);
+    expect(semua.summary.total).toBe(0);
     expect(semua.summary.male).toBe(0);
     expect(semua.summary.female).toBe(0);
 
