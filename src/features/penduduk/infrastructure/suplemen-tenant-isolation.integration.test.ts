@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { count, eq, inArray } from "drizzle-orm";
+import mysql, { type ResultSetHeader } from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
@@ -19,6 +20,7 @@ import {
   listSuplemenTerdata,
   removeSuplemenTerdata,
 } from "@/features/penduduk/infrastructure/suplemen-repository";
+import { validasiDatabaseUji } from "@/testing/db-test-guard";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 /**
@@ -58,6 +60,18 @@ function pastiId(row: { id: number | undefined } | undefined, label: string): nu
   const id = row?.id;
   if (id === undefined) throw new Error(`Seed uji gagal: ${label}`);
   return id;
+}
+
+async function sisipkanLegacy(sql: string, paramsLegacy: unknown[]): Promise<number> {
+  const koneksi = await mysql.createConnection(validasiDatabaseUji(process.env).opsiKoneksi);
+  try {
+    await koneksi.query("SET FOREIGN_KEY_CHECKS = 0");
+    const [hasil] = await koneksi.query<ResultSetHeader>(sql, paramsLegacy);
+    return hasil.insertId;
+  } finally {
+    await koneksi.query("SET FOREIGN_KEY_CHECKS = 1");
+    await koneksi.end();
+  }
 }
 
 function dataUji(): Fixture {
@@ -181,35 +195,27 @@ beforeAll(async () => {
     .$returningId();
   const terdataB = pastiId(terdataBRow, "terdata B");
 
-  await db.insert(suplemenTerdata).values([
-    {
-      villageId: desaA,
-      suplemenId: suplemenA,
-      pendudukId: pendudukA,
-      dataFormIsian: { kesehatan: "ya" },
-    },
-    // Data terdata desa B yang menunjuk suplemen desa A.
-    {
-      villageId: desaB,
-      suplemenId: suplemenA,
-      pendudukId: pendudukB,
-      dataFormIsian: { rahasiaB: "bocor" },
-    },
-    // Data terdata desa A yang menunjuk penduduk desa B.
-    {
-      villageId: desaA,
-      suplemenId: suplemenA,
-      pendudukId: pendudukB,
-      dataFormIsian: { catatan: "lintas" },
-    },
-    // Data terdata desa A yang menunjuk keluarga desa B.
-    {
-      villageId: desaA,
-      suplemenId: suplemenA,
-      keluargaId: keluargaB,
-      dataFormIsian: { kk: "lintas" },
-    },
-  ]);
+  await db.insert(suplemenTerdata).values({
+    villageId: desaA,
+    suplemenId: suplemenA,
+    pendudukId: pendudukA,
+    dataFormIsian: { kesehatan: "ya" },
+  });
+
+  // Simulasikan tiga bentuk relasi legacy lintas desa. Bypass hanya dilakukan
+  // pada koneksi fixture disposable; constraint skema tetap aktif untuk app.
+  await sisipkanLegacy(
+    "INSERT INTO suplemen_terdata (village_id, id_suplemen, penduduk_id, data_form_isian) VALUES (?, ?, ?, ?)",
+    [desaB, suplemenA, pendudukB, JSON.stringify({ rahasiaB: "bocor" })],
+  );
+  await sisipkanLegacy(
+    "INSERT INTO suplemen_terdata (village_id, id_suplemen, penduduk_id, data_form_isian) VALUES (?, ?, ?, ?)",
+    [desaA, suplemenA, pendudukB, JSON.stringify({ catatan: "lintas" })],
+  );
+  await sisipkanLegacy(
+    "INSERT INTO suplemen_terdata (village_id, id_suplemen, keluarga_id, data_form_isian) VALUES (?, ?, ?, ?)",
+    [desaA, suplemenA, keluargaB, JSON.stringify({ kk: "lintas" })],
+  );
 
   fixture = {
     desaA,

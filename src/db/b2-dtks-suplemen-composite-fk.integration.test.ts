@@ -762,7 +762,7 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
 
     // Lampiran desa A tidak boleh ditautkan ke DTKS desa B lewat repository.
     await expect(tautkanLampiran(desaA, dtksB2, lampiranA)).rejects.toThrow(
-      /DTKS atau lampiran tidak ditemukan/,
+      /Data DTKS tidak ditemukan/,
     );
     // Junction hasil seed tetap utuh; penolakan tidak menyisipkan baris baru.
     expect((await listLampiranTerpasang(desaB, dtksB2)).map((row) => row.id)).toEqual([lampiranB]);
