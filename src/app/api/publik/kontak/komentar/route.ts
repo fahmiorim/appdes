@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 
-import { alamatIp } from "@/lib/client-ip";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import {
   daftarKomentarPublik,
@@ -8,6 +7,7 @@ import {
 } from "@/features/kontak/application/kontak-use-cases";
 import { bacaPengaturan } from "@/features/pengaturan/application/pengaturan-use-cases";
 import { batasiPermintaan } from "@/features/rate-limit/application/rate-limit";
+import { alamatIp } from "@/lib/client-ip";
 import { bacaJsonTerbatas, BodyLimitError } from "@/lib/request-body";
 
 const BATAS_BODY = 16_384;
