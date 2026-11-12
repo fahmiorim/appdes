@@ -86,7 +86,7 @@ describe("B2 Bantuan composite tenant FK", () => {
           'bantuan_peserta_kelompok_tenant_fk'
         )
       GROUP BY CONSTRAINT_NAME, TABLE_NAME, DELETE_RULE
-    `)) as unknown as [Array<{nama:string;tabel:string;kolom:string;referensi:string;aturan:string}>,unknown>;
+    `)) as unknown as [Array<{nama:string;tabel:string;kolom:string;referensi:string;aturan:string}>,unknown];
     expect(result[0]).toHaveLength(5);
     for (const row of result[0]) {
       expect(row.tabel).toBe("bantuan_peserta");
