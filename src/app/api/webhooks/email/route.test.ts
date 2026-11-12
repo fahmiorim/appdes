@@ -101,7 +101,7 @@ describe("POST /api/webhooks/email", () => {
     expect(batasiPermintaan).toHaveBeenCalledWith(
       "email-webhook-event:desa.example.test:event-00000001",
       {
-      batas: 1,
+        batas: 1,
         jendelaMs: 600_000,
       },
     );
