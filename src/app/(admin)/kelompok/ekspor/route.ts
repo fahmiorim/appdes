@@ -7,6 +7,7 @@ import {
   namaBerkasLaporanAnggota,
 } from "@/features/kelompok/domain/laporan-anggota";
 import { appErrorStatus, isAppError } from "@/lib/errors";
+import { privateNoStore } from "@/lib/response-headers";
 
 /**
  * Ekspor CSV laporan anggota kelompok & lembaga.
@@ -24,14 +25,16 @@ export async function GET(request: Request) {
   try {
     const rows = await getLaporanAnggota(tipe);
 
-    return new NextResponse(buildLaporanAnggotaCsv(rows), {
-      headers: {
-        "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="${namaBerkasLaporanAnggota(tipe)}"`,
-      },
-    });
+    return privateNoStore(
+      new NextResponse(buildLaporanAnggotaCsv(rows), {
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": `attachment; filename="${namaBerkasLaporanAnggota(tipe)}"`,
+        },
+      }),
+    );
   } catch (error) {
     const status = isAppError(error) ? appErrorStatus(error.code) : 500;
-    return new NextResponse("Gagal menyusun laporan anggota.", { status });
+    return privateNoStore(new NextResponse("Gagal menyusun laporan anggota.", { status }));
   }
 }

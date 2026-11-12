@@ -38,6 +38,7 @@ describe("GET /api/penduduk/nik", () => {
     const respons = await GET(permintaan("3201010101010001"));
 
     expect(respons.status).toBe(401);
+    expect(respons.headers.get("Cache-Control")).toBe("private, no-store");
     expect(cariPendudukByNikData).not.toHaveBeenCalled();
   });
 
@@ -45,6 +46,7 @@ describe("GET /api/penduduk/nik", () => {
     const respons = await GET(permintaan("320101010101000X"));
 
     expect(respons.status).toBe(400);
+    expect(respons.headers.get("Cache-Control")).toBe("private, no-store");
     expect(cariPendudukByNikData).not.toHaveBeenCalled();
   });
 
@@ -54,12 +56,14 @@ describe("GET /api/penduduk/nik", () => {
     const respons = await GET(permintaan("3201010101019999"));
 
     expect(respons.status).toBe(404);
+    expect(respons.headers.get("Cache-Control")).toBe("private, no-store");
   });
 
   it("mengembalikan data penduduk yang cocok", async () => {
     const respons = await GET(permintaan("3201010101010001"));
 
     expect(respons.status).toBe(200);
+    expect(respons.headers.get("Cache-Control")).toBe("private, no-store");
     await expect(respons.json()).resolves.toEqual({
       ok: true,
       resident: { id: 3, name: "Warga Uji", nationalId: "3201010101010001" },
@@ -72,5 +76,6 @@ describe("GET /api/penduduk/nik", () => {
     const respons = await GET(permintaan("3201010101010001"));
 
     expect(respons.status).toBe(403);
+    expect(respons.headers.get("Cache-Control")).toBe("private, no-store");
   });
 });
