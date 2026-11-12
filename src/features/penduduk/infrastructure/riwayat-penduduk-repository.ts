@@ -12,9 +12,19 @@ import type {
   MutationType,
   RiwayatPendudukRow,
 } from "@/features/penduduk/domain/riwayat-penduduk";
+import { notFound, validationError } from "@/lib/errors";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_PER_PAGE = 20;
+
+/**
+ * Identitas penduduk hanya boleh dibaca dari baris residents pada desa yang
+ * sama dengan mutasinya. Tanpa syarat `villageId`, relasi legacy yang salah
+ * dapat menampilkan nama/NIK penduduk desa lain pada riwayat tenant aktif.
+ */
+function joinResidentTenant(villageId: number) {
+  return and(eq(residents.id, residentMutations.residentId), eq(residents.villageId, villageId));
+}
 
 const riwayatColumns = {
   id: residentMutations.id,
@@ -85,7 +95,7 @@ export async function listRiwayatPenduduk(
   const rows = await db
     .select(riwayatColumns)
     .from(residentMutations)
-    .leftJoin(residents, eq(residents.id, residentMutations.residentId))
+    .leftJoin(residents, joinResidentTenant(villageId))
     .leftJoin(users, eq(users.id, residentMutations.actorId))
     .where(whereClause)
     .orderBy(desc(residentMutations.eventDate), desc(residentMutations.id))
@@ -95,7 +105,7 @@ export async function listRiwayatPenduduk(
   const [totalRow] = await db
     .select({ count: count() })
     .from(residentMutations)
-    .leftJoin(residents, eq(residents.id, residentMutations.residentId))
+    .leftJoin(residents, joinResidentTenant(villageId))
     .where(whereClause);
 
   return {
@@ -118,7 +128,7 @@ export async function listRiwayatPendudukExport(
   const rows = await db
     .select(riwayatColumns)
     .from(residentMutations)
-    .leftJoin(residents, eq(residents.id, residentMutations.residentId))
+    .leftJoin(residents, joinResidentTenant(villageId))
     .leftJoin(users, eq(users.id, residentMutations.actorId))
     .where(whereRiwayat(villageId, params))
     .orderBy(desc(residentMutations.eventDate), desc(residentMutations.id));
@@ -138,7 +148,9 @@ export async function getRiwayatByResident(
   const rows = await db
     .select(riwayatColumns)
     .from(residentMutations)
-    .leftJoin(residents, eq(residents.id, residentMutations.residentId))
+    // Riwayat per penduduk memakai inner join: ID penduduk tenant lain tidak
+    // boleh membuka baris mutasi desa ini, termasuk baris legacy.
+    .innerJoin(residents, joinResidentTenant(villageId))
     .leftJoin(users, eq(users.id, residentMutations.actorId))
     .where(
       and(eq(residentMutations.villageId, villageId), eq(residentMutations.residentId, residentId)),
@@ -163,12 +175,18 @@ export async function simpanPendudukBaruDanMutasi(
   penduduk: typeof residents.$inferInsert,
   mutasi: Omit<typeof residentMutations.$inferInsert, "residentId">,
 ): Promise<number> {
+  if (mutasi.villageId !== penduduk.villageId) {
+    throw validationError("Desa penduduk dan desa mutasi harus sama.");
+  }
+
   return db.transaction(async (tx) => {
     const [inserted] = await tx.insert(residents).values(penduduk).$returningId();
 
     if (!inserted) throw new Error("Gagal menyimpan data penduduk.");
 
-    await tx.insert(residentMutations).values({ ...mutasi, residentId: inserted.id });
+    await tx
+      .insert(residentMutations)
+      .values({ ...mutasi, villageId: penduduk.villageId, residentId: inserted.id });
 
     return inserted.id;
   });
@@ -181,12 +199,21 @@ export async function ubahStatusPendudukDanMutasi(
   lifeStatus: (typeof residents.$inferSelect)["lifeStatus"],
   mutasi: Omit<typeof residentMutations.$inferInsert, "residentId">,
 ): Promise<void> {
+  if (mutasi.villageId !== villageId) {
+    throw validationError("Desa mutasi tidak sesuai dengan desa penduduk.");
+  }
+
   await db.transaction(async (tx) => {
-    await tx
+    const [hasil] = await tx
       .update(residents)
       .set({ lifeStatus, updatedAt: new Date() })
       .where(and(eq(residents.id, residentId), eq(residents.villageId, villageId)));
 
-    await tx.insert(residentMutations).values({ ...mutasi, residentId });
+    // Update yang tidak mengenai baris berarti penduduk tidak ada di tenant ini.
+    // Tanpa pemeriksaan ini, mutasi tetap tersimpan dengan pasangan tenant-resident
+    // yang tidak konsisten.
+    if (hasil.affectedRows === 0) throw notFound("Data penduduk tidak ditemukan.");
+
+    await tx.insert(residentMutations).values({ ...mutasi, villageId, residentId });
   });
 }
