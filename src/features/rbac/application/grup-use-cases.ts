@@ -1,12 +1,12 @@
 import "server-only";
 
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
+import { requireUser } from "@/lib/dal";
 import { GRUP_AKSES_RESOURCE, type RoleFormInput } from "@/features/rbac/domain/grup";
 import { fromCrudPermissions, toCrudPermissions } from "@/features/rbac/domain/permission";
 import {
   createRole,
   deleteRole,
-  findRoleById,
   getRoleById,
   listLevelsByRole,
   listModules,
@@ -19,8 +19,8 @@ import { conflict, notFound } from "@/lib/errors";
 
 /** Pastikan role yang diakses berada pada desa yang sama. */
 async function getScopedRole(id: number, villageId: number) {
-  const role = await getRoleById(id);
-  if (!role || (role.villageId !== null && role.villageId !== villageId)) {
+  const role = await getRoleById(id, villageId);
+  if (!role) {
     throw notFound("Grup akses tidak ditemukan.");
   }
   return role;
@@ -34,7 +34,9 @@ export async function listRolesWithMeta() {
 
 /** Nama dan slug peran pengguna sesi; sesi sudah diverifikasi layout/halaman pemanggil. */
 export async function getPeranSesi(roleId: number): Promise<{ name: string; slug: string } | null> {
-  const role = await findRoleById(roleId);
+  const user = await requireUser();
+  const villageId = await resolveVillageId(user);
+  const role = await getRoleById(roleId, villageId);
   return role ? { name: role.name, slug: role.slug } : null;
 }
 
@@ -44,7 +46,7 @@ export async function getRoleDetail(id: number) {
 
   const role = await getScopedRole(id, villageId);
 
-  const [modules, levels] = await Promise.all([listModules(villageId), listLevelsByRole(id)]);
+  const [modules, levels] = await Promise.all([listModules(villageId), listLevelsByRole(id, villageId)]);
 
   const permissions = modules.map((m) => {
     const level = levels.get(m.id) ?? null;
@@ -92,7 +94,7 @@ export async function updateRoleData(id: number, input: RoleFormInput): Promise<
     throw conflict("Nama grup sudah digunakan.");
   }
 
-  await updateRole(id, { name: input.name });
+  await updateRole(villageId, id, { name: input.name });
 }
 
 export async function deleteRoleData(id: number): Promise<void> {
@@ -102,7 +104,7 @@ export async function deleteRoleData(id: number): Promise<void> {
   const role = await getScopedRole(id, villageId);
   if (role.isSystem) throw conflict("Grup sistem tidak dapat dihapus.");
 
-  await deleteRole(id);
+  await deleteRole(villageId, id);
 }
 
 export async function saveRolePermissions(
@@ -130,5 +132,5 @@ export async function saveRolePermissions(
     return access === null ? [] : [{ moduleId: p.moduleId, access }];
   });
 
-  await setRolePermissions(roleId, mapped);
+  await setRolePermissions(villageId, roleId, mapped);
 }
