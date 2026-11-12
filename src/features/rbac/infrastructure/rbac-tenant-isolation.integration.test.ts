@@ -28,7 +28,6 @@ interface Fixture {
   moduleA: number;
   moduleB: number;
   globalAdmin: number;
-  globalAdminCreated: boolean;
 }
 
 let fixture: Fixture | null = null;
@@ -70,26 +69,16 @@ async function seedFixture(): Promise<Fixture> {
     .insert(roles)
     .values({ villageId: villageB, name: `Role B ${RUN}`, slug: `role-b-${RUN}` })
     .$returningId();
-  const [existingGlobalAdmin] = await db
-    .select({ id: roles.id })
-    .from(roles)
-    .where(and(isNull(roles.villageId), eq(roles.slug, "administrator")))
-    .limit(1);
-  let globalAdmin = existingGlobalAdmin?.id ?? 0;
-  let globalAdminCreated = false;
-  if (!existingGlobalAdmin) {
-    const [globalAdminRow] = await db
-      .insert(roles)
-      .values({
-        villageId: null,
-        name: `Administrator ${RUN}`,
-        slug: "administrator",
-        isSystem: true,
-      })
-      .$returningId();
-    globalAdmin = pastiId(globalAdminRow, "global administrator");
-    globalAdminCreated = true;
-  }
+  const [globalAdminRow] = await db
+    .insert(roles)
+    .values({
+      villageId: null,
+      name: `Administrator Uji ${RUN}`,
+      slug: "administrator",
+      isSystem: true,
+    })
+    .$returningId();
+  const globalAdmin = pastiId(globalAdminRow, "global administrator");
 
   const [moduleARow] = await db
     .insert(modules)
@@ -124,7 +113,6 @@ async function seedFixture(): Promise<Fixture> {
     moduleA,
     moduleB,
     globalAdmin,
-    globalAdminCreated,
   };
 }
 
@@ -135,9 +123,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (!fixture) return;
-  const roleIds = fixture.globalAdminCreated
-    ? [fixture.roleA, fixture.roleB, fixture.globalAdmin]
-    : [fixture.roleA, fixture.roleB];
+  const roleIds = [fixture.roleA, fixture.roleB, fixture.globalAdmin];
   const moduleIds = [fixture.moduleA, fixture.moduleB];
   await db.delete(rolePermissions).where(inArray(rolePermissions.roleId, roleIds));
   await db.delete(roles).where(inArray(roles.id, roleIds));
