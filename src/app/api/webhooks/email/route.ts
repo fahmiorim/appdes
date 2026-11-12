@@ -6,7 +6,7 @@ import { terimaPesanEmailWebhook } from "@/features/notifikasi/application/mailb
 import { pesanEmailMasukSchema } from "@/features/notifikasi/domain/mailbox";
 import { batasiPermintaan } from "@/features/rate-limit/application/rate-limit";
 import { env } from "@/lib/env";
-import { BodyLimitError, bacaTeksTerbatas } from "@/lib/request-body";
+import { bacaTeksTerbatas, BodyLimitError } from "@/lib/request-body";
 
 const BATAS_BODY = 32_768;
 const TOLERANSI_WAKTU_DETIK = 300;
@@ -37,10 +37,7 @@ function signatureSah(
 export async function POST(request: Request) {
   const secret = env.EMAIL_WEBHOOK_TOKEN;
   if (!secret) {
-    return NextResponse.json(
-      { error: "Webhook email belum dikonfigurasi." },
-      { status: 503 },
-    );
+    return NextResponse.json({ error: "Webhook email belum dikonfigurasi." }, { status: 503 });
   }
 
   const timestamp = request.headers.get("x-email-webhook-timestamp") ?? "";
@@ -94,10 +91,7 @@ export async function POST(request: Request) {
     // dapat dikirim klien kecuali proxy tepercaya menghapus dan menimpanya.
     desa = await resolveVillageByHost(request.headers.get("host"));
   } catch {
-    return NextResponse.json(
-      { error: "Desa untuk host ini tidak ditemukan." },
-      { status: 404 },
-    );
+    return NextResponse.json({ error: "Desa untuk host ini tidak ditemukan." }, { status: 404 });
   }
 
   const id = await terimaPesanEmailWebhook({
