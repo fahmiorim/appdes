@@ -150,13 +150,14 @@ export async function listSuplemenTerdata(
       id: row.id,
       pendudukId: pendudukValid ? row.pendudukId : null,
       keluargaId: keluargaValid ? row.keluargaId : null,
-      label: row.pendudukId !== null
-        ? pendudukValid
-          ? `${row.pendudukName}${row.pendudukNik ? ` — ${row.pendudukNik}` : ""}`
-          : "Penduduk tidak tersedia"
-        : keluargaValid
-          ? `KK ${row.keluargaNumber}`
-          : "KK tidak tersedia",
+      label:
+        row.pendudukId !== null
+          ? pendudukValid
+            ? `${row.pendudukName}${row.pendudukNik ? ` — ${row.pendudukNik}` : ""}`
+            : "Penduduk tidak tersedia"
+          : keluargaValid
+            ? `KK ${row.keluargaNumber}`
+            : "KK tidak tersedia",
       isian: bacaIsian(row.isian),
       createdAt: row.createdAt.toISOString(),
     };
