@@ -115,10 +115,7 @@ export async function listRumahTangga(
     db
       .select({ value: count() })
       .from(rumahTangga)
-      .leftJoin(
-        regions,
-        and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+      .leftJoin(regions, and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(where),
   ]);
 
@@ -394,10 +391,7 @@ export async function listRtmRingkas(
       dusun: regions.dusun,
     })
     .from(rumahTangga)
-    .leftJoin(
-        regions,
-        and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)),
-      )
+    .leftJoin(regions, and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)))
     .where(where)
     .orderBy(asc(rumahTangga.number));
 
