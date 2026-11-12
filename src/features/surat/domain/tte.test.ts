@@ -67,8 +67,8 @@ describe("parseKonfigTte", () => {
     expect(siapTte(lengkap)).toBe(true);
   });
 
-  it("TTE_SSL=false mematikan verifikasi TLS", () => {
-    expect(parseKonfigTte({ TTE_SSL: "false" }).ssl).toBe(false);
+  it("selalu mewajibkan verifikasi TLS meskipun TTE_SSL=false", () => {
+    expect(parseKonfigTte({ TTE_SSL: "false" }).ssl).toBe(true);
     expect(parseKonfigTte({ TTE_SSL: "TRUE" }).ssl).toBe(true);
   });
 });
@@ -126,7 +126,7 @@ describe("konfigurasi tersimpan", () => {
     expect(hasil.api).toBe("https://tte-desa.example.go.id");
     expect(hasil.username).toBe("operator");
     expect(hasil.password).toBe("rahasia-env");
-    expect(hasil.ssl).toBe(false);
+    expect(hasil.ssl).toBe(true);
   });
 });
 
@@ -159,6 +159,39 @@ describe("buatKlienBsre", () => {
     expect(url).toBe("https://tte.example.go.id/api/sign/pdf");
     expect(init?.method).toBe("POST");
     expect(init?.body).toBeInstanceOf(FormData);
+  });
+
+  it("menolak URL unduhan absolut dari origin lain", async () => {
+    const fetchPalsu = vi.fn<FetchTte>(async () =>
+      new Response(JSON.stringify({ data: { file: "https://attacker.example/hasil.pdf" } }), {
+        headers: { "content-type": "application/json" },
+      }),
+    );
+
+    await expect(buatKlienBsre(fetchPalsu)?.(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow(
+      "origin provider yang sama",
+    );
+    expect(fetchPalsu).toHaveBeenCalledTimes(1);
+  });
+
+  it("menolak endpoint TTE non-HTTPS", async () => {
+    const fetchPalsu = vi.fn<FetchTte>();
+    await expect(
+      buatKlienBsre(fetchPalsu)?.(PERMINTAAN, { ...KONFIG_LENGKAP, api: "http://tte.example.go.id" }),
+    ).rejects.toThrow("wajib menggunakan HTTPS");
+    expect(fetchPalsu).not.toHaveBeenCalled();
+  });
+
+  it("menolak redirect provider tanpa mengikuti tujuan redirect", async () => {
+    const fetchPalsu = vi.fn<FetchTte>(async () =>
+      new Response(null, { status: 302, headers: { location: "https://attacker.example/" } }),
+    );
+
+    await expect(buatKlienBsre(fetchPalsu)?.(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow(
+      "Redirect provider TTE ditolak",
+    );
+    expect(fetchPalsu).toHaveBeenCalledTimes(1);
+    expect(fetchPalsu.mock.calls[0]?.[1]?.redirect).toBe("manual");
   });
 
   it("mengunduh berkas dari URL pada respons JSON", async () => {
