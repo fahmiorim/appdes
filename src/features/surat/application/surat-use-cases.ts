@@ -698,7 +698,7 @@ export async function verifySuratData(
   const surat = await getSurat(villageId, id);
   if (!surat) throw notFound("Surat tidak ditemukan.");
 
-  const role = user.roleId === null ? null : await findRoleById(user.roleId);
+  const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
   const validasi = validateVerification(
     role?.slug ?? null,
     user.id,
@@ -773,7 +773,7 @@ export async function rejectSuratData(id: number, reason: string): Promise<void>
   }
   if (!reason?.trim()) throw conflict("Alasan penolakan wajib diisi.");
 
-  const role = user.roleId === null ? null : await findRoleById(user.roleId);
+  const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
   const nextStep = nextVerificationStep(surat);
   if (nextStep === null) {
     throw conflict("Surat ini sudah selesai diverifikasi.");
