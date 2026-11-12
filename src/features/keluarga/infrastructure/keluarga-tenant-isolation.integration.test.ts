@@ -84,14 +84,10 @@ async function seedFixture(): Promise<Fixture> {
   const familyA = pastiId(familyARow, "family A");
   const familyB = pastiId(familyBRow, "family B");
 
-  await db.insert(residents).values({
-    villageId: villageA,
-    familyId: familyA,
-    familyRelationId: HEAD_OF_FAMILY_RELATION_ID,
-    name: `Kepala Keluarga A ${RUN}`,
-    gender: "male",
-    birthDate: "1980-01-01",
-  });
+  await sisipkanLegacy(
+    "INSERT INTO residents (village_id, family_id, family_relation_id, name, gender, birth_date) VALUES (?, ?, ?, ?, 'male', '1980-01-01')",
+    [villageA, familyA, HEAD_OF_FAMILY_RELATION_ID, `Kepala Keluarga A ${RUN}`],
+  );
 
   const foreignResidentName = `Identitas Rahasia Desa B ${RUN}`;
   await sisipkanLegacy(
