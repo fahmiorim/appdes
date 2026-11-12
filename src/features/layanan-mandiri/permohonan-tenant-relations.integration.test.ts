@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
@@ -34,30 +34,44 @@ function pastiId(row: { id: number | undefined } | undefined, label: string): nu
 }
 
 async function seed(): Promise<Fixture> {
-  const [villageARow] = await db.insert(villages)
+  const [villageARow] = await db
+    .insert(villages)
     .values({ name: `Desa Permohonan A ${RUN}`, code: `PMA${RUN}`.slice(0, 10) })
     .$returningId();
-  const [villageBRow] = await db.insert(villages)
+  const [villageBRow] = await db
+    .insert(villages)
     .values({ name: `Desa Permohonan B ${RUN}`, code: `PMB${RUN}`.slice(0, 10) })
     .$returningId();
   const villageA = pastiId(villageARow, "village A");
   const villageB = pastiId(villageBRow, "village B");
 
-  const [residentARow] = await db.insert(residents).values({
-    villageId: villageA, name: `Penduduk A ${RUN}`, gender: "male",
-  }).$returningId();
-  const [residentBRow] = await db.insert(residents).values({
-    villageId: villageB, name: `Penduduk B ${RUN}`, gender: "female",
-  }).$returningId();
+  const [residentARow] = await db
+    .insert(residents)
+    .values({ villageId: villageA, name: `Penduduk A ${RUN}`, gender: "male" })
+    .$returningId();
+  const [residentBRow] = await db
+    .insert(residents)
+    .values({ villageId: villageB, name: `Penduduk B ${RUN}`, gender: "female" })
+    .$returningId();
 
-  const [typeARow] = await db.insert(letterTypes).values({
-    villageId: villageA, code: `PA${RUN}`.slice(0, 20),
-    name: `Jenis Surat A ${RUN}`, templateBody: "<p>Uji A</p>",
-  }).$returningId();
-  const [typeBRow] = await db.insert(letterTypes).values({
-    villageId: villageB, code: `PB${RUN}`.slice(0, 20),
-    name: `Jenis Surat B ${RUN}`, templateBody: "<p>Uji B</p>",
-  }).$returningId();
+  const [typeARow] = await db
+    .insert(letterTypes)
+    .values({
+      villageId: villageA,
+      code: `PA${RUN}`.slice(0, 20),
+      name: `Jenis Surat A ${RUN}`,
+      templateBody: "<p>Uji A</p>",
+    })
+    .$returningId();
+  const [typeBRow] = await db
+    .insert(letterTypes)
+    .values({
+      villageId: villageB,
+      code: `PB${RUN}`.slice(0, 20),
+      name: `Jenis Surat B ${RUN}`,
+      templateBody: "<p>Uji B</p>",
+    })
+    .$returningId();
 
   const residentA = pastiId(residentARow, "resident A");
   const residentB = pastiId(residentBRow, "resident B");
@@ -74,12 +88,21 @@ async function seed(): Promise<Fixture> {
   const letterB = pastiId(letterBRow, "letter B");
 
   const requestA = await buatPermohonan({
-    villageId: villageA, residentId: residentA, letterTypeId: letterTypeA,
+    villageId: villageA,
+    residentId: residentA,
+    letterTypeId: letterTypeA,
   });
   if (requestA === undefined) throw new Error("Seed uji gagal: request A");
 
   return {
-    villageA, villageB, residentA, residentB, letterTypeA, letterTypeB, letterB, requestA,
+    villageA,
+    villageB,
+    residentA,
+    residentB,
+    letterTypeA,
+    letterTypeB,
+    letterB,
+    requestA,
   };
 }
 
@@ -90,6 +113,8 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (!fixture) return;
+  // Surat desa B menjadi child dari jenis surat B dengan FK RESTRICT.
+  await db.delete(letters).where(eq(letters.id, fixture.letterB));
   await db.delete(villages).where(inArray(villages.id, [fixture.villageA, fixture.villageB]));
 });
 
@@ -108,22 +133,30 @@ describe("AUD-006 tenant ownership relasi permohonan surat", () => {
 
   it("menolak membuat permohonan dengan penduduk dari desa lain", async () => {
     const f = dataUji();
-    await expect(buatPermohonan({
-      villageId: f.villageA, residentId: f.residentB, letterTypeId: f.letterTypeA,
-    })).rejects.toThrow("Penduduk tidak ditemukan pada desa ini.");
+    await expect(
+      buatPermohonan({
+        villageId: f.villageA,
+        residentId: f.residentB,
+        letterTypeId: f.letterTypeA,
+      }),
+    ).rejects.toThrow("Penduduk tidak ditemukan pada desa ini.");
   });
 
   it("menolak membuat permohonan dengan jenis surat dari desa lain", async () => {
     const f = dataUji();
-    await expect(buatPermohonan({
-      villageId: f.villageA, residentId: f.residentA, letterTypeId: f.letterTypeB,
-    })).rejects.toThrow("Jenis surat tidak ditemukan atau sedang tidak aktif.");
+    await expect(
+      buatPermohonan({
+        villageId: f.villageA,
+        residentId: f.residentA,
+        letterTypeId: f.letterTypeB,
+      }),
+    ).rejects.toThrow("Jenis surat tidak ditemukan atau sedang tidak aktif.");
   });
 
   it("menolak menautkan surat dinas milik desa lain ke permohonan", async () => {
     const f = dataUji();
-    await expect(tautkanSuratPermohonan(
-      f.villageA, f.requestA, f.letterB,
-    )).rejects.toThrow("Surat dinas tidak ditemukan pada desa ini.");
+    await expect(
+      tautkanSuratPermohonan(f.villageA, f.requestA, f.letterB),
+    ).rejects.toThrow("Surat dinas tidak ditemukan pada desa ini.");
   });
 });
