@@ -27,6 +27,7 @@ export default defineConfig({
       "src/db/tenant-composite-fk.integration.test.ts",
       "src/features/bantuan/integrasi-warga.test.ts",
       "src/features/kelompok/infrastructure/kelompok-tenant-isolation.integration.test.ts",
+      "src/features/keluarga/infrastructure/keluarga-tenant-isolation.integration.test.ts",
       "src/features/database/infrastructure/verifikasi-restore.integration.test.ts",
       "src/features/gis/infrastructure/gis-repository.integration.test.ts",
       "src/features/isolasi-village.integration.test.ts",

@@ -8,6 +8,7 @@ import {
   desc,
   eq,
   inArray,
+  isNull,
   like,
   ne,
   or,
@@ -116,9 +117,13 @@ export async function listKeluarga(params: ListKeluargaParams): Promise<Keluarga
       .from(families)
       .leftJoin(
         head,
-        and(eq(head.familyId, families.id), eq(head.familyRelationId, HEAD_OF_FAMILY_RELATION_ID)),
+        and(
+          eq(head.familyId, families.id),
+          eq(head.villageId, villageId),
+          eq(head.familyRelationId, HEAD_OF_FAMILY_RELATION_ID),
+        ),
       )
-      .leftJoin(regions, eq(families.regionId, regions.id))
+      .leftJoin(regions, and(eq(families.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(where)
       .orderBy(asc(families.number), asc(families.id))
       .limit(pageSize)
@@ -138,7 +143,7 @@ export async function listKeluarga(params: ListKeluargaParams): Promise<Keluarga
       : await db
           .select({ familyId: residents.familyId, jumlah: count() })
           .from(residents)
-          .where(inArray(residents.familyId, familyIds))
+          .where(and(inArray(residents.familyId, familyIds), eq(residents.villageId, villageId)))
           .groupBy(residents.familyId);
   const anggotaByFamily = new Map(
     anggotaRows.map((row) => [row.familyId, Number(row.jumlah ?? 0)]),
@@ -205,6 +210,10 @@ export async function listKeluargaMembers(
       familyRelationId: residents.familyRelationId,
     })
     .from(residents)
+    .innerJoin(
+      families,
+      and(eq(families.id, residents.familyId), eq(families.villageId, villageId)),
+    )
     .leftJoin(familyRelations, eq(residents.familyRelationId, familyRelations.id))
     .where(and(eq(residents.villageId, villageId), eq(residents.familyId, familyId)))
     .orderBy(asc(residents.name), asc(residents.id));
@@ -255,6 +264,10 @@ export async function listKeluargaMemberDetails(
       motherName: residents.motherName,
     })
     .from(residents)
+    .innerJoin(
+      families,
+      and(eq(families.id, residents.familyId), eq(families.villageId, villageId)),
+    )
     .leftJoin(familyRelations, eq(residents.familyRelationId, familyRelations.id))
     .leftJoin(religions, eq(residents.religionId, religions.id))
     .leftJoin(educations, eq(residents.educationId, educations.id))
@@ -310,7 +323,11 @@ export async function insertKeluarga(villageId: number, input: KeluargaFormInput
   return inserted.id;
 }
 
-export async function updateKeluarga(id: number, input: KeluargaFormInput): Promise<void> {
+export async function updateKeluarga(
+  villageId: number,
+  id: number,
+  input: KeluargaFormInput,
+): Promise<void> {
   await db
     .update(families)
     .set({
@@ -318,7 +335,7 @@ export async function updateKeluarga(id: number, input: KeluargaFormInput): Prom
       address: blankToNull(input.address),
       regionId: input.regionId,
     })
-    .where(eq(families.id, id));
+    .where(and(eq(families.villageId, villageId), eq(families.id, id)));
 }
 
 /**
@@ -407,7 +424,7 @@ export async function findKeluargaDetail(
       rt: regions.rt,
     })
     .from(families)
-    .leftJoin(regions, eq(families.regionId, regions.id))
+    .leftJoin(regions, and(eq(families.regionId, regions.id), eq(regions.villageId, villageId)))
     .where(and(eq(families.villageId, villageId), eq(families.id, id)))
     .limit(1);
 
@@ -441,6 +458,10 @@ export async function listKeluargaAnggotaRows(
       relationName: familyRelations.name,
     })
     .from(residents)
+    .innerJoin(
+      families,
+      and(eq(families.id, residents.familyId), eq(families.villageId, villageId)),
+    )
     .leftJoin(familyRelations, eq(residents.familyRelationId, familyRelations.id))
     .where(and(eq(residents.villageId, villageId), eq(residents.familyId, familyId)))
     .orderBy(asc(residents.name), asc(residents.id));
@@ -479,7 +500,17 @@ export async function listLogAnggotaKk(
       actorName: users.name,
     })
     .from(familyMemberLogs)
-    .leftJoin(users, eq(familyMemberLogs.actorId, users.id))
+    .innerJoin(
+      families,
+      and(eq(families.id, familyMemberLogs.familyId), eq(families.villageId, villageId)),
+    )
+    .leftJoin(
+      users,
+      and(
+        eq(familyMemberLogs.actorId, users.id),
+        or(eq(users.villageId, villageId), isNull(users.villageId)),
+      ),
+    )
     .where(and(eq(familyMemberLogs.villageId, villageId), eq(familyMemberLogs.familyId, familyId)))
     .orderBy(desc(familyMemberLogs.createdAt), desc(familyMemberLogs.id))
     .limit(limit);

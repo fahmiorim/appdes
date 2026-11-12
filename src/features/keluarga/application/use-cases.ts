@@ -197,7 +197,7 @@ export async function updateKeluarga(id: number, input: KeluargaFormInput): Prom
     throw conflict("Nomor KK tersebut sudah terdaftar.");
   }
 
-  await updateKeluargaRow(id, input);
+  await updateKeluargaRow(villageId, id, input);
 
   await recordAuditEvent({
     villageId,
