@@ -40,6 +40,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Diagnose Prettier output (temporary)
+        run: |
+          npx prettier --write src/features/penduduk/infrastructure/dtks-tenant-isolation.integration.test.ts
+          git --no-pager diff -- src/features/penduduk/infrastructure/dtks-tenant-isolation.integration.test.ts
+
       - name: Format check
         run: npm run format:check
 
