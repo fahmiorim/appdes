@@ -31,4 +31,18 @@ describe("toCsv", () => {
       ),
     ).toBe("a,b\r\nc,d");
   });
+
+  it("melindungi formula dan escaping saat menyusun CSV dengan koma", () => {
+    expect(
+      toCsv(
+        [
+          ["Nama", "Identitas"],
+          ['=HYPERLINK("https://example.invalid","klik")', 'Nama, "contoh"\nbaris kedua'],
+        ],
+        ",",
+      ),
+    ).toBe(
+      'Nama,Identitas\r\n"\'=HYPERLINK(""https://example.invalid"",""klik"")","Nama, ""contoh""\nbaris kedua"',
+    );
+  });
 });
