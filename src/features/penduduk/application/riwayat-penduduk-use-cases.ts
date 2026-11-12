@@ -19,6 +19,7 @@ import {
 import {
   findPendudukById,
   nationalIdExists,
+  validatePendudukTenantReferences,
 } from "@/features/penduduk/infrastructure/penduduk-repository";
 import {
   getRiwayatByResident,
@@ -52,6 +53,7 @@ export async function catatKelahiran(input: CatatKelahiranInput, actorId?: strin
   const user = await requirePermission(PENDUDUK_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
   const parsed = catatKelahiranSchema.parse(input);
+  await validatePendudukTenantReferences(villageId, parsed);
 
   const nid = parsed.nationalId;
   if (nid && (await nationalIdExists(villageId, nid, null))) {
@@ -189,6 +191,7 @@ export async function catatDatang(input: CatatDatangInput, actorId?: string | nu
   const user = await requirePermission(PENDUDUK_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
   const parsed = catatDatangSchema.parse(input);
+  await validatePendudukTenantReferences(villageId, parsed);
 
   const nid = parsed.nationalId;
   if (nid && (await nationalIdExists(villageId, nid, null))) {

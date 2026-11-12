@@ -29,6 +29,7 @@ export default defineConfig({
       "src/features/konten/dokumen-publik.integration.test.ts",
       "src/features/layanan-mandiri/integrasi-warga.test.ts",
       "src/features/multi-desa/isolasi-host.integration.test.ts",
+      "src/features/penduduk/infrastructure/penduduk-tenant-references.integration.test.ts",
       "src/features/pesan-warga/integrasi-pesan-warga.test.ts",
       "src/features/surat/infrastructure/penomoran-archive.integration.test.ts",
     ],

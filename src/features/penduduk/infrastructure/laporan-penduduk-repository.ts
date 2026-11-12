@@ -41,7 +41,7 @@ export async function listPendudukStatistik(villageId: number): Promise<Penduduk
     .leftJoin(educations, eq(residents.educationId, educations.id))
     .leftJoin(occupations, eq(residents.occupationId, occupations.id))
     .leftJoin(maritalStatuses, eq(residents.maritalStatusId, maritalStatuses.id))
-    .leftJoin(regions, eq(residents.regionId, regions.id))
+    .leftJoin(regions, and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)))
     .where(and(eq(residents.villageId, villageId), eq(residents.lifeStatus, "alive")));
 
   const today = new Date();
