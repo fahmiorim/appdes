@@ -329,6 +329,14 @@ export async function countKelompokAnggota(villageId: number, kelompokId: number
   const [row] = await db
     .select({ total: count() })
     .from(kelompokAnggota)
+    .innerJoin(
+      kelompok,
+      and(eq(kelompok.id, kelompokAnggota.kelompokId), eq(kelompok.villageId, villageId)),
+    )
+    .innerJoin(
+      residents,
+      and(eq(residents.id, kelompokAnggota.residentId), eq(residents.villageId, villageId)),
+    )
     .where(
       and(eq(kelompokAnggota.villageId, villageId), eq(kelompokAnggota.kelompokId, kelompokId)),
     );
@@ -391,6 +399,14 @@ export async function kelompokMemberExists(
   const rows = await db
     .select({ id: kelompokAnggota.id })
     .from(kelompokAnggota)
+    .innerJoin(
+      kelompok,
+      and(eq(kelompok.id, kelompokAnggota.kelompokId), eq(kelompok.villageId, villageId)),
+    )
+    .innerJoin(
+      residents,
+      and(eq(residents.id, kelompokAnggota.residentId), eq(residents.villageId, villageId)),
+    )
     .where(
       and(
         eq(kelompokAnggota.villageId, villageId),
