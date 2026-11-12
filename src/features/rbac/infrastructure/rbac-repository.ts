@@ -1,6 +1,6 @@
 import "server-only";
 
-import { eq, isNull, or } from "drizzle-orm";
+import { and, eq, inArray, isNull, or } from "drizzle-orm";
 
 import { db } from "@/db";
 import { modules, rolePermissions, roles } from "@/db/schema";
@@ -50,8 +50,21 @@ const moduleColumns = {
   isActive: modules.isActive,
 };
 
-export async function findRoleById(roleId: number): Promise<RoleRecord | null> {
-  const [row] = await db.select(roleColumns).from(roles).where(eq(roles.id, roleId)).limit(1);
+export async function findRoleById(
+  roleId: number,
+  villageId?: number | null,
+): Promise<RoleRecord | null> {
+  const tenantFilter =
+    villageId === undefined
+      ? undefined
+      : villageId === null
+        ? isNull(roles.villageId)
+        : or(eq(roles.villageId, villageId), isNull(roles.villageId));
+  const [row] = await db
+    .select(roleColumns)
+    .from(roles)
+    .where(tenantFilter ? and(eq(roles.id, roleId), tenantFilter) : eq(roles.id, roleId))
+    .limit(1);
   return row ?? null;
 }
 
@@ -67,10 +80,27 @@ export async function listModules(villageId: number | null): Promise<ModuleRecor
 }
 
 /** Tingkat akses per modul untuk sebuah role. */
-export async function listLevelsByRole(roleId: number): Promise<Map<number, AccessLevel>> {
+export async function listLevelsByRole(
+  roleId: number,
+  villageId: number | null,
+): Promise<Map<number, AccessLevel>> {
+  const moduleTenantFilter =
+    villageId === null ? isNull(modules.villageId) : eq(modules.villageId, villageId);
+  const roleTenantFilter =
+    villageId === null
+      ? isNull(roles.villageId)
+      : or(eq(roles.villageId, villageId), isNull(roles.villageId));
   const rows = await db
     .select({ moduleId: rolePermissions.moduleId, access: rolePermissions.access })
     .from(rolePermissions)
+    .innerJoin(
+      roles,
+      and(eq(roles.id, rolePermissions.roleId), roleTenantFilter),
+    )
+    .innerJoin(
+      modules,
+      and(eq(modules.id, rolePermissions.moduleId), moduleTenantFilter),
+    )
     .where(eq(rolePermissions.roleId, roleId));
 
   return new Map(rows.map((row) => [row.moduleId, row.access]));
@@ -84,7 +114,11 @@ export async function listRoles(villageId?: number): Promise<RoleRecord[]> {
   }
 
   return query
-    .where(or(eq(roles.villageId, villageId), isNull(roles.villageId)))
+    .where(
+      villageId === null
+        ? isNull(roles.villageId)
+        : or(eq(roles.villageId, villageId), isNull(roles.villageId)),
+    )
     .orderBy(roles.createdAt, roles.name);
 }
 
@@ -93,12 +127,31 @@ export async function getRoleBySlug(slug: string): Promise<RoleRecord | null> {
   return row ?? null;
 }
 
-export async function getRoleById(id: number): Promise<RoleRecord | null> {
-  const [row] = await db.select(roleColumns).from(roles).where(eq(roles.id, id)).limit(1);
+export async function getRoleById(
+  id: number,
+  villageId?: number | null,
+): Promise<RoleRecord | null> {
+  const tenantFilter =
+    villageId === undefined
+      ? undefined
+      : villageId === null
+        ? isNull(roles.villageId)
+        : or(eq(roles.villageId, villageId), isNull(roles.villageId));
+  const [row] = await db
+    .select(roleColumns)
+    .from(roles)
+    .where(tenantFilter ? and(eq(roles.id, id), tenantFilter) : eq(roles.id, id))
+    .limit(1);
   return row ?? null;
 }
 
-export async function clearRolePermissions(roleId: number): Promise<void> {
+export async function clearRolePermissions(roleId: number, villageId: number): Promise<void> {
+  const [role] = await db
+    .select({ id: roles.id })
+    .from(roles)
+    .where(and(eq(roles.id, roleId), eq(roles.villageId, villageId)))
+    .limit(1);
+  if (!role) throw new Error("Grup akses tidak ditemukan pada desa aktif.");
   await db.delete(rolePermissions).where(eq(rolePermissions.roleId, roleId));
 }
 
@@ -113,31 +166,57 @@ export async function createRole(input: {
     .values({ villageId: input.villageId, name: input.name, slug })
     .$returningId();
   if (!inserted) throw new Error("Gagal membuat role.");
-  const role = await getRoleById(inserted.id);
+  const role = await getRoleById(inserted.id, input.villageId);
   if (!role) throw new Error("Gagal mengambil role baru.");
   return role;
 }
 
 export async function updateRole(
+  villageId: number,
   id: number,
   input: { name: string; slug?: string },
 ): Promise<void> {
   const updates: Record<string, unknown> = { name: input.name };
   if (input.slug) updates.slug = input.slug;
-  await db.update(roles).set(updates).where(eq(roles.id, id));
+  await db
+    .update(roles)
+    .set(updates)
+    .where(and(eq(roles.villageId, villageId), eq(roles.id, id)));
 }
 
-export async function deleteRole(id: number): Promise<void> {
-  await db.delete(roles).where(eq(roles.id, id));
+export async function deleteRole(villageId: number, id: number): Promise<void> {
+  await db.delete(roles).where(and(eq(roles.villageId, villageId), eq(roles.id, id)));
 }
 
 export async function setRolePermissions(
+  villageId: number,
   roleId: number,
   perms: Array<{ moduleId: number; access: AccessLevel }>,
 ): Promise<void> {
-  await clearRolePermissions(roleId);
-  if (perms.length === 0) return;
-  await db
-    .insert(rolePermissions)
-    .values(perms.map((p) => ({ roleId, moduleId: p.moduleId, access: p.access })));
+  await db.transaction(async (tx) => {
+    const [role] = await tx
+      .select({ id: roles.id })
+      .from(roles)
+      .where(and(eq(roles.id, roleId), eq(roles.villageId, villageId)))
+      .limit(1);
+    if (!role) throw new Error("Grup akses tidak ditemukan pada desa aktif.");
+
+    const moduleIds = [...new Set(perms.map((permission) => permission.moduleId))];
+    if (moduleIds.length > 0) {
+      const validModules = await tx
+        .select({ id: modules.id })
+        .from(modules)
+        .where(and(eq(modules.villageId, villageId), inArray(modules.id, moduleIds)));
+      if (validModules.length !== moduleIds.length) {
+        throw new Error("Salah satu modul tidak ditemukan pada desa aktif.");
+      }
+    }
+
+    await tx.delete(rolePermissions).where(eq(rolePermissions.roleId, roleId));
+    if (perms.length > 0) {
+      await tx
+        .insert(rolePermissions)
+        .values(perms.map((permission) => ({ roleId, moduleId: permission.moduleId, access: permission.access })));
+    }
+  });
 }
