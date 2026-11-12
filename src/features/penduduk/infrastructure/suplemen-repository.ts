@@ -140,16 +140,27 @@ export async function listSuplemenTerdata(
     )
     .orderBy(desc(suplemenTerdata.id));
 
-  return rows.map((row) => ({
-    id: row.id,
-    pendudukId: row.pendudukId,
-    keluargaId: row.keluargaId,
-    label: row.pendudukId
-      ? `${row.pendudukName ?? "Penduduk"}${row.pendudukNik ? ` — ${row.pendudukNik}` : ""}`
-      : `KK ${row.keluargaNumber ?? row.keluargaId}`,
-    isian: bacaIsian(row.isian),
-    createdAt: row.createdAt.toISOString(),
-  }));
+  return rows.map((row) => {
+    // Jangan keluarkan ID referensi yang gagal di-resolve pada tenant aktif.
+    // Ini menutup kebocoran identifier legacy lintas desa dari API.
+    const pendudukValid = row.pendudukId !== null && row.pendudukName !== null;
+    const keluargaValid = row.keluargaId !== null && row.keluargaNumber !== null;
+
+    return {
+      id: row.id,
+      pendudukId: pendudukValid ? row.pendudukId : null,
+      keluargaId: keluargaValid ? row.keluargaId : null,
+      label: row.pendudukId !== null
+        ? pendudukValid
+          ? `${row.pendudukName}${row.pendudukNik ? ` — ${row.pendudukNik}` : ""}`
+          : "Penduduk tidak tersedia"
+        : keluargaValid
+          ? `KK ${row.keluargaNumber}`
+          : "KK tidak tersedia",
+      isian: bacaIsian(row.isian),
+      createdAt: row.createdAt.toISOString(),
+    };
+  });
 }
 
 /** Id penduduk untuk sekumpulan NIK pada desa ini (dipakai impor). */
