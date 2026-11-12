@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { eq, inArray, sql } from "drizzle-orm";
-import mysql from "mysql2/promise";
+import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
@@ -30,7 +29,7 @@ import {
   updateCdesaMutasi,
   updatePersil,
 } from "@/features/gis/infrastructure/gis-repository";
-import { jalankanMigrasiUji } from "@/testing/migrasi-uji";
+import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 /**
  * Uji isolasi tenant dan perilaku layer GIS pada database nyata.
@@ -42,7 +41,6 @@ import { jalankanMigrasiUji } from "@/testing/migrasi-uji";
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../../db/migrations", import.meta.url));
 const RUN = randomUUID().slice(0, 8);
 
-let dbReady = false;
 let fixture: {
   desaA: number;
   desaB: number;
@@ -56,20 +54,7 @@ let fixture: {
 } | null = null;
 
 beforeAll(async () => {
-  const dsn = process.env.DATABASE_URL ?? "";
-  try {
-    const dbName = new URL(dsn).pathname.replace(/^\//, "") || "desa_test";
-    const server = await mysql.createConnection(dsn.replace(/\/[^/]*$/, ""));
-    await server.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-    await server.end();
-    // Query ringan untuk memastikan koneksi benar-benar siap.
-    await db.execute(sql`SELECT 1`);
-  } catch {
-    return;
-  }
-
-  dbReady = true;
-  await jalankanMigrasiUji(db, { dsn, migrationsFolder: MIGRATIONS_FOLDER });
+  await siapkanDatabaseUji(db, { migrationsFolder: MIGRATIONS_FOLDER });
 
   const [desaARow] = await db
     .insert(villages)
@@ -239,8 +224,8 @@ afterAll(async () => {
 });
 
 describe("repository GIS: isolasi tenant", () => {
-  it("hanya menampilkan area desa sendiri dan menyaring yang nonaktif dari publik", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("hanya menampilkan area desa sendiri dan menyaring yang nonaktif dari publik", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     const semua = await listAreas(fixture.desaA);
     expect(semua).toHaveLength(2);
@@ -251,15 +236,15 @@ describe("repository GIS: isolasi tenant", () => {
     expect(publik[0]?.nama).toContain(`Area A ${RUN}`);
   });
 
-  it("hanya menampilkan garis dan titik desa sendiri", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("hanya menampilkan garis dan titik desa sendiri", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     expect((await listGaris(fixture.desaA)).map((item) => item.nama)).toEqual([`Jalan A ${RUN}`]);
     expect((await listPoints(fixture.desaA)).map((item) => item.nama)).toEqual([`Kantor A ${RUN}`]);
   });
 
-  it("menolak ubah/hapus persil milik desa lain", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("menolak ubah/hapus persil milik desa lain", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     await updatePersil(fixture.desaB, fixture.persilA, {
       nomor: "DIAMBIL-ALIH",
@@ -277,8 +262,8 @@ describe("repository GIS: isolasi tenant", () => {
     expect(await listPersil(fixture.desaB)).toHaveLength(1);
   });
 
-  it("hanya menampilkan Cdesa desa sendiri dan menolak update lintas desa", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("hanya menampilkan Cdesa desa sendiri dan menolak update lintas desa", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     expect((await listCdesa(fixture.desaA)).map((item) => item.nomor)).toEqual([`C-A-${RUN}`]);
     expect(await findCdesaById(fixture.desaB, fixture.cdesaA)).toBeNull();
@@ -298,8 +283,8 @@ describe("repository GIS: isolasi tenant", () => {
     expect((await findCdesaById(fixture.desaA, fixture.cdesaA))?.nomor).toBe(`C-A-${RUN}`);
   });
 
-  it("menolak ubah/hapus mutasi Cdesa lintas desa", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("menolak ubah/hapus mutasi Cdesa lintas desa", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     const berhasil = await updateCdesaMutasi(fixture.desaB, fixture.mutasiA, {
       cdesaId: fixture.cdesaA,
@@ -316,8 +301,8 @@ describe("repository GIS: isolasi tenant", () => {
     expect(mutasi.map((item) => item.nomor)).toEqual([`M-A-${RUN}`]);
   });
 
-  it("katalog simbol bersifat global dan memuat simbol baru", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("katalog simbol bersifat global dan memuat simbol baru", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     const simbol = await listSimbol();
     expect(simbol.some((item) => item.simbol === `SIM-${RUN}`)).toBe(true);

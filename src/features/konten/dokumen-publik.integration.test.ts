@@ -1,17 +1,15 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { eq, sql } from "drizzle-orm";
-import mysql from "mysql2/promise";
+import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
 import { dokumenPublik, villages } from "@/db/schema";
 import { cariDokumenPublik } from "@/features/publik/infrastructure/content-repository";
-import { jalankanMigrasiUji } from "@/testing/migrasi-uji";
+import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../db/migrations", import.meta.url));
 const RUN = randomUUID().slice(0, 8);
-let dbReady = false;
 let fixture: { villageIds: number[] } | null = null;
 
 function pastiId(row: { id: number | undefined } | undefined, label: string): number {
@@ -20,19 +18,7 @@ function pastiId(row: { id: number | undefined } | undefined, label: string): nu
 }
 
 beforeAll(async () => {
-  const dsn = process.env.DATABASE_URL ?? "";
-  try {
-    const dbName = new URL(dsn).pathname.replace(/^\//, "") || "desa_test";
-    const server = await mysql.createConnection(dsn.replace(/\/[^/]*$/, ""));
-    await server.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-    await server.end();
-    await db.execute(sql`SELECT 1`);
-  } catch {
-    return;
-  }
-
-  dbReady = true;
-  await jalankanMigrasiUji(db, { dsn, migrationsFolder: MIGRATIONS_FOLDER });
+  await siapkanDatabaseUji(db, { migrationsFolder: MIGRATIONS_FOLDER });
 
   const [villageA] = await db
     .insert(villages)
@@ -104,7 +90,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (dbReady && fixture) {
+  if (fixture) {
     for (const villageId of fixture.villageIds) {
       await db.delete(villages).where(eq(villages.id, villageId));
     }
@@ -112,10 +98,9 @@ afterAll(async () => {
 });
 
 describe("pencarian dokumen publik", () => {
-  it("membatasi hasil aktif menurut host, kategori, teks, dan tahun", async (ctx) => {
-    if (!dbReady || !fixture) {
-      ctx.skip();
-      return;
+  it("membatasi hasil aktif menurut host, kategori, teks, dan tahun", async () => {
+    if (!fixture) {
+      throw new Error("Fixture integrasi tidak siap.");
     }
 
     const result = await cariDokumenPublik(fixture.villageIds[0]!, {
@@ -139,10 +124,9 @@ describe("pencarian dokumen publik", () => {
     });
   });
 
-  it("mengisolasi tenant dan mengecualikan dokumen nonaktif", async (ctx) => {
-    if (!dbReady || !fixture) {
-      ctx.skip();
-      return;
+  it("mengisolasi tenant dan mengecualikan dokumen nonaktif", async () => {
+    if (!fixture) {
+      throw new Error("Fixture integrasi tidak siap.");
     }
 
     const result = await cariDokumenPublik(fixture.villageIds[0]!, {
@@ -156,10 +140,9 @@ describe("pencarian dokumen publik", () => {
     expect(result.rows.map((row) => row.nama)).toEqual([`Peraturan Desa ${RUN}`]);
   });
 
-  it("mengembalikan halaman yang benar dalam hasil pencarian", async (ctx) => {
-    if (!dbReady || !fixture) {
-      ctx.skip();
-      return;
+  it("mengembalikan halaman yang benar dalam hasil pencarian", async () => {
+    if (!fixture) {
+      throw new Error("Fixture integrasi tidak siap.");
     }
 
     const result = await cariDokumenPublik(fixture.villageIds[0]!, {

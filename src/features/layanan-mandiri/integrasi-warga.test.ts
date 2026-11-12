@@ -12,8 +12,7 @@
  */
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { eq, inArray, sql } from "drizzle-orm";
-import mysql from "mysql2/promise";
+import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
@@ -30,9 +29,8 @@ import {
   findResidentForAccount,
   resetWargaPin,
 } from "@/features/warga/infrastructure/warga-repository";
-import { jalankanMigrasiUji } from "@/testing/migrasi-uji";
+import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
-let dbReady = false;
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../db/migrations", import.meta.url));
 
 /** Akhiran unik per run agar data uji tidak bentrok dengan run sebelumnya. */
@@ -111,33 +109,14 @@ async function seedTenant(): Promise<TenantUji> {
 }
 
 beforeAll(async () => {
-  // Database target mungkin belum ada pada mesin baru — buat sendiri
-  // (idempotent) sebelum mencoba koneksi.
-  const dsn = process.env.DATABASE_URL ?? "";
-  try {
-    const dbName = new URL(dsn).pathname.replace(/^\//, "") || "desa_test";
-    const server = await mysql.createConnection(dsn.replace(/\/[^/]*$/, ""));
-    await server.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-    await server.end();
-  } catch (error) {
-    console.warn("[integrasi-warga] Persiapan basis data gagal, suite di-skip:", error);
-    return;
-  }
-
-  try {
-    await db.execute(sql`SELECT 1`);
-  } catch (error) {
-    console.warn("[integrasi-warga] DB tidak tersedia, test di-skip:", error);
-    return;
-  }
-  dbReady = true;
-
-  await jalankanMigrasiUji(db, { dsn, migrationsFolder: MIGRATIONS_FOLDER });
+  // Guard memvalidasi TEST_DATABASE_URL; database lalu dibuat (idempotent)
+  // dan dimigrasi. Kegagalan apa pun membuat suite gagal, bukan skip.
+  await siapkanDatabaseUji(db, { migrationsFolder: MIGRATIONS_FOLDER });
   tenant = await seedTenant();
 });
 
 afterAll(async () => {
-  if (!dbReady || tenant === null) return;
+  if (tenant === null) return;
 
   // Akun warga dulu (village_id/resident_id set-null), lalu villages yang
   // meng-cascade penduduk, jenis surat, dan permohonan.
@@ -145,15 +124,15 @@ afterAll(async () => {
   await db.delete(villages).where(inArray(villages.id, [tenant.villageA, tenant.villageB]));
 });
 
-/** Skip dinamis: context.skip() tersedia di Vitest 5 saat DB tak tersedia. */
-function kalauDbTersedia(ctx: { skip: () => void; task: unknown }): void {
-  if (!dbReady || tenant === null) ctx.skip();
+/** Fixture wajib ada; kegagalan setup harus membuat test gagal, bukan skip. */
+function tenantUji(): TenantUji {
+  if (tenant === null) throw new Error("Fixture integrasi tidak siap.");
+  return tenant;
 }
 
 describe("permohonan surat ter-scope desa & warga (integrasi)", () => {
-  it("warga lain tidak melihat permohonan milik warga lain", async (ctx) => {
-    kalauDbTersedia(ctx);
-    const { villageA, residentA, residentB, jenisSurat } = tenant!;
+  it("warga lain tidak melihat permohonan milik warga lain", async () => {
+    const { villageA, residentA, residentB, jenisSurat } = tenantUji();
 
     const id = await buatPermohonan({
       villageId: villageA,
@@ -177,9 +156,8 @@ describe("permohonan surat ter-scope desa & warga (integrasi)", () => {
     expect(daftarA.find((row) => row.id === id!)).toBeDefined();
   });
 
-  it("permohonan hanya terlihat dari desa pemiliknya", async (ctx) => {
-    kalauDbTersedia(ctx);
-    const { villageA, residentA, residentB, jenisSurat } = tenant!;
+  it("permohonan hanya terlihat dari desa pemiliknya", async () => {
+    const { villageA, residentA, residentB, jenisSurat } = tenantUji();
     const id = await buatPermohonan({
       villageId: villageA,
       residentId: residentA,
@@ -193,9 +171,8 @@ describe("permohonan surat ter-scope desa & warga (integrasi)", () => {
     expect(daftarB.some((row) => row.id === id!)).toBe(false);
   });
 
-  it("jenis surat hanya tersedia untuk desa pemiliknya", async (ctx) => {
-    kalauDbTersedia(ctx);
-    const { villageA, villageB, jenisSurat } = tenant!;
+  it("jenis surat hanya tersedia untuk desa pemiliknya", async () => {
+    const { villageA, villageB, jenisSurat } = tenantUji();
 
     const daftarA = await listSuratUntukWarga(villageA);
     expect(daftarA.some((row) => row.id === jenisSurat)).toBe(true);
@@ -206,9 +183,8 @@ describe("permohonan surat ter-scope desa & warga (integrasi)", () => {
 });
 
 describe("akun warga & siklus PIN (integrasi)", () => {
-  it("createWargaAccount → wajib ganti PIN → jelas → reset memaksa lagi", async (ctx) => {
-    kalauDbTersedia(ctx);
-    const tenantIni = tenant!;
+  it("createWargaAccount → wajib ganti PIN → jelas → reset memaksa lagi", async () => {
+    const tenantIni = tenantUji();
     const akun = await createWargaAccount({
       villageId: tenantIni.villageA,
       residentId: tenantIni.residentA,
@@ -243,9 +219,8 @@ describe("akun warga & siklus PIN (integrasi)", () => {
     expect(rowPasca?.active).toBe(true);
   });
 
-  it("findResidentForAccount menolak penduduk dari desa lain", async (ctx) => {
-    kalauDbTersedia(ctx);
-    const { villageA, villageB, residentA } = tenant!;
+  it("findResidentForAccount menolak penduduk dari desa lain", async () => {
+    const { villageA, villageB, residentA } = tenantUji();
 
     const milikA = await findResidentForAccount(villageA, residentA);
     expect(milikA).not.toBeNull();

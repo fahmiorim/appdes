@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { inArray, sql } from "drizzle-orm";
-import mysql from "mysql2/promise";
+import { inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
@@ -16,9 +15,8 @@ import {
   villages,
 } from "@/db/schema";
 import { listBantuanDiterimaWarga } from "@/features/bantuan/infrastructure/bantuan-repository";
-import { jalankanMigrasiUji } from "@/testing/migrasi-uji";
+import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
-let dbReady = false;
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../db/migrations", import.meta.url));
 const RUN = randomUUID().slice(0, 8);
 
@@ -138,39 +136,19 @@ async function seedFixture(): Promise<Fixture> {
 }
 
 beforeAll(async () => {
-  const dsn = process.env.DATABASE_URL ?? "";
-  try {
-    const dbName = new URL(dsn).pathname.replace(/^\//, "") || "desa_test";
-    const server = await mysql.createConnection(dsn.replace(/\/[^/]*$/, ""));
-    await server.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-    await server.end();
-  } catch (error) {
-    console.warn("[bantuan-warga] Persiapan basis data gagal, suite di-skip:", error);
-    return;
-  }
-
-  try {
-    await db.execute(sql`SELECT 1`);
-  } catch (error) {
-    console.warn("[bantuan-warga] DB tidak tersedia, test di-skip:", error);
-    return;
-  }
-
-  dbReady = true;
-  await jalankanMigrasiUji(db, { dsn, migrationsFolder: MIGRATIONS_FOLDER });
+  await siapkanDatabaseUji(db, { migrationsFolder: MIGRATIONS_FOLDER });
   fixture = await seedFixture();
 });
 
 afterAll(async () => {
-  if (!dbReady || fixture === null) return;
+  if (fixture === null) return;
   await db.delete(villages).where(inArray(villages.id, [fixture.villageA, fixture.villageB]));
 });
 
 describe("bantuan yang diterima warga (integrasi)", () => {
-  it("mengembalikan penerimaan individu, KK, RTM, dan kelompok hanya dari desanya", async (ctx) => {
-    if (!dbReady || fixture === null) {
-      ctx.skip();
-      return;
+  it("mengembalikan penerimaan individu, KK, RTM, dan kelompok hanya dari desanya", async () => {
+    if (fixture === null) {
+      throw new Error("Fixture integrasi tidak siap.");
     }
     const rows = await listBantuanDiterimaWarga(fixture.villageA, fixture.residentA);
     expect(rows.map((row) => row.id).sort((a, b) => a - b)).toEqual(
@@ -178,10 +156,9 @@ describe("bantuan yang diterima warga (integrasi)", () => {
     );
   });
 
-  it("memisahkan bantuan penduduk yang berbeda", async (ctx) => {
-    if (!dbReady || fixture === null) {
-      ctx.skip();
-      return;
+  it("memisahkan bantuan penduduk yang berbeda", async () => {
+    if (fixture === null) {
+      throw new Error("Fixture integrasi tidak siap.");
     }
     const rows = await listBantuanDiterimaWarga(fixture.villageA, fixture.residentB);
     expect(rows.map((row) => row.id)).toEqual([fixture.expectedOtherResidentProgramId]);
