@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { alamatIp } from "@/features/api-publik/application/public-api";
+import { alamatIp } from "@/lib/client-ip";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import {
   daftarKomentarPublik,
@@ -12,6 +12,7 @@ import { bacaJsonTerbatas, BodyLimitError } from "@/lib/request-body";
 
 const BATAS_BODY = 16_384;
 const BATAS_KIRIM_PER_MENIT = 20;
+const BATAS_BACA_PER_MENIT = 60;
 const BATAS_HALAMAN = 10_000;
 
 function galat(status: number, message: string) {
@@ -20,6 +21,13 @@ function galat(status: number, message: string) {
 
 /** GET /api/publik/kontak/komentar — daftar komentar publik yang aktif. */
 export async function GET(request: Request) {
+  const batas = await batasiPermintaan(`komentar-publik-baca:${alamatIp(request)}`, {
+    batas: BATAS_BACA_PER_MENIT,
+  });
+  if (batas.dibatasi) {
+    return galat(429, "Terlalu banyak permintaan. Coba lagi beberapa saat.");
+  }
+
   let desa;
   try {
     desa = await getIdentitasFromRequest();
