@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { and, count, eq, inArray } from "drizzle-orm";
+import mysql, { type ResultSetHeader } from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { db } from "@/db";
@@ -19,6 +20,7 @@ import {
   simpanPendudukBaruDanMutasi,
   ubahStatusPendudukDanMutasi,
 } from "@/features/penduduk/infrastructure/riwayat-penduduk-repository";
+import { validasiDatabaseUji } from "@/testing/db-test-guard";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 /**
@@ -70,6 +72,27 @@ function pastiId(row: { id: number | undefined } | undefined, label: string): nu
 function dataUji(): Fixture {
   if (fixture === null) throw new Error("Fixture integrasi tidak siap.");
   return fixture;
+}
+
+/**
+ * Sisipkan satu baris legacy lintas desa.
+ *
+ * AUD-002 memasang composite FK yang menolak relasi seperti ini pada jalur
+ * normal. Fixture di bawah sengaja mereproduksi data yang dibuat **sebelum**
+ * constraint terpasang, karena migration tidak melakukan backfill dan data
+ * legacy tersebut tetap harus aman saat dibaca. Pengecualian FK hanya berlaku
+ * pada koneksi terpisah ini dan selalu dikembalikan di blok `finally`.
+ */
+async function sisipkanLegacy(sql: string, params: unknown[]): Promise<number> {
+  const koneksi = await mysql.createConnection(validasiDatabaseUji(process.env).opsiKoneksi);
+  try {
+    await koneksi.query("SET FOREIGN_KEY_CHECKS = 0");
+    const [hasil] = await koneksi.query<ResultSetHeader>(sql, params);
+    return hasil.insertId;
+  } finally {
+    await koneksi.query("SET FOREIGN_KEY_CHECKS = 1");
+    await koneksi.end();
+  }
 }
 
 async function hitungMutasi(referenceNo: string): Promise<number> {
@@ -152,16 +175,10 @@ beforeAll(async () => {
     })
     .$returningId();
   // Relasi legacy lintas tenant: mutasi desa A menunjuk penduduk desa B.
-  const [legacyARow] = await db
-    .insert(residentMutations)
-    .values({
-      villageId: desaA,
-      residentId: pendudukB,
-      type: "move_in",
-      eventDate: "2026-01-02",
-      referenceNo: `LEGACY-A-${RUN}`,
-    })
-    .$returningId();
+  const mutasiLegacyA = await sisipkanLegacy(
+    "INSERT INTO resident_mutations (village_id, resident_id, type, event_date, reference_no) VALUES (?, ?, 'move_in', '2026-01-02', ?)",
+    [desaA, pendudukB, `LEGACY-A-${RUN}`],
+  );
   const [validBRow] = await db
     .insert(residentMutations)
     .values({
@@ -183,15 +200,21 @@ beforeAll(async () => {
     pendudukA,
     pendudukB,
     mutasiValidA: pastiId(validARow, "mutasi valid A"),
-    mutasiLegacyA: pastiId(legacyARow, "mutasi legacy A"),
+    mutasiLegacyA,
     mutasiValidB: pastiId(validBRow, "mutasi valid B"),
   };
 });
 
 afterAll(async () => {
   if (fixture === null) return;
+  const desaIds = [fixture.desaA, fixture.desaB];
+
+  // AUD-002 membuat FK composite bersifat RESTRICT. Hapus anak lebih dahulu
+  // agar cleanup tidak bergantung pada urutan cascade antar-tenant.
+  await db.delete(residentMutations).where(inArray(residentMutations.villageId, desaIds));
+  await db.delete(residents).where(inArray(residents.villageId, desaIds));
   await db.delete(users).where(inArray(users.id, [fixture.aktorId]));
-  await db.delete(villages).where(inArray(villages.id, [fixture.desaA, fixture.desaB]));
+  await db.delete(villages).where(inArray(villages.id, desaIds));
 });
 
 describe("AUD-007 daftar dan count riwayat", () => {
