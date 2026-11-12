@@ -8,13 +8,14 @@ import {
   bantuanPeserta,
   bantuanProgram,
   families,
-  regions,
   kelompok,
   kelompokAnggota,
+  regions,
   residents,
   rumahTangga,
   villages,
 } from "@/db/schema";
+import type { BantuanFormInput } from "@/features/bantuan/domain/bantuan";
 import {
   deleteBantuan,
   findBantuanById,
@@ -24,7 +25,6 @@ import {
   listSebaranWilayah,
   updateBantuan,
 } from "@/features/bantuan/infrastructure/bantuan-repository";
-import type { BantuanFormInput } from "@/features/bantuan/domain/bantuan";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../db/migrations", import.meta.url));
@@ -151,7 +151,11 @@ async function seedFixture(): Promise<Fixture> {
     { villageId: villageB, programId: programIds[4]!, residentId: residentA },
     { villageId: villageA, programId: programIds[5]!, residentId: residentB },
     // Referensi legacy yang tidak konsisten: peserta desa A menunjuk penduduk desa B.
-    { villageId: villageA, programId: programIds[6]!, residentId: pastiId(foreignResidentRow, "foreign resident") },
+    {
+      villageId: villageA,
+      programId: programIds[6]!,
+      residentId: pastiId(foreignResidentRow, "foreign resident"),
+    },
   ]);
 
   return {
