@@ -91,14 +91,8 @@ export async function listLevelsByRole(
   const rows = await db
     .select({ moduleId: rolePermissions.moduleId, access: rolePermissions.access })
     .from(rolePermissions)
-    .innerJoin(
-      roles,
-      and(eq(roles.id, rolePermissions.roleId), roleTenantFilter),
-    )
-    .innerJoin(
-      modules,
-      and(eq(modules.id, rolePermissions.moduleId), moduleTenantFilter),
-    )
+    .innerJoin(roles, and(eq(roles.id, rolePermissions.roleId), roleTenantFilter))
+    .innerJoin(modules, and(eq(modules.id, rolePermissions.moduleId), moduleTenantFilter))
     .where(eq(rolePermissions.roleId, roleId));
 
   return new Map(rows.map((row) => [row.moduleId, row.access]));
@@ -219,7 +213,13 @@ export async function setRolePermissions(
     if (perms.length > 0) {
       await tx
         .insert(rolePermissions)
-        .values(perms.map((permission) => ({ roleId, moduleId: permission.moduleId, access: permission.access })));
+        .values(
+          perms.map((permission) => ({
+            roleId,
+            moduleId: permission.moduleId,
+            access: permission.access,
+          })),
+        );
     }
   });
 }
