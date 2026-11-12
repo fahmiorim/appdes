@@ -117,7 +117,10 @@ export async function listPermohonanWarga(villageId: number, residentId: number)
       letterTypes,
       and(eq(permohonanSurat.letterTypeId, letterTypes.id), eq(letterTypes.villageId, villageId)),
     )
-    .leftJoin(letters, and(eq(permohonanSurat.letterId, letters.id), eq(letters.villageId, villageId)))
+    .leftJoin(
+      letters,
+      and(eq(permohonanSurat.letterId, letters.id), eq(letters.villageId, villageId)),
+    )
     .where(
       and(eq(permohonanSurat.villageId, villageId), eq(permohonanSurat.residentId, residentId)),
     )
