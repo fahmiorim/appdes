@@ -78,13 +78,16 @@ async function seed(): Promise<Fixture> {
   const letterTypeA = pastiId(typeARow, "letter type A");
   const letterTypeB = pastiId(typeBRow, "letter type B");
 
-  const [letterBRow] = await db.insert(letters).values({
-    villageId: villageB,
-    typeId: letterTypeB,
-    typeName: `Jenis Surat B ${RUN}`,
-    letterDate: "2026-11-13",
-    year: 2026,
-  }).$returningId();
+  const [letterBRow] = await db
+    .insert(letters)
+    .values({
+      villageId: villageB,
+      typeId: letterTypeB,
+      typeName: `Jenis Surat B ${RUN}`,
+      letterDate: "2026-11-13",
+      year: 2026,
+    })
+    .$returningId();
   const letterB = pastiId(letterBRow, "letter B");
 
   const requestA = await buatPermohonan({
@@ -115,7 +118,9 @@ afterAll(async () => {
   if (!fixture) return;
   // Surat desa B menjadi child dari jenis surat B dengan FK RESTRICT.
   await db.delete(letters).where(eq(letters.id, fixture.letterB));
-  await db.delete(villages).where(inArray(villages.id, [fixture.villageA, fixture.villageB]));
+  await db
+    .delete(villages)
+    .where(inArray(villages.id, [fixture.villageA, fixture.villageB]));
 });
 
 function dataUji(): Fixture {
