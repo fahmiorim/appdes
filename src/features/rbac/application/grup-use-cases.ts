@@ -19,7 +19,7 @@ import { conflict, notFound } from "@/lib/errors";
 /** Pastikan role yang diakses berada pada desa yang sama. */
 async function getScopedRole(id: number, villageId: number) {
   const role = await getRoleById(id, villageId);
-  if (!role) {
+  if (!role || (role.villageId !== null && role.villageId !== villageId)) {
     throw notFound("Grup akses tidak ditemukan.");
   }
   return role;
