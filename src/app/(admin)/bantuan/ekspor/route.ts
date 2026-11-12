@@ -3,8 +3,8 @@ import { NextResponse } from "next/server";
 import { getBantuanDetail } from "@/features/bantuan/application/use-cases";
 import { asalDanaLabel, sasaranLabel } from "@/features/bantuan/domain/bantuan";
 import { hasPermission } from "@/features/rbac/application/authorization";
-import { penggunaRoute } from "@/lib/route-auth";
 import { toCsv } from "@/lib/csv";
+import { penggunaRoute } from "@/lib/route-auth";
 
 export async function GET(request: Request) {
   const auth = await penggunaRoute();
