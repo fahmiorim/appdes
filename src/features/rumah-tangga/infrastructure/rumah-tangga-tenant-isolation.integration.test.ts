@@ -144,7 +144,7 @@ describe("isolasi tenant repository rumah tangga", () => {
     });
     expect(daftar.rows).toHaveLength(1);
     expect(daftar.rows[0]?.memberCount).toBe(1);
-    expect(daftar.rows[0]?.regionLabel).toBeNull();
+    expect(daftar.rows[0]?.regionLabel).toBe("Wilayah tanpa nama");
 
     const anggota = await listRumahTanggaMembers(current.villageA, current.rtmA);
     expect(anggota).toHaveLength(1);
