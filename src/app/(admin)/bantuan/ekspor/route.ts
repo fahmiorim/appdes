@@ -34,7 +34,15 @@ export async function GET(request: Request) {
 
   const csv = toCsv(
     [
-      ["Nama Program", "Sasaran", "Asal Dana", "Nama Sasaran", "Identitas", "No Kartu", "Tanggal Daftar"],
+      [
+        "Nama Program",
+        "Sasaran",
+        "Asal Dana",
+        "Nama Sasaran",
+        "Identitas",
+        "No Kartu",
+        "Tanggal Daftar",
+      ],
       ...peserta.map((p) => [
         program.name,
         sasaranLabel(program.sasaran),
