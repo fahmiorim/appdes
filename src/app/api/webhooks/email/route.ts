@@ -85,10 +85,7 @@ export async function POST(request: Request) {
     jendelaMs: JENDELA_REPLAY_MS,
   });
   if (replay.dibatasi) {
-    return NextResponse.json(
-      { error: "Event webhook sudah pernah diproses." },
-      { status: 409 },
-    );
+    return NextResponse.json({ error: "Event webhook sudah pernah diproses." }, { status: 409 });
   }
 
   let desa;
