@@ -8,13 +8,23 @@ import {
   bantuanPeserta,
   bantuanProgram,
   families,
+  regions,
   kelompok,
   kelompokAnggota,
   residents,
   rumahTangga,
   villages,
 } from "@/db/schema";
-import { listBantuanDiterimaWarga } from "@/features/bantuan/infrastructure/bantuan-repository";
+import {
+  deleteBantuan,
+  findBantuanById,
+  listBantuan,
+  listBantuanDiterimaWarga,
+  listPesertaProgram,
+  listSebaranWilayah,
+  updateBantuan,
+} from "@/features/bantuan/infrastructure/bantuan-repository";
+import type { BantuanFormInput } from "@/features/bantuan/domain/bantuan";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../db/migrations", import.meta.url));
@@ -25,8 +35,10 @@ interface Fixture {
   villageB: number;
   residentA: number;
   residentB: number;
+  foreignResident: number;
   expectedProgramIds: number[];
   expectedOtherResidentProgramId: number;
+  crossTenantReferenceProgramId: number;
 }
 
 let fixture: Fixture | null = null;
@@ -66,6 +78,20 @@ async function seedFixture(): Promise<Fixture> {
     })
     .$returningId();
 
+  const [foreignRegionRow] = await db
+    .insert(regions)
+    .values({ villageId: villageB, dusun: `Dusun Lintas ${RUN}`, rw: "01", rt: "01" })
+    .$returningId();
+  const [foreignResidentRow] = await db
+    .insert(residents)
+    .values({
+      villageId: villageB,
+      regionId: pastiId(foreignRegionRow, "foreign region"),
+      name: `Penduduk Desa B ${RUN}`,
+      gender: "female",
+    })
+    .$returningId();
+
   const [residentARow] = await db
     .insert(residents)
     .values({
@@ -98,6 +124,7 @@ async function seedFixture(): Promise<Fixture> {
     { name: "Bantuan Kelompok", villageId: villageA, sasaran: 4 },
     { name: "Bantuan Desa Lain", villageId: villageB, sasaran: 1 },
     { name: "Bantuan Warga Lain", villageId: villageA, sasaran: 1 },
+    { name: "Bantuan Referensi Lintas Desa", villageId: villageA, sasaran: 1 },
   ] as const;
   const programIds: number[] = [];
 
@@ -123,6 +150,8 @@ async function seedFixture(): Promise<Fixture> {
     // Baris tak konsisten ini memastikan query tidak melintasi tenant meski FK individual valid.
     { villageId: villageB, programId: programIds[4]!, residentId: residentA },
     { villageId: villageA, programId: programIds[5]!, residentId: residentB },
+    // Referensi legacy yang tidak konsisten: peserta desa A menunjuk penduduk desa B.
+    { villageId: villageA, programId: programIds[6]!, residentId: pastiId(foreignResidentRow, "foreign resident") },
   ]);
 
   return {
@@ -130,8 +159,10 @@ async function seedFixture(): Promise<Fixture> {
     villageB,
     residentA,
     residentB,
+    foreignResident: pastiId(foreignResidentRow, "foreign resident"),
     expectedProgramIds: programIds.slice(0, 4),
     expectedOtherResidentProgramId: programIds[5]!,
+    crossTenantReferenceProgramId: programIds[6]!,
   };
 }
 
@@ -169,5 +200,56 @@ describe("bantuan yang diterima warga (integrasi)", () => {
     }
     const rows = await listBantuanDiterimaWarga(fixture.villageA, fixture.residentB);
     expect(rows.map((row) => row.id)).toEqual([fixture.expectedOtherResidentProgramId]);
+  });
+
+  it("tidak membaca referensi penduduk dan wilayah desa lain pada detail, sebaran, atau agregat", async () => {
+    if (fixture === null) throw new Error("Fixture integrasi tidak siap.");
+
+    const program = await findBantuanById(fixture.villageA, fixture.crossTenantReferenceProgramId);
+    expect(program).not.toBeNull();
+    if (!program) throw new Error("Program uji tidak ditemukan.");
+
+    const peserta = await listPesertaProgram(fixture.villageA, program);
+    expect(peserta).toEqual([]);
+
+    const sebaran = await listSebaranWilayah(fixture.villageA, program);
+    expect(sebaran.some((row) => row.label.includes("Dusun Lintas"))).toBe(false);
+
+    const daftar = await listBantuan({
+      villageId: fixture.villageA,
+      search: "",
+      page: 1,
+      pageSize: 50,
+    });
+    const ringkasan = daftar.rows.find((row) => row.id === fixture.crossTenantReferenceProgramId);
+    expect(ringkasan?.wilayahCount).toBe(0);
+  });
+
+  it("membatasi update dan delete program berdasarkan desa pada repository", async () => {
+    if (fixture === null) throw new Error("Fixture integrasi tidak siap.");
+
+    const before = await findBantuanById(fixture.villageA, fixture.crossTenantReferenceProgramId);
+    expect(before).not.toBeNull();
+
+    const input: BantuanFormInput = {
+      nama: `Tidak Boleh Diubah ${RUN}`,
+      sasaran: 1,
+      keterangan: "",
+      tanggalMulai: null,
+      tanggalAkhir: null,
+      asalDana: null,
+    };
+
+    await updateBantuan(
+      fixture.villageB,
+      fixture.crossTenantReferenceProgramId,
+      `tenant-bypass-${RUN}`,
+      input,
+    );
+    await deleteBantuan(fixture.villageB, fixture.crossTenantReferenceProgramId);
+
+    const after = await findBantuanById(fixture.villageA, fixture.crossTenantReferenceProgramId);
+    expect(after?.name).toBe(before?.name);
+    expect(after?.slug).toBe(before?.slug);
   });
 });
