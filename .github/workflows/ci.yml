@@ -34,6 +34,11 @@ jobs:
       - name: Install dependency
         run: npm ci
 
+      - name: Diagnose Prettier output (temporary)
+        run: |
+          npx prettier --write src/features/keluarga/infrastructure/keluarga-repository.ts src/features/keluarga/infrastructure/keluarga-tenant-isolation.integration.test.ts src/features/keluarga/application/use-cases.ts
+          git --no-pager diff -- src/features/keluarga/infrastructure/keluarga-repository.ts src/features/keluarga/infrastructure/keluarga-tenant-isolation.integration.test.ts src/features/keluarga/application/use-cases.ts
+
       - name: Typecheck
         run: npm run typecheck
 
