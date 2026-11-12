@@ -34,7 +34,7 @@ const dnsPalsu = vi.hoisted(() => {
     resolve6(): Promise<string[]> {
       state.resolve6 += 1;
       if (state.mode === "normal") return Promise.resolve(["2606:4700:4700::1111"]);
-      return new Promise<string[]>(() => {});
+      return new Promise<string[]>((_, reject) => state.pending.push(reject));
     }
 
     cancel(): void {
