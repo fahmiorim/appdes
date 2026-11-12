@@ -94,6 +94,7 @@ export async function listBantuanDiterimaWarga(
     ),
     and(
       eq(bantuanProgram.sasaran, SASARAN_KELOMPOK),
+      isNotNull(kelompok.id),
       isNotNull(kelompokAnggota.id),
       eq(bantuanPeserta.kelompokId, kelompokAnggota.kelompokId),
     ),
@@ -121,6 +122,10 @@ export async function listBantuanDiterimaWarga(
       ),
     )
     .innerJoin(residents, and(eq(residents.id, residentId), eq(residents.villageId, villageId)))
+    .leftJoin(
+      kelompok,
+      and(eq(kelompok.id, bantuanPeserta.kelompokId), eq(kelompok.villageId, villageId)),
+    )
     .leftJoin(
       kelompokAnggota,
       and(
@@ -613,6 +618,10 @@ export async function listSebaranWilayah(
         ),
       )
       .innerJoin(
+        kelompok,
+        and(eq(kelompok.id, kelompokAnggota.kelompokId), eq(kelompok.villageId, villageId)),
+      )
+      .innerJoin(
         residents,
         and(eq(kelompokAnggota.residentId, residents.id), eq(residents.villageId, villageId)),
       )
@@ -828,6 +837,13 @@ async function listTakenIds(
   const rows = await db
     .select({ id: target })
     .from(bantuanPeserta)
+    .innerJoin(
+      bantuanProgram,
+      and(
+        eq(bantuanProgram.id, bantuanPeserta.programId),
+        eq(bantuanProgram.villageId, villageId),
+      ),
+    )
     .where(
       and(
         eq(bantuanPeserta.villageId, villageId),
