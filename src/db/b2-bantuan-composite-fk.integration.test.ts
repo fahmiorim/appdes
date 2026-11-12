@@ -6,7 +6,7 @@ import { db } from "@/db";
 import { bantuanPeserta, bantuanProgram, families, kelompok, residents, rumahTangga, villages } from "@/db/schema";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
-const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../migrations", import.meta.url));
+const MIGRATIONS_FOLDER = fileURLToPath(new URL("./migrations", import.meta.url));
 let desaA = 0;
 let desaB = 0;
 let programA = 0;
