@@ -240,11 +240,31 @@ export async function kelompokCodeExists(
   return rows.length > 0;
 }
 
+async function assertKategoriTenant(
+  villageId: number,
+  categoryId: number | null,
+): Promise<void> {
+  if (categoryId === null) return;
+  const [category] = await db
+    .select({ id: kelompokMaster.id })
+    .from(kelompokMaster)
+    .where(
+      and(
+        eq(kelompokMaster.id, categoryId),
+        eq(kelompokMaster.villageId, villageId),
+      ),
+    )
+    .limit(1);
+  if (!category) throw new Error("Kategori kelompok tidak ditemukan pada desa aktif.");
+}
+
 export async function insertKelompok(
   villageId: number,
   slug: string,
   input: KelompokFormInput,
 ): Promise<number> {
+  await assertKategoriTenant(villageId, input.kategoriId);
+
   const [inserted] = await db
     .insert(kelompok)
     .values({
@@ -269,6 +289,8 @@ export async function updateKelompok(
   slug: string,
   input: KelompokFormInput,
 ): Promise<void> {
+  await assertKategoriTenant(villageId, input.kategoriId);
+
   await db
     .update(kelompok)
     .set({
@@ -394,6 +416,18 @@ export async function addKelompokMember(
   memberNumber: string | null,
   decreeNumber: string | null,
 ): Promise<void> {
+  const [group] = await db
+    .select({ id: kelompok.id })
+    .from(kelompok)
+    .where(and(eq(kelompok.id, kelompokId), eq(kelompok.villageId, villageId)))
+    .limit(1);
+  const [resident] = await db
+    .select({ id: residents.id })
+    .from(residents)
+    .where(and(eq(residents.id, residentId), eq(residents.villageId, villageId)))
+    .limit(1);
+  if (!group || !resident) throw new Error("Kelompok atau penduduk tidak ditemukan pada desa aktif.");
+
   await db.insert(kelompokAnggota).values({
     villageId,
     kelompokId,
@@ -409,6 +443,13 @@ export async function removeKelompokMember(
   kelompokId: number,
   memberId: number,
 ): Promise<void> {
+  const [group] = await db
+    .select({ id: kelompok.id })
+    .from(kelompok)
+    .where(and(eq(kelompok.id, kelompokId), eq(kelompok.villageId, villageId)))
+    .limit(1);
+  if (!group) return;
+
   await db
     .delete(kelompokAnggota)
     .where(
@@ -427,6 +468,13 @@ export async function setKelompokMemberPublic(
   memberId: number,
   tampilPublik: boolean,
 ): Promise<boolean> {
+  const [group] = await db
+    .select({ id: kelompok.id })
+    .from(kelompok)
+    .where(and(eq(kelompok.id, kelompokId), eq(kelompok.villageId, villageId)))
+    .limit(1);
+  if (!group) return false;
+
   const [result] = await db
     .update(kelompokAnggota)
     .set({ tampilPublik })
