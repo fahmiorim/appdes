@@ -8,7 +8,9 @@ import { privateNoStore } from "@/lib/response-headers";
 export async function GET(request: Request) {
   const user = await getCurrentUser();
   if (!user) {
-    return privateNoStore(new Response("Sesi Anda telah berakhir.", { status: 401 }));
+    return privateNoStore(
+      new Response("Sesi Anda telah berakhir.", { status: 401 }),
+    );
   }
 
   try {
@@ -39,6 +41,8 @@ export async function GET(request: Request) {
       );
     }
     console.error("Gagal lookup NIK:", error);
-    return privateNoStore(NextResponse.json({ ok: false, message: "Server error" }, { status: 500 }));
+    return privateNoStore(
+      NextResponse.json({ ok: false, message: "Server error" }, { status: 500 }),
+    );
   }
 }
