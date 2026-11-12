@@ -12,7 +12,7 @@ import {
 } from "@/features/layanan-mandiri/infrastructure/layanan-mandiri-repository";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
-const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../../db/migrations", import.meta.url));
+const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../db/migrations", import.meta.url));
 const RUN = randomUUID().slice(0, 8);
 
 interface Fixture {
