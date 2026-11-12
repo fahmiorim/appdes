@@ -2,6 +2,7 @@ import {
   boolean,
   date,
   float,
+  foreignKey,
   index,
   int,
   mysqlTable,
@@ -31,7 +32,10 @@ export const posyandu = mysqlTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (t) => [index("posyandu_village_idx").on(t.villageId)],
+  (t) => [
+    index("posyandu_village_idx").on(t.villageId),
+    uniqueIndex("posyandu_village_id_uq").on(t.villageId, t.id),
+  ],
 );
 
 export const kia = mysqlTable(
@@ -42,10 +46,8 @@ export const kia = mysqlTable(
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
     noKia: varchar("no_kia", { length: 30 }).notNull(),
-    ibuId: int("ibu_id")
-      .notNull()
-      .references(() => residents.id),
-    anakId: int("anak_id").references(() => residents.id),
+    ibuId: int("ibu_id").notNull(),
+    anakId: int("anak_id"),
     hariPerkiraanLahir: date("hari_perkiraan_lahir", { mode: "string" }),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
@@ -56,6 +58,17 @@ export const kia = mysqlTable(
   (t) => [
     uniqueIndex("kia_village_no_uq").on(t.villageId, t.noKia),
     index("kia_village_idx").on(t.villageId),
+    uniqueIndex("kia_village_id_uq").on(t.villageId, t.id),
+    foreignKey({
+      name: "kia_ibu_tenant_fk",
+      columns: [t.villageId, t.ibuId],
+      foreignColumns: [residents.villageId, residents.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "kia_anak_tenant_fk",
+      columns: [t.villageId, t.anakId],
+      foreignColumns: [residents.villageId, residents.id],
+    }).onDelete("restrict"),
   ],
 );
 
@@ -66,12 +79,8 @@ export const ibuHamil = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    posyanduId: int("posyandu_id")
-      .notNull()
-      .references(() => posyandu.id),
-    kiaId: int("kia_id")
-      .notNull()
-      .references(() => kia.id, { onDelete: "cascade" }),
+    posyanduId: int("posyandu_id").notNull(),
+    kiaId: int("kia_id").notNull(),
     statusKehamilan: tinyint("status_kehamilan"),
     usiaKehamilan: tinyint("usia_kehamilan"),
     tanggalMelahirkan: date("tanggal_melahirkan", { mode: "string" }),
@@ -90,7 +99,20 @@ export const ibuHamil = mysqlTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (t) => [index("ibu_hamil_village_idx").on(t.villageId), index("ibu_hamil_kia_idx").on(t.kiaId)],
+  (t) => [
+    index("ibu_hamil_village_idx").on(t.villageId),
+    index("ibu_hamil_kia_idx").on(t.kiaId),
+    foreignKey({
+      name: "ibu_hamil_posyandu_tenant_fk",
+      columns: [t.villageId, t.posyanduId],
+      foreignColumns: [posyandu.villageId, posyandu.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "ibu_hamil_kia_tenant_fk",
+      columns: [t.villageId, t.kiaId],
+      foreignColumns: [kia.villageId, kia.id],
+    }).onDelete("cascade"),
+  ],
 );
 
 export const bulananAnak = mysqlTable(
@@ -100,12 +122,8 @@ export const bulananAnak = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    posyanduId: int("posyandu_id")
-      .notNull()
-      .references(() => posyandu.id),
-    kiaId: int("kia_id")
-      .notNull()
-      .references(() => kia.id, { onDelete: "cascade" }),
+    posyanduId: int("posyandu_id").notNull(),
+    kiaId: int("kia_id").notNull(),
     statusGizi: tinyint("status_gizi").notNull(),
     umurBulan: tinyint("umur_bulan").notNull(),
     statusTikar: tinyint("status_tikar").notNull(),
@@ -132,5 +150,15 @@ export const bulananAnak = mysqlTable(
   (t) => [
     index("bulanan_anak_village_idx").on(t.villageId),
     index("bulanan_anak_kia_idx").on(t.kiaId),
+    foreignKey({
+      name: "bulanan_anak_posyandu_tenant_fk",
+      columns: [t.villageId, t.posyanduId],
+      foreignColumns: [posyandu.villageId, posyandu.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "bulanan_anak_kia_tenant_fk",
+      columns: [t.villageId, t.kiaId],
+      foreignColumns: [kia.villageId, kia.id],
+    }).onDelete("cascade"),
   ],
 );

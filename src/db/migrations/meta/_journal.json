@@ -8,6 +8,13 @@
       "when": 1794437839300,
       "tag": "0000_baseline",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1794495797658,
+      "tag": "0001_aud002_composite_tenant_fk",
+      "breakpoints": true
     }
   ]
 }

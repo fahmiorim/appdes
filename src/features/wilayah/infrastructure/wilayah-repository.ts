@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, count, eq, like, ne, or, type SQL } from "drizzle-orm";
 
 import { db } from "@/db";
-import { regions } from "@/db/schema";
+import { families, regions, residentMutations, residents, rumahTangga } from "@/db/schema";
 import type { WilayahDTO, WilayahFormInput } from "@/features/wilayah/domain/wilayah";
 
 export interface WilayahListParams {
@@ -147,13 +147,41 @@ export async function insertWilayah(villageId: number, input: WilayahFormInput):
   return inserted.id;
 }
 
-export async function updateWilayah(id: number, input: WilayahFormInput): Promise<void> {
+export async function updateWilayah(
+  villageId: number,
+  id: number,
+  input: WilayahFormInput,
+): Promise<void> {
   await db
     .update(regions)
     .set({ dusun: input.dusun, rw: input.rw, rt: input.rt, sortOrder: input.urut })
-    .where(eq(regions.id, id));
+    .where(and(eq(regions.villageId, villageId), eq(regions.id, id)));
 }
 
-export async function deleteWilayah(id: number): Promise<void> {
-  await db.delete(regions).where(eq(regions.id, id));
+export async function deleteWilayah(villageId: number, id: number): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx
+      .update(families)
+      .set({ regionId: null })
+      .where(and(eq(families.villageId, villageId), eq(families.regionId, id)));
+    await tx
+      .update(residents)
+      .set({ regionId: null })
+      .where(and(eq(residents.villageId, villageId), eq(residents.regionId, id)));
+    await tx
+      .update(rumahTangga)
+      .set({ regionId: null })
+      .where(and(eq(rumahTangga.villageId, villageId), eq(rumahTangga.regionId, id)));
+    await tx
+      .update(residentMutations)
+      .set({ fromRegionId: null })
+      .where(
+        and(eq(residentMutations.villageId, villageId), eq(residentMutations.fromRegionId, id)),
+      );
+    await tx
+      .update(residentMutations)
+      .set({ toRegionId: null })
+      .where(and(eq(residentMutations.villageId, villageId), eq(residentMutations.toRegionId, id)));
+    await tx.delete(regions).where(and(eq(regions.villageId, villageId), eq(regions.id, id)));
+  });
 }

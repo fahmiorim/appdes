@@ -22,6 +22,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: [
+      "src/db/tenant-composite-fk.integration.test.ts",
       "src/features/bantuan/integrasi-warga.test.ts",
       "src/features/database/infrastructure/verifikasi-restore.integration.test.ts",
       "src/features/gis/infrastructure/gis-repository.integration.test.ts",

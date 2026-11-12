@@ -322,11 +322,17 @@ export async function updateKeluarga(id: number, input: KeluargaFormInput): Prom
 /**
  * Hapus KK.
  *
- * Tautan penduduk dilepas otomatis oleh basis data (`ON DELETE SET NULL`),
- * sehingga data penduduk tidak ikut terhapus.
+ * Referensi penduduk dilepas dalam transaksi sebelum KK dihapus agar
+ * `village_id` tetap terjaga pada composite foreign key.
  */
-export async function deleteKeluarga(id: number): Promise<void> {
-  await db.delete(families).where(eq(families.id, id));
+export async function deleteKeluarga(villageId: number, id: number): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx
+      .update(residents)
+      .set({ familyId: null })
+      .where(and(eq(residents.villageId, villageId), eq(residents.familyId, id)));
+    await tx.delete(families).where(and(eq(families.villageId, villageId), eq(families.id, id)));
+  });
 }
 
 // --- Riwayat perubahan anggota ---------------------------------------------

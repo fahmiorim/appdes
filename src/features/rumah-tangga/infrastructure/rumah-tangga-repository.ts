@@ -306,11 +306,19 @@ export async function updateRumahTangga(id: number, input: RumahTanggaFormInput)
 /**
  * Hapus RTM.
  *
- * Tautan penduduk dilepas otomatis oleh basis data (`ON DELETE SET NULL`),
- * sehingga data penduduk tidak ikut terhapus.
+ * Referensi anggota dilepas dalam transaksi sebelum RTM dihapus agar
+ * `village_id` tetap terjaga pada composite foreign key.
  */
-export async function deleteRumahTangga(id: number): Promise<void> {
-  await db.delete(rumahTangga).where(eq(rumahTangga.id, id));
+export async function deleteRumahTangga(villageId: number, id: number): Promise<void> {
+  await db.transaction(async (tx) => {
+    await tx
+      .update(residents)
+      .set({ rtmId: null, rtmLevel: null })
+      .where(and(eq(residents.villageId, villageId), eq(residents.rtmId, id)));
+    await tx
+      .delete(rumahTangga)
+      .where(and(eq(rumahTangga.villageId, villageId), eq(rumahTangga.id, id)));
+  });
 }
 
 /** Setel (atau lepas) keanggotaan RTM seorang penduduk beserta tingkatnya. */

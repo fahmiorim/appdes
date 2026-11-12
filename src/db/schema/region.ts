@@ -31,6 +31,7 @@ export const regions = mysqlTable(
   },
   (t) => [
     uniqueIndex("regions_village_dusun_rw_rt_uq").on(t.villageId, t.dusun, t.rw, t.rt),
+    uniqueIndex("regions_village_id_uq").on(t.villageId, t.id),
     index("regions_village_sort_idx").on(t.villageId, t.sortOrder),
   ],
 );
