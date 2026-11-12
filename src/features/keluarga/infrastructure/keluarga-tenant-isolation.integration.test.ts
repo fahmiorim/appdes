@@ -57,7 +57,7 @@ async function seedFixture(): Promise<Fixture> {
     .$returningId();
   const [villageBRow] = await db
     .insert(villages)
-    .values({ name: `Desa Keluarga B ${RUN}`, code: `KLB${RUN}` })
+    .values({ name: `Desa Keluarga B ${RUN}`, code: `KLB${RUN}`.slice(0, 10) })
     .$returningId();
   const villageA = pastiId(villageARow, "village A");
   const villageB = pastiId(villageBRow, "village B");
