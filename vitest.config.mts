@@ -11,9 +11,9 @@ import { defineConfig } from "vitest/config";
  * environment saat modulnya di-import (fail fast). Nilainya fiktif — tidak ada
  * koneksi database yang dibuka dalam pengujian unit.
  *
- * Test unit murni berjalan tanpa setup khusus. Test integrasi menyentuh
- * `desa_test`: migrasi programatik dijalankan sendiri dan suite di-skip
- * bila MySQL tidak tersedia.
+ * Konfigurasi ini hanya untuk unit test. Berkas integration test sengaja
+ * dikecualikan; berkas itu memakai `vitest.integration.config.mts` yang
+ * mewajibkan `TEST_DATABASE_URL` dan divalidasi guard database uji.
  *
  * Berkas ini memakai ekstensi `.mts` karena `package.json` tidak bertipe module.
  */
@@ -26,13 +26,18 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
+    // Integration test tidak boleh ikut `npm test`; jalankan lewat
+    // `npm run test:integration` pada database disposable.
+    exclude: ["**/node_modules/**", "**/*integration.test.ts", "**/*integrasi*.test.ts"],
     // Beberapa berkas integrasi memigrasi `desa_test` secara bergiliran
     // (dikunci lewat `jalankanMigrasiUji`). Migrasi dari nol butuh >10 detik,
     // jadi timeout hook bawaan terlalu pendek.
     hookTimeout: 120_000,
     env: {
       NODE_ENV: "test",
-      DATABASE_URL: "mysql://root:@127.0.0.1:3306/desa_test",
+      // Unit test tidak membuka koneksi; nama ini sengaja bukan database uji
+      // agar tidak pernah tertukar dengan target integration test.
+      DATABASE_URL: "mysql://uji:uji@127.0.0.1:3306/desa_unit",
       BETTER_AUTH_SECRET: "rahasia-uji-coba-minimal-32-karakter",
       TRUST_PROXY: "true",
     },

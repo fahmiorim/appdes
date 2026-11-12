@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { eq, sql } from "drizzle-orm";
-import mysql from "mysql2/promise";
+import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
@@ -17,11 +16,10 @@ import {
   suratNumberExists,
   suratNumberExistsWithAgenda,
 } from "@/features/surat/infrastructure/surat-repository";
-import { jalankanMigrasiUji } from "@/testing/migrasi-uji";
+import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../../db/migrations", import.meta.url));
 const RUN = randomUUID().slice(0, 8);
-let dbReady = false;
 let fixture: {
   villageId: number;
   typeId: number;
@@ -35,19 +33,7 @@ function pastiId(row: { id: number | undefined } | undefined, label: string): nu
 }
 
 beforeAll(async () => {
-  const dsn = process.env.DATABASE_URL ?? "";
-  try {
-    const dbName = new URL(dsn).pathname.replace(/^\//, "") || "desa_test";
-    const server = await mysql.createConnection(dsn.replace(/\/[^/]*$/, ""));
-    await server.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-    await server.end();
-    await db.execute(sql`SELECT 1`);
-  } catch {
-    return;
-  }
-
-  dbReady = true;
-  await jalankanMigrasiUji(db, { dsn, migrationsFolder: MIGRATIONS_FOLDER });
+  await siapkanDatabaseUji(db, { migrationsFolder: MIGRATIONS_FOLDER });
 
   const [villageRow] = await db
     .insert(villages)
@@ -90,14 +76,13 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (dbReady && fixture) await db.delete(villages).where(eq(villages.id, fixture.villageId));
+  if (fixture) await db.delete(villages).where(eq(villages.id, fixture.villageId));
 });
 
 describe("arsip nomor surat", () => {
-  it("tidak memakai ulang nomor terbit setelah surat sumber dihapus", async (ctx) => {
-    if (!dbReady || !fixture) {
-      ctx.skip();
-      return;
+  it("tidak memakai ulang nomor terbit setelah surat sumber dihapus", async () => {
+    if (!fixture) {
+      throw new Error("Fixture integrasi tidak siap.");
     }
 
     await issueSuratRecord(fixture.villageId, fixture.letterId, {

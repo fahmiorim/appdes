@@ -1,13 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { inArray, sql } from "drizzle-orm";
-import mysql from "mysql2/promise";
+import { inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
 import { residents, villages } from "@/db/schema";
 import { wargaPesan } from "@/db/schema/warga-pesan";
-import { jalankanMigrasiUji } from "@/testing/migrasi-uji";
+import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 import {
   findPendudukPercakapan,
@@ -33,7 +32,6 @@ const NIK_A1 = `${Date.now()}`.slice(-13) + "001";
 const NIK_A2 = `${Date.now()}`.slice(-13) + "002";
 const NIK_B1 = `${Date.now()}`.slice(-13) + "003";
 
-let dbReady = false;
 let fixture: {
   villageA: number;
   villageB: number;
@@ -48,26 +46,7 @@ function pastiId(row: { id: number | undefined } | undefined, label: string): nu
 }
 
 beforeAll(async () => {
-  const dsn = process.env.DATABASE_URL ?? "";
-  try {
-    const dbName = new URL(dsn).pathname.replace(/^\//, "") || "desa_test";
-    const server = await mysql.createConnection(dsn.replace(/\/[^/]*$/, ""));
-    await server.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-    await server.end();
-  } catch (error) {
-    console.warn("[pesan-warga] Persiapan basis data gagal, suite di-skip:", error);
-    return;
-  }
-
-  try {
-    await db.execute(sql`SELECT 1`);
-  } catch (error) {
-    console.warn("[pesan-warga] DB tidak tersedia, test di-skip:", error);
-    return;
-  }
-
-  dbReady = true;
-  await jalankanMigrasiUji(db, { dsn, migrationsFolder: MIGRATIONS_FOLDER });
+  await siapkanDatabaseUji(db, { migrationsFolder: MIGRATIONS_FOLDER });
 
   const [villageARow] = await db
     .insert(villages)
@@ -118,8 +97,8 @@ afterAll(async () => {
 });
 
 describe("percakapan warga (integrasi)", () => {
-  it("hanya mengembalikan pesan milik warga itu di desanya", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("hanya mengembalikan pesan milik warga itu di desanya", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     const pesanA1 = await listPesanWarga(fixture.villageA, fixture.residentA1);
     const pesanA2 = await listPesanWarga(fixture.villageA, fixture.residentA2);
@@ -131,8 +110,8 @@ describe("percakapan warga (integrasi)", () => {
     expect(pesanA2.map((item) => item.isi)).toEqual([`Warga lain ${RUN}`]);
   });
 
-  it("menolak penduduk desa lain sebagai percakapan", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("menolak penduduk desa lain sebagai percakapan", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     expect(await findPendudukPercakapan(fixture.villageA, fixture.residentB1)).toBeNull();
     expect(await findPendudukPercakapan(fixture.villageB, fixture.residentA1)).toBeNull();
@@ -141,8 +120,8 @@ describe("percakapan warga (integrasi)", () => {
     });
   });
 
-  it("daftar percakapan operator tidak memuat pesan desa lain", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("daftar percakapan operator tidak memuat pesan desa lain", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     const { villageA, residentB1 } = fixture;
     const rows = await listPesanPercakapan(villageA);
@@ -151,8 +130,8 @@ describe("percakapan warga (integrasi)", () => {
     expect(rows.some((row) => row.isi === `Desa B ${RUN}`)).toBe(false);
   });
 
-  it("menghitung dan menandai dibaca hanya untuk sisi yang dituju", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("menghitung dan menandai dibaca hanya untuk sisi yang dituju", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     expect(await hitungPesanBelumDibacaWarga(fixture.villageA, fixture.residentA1)).toBe(1);
 

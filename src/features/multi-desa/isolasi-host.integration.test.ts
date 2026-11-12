@@ -1,14 +1,13 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { inArray, sql } from "drizzle-orm";
-import mysql from "mysql2/promise";
+import { inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
 import { villageDomains, villages } from "@/db/schema";
 import { susunPetaDesa, villageIdDariHost } from "@/features/desa/domain/tenant";
 import { listVillageDomains } from "@/features/desa/infrastructure/desa-repository";
-import { jalankanMigrasiUji } from "@/testing/migrasi-uji";
+import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 /**
  * Uji isolasi host multi-desa pada lapisan data.
@@ -29,23 +28,10 @@ const SLUG_A = `desa-a-${RUN}`;
 const SLUG_B = `desa-b-${RUN}`;
 const BASE_DOMAIN = "desa.test";
 
-let dbReady = false;
 let fixture: { desaA: number; desaB: number } | null = null;
 
 beforeAll(async () => {
-  const dsn = process.env.DATABASE_URL ?? "";
-  try {
-    const dbName = new URL(dsn).pathname.replace(/^\//, "") || "desa_test";
-    const server = await mysql.createConnection(dsn.replace(/\/[^/]*$/, ""));
-    await server.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-    await server.end();
-    await db.execute(sql`SELECT 1`);
-  } catch {
-    return;
-  }
-
-  dbReady = true;
-  await jalankanMigrasiUji(db, { dsn, migrationsFolder: MIGRATIONS_FOLDER });
+  await siapkanDatabaseUji(db, { migrationsFolder: MIGRATIONS_FOLDER });
 
   const [desaARow] = await db
     .insert(villages)
@@ -72,7 +58,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (!dbReady || !fixture) return;
+  if (!fixture) return;
 
   const desaIds = [fixture.desaA, fixture.desaB];
   await db.delete(villageDomains).where(inArray(villageDomains.villageId, desaIds));
@@ -80,8 +66,8 @@ afterAll(async () => {
 });
 
 describe("isolasi host multi-desa", () => {
-  it("memetakan domain utama dan alias ke desa yang sama", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("memetakan domain utama dan alias ke desa yang sama", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     const peta = susunPetaDesa(await listVillageDomains(), BASE_DOMAIN);
 
@@ -91,8 +77,8 @@ describe("isolasi host multi-desa", () => {
     expect(peta.jumlahDesa).toBeGreaterThanOrEqual(2);
   });
 
-  it("memetakan wildcard <slug>.<base> ke desa pemilik slug", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("memetakan wildcard <slug>.<base> ke desa pemilik slug", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     const peta = susunPetaDesa(await listVillageDomains(), BASE_DOMAIN);
 
@@ -100,8 +86,8 @@ describe("isolasi host multi-desa", () => {
     expect(villageIdDariHost(`${SLUG_B}.${BASE_DOMAIN}`, peta)).toBe(fixture.desaB);
   });
 
-  it("tidak jatuh ke desa lain untuk host tak dikenal atau label bertingkat", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("tidak jatuh ke desa lain untuk host tak dikenal atau label bertingkat", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     const peta = susunPetaDesa(await listVillageDomains(), BASE_DOMAIN);
 
@@ -109,8 +95,8 @@ describe("isolasi host multi-desa", () => {
     expect(villageIdDariHost(`a.${SLUG_A}.${BASE_DOMAIN}`, peta)).toBeNull();
   });
 
-  it("menolak domain duplikat lewat indeks unik", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("menolak domain duplikat lewat indeks unik", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     await expect(
       db

@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { inArray, sql } from "drizzle-orm";
-import mysql from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
@@ -33,7 +32,7 @@ import {
   listLapak,
   updateLapak,
 } from "@/features/lapak/infrastructure/lapak-repository";
-import { jalankanMigrasiUji } from "@/testing/migrasi-uji";
+import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 /**
  * Uji isolasi tenant pada lapisan data untuk modul yang tidak punya test khusus:
@@ -47,7 +46,6 @@ import { jalankanMigrasiUji } from "@/testing/migrasi-uji";
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("../db/migrations", import.meta.url));
 const RUN = randomUUID().slice(0, 8);
 
-let dbReady = false;
 let fixture: {
   desaA: number;
   desaB: number;
@@ -58,19 +56,7 @@ let fixture: {
 } | null = null;
 
 beforeAll(async () => {
-  const dsn = process.env.DATABASE_URL ?? "";
-  try {
-    const dbName = new URL(dsn).pathname.replace(/^\//, "") || "desa_test";
-    const server = await mysql.createConnection(dsn.replace(/\/[^/]*$/, ""));
-    await server.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-    await server.end();
-    await db.execute(sql`SELECT 1`);
-  } catch {
-    return;
-  }
-
-  dbReady = true;
-  await jalankanMigrasiUji(db, { dsn, migrationsFolder: MIGRATIONS_FOLDER });
+  await siapkanDatabaseUji(db, { migrationsFolder: MIGRATIONS_FOLDER });
 
   const [desaARow] = await db
     .insert(villages)
@@ -169,8 +155,8 @@ afterAll(async () => {
 });
 
 describe("isolasi villageId antar desa", () => {
-  it("hanya menampilkan lapak milik desa sendiri", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("hanya menampilkan lapak milik desa sendiri", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
     const items = await listLapak(fixture.desaA);
 
     expect(items.rows).toHaveLength(1);
@@ -178,16 +164,16 @@ describe("isolasi villageId antar desa", () => {
     expect(await listKategoriLapak(fixture.desaA)).toEqual([`Kategori A`]);
   });
 
-  it("menyaring pencarian dan kategori di dalam desa sendiri", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("menyaring pencarian dan kategori di dalam desa sendiri", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     expect((await listLapak(fixture.desaA, { q: `Lapak A ${RUN}` })).rows).toHaveLength(1);
     expect((await listLapak(fixture.desaA, { q: `Lapak B ${RUN}` })).rows).toHaveLength(0);
     expect((await listLapak(fixture.desaA, { kategori: "Kategori B" })).rows).toHaveLength(0);
   });
 
-  it("tidak mengubah atau menghapus lapak desa lain", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("tidak mengubah atau menghapus lapak desa lain", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     await updateLapak(fixture.lapakA, fixture.desaB, { nama: "Diambil alih desa B" });
     await deleteLapak(fixture.lapakA, fixture.desaB);
@@ -197,8 +183,8 @@ describe("isolasi villageId antar desa", () => {
     expect(masihAda.rows[0]?.nama).toContain(`Lapak A ${RUN}`);
   });
 
-  it("hanya menampilkan arsip milik desa sendiri", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("hanya menampilkan arsip milik desa sendiri", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
     const items = await listArsip(fixture.desaA);
 
     expect(items).toHaveLength(1);
@@ -211,8 +197,8 @@ describe("isolasi villageId antar desa", () => {
     expect(masihAda[0]?.judul).toContain(`Arsip A ${RUN}`);
   });
 
-  it("hanya menampilkan buku tamu milik desa sendiri dan menghormati filter tanggal", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("hanya menampilkan buku tamu milik desa sendiri dan menghormati filter tanggal", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
     const semua = await listBukuTamu(fixture.desaA);
 
     expect(semua).toHaveLength(1);
@@ -221,24 +207,24 @@ describe("isolasi villageId antar desa", () => {
     expect(await listBukuTamu(fixture.desaA, { tanggalAkhir: "2026-01-31" })).toHaveLength(1);
   });
 
-  it("hanya menampilkan SiLPA milik desa sendiri", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("hanya menampilkan SiLPA milik desa sendiri", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
     const items = await listSisaLebih(fixture.desaA);
 
     expect(items).toHaveLength(1);
     expect(items[0]?.jumlah).toBe("1000000");
   });
 
-  it("hanya menampilkan kehadiran milik desa sendiri", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("hanya menampilkan kehadiran milik desa sendiri", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
     const items = await listKehadiran(fixture.desaA);
 
     expect(items).toHaveLength(1);
     expect(items[0]?.villageId).toBe(fixture.desaA);
   });
 
-  it("tidak mengubah atau menghapus anjungan desa lain", async (ctx) => {
-    if (!dbReady || !fixture) return ctx.skip();
+  it("tidak mengubah atau menghapus anjungan desa lain", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
 
     expect((await listAnjungan(fixture.desaA, true)).map((item) => item.nama)).toEqual([
       expect.stringContaining(`Anjungan A ${RUN}`),
