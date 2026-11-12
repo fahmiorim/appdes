@@ -90,18 +90,29 @@ describe("POST /api/eksternal/tte/tanda-tangan", () => {
     expect(tandatanganiPdfTte).not.toHaveBeenCalled();
   });
 
-  it("mengembalikan 422 saat provider TTE menolak", async () => {
-    vi.mocked(tandatanganiPdfTte).mockResolvedValueOnce({
-      ok: false,
-      mode: "bsre",
-      alasan: "provider down",
-    });
+  it("mengembalikan 422 tanpa membocorkan detail jaringan internal", async () => {
+    const peringatan = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      vi.mocked(tandatanganiPdfTte).mockResolvedValueOnce({
+        ok: false,
+        mode: "bsre",
+        alasan: "Koneksi ke provider TTE gagal (ECONNREFUSED 10.0.0.9:443).",
+      });
 
-    const respons = await POST(permintaan("SID_benar"));
+      const respons = await POST(permintaan("SID_benar"));
+      const teks = await respons.text();
 
-    expect(respons.status).toBe(422);
-    expect(recordAuditEvent).toHaveBeenCalledWith(
-      expect.objectContaining({ villageId: 7, details: expect.objectContaining({ ok: false }) }),
-    );
+      expect(respons.status).toBe(422);
+      expect(teks).toContain("tidak dapat diproses");
+      expect(teks).not.toContain("ECONNREFUSED");
+      expect(teks).not.toContain("10.0.0.9");
+      // Detail tetap dicatat di log server untuk operator.
+      expect(peringatan).toHaveBeenCalledWith(expect.stringContaining("ECONNREFUSED"));
+      expect(recordAuditEvent).toHaveBeenCalledWith(
+        expect.objectContaining({ villageId: 7, details: expect.objectContaining({ ok: false }) }),
+      );
+    } finally {
+      peringatan.mockRestore();
+    }
   });
 });

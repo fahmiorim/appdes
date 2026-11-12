@@ -56,15 +56,23 @@ const envSchema = z
       .optional()
       .transform((value) => value || undefined),
 
-    // --- TTE / BSrE (opsional; konfigurasi non-rahasia juga dapat diatur
-    // lewat halaman /persuratan/tte) -------------------------------------
+    // --- TTE / BSrE (opsional) -----------------------------------------
+    // Semua nilai TTE dibaca dari environment; konfigurasi non-rahasia per
+    // desa disimpan di tabel `tte_config` (halaman admin belum tersedia).
     TTE_MODE: z.string().trim().optional(),
     TTE_API: z.string().trim().optional(),
     TTE_USERNAME: z.string().trim().optional(),
     TTE_NIK: z.string().trim().optional(),
     /** Passphrase BSrE — JANGAN disimpan di basis data atau log. */
     TTE_PASSWORD: z.string().optional(),
-    TTE_SSL: z.string().trim().optional(),
+    /**
+     * Allowlist host provider TTE yang dikelola platform, dipisah koma:
+     * `host` (port 443) atau `host:port`. Exact match, tanpa wildcard/suffix.
+     * Kosong atau tidak sah berarti semua provider TTE ditolak (fail-closed).
+     */
+    TTE_ALLOWED_HOSTS: z.string().trim().optional(),
+    // TTE_SSL sengaja tidak ada: verifikasi sertifikat TLS tidak dapat
+    // dimatikan lewat environment maupun konfigurasi desa.
     /**
      * Folder sesi Baileys (WhatsApp Web). Default `storage/whatsapp-auth`.
      * Kosongkan untuk memakai default; isi bila sesi disimpan di volume lain.
