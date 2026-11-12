@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import mysql, { type ResultSetHeader } from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
