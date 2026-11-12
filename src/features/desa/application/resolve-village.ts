@@ -32,6 +32,10 @@ export async function resolveVillageId(user: CurrentUser): Promise<number> {
 /**
  * Tentukan desa dari host permintaan (halaman publik).
  *
+ * Hanya header Host yang dipakai. X-Forwarded-Host sengaja tidak dibaca karena
+ * dapat dipalsukan oleh klien kecuali setiap hop proxy dipastikan menghapus
+ * header masuk dan menimpanya dengan nilai yang telah divalidasi.
+ *
  * Aturan pemetaan ada di `domain/tenant.ts` (murni, teruji): domain persis →
  * alias `www` → fallback **hanya** bila instalasi benar-benar memiliki satu
  * desa. Bila ada banyak desa dan host tidak dikenal, hasilnya 404 agar tenant
@@ -51,8 +55,8 @@ export const resolveVillageByHost = cache(
   },
 );
 
-/** Desa aktif untuk request saat ini, berdasarkan `Host`/`X-Forwarded-Host`. */
+/** Desa aktif untuk request saat ini, berdasarkan header Host yang diterima server. */
 export const getIdentitasFromRequest = cache(async (): Promise<IdentitasDesa> => {
   const requestHeaders = await headers();
-  return resolveVillageByHost(requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host"));
+  return resolveVillageByHost(requestHeaders.get("host"));
 });
