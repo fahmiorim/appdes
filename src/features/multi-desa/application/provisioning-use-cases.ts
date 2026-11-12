@@ -28,7 +28,7 @@ export async function isSuperAdminUser(user: CurrentUser): Promise<boolean> {
   if (user.villageId !== null) return false;
   if (user.roleId === null) return false;
 
-  const role = await getRoleById(user.roleId);
+  const role = await getRoleById(user.roleId, user.villageId);
   return role?.slug === ROLE_PLATFORM;
 }
 
