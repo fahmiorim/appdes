@@ -4,7 +4,7 @@ import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
-import { letterTypes, letters, residents, villages } from "@/db/schema";
+import { letters, letterTypes, residents, villages } from "@/db/schema";
 import {
   buatPermohonan,
   findPendudukById,
@@ -158,8 +158,8 @@ describe("AUD-006 tenant ownership relasi permohonan surat", () => {
 
   it("menolak menautkan surat dinas milik desa lain ke permohonan", async () => {
     const f = dataUji();
-    await expect(
-      tautkanSuratPermohonan(f.villageA, f.requestA, f.letterB),
-    ).rejects.toThrow("Surat dinas tidak ditemukan pada desa ini.");
+    await expect(tautkanSuratPermohonan(f.villageA, f.requestA, f.letterB)).rejects.toThrow(
+      "Surat dinas tidak ditemukan pada desa ini.",
+    );
   });
 });
