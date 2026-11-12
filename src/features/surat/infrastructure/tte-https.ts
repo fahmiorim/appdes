@@ -142,6 +142,8 @@ export function buatPenjagaKonkurensi(maks: number): <T>(kerja: () => Promise<T>
   };
 }
 
+const PESAN_BATAS_WAKTU = "Permintaan TTE melewati batas waktu.";
+
 /**
  * Resolver produksi: seluruh alamat A/AAAA untuk satu hostname.
  *
@@ -160,22 +162,38 @@ export function buatResolverDns(opsi: { maksBersamaan?: number } = {}): Resolver
 
   return (hostname, signal) =>
     jalankan(async () => {
-      if (signal?.aborted) throw new Error("Permintaan TTE melewati batas waktu.");
-
       const resolver = new Resolver({ timeout: 5000, tries: 1 });
-      const kerja = Promise.allSettled([resolver.resolve4(hostname), resolver.resolve6(hostname)]);
 
       let tolakBatal: ((error: Error) => void) | undefined;
       const dibatalkan = new Promise<never>((_, gagal) => {
         tolakBatal = gagal;
       });
+      // Abort dapat terjadi sebelum `Promise.race` dipasang (mis. tepat saat
+      // listener dipasang). Rejection tetap dianggap tertangani sehingga tidak
+      // menjadi unhandled rejection pada jalur tersebut.
+      dibatalkan.catch(() => {});
+
+      // `Resolver.cancel()` idempoten; aman dipanggil lebih dari sekali.
       const padaAbort = () => {
         resolver.cancel();
-        tolakBatal?.(new Error("Permintaan TTE melewati batas waktu."));
+        tolakBatal?.(new Error(PESAN_BATAS_WAKTU));
       };
 
-      if (signal) signal.addEventListener("abort", padaAbort, { once: true });
+      // Listener dipasang SEBELUM query dimulai agar abort yang terjadi tepat
+      // setelah pemeriksaan awal tidak terlewat (menutup race R-13).
+      signal?.addEventListener("abort", padaAbort, { once: true });
       try {
+        // Periksa ulang setelah listener terpasang: bila abort sudah terjadi,
+        // jangan pernah memulai query DNS.
+        if (signal?.aborted) {
+          resolver.cancel();
+          throw new Error(PESAN_BATAS_WAKTU);
+        }
+
+        const kerja = Promise.allSettled([
+          resolver.resolve4(hostname),
+          resolver.resolve6(hostname),
+        ]);
         const hasil = await Promise.race([kerja, dibatalkan]);
         const alamat: AlamatDns[] = [];
         hasil.forEach((bagian, indeks) => {
@@ -186,7 +204,7 @@ export function buatResolverDns(opsi: { maksBersamaan?: number } = {}): Resolver
         if (alamat.length === 0) throw new Error("Host provider TTE tidak dapat diresolusi.");
         return alamat;
       } finally {
-        if (signal) signal.removeEventListener("abort", padaAbort);
+        signal?.removeEventListener("abort", padaAbort);
         resolver.cancel();
       }
     });

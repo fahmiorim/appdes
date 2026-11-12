@@ -30,6 +30,7 @@ import {
   simpanKonfigTteTersimpan,
 } from "@/features/surat/infrastructure/tte-repository";
 import { requirePermission } from "@/lib/dal";
+import { env } from "@/lib/env";
 import { validationError } from "@/lib/errors";
 
 export interface KonfigurasiTtePageData {
@@ -46,7 +47,7 @@ function envTte(): KonfigTte {
 
 /** Allowlist provider yang dikelola platform; tenant tidak dapat menambah. */
 function allowlistTte() {
-  return parseAllowlistProvider(process.env.TTE_ALLOWED_HOSTS);
+  return parseAllowlistProvider(env.TTE_ALLOWED_HOSTS);
 }
 
 /** Konfigurasi efektif (desa + environment) untuk pemakaian internal. */
