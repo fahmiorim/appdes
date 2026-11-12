@@ -6,7 +6,7 @@
 > **Base acuan `main`:** `c7c2ffc7957744b27badef94eec52d4985527a0a`
 > **Base branch:** `task/phase-0-integration-safety-hardening` @ `4946fd0` (Phase 0.1 approved; `main` adalah ancestor)
 > **Branch:** `task/phase-0-github-actions-ci`
-> **Commit implementasi:** _diisi pada commit laporan_
+> **Commit implementasi:** `db0d70985b70a46cdd11a694fd6ee33d40906af6`
 
 ## 1. Tujuan dan ruang lingkup
 
@@ -147,14 +147,25 @@ Semua perintah dijalankan dari root proyek. Integration test lokal memakai `desa
 | Unit test | `npm test` | **PASS** — 184 berkas, 1537 tes |
 | Validasi YAML | parsing `yaml` pada `.github/workflows/ci.yml` | **PASS** — job `quality`, `integration`, `summary`; trigger `pull_request`, `push` |
 | Integration test | Vitest dengan environment CI pada `desa_test_phase01` | **PASS** — 9 berkas, 34 tes, 0 skip |
+| GitHub Actions — quality | run `43135752190`, job `Unit test dan quality check` | **PASS** — seluruh step success |
+| GitHub Actions — integration | run `43135752190`, job `Integration test (MySQL 8)` | **PASS** — step `Integration test` success, bukan skipped |
+| GitHub Actions — summary | run `43135752190`, job `Ringkasan CI` | **PASS** — status keseluruhan LULUS |
 
-Catatan: runtime lokal adalah Node `v26.2.0`, sedangkan CI memakai Node 22 LTS. Perbedaan versi runtime CI belum dijalankan secara lokal; validasi sebenarnya dilakukan oleh run GitHub Actions di bawah.
+Catatan: runtime lokal adalah Node `v26.2.0`, sedangkan CI memakai Node 22 LTS. Perbedaan versi runtime CI sudah diverifikasi oleh run GitHub Actions di bawah.
 
 ## 8. Status GitHub Actions
 
-**URL workflow run:** _diisi setelah push dan run selesai._
+**URL workflow run:** https://github.com/fahmiorim/appdes/actions/runs/43135752190
 
-**Status:** _diisi setelah run selesai; tidak ada klaim keberhasilan sebelum bukti tersedia._
+**Run ID:** `43135752190` · **Event:** `push` · **Head SHA:** `db0d709` · **Status:** `completed` · **Conclusion:** `success`
+
+| Job | Status | Bukti step |
+|---|---|---|
+| Unit test dan quality check | **success** | Install, typecheck, lint, format, unit test semuanya success |
+| Integration test (MySQL 8) | **success** | `Initialize containers` dan `Integration test` success; tidak ada step yang di-skip |
+| Ringkasan CI | **success** | Ringkasan ditulis; step penegakan status di-skip karena kedua job lulus |
+
+Job integration berjalan pada service container MySQL 8 ephemeral dengan `TEST_DATABASE_URL=mysql://root:***@127.0.0.1:3306/desa_test_ci` dan `TEST_DATABASE_ACK=1`. Log mentah job tidak dapat diunduh tanpa hak admin repository, sehingga bukti yang tersedia adalah status step dari API GitHub Actions; output lokal menunjukkan target `desa_test_phase01 @ 127.0.0.1` dengan guard yang sama.
 
 ## 9. Risiko dan keterbatasan
 
@@ -173,4 +184,5 @@ Catatan: runtime lokal adalah Node `v26.2.0`, sedangkan CI memakai Node 22 LTS. 
 - Workflow CI untuk quality gate dan integration test MySQL 8 telah dibuat.
 - Integration job memakai guard Phase 0.1 tanpa melemahkan atau mengubahnya.
 - Seluruh pemeriksaan lokal yang diminta lulus; integration lokal 9 berkas/34 tes lulus pada database disposable.
-- Status keberhasilan GitHub Actions akan dicatat setelah run selesai. **Belum ada merge atau deployment.**
+- GitHub Actions run `43135752190` selesai dengan conclusion `success`; job integration benar-benar menjalankan `npm run test:integration` pada MySQL 8 ephemeral.
+- **Belum ada merge atau deployment.** Status: siap review.
