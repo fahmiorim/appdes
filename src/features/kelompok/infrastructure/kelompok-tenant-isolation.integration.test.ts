@@ -5,6 +5,10 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
 import { kelompok, kelompokAnggota, kelompokMaster, residents, villages } from "@/db/schema";
+import type {
+  KategoriKelompokFormInput,
+  KelompokFormInput,
+} from "@/features/kelompok/domain/kelompok";
 import {
   addKelompokMember,
   countKelompokAnggota,
@@ -21,7 +25,6 @@ import {
   updateKategori,
   updateKelompok,
 } from "@/features/kelompok/infrastructure/kelompok-repository";
-import type { KategoriKelompokFormInput, KelompokFormInput } from "@/features/kelompok/domain/kelompok";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../../db/migrations", import.meta.url));
