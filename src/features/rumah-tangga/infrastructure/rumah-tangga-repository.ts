@@ -107,7 +107,10 @@ export async function listRumahTangga(
         rt: regions.rt,
       })
       .from(rumahTangga)
-      .leftJoin(regions, eq(rumahTangga.regionId, regions.id))
+      .leftJoin(
+        regions,
+        and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)),
+      )
       .where(where)
       .orderBy(asc(rumahTangga.number), asc(rumahTangga.id))
       .limit(pageSize)
@@ -115,7 +118,10 @@ export async function listRumahTangga(
     db
       .select({ value: count() })
       .from(rumahTangga)
-      .leftJoin(regions, eq(rumahTangga.regionId, regions.id))
+      .leftJoin(
+        regions,
+        and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)),
+      )
       .where(where),
   ]);
 
@@ -254,6 +260,10 @@ export async function listRumahTanggaMembers(
       level: residents.rtmLevel,
     })
     .from(residents)
+    .innerJoin(
+      rumahTangga,
+      and(eq(rumahTangga.id, residents.rtmId), eq(rumahTangga.villageId, villageId)),
+    )
     .where(and(eq(residents.villageId, villageId), eq(residents.rtmId, rtmId)));
 
   return rows
@@ -291,7 +301,11 @@ export async function insertRumahTangga(
   return inserted.id;
 }
 
-export async function updateRumahTangga(id: number, input: RumahTanggaFormInput): Promise<void> {
+export async function updateRumahTangga(
+  villageId: number,
+  id: number,
+  input: RumahTanggaFormInput,
+): Promise<void> {
   await db
     .update(rumahTangga)
     .set({
@@ -300,7 +314,7 @@ export async function updateRumahTangga(id: number, input: RumahTanggaFormInput)
       kelasSosial: input.kelasSosial,
       bdt: blankToNull(input.bdt),
     })
-    .where(eq(rumahTangga.id, id));
+    .where(and(eq(rumahTangga.villageId, villageId), eq(rumahTangga.id, id)));
 }
 
 /**
@@ -328,6 +342,15 @@ export async function setAnggotaRumahTangga(
   rtmId: number | null,
   level: number | null,
 ): Promise<void> {
+  if (rtmId !== null) {
+    const [rtm] = await db
+      .select({ id: rumahTangga.id })
+      .from(rumahTangga)
+      .where(and(eq(rumahTangga.id, rtmId), eq(rumahTangga.villageId, villageId)))
+      .limit(1);
+    if (!rtm) throw new Error("Rumah Tangga tidak ditemukan pada desa aktif.");
+  }
+
   await db
     .update(residents)
     .set({ rtmId, rtmLevel: rtmId === null ? null : level })
@@ -374,7 +397,10 @@ export async function listRtmRingkas(
       dusun: regions.dusun,
     })
     .from(rumahTangga)
-    .leftJoin(regions, eq(rumahTangga.regionId, regions.id))
+    .leftJoin(
+        regions,
+        and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)),
+      )
     .where(where)
     .orderBy(asc(rumahTangga.number));
 
