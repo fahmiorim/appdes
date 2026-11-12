@@ -110,7 +110,7 @@ async function seedFixture(): Promise<Fixture> {
     [villageB, rtmA, `Anggota Legacy B ${RUN}`],
   );
   await sisipkanLegacy(
-    "UPDATE rumah_tangga SET region_id = ? WHERE id = ?",
+    "UPDATE rtm SET region_id = ? WHERE id = ?",
     [regionB, rtmA],
   );
 
