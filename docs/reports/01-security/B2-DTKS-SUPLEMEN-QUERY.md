@@ -3,7 +3,7 @@
 - **Tanggal:** 12 November 2026
 - **Branch:** `task/B2-DTKS-SUPLEMEN-QUERY`
 - **Base:** `main` — `615712b87a76798cb85a9f5cc26b7b03483cecf1`
-- **Commit implementasi:** `3794329f1954bf16a77cd74dc3146870c0e78d87`
+- **Commit implementasi:** `7cbd283209b93fb35834e2e4da59b23a08c59583`
 - **Status:** selesai, siap review. Belum di-merge dan belum menjadi PR (lihat bagian PR).
 
 ## Tujuan
@@ -35,7 +35,8 @@ Ditemukan jalur lintas tenant pada kode sebelum perubahan:
 - `listSuplemen` menghitung seluruh baris `suplemen_terdata` berdasarkan
   `id_suplemen` tanpa `village_id`.
 - `listSuplemenTerdata` membaca identitas penduduk/KK lintas desa dan tidak
-  memverifikasi parent suplemen.
+  memverifikasi parent suplemen; ID referensi yang gagal di-resolve juga tidak
+  boleh dikembalikan ke pemanggil.
 - `listSuplemenRekap` mengagregasi terdata tanpa memastikan parent suplemen
   berasal dari desa yang sama.
 - `addSuplemenTerdataImpor` tidak memvalidasi parent suplemen maupun sasaran.
@@ -126,6 +127,14 @@ Test baru mencakup:
 - Lampiran lintas desa tidak tampil dan taut/lepasnya ditolak.
 - Operasi hapus tidak menghapus objek desa lain.
 - Impor menolak parent/sasaran desa lain dan tetap idempoten untuk data sendiri.
+
+## Validasi tambahan setelah review
+
+Perbaikan lanjutan pada `listSuplemenTerdata` menyensor `pendudukId` dan
+`keluargaId` ketika referensi tidak ditemukan pada tenant aktif. Integration
+test menegaskan ID lintas desa tidak keluar melalui DTO. Perubahan ini sudah
+masuk ke branch, tetapi seluruh test perlu dijalankan ulang setelah commit
+review-fix.
 
 ## Risiko dan keterbatasan
 
