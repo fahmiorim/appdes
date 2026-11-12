@@ -42,6 +42,7 @@ export default defineConfig({
       "src/features/rumah-tangga/infrastructure/rumah-tangga-tenant-isolation.integration.test.ts",
       "src/features/statistik/infrastructure/statistik-tenant-isolation.integration.test.ts",
       "src/features/rbac/infrastructure/rbac-tenant-isolation.integration.test.ts",
+      "src/features/layanan-mandiri/permohonan-tenant-relations.integration.test.ts",
       "src/features/surat/infrastructure/penomoran-archive.integration.test.ts",
     ],
     setupFiles: ["./src/testing/setup-integration.ts"],
