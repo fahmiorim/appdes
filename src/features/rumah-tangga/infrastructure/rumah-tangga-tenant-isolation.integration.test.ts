@@ -1,21 +1,24 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import mysql, { type ResultSetHeader } from "mysql2/promise";
 import { eq, inArray } from "drizzle-orm";
+import mysql, { type ResultSetHeader } from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
 import { regions, residents, rumahTangga, villages } from "@/db/schema";
 import {
+  filterRtmKosong,
+  type RumahTanggaFormInput,
+} from "@/features/rumah-tangga/domain/rumah-tangga";
+import {
   deleteRumahTangga,
   findRumahTanggaById,
   listRumahTangga,
-  listRumahTanggaMembers,
   listRtmRingkas,
+  listRumahTanggaMembers,
   setAnggotaRumahTangga,
   updateRumahTangga,
 } from "@/features/rumah-tangga/infrastructure/rumah-tangga-repository";
-import { filterRtmKosong, type RumahTanggaFormInput } from "@/features/rumah-tangga/domain/rumah-tangga";
 import { validasiDatabaseUji } from "@/testing/db-test-guard";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
@@ -109,10 +112,7 @@ async function seedFixture(): Promise<Fixture> {
     "INSERT INTO residents (village_id, rtm_id, rtm_level, name, gender, birth_date) VALUES (?, ?, 2, ?, 'female', '1990-01-01')",
     [villageB, rtmA, `Anggota Legacy B ${RUN}`],
   );
-  await sisipkanLegacy(
-    "UPDATE rtm SET region_id = ? WHERE id = ?",
-    [regionB, rtmA],
-  );
+  await sisipkanLegacy("UPDATE rtm SET region_id = ? WHERE id = ?", [regionB, rtmA]);
 
   return { villageA, villageB, rtmA, rtmB, residentB };
 }
