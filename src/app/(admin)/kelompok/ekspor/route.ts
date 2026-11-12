@@ -25,12 +25,14 @@ export async function GET(request: Request) {
   try {
     const rows = await getLaporanAnggota(tipe);
 
-    return privateNoStore(new NextResponse(buildLaporanAnggotaCsv(rows), {
-      headers: {
-        "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="${namaBerkasLaporanAnggota(tipe)}"`,
-      },
-    }));
+    return privateNoStore(
+      new NextResponse(buildLaporanAnggotaCsv(rows), {
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": `attachment; filename="${namaBerkasLaporanAnggota(tipe)}"`,
+        },
+      }),
+    );
   } catch (error) {
     const status = isAppError(error) ? appErrorStatus(error.code) : 500;
     return privateNoStore(new NextResponse("Gagal menyusun laporan anggota.", { status }));
