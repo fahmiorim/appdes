@@ -136,3 +136,70 @@ Gunakan format berikut setiap selesai task:
 - **Status:** siap review / terhambat — jangan menyatakan siap merge atau production tanpa persetujuan.
 
 Prinsip utama: **lebih baik berhenti dan melaporkan ketidakpastian daripada menebak, melewati kontrol keamanan, atau membuat perubahan di luar scope.**
+
+## 11. Laporan wajib dan komunikasi melalui GitHub
+
+GitHub adalah pusat komunikasi dan rekam jejak pekerjaan antara coding agent dan reviewer. Setiap task wajib menghasilkan laporan Markdown yang dapat dibaca reviewer langsung dari repository.
+
+### Lokasi dan penamaan laporan
+
+Simpan laporan di `docs/reports/`, dikelompokkan berdasarkan fase atau area:
+
+```text
+docs/
+└── reports/
+    ├── 00-baseline/
+    │   └── baseline-report.md
+    ├── 01-security/
+    │   ├── AUD-019-tte-security.md
+    │   └── AUD-001-role-ownership.md
+    ├── 02-super-admin/
+    └── 03-core-sid/
+```
+
+Gunakan nama file yang deskriptif, stabil, dan tidak menimpa laporan task sebelumnya. Bila task yang sama diulang, gunakan nomor revisi atau tanggal pada nama file.
+
+### Isi minimum laporan
+
+Setiap laporan wajib mencantumkan:
+- ID/nama task, tujuan, dan tanggal pengerjaan.
+- Branch, base commit, dan commit hasil pekerjaan.
+- Ringkasan kondisi awal dan analisis masalah.
+- File yang diperiksa.
+- File yang diubah beserta alasan; jika tidak ada perubahan kode, nyatakan dengan jelas.
+- Perubahan/hasil pemeriksaan secara faktual.
+- Perintah validasi yang benar-benar dijalankan.
+- Hasil setiap validasi: PASS, FAIL, atau SKIPPED.
+- Error/warning relevan dan bukti ringkasnya.
+- Risiko, keterbatasan, dan hal yang belum diverifikasi.
+- Kesimpulan serta rekomendasi langkah berikutnya.
+
+Jangan memasukkan secret, password, token, private key, NIK, atau data pribadi ke laporan. Jangan mengarang hasil atau menyatakan test berhasil tanpa menjalankannya.
+
+### Git workflow wajib
+
+1. Mulai dari branch dasar terbaru yang disepakati; periksa working tree dan jangan menimpa perubahan lokal yang bukan milik task.
+2. Buat branch terpisah untuk setiap task, dengan nama yang deskriptif, misalnya `task/AUD-019-tta-security` atau `task/phase-0-baseline`.
+3. Implementasikan hanya scope task yang diberikan dan buat laporan pada branch yang sama.
+4. Sebelum commit, periksa `git diff`, `git status`, dan pastikan tidak ada file/secret/perubahan tak terkait.
+5. Commit perubahan kode dan laporan dalam branch task yang sama. Untuk task pemeriksaan tanpa perubahan kode, commit hanya laporan dan artefak dokumentasi yang memang diminta.
+6. Push branch task ke remote GitHub agar reviewer dapat membaca laporan dan memeriksa diff.
+7. Jangan commit atau push langsung ke `main`; jangan merge, deploy, force push, atau mengubah proteksi branch.
+8. Jika push gagal, jangan mengklaim pekerjaan sudah tersedia di GitHub. Laporkan error dan berikan commit SHA lokal jika tersedia.
+9. Setelah push, sertakan URL branch/PR (jika PR dibuat), URL laporan, commit SHA, dan daftar file berubah.
+10. Berhenti setelah menyerahkan laporan. Tunggu review dan persetujuan sebelum memulai task berikutnya atau melakukan merge.
+
+### Format penyerahan kepada reviewer
+
+Pada akhir setiap task, tampilkan:
+- **Task dan status:** selesai / terhambat.
+- **Branch dan base commit.**
+- **Commit SHA.**
+- **URL laporan GitHub.**
+- **URL branch atau Pull Request**, jika tersedia.
+- **File berubah.**
+- **Ringkasan hasil dan risiko tersisa.**
+- **Validasi:** PASS / FAIL / SKIPPED beserta perintah.
+
+Prinsipnya: pekerjaan belum dapat direview melalui GitHub sampai laporan dan perubahan yang relevan sudah di-push. Push bukan persetujuan merge; keputusan merge tetap menunggu reviewer/maintainer.
+
