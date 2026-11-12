@@ -19,6 +19,13 @@ describe("guard database integration test", () => {
       dsn: "mysql://uji:uji@127.0.0.1:3306/desa_test",
       database: "desa_test",
       host: "127.0.0.1",
+      opsiKoneksi: {
+        host: "127.0.0.1",
+        port: 3306,
+        user: "uji",
+        password: "uji",
+        database: "desa_test",
+      },
     });
   });
 
@@ -121,5 +128,76 @@ describe("guard database integration test", () => {
     );
 
     expect(hasil.database).toBe("desa_test");
+    // mysql2 membuang bracket IPv6; opsi koneksi harus menunjuk host yang sama.
+    expect(hasil.opsiKoneksi.host).toBe("::1");
+  });
+
+  it("menghasilkan opsi koneksi eksplisit yang identik dengan DSN", () => {
+    const hasil = validasiDatabaseUji(
+      envValid({
+        TEST_DATABASE_URL: "mysql://root:rahasia-uji@localhost:3307/desa_test_opsi",
+      }),
+    );
+
+    expect(hasil.opsiKoneksi).toEqual({
+      host: "localhost",
+      port: 3307,
+      user: "root",
+      password: "rahasia-uji",
+      database: "desa_test_opsi",
+    });
+  });
+
+  it("memakai port MySQL default bila port tidak ditulis", () => {
+    const hasil = validasiDatabaseUji(
+      envValid({ TEST_DATABASE_URL: "mysql://uji@localhost/desa_test" }),
+    );
+
+    expect(hasil.opsiKoneksi.port).toBe(3306);
+  });
+
+  it.each([
+    "?socketPath=/tmp/mysql.sock",
+    "?socketPath=C:/mysql/mysql.sock",
+    "?host=db.contoh.id",
+    "?port=9999",
+    "?database=desa_dev",
+    "?user=root",
+    "?password=rahasia",
+    '?ssl={"rejectUnauthorized":false}',
+    "?charset=utf8mb4",
+    "?multipleStatements=true",
+  ])("menolak query string pada DSN: %s", (query) => {
+    expect(() =>
+      validasiDatabaseUji(
+        envValid({ TEST_DATABASE_URL: `mysql://uji@127.0.0.1:3306/desa_test${query}` }),
+      ),
+    ).toThrow(/query string/);
+  });
+
+  it("menolak fragment pada DSN", () => {
+    expect(() =>
+      validasiDatabaseUji(
+        envValid({ TEST_DATABASE_URL: "mysql://uji@127.0.0.1:3306/desa_test#utama" }),
+      ),
+    ).toThrow(/fragment/);
+  });
+
+  it("menolak query string yang disamarkan sebagai nama database", () => {
+    expect(() =>
+      pastikanNamaDatabaseUji("mysql://uji@127.0.0.1/desa_test%3FsocketPath%3D%2Ftmp%2Fmysql.sock"),
+    ).toThrow(/tidak diizinkan/);
+  });
+
+  it("menolak nama database dengan spasi yang akan di-trim mysql2", () => {
+    expect(() => pastikanNamaDatabaseUji("mysql://uji@127.0.0.1/desa_test%20")).toThrow(
+      /tidak diizinkan/,
+    );
+  });
+
+  it("menolak port 0", () => {
+    expect(() =>
+      validasiDatabaseUji(envValid({ TEST_DATABASE_URL: "mysql://uji@127.0.0.1:0/desa_test" })),
+    ).toThrow(/Port database/);
   });
 });
