@@ -146,7 +146,9 @@ describe("isolasi tenant repository kelompok", () => {
     expect(daftar.rows[0]?.leaderName).toBeNull();
     expect(daftar.rows[0]?.memberCount).toBe(1);
     expect(await countKelompokAnggota(current.villageA, current.groupA)).toBe(1);
-    expect(await kelompokMemberExists(current.villageA, current.groupA, current.residentB)).toBe(false);
+    expect(await kelompokMemberExists(current.villageA, current.groupA, current.residentB)).toBe(
+      false,
+    );
 
     const anggota = await listKelompokMembers(current.villageA, current.groupA);
     expect(anggota).toHaveLength(1);
@@ -193,7 +195,12 @@ describe("isolasi tenant repository kelompok", () => {
     expect(category?.name).toBe(`Kategori A ${RUN}`);
 
     expect(
-      await setKelompokMemberPublic(current.villageB, current.groupA, current.foreignMemberId, false),
+      await setKelompokMemberPublic(
+        current.villageB,
+        current.groupA,
+        current.foreignMemberId,
+        false,
+      ),
     ).toBe(false);
     await removeKelompokMember(current.villageB, current.groupA, current.foreignMemberId);
   });
