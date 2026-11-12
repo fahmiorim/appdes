@@ -530,10 +530,7 @@ export async function getStatistikBantuan(
         .from(bantuanPeserta)
         .leftJoin(
           residents,
-          and(
-            eq(bantuanPeserta.residentId, residents.id),
-            eq(residents.villageId, villageId),
-          ),
+          and(eq(bantuanPeserta.residentId, residents.id), eq(residents.villageId, villageId)),
         )
         .leftJoin(
           regions,
@@ -595,16 +592,10 @@ export async function getStatistikBantuan(
         ),
       )
       .leftJoin(
-          residents,
-          and(
-            eq(bantuanPeserta.residentId, residents.id),
-            eq(residents.villageId, villageId),
-          ),
-        )
-      .leftJoin(
-          regions,
-          and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
-        )
+        residents,
+        and(eq(bantuanPeserta.residentId, residents.id), eq(residents.villageId, villageId)),
+      )
+      .leftJoin(regions, and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(
         and(
           params.sasaran
