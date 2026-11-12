@@ -52,7 +52,7 @@ async function sisipkanLegacy(sql: string, values: unknown[]): Promise<number> {
 async function seedFixture(): Promise<Fixture> {
   const [villageARow] = await db
     .insert(villages)
-    .values({ name: `Desa RTM A ${RUN}`, code: `RTA${RUN}` })
+    .values({ name: `Desa RTM A ${RUN}`, code: `RTA${RUN}`.slice(0, 10) })
     .$returningId();
   const [villageBRow] = await db
     .insert(villages)
