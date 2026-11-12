@@ -23,12 +23,14 @@ export async function GET(request: Request) {
   try {
     const rows = await getBukuPembangunan(tahun);
 
-    return privateNoStore(new NextResponse(buildBukuPembangunanCsv(buildBukuPembangunan(rows)), {
-      headers: {
-        "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="${namaBerkasBukuPembangunan(tahun)}"`,
-      },
-    }));
+    return privateNoStore(
+      new NextResponse(buildBukuPembangunanCsv(buildBukuPembangunan(rows)), {
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": `attachment; filename="${namaBerkasBukuPembangunan(tahun)}"`,
+        },
+      }),
+    );
   } catch (error) {
     const status = isAppError(error) ? appErrorStatus(error.code) : 500;
     return privateNoStore(new NextResponse("Gagal menyusun buku pembangunan.", { status }));
