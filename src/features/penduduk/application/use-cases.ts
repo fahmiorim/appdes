@@ -23,6 +23,7 @@ import {
   listPenduduk as listPendudukRows,
   nationalIdExists,
   updatePenduduk as updatePendudukRow,
+  validatePendudukTenantReferences,
   type PendudukListResult,
 } from "@/features/penduduk/infrastructure/penduduk-repository";
 import { getPendudukReferenceData } from "@/features/penduduk/infrastructure/reference-repository";
@@ -100,6 +101,7 @@ export async function createPenduduk(input: PendudukFormInput): Promise<{ id: nu
     throw conflict("NIK tersebut sudah terdaftar pada penduduk lain.");
   }
 
+  await validatePendudukTenantReferences(villageId, input);
   await ensureSingleHeadOfFamily(villageId, input, null);
 
   const id = await insertPenduduk(villageId, input);
@@ -136,9 +138,10 @@ export async function updatePenduduk(id: number, input: PendudukFormInput): Prom
     throw conflict("NIK tersebut sudah terdaftar pada penduduk lain.");
   }
 
+  await validatePendudukTenantReferences(villageId, input);
   await ensureSingleHeadOfFamily(villageId, input, id);
 
-  await updatePendudukRow(id, input);
+  await updatePendudukRow(villageId, id, input);
 
   await recordAuditEvent({
     villageId,
@@ -165,7 +168,7 @@ export async function deletePenduduk(id: number): Promise<void> {
   const existing = await findPendudukById(villageId, id);
   if (!existing) throw notFound("Data penduduk tidak ditemukan.");
 
-  await deletePendudukRow(id);
+  await deletePendudukRow(villageId, id);
 
   await recordAuditEvent({
     villageId,
