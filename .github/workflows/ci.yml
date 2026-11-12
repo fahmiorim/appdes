@@ -1,0 +1,121 @@
+name: CI
+
+# Setiap PR ke main dan setiap push ke branch kerja harus melewati quality gate
+# yang sama. Push langsung ke main tidak memicu workflow karena main dilindungi.
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches-ignore: [main]
+    tags-ignore: ["**"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Unit test dan quality check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependency
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Unit test
+        run: npm test
+
+  integration:
+    name: Integration test (MySQL 8)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      mysql:
+        # MySQL 8 disposable; database hanya hidup selama job ini.
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: uji_ci_root
+          MYSQL_ROOT_HOST: "%"
+          MYSQL_DATABASE: desa_test_ci
+        ports:
+          - 3306:3306
+        # GitHub menunggu health check lulus sebelum menjalankan step.
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -puji_ci_root"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+          --health-start-period=15s
+
+    env:
+      NODE_ENV: test
+      TEST_DATABASE_ACK: "1"
+      TEST_DATABASE_URL: mysql://root:uji_ci_root@127.0.0.1:3306/desa_test_ci
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependency
+        run: npm ci
+
+      # Guard membaca TEST_DATABASE_URL + ACK dari environment di atas dan
+      # menolak host non-loopback / nama di luar desa_test*. DATABASE_URL diisi
+      # oleh src/testing/setup-integration.ts dari DSN yang sudah divalidasi.
+      - name: Integration test
+        run: npm run test:integration
+
+  summary:
+    name: Ringkasan CI
+    runs-on: ubuntu-latest
+    needs: [quality, integration]
+    if: always()
+    steps:
+      - name: Tulis ringkasan
+        run: |
+          {
+            echo "## Ringkasan CI"
+            echo ""
+            echo "| Job | Hasil |"
+            echo "|---|---|"
+            echo "| Unit/quality | ${{ needs.quality.result }} |"
+            echo "| Integration | ${{ needs.integration.result }} |"
+            echo ""
+            if [ "${{ needs.quality.result }}" != "success" ] || [ "${{ needs.integration.result }}" != "success" ]; then
+              echo "**Status keseluruhan: GAGAL**"
+            else
+              echo "**Status keseluruhan: LULUS**"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Tegakkan status keseluruhan
+        if: needs.quality.result != 'success' || needs.integration.result != 'success'
+        run: exit 1
