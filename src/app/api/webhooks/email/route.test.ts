@@ -27,7 +27,13 @@ const payload = {
 
 function request(
   body: unknown = payload,
-  options: { host?: string; forwardedHost?: string; eventId?: string; timestamp?: string; signature?: string } = {},
+  options: {
+    host?: string;
+    forwardedHost?: string;
+    eventId?: string;
+    timestamp?: string;
+    signature?: string;
+  } = {},
 ) {
   const rawBody = JSON.stringify(body);
   const timestamp = options.timestamp ?? String(Math.floor(Date.now() / 1000));
@@ -35,6 +41,7 @@ function request(
   const signature =
     options.signature ??
     createHmac("sha256", secret).update(`${timestamp}.${eventId}.${rawBody}`).digest("hex");
+
   return new Request("https://desa.example.test/api/webhooks/email", {
     method: "POST",
     headers: {
