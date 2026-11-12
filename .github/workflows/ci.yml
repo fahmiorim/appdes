@@ -34,11 +34,6 @@ jobs:
       - name: Install dependency
         run: npm ci
 
-      - name: Diagnose Prettier output (temporary)
-        run: |
-          npx prettier --write src/features/bantuan/infrastructure/bantuan-repository.ts src/features/bantuan/integrasi-warga.test.ts
-          git --no-pager diff -- src/features/bantuan/infrastructure/bantuan-repository.ts src/features/bantuan/integrasi-warga.test.ts
-
       - name: Typecheck
         run: npm run typecheck
 
