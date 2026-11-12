@@ -14,8 +14,13 @@ export interface AlamatDns {
   family: number;
 }
 
-/** Menyelesaikan hostname menjadi seluruh alamat A/AAAA-nya. */
-export type ResolverDns = (hostname: string) => Promise<AlamatDns[]>;
+/**
+ * Menyelesaikan hostname menjadi seluruh alamat A/AAAA-nya.
+ *
+ * `signal` adalah batas waktu total operasi. Implementasi wajib benar-benar
+ * membatalkan resolusi (bukan hanya berhenti menunggu) saat sinyal aktif.
+ */
+export type ResolverDns = (hostname: string, signal?: AbortSignal) => Promise<AlamatDns[]>;
 
 export interface PermintaanHttpTte {
   method: string;
@@ -46,6 +51,8 @@ export type TransportTte = (
 export interface DependensiTte {
   transport: TransportTte;
   resolver: ResolverDns;
+  /** Allowlist provider yang dikelola platform (`TTE_ALLOWED_HOSTS`). */
+  allowedHosts: readonly string[];
 }
 
 export interface UrlProviderTervalidasi {
@@ -63,6 +70,93 @@ function normalisasiHostname(hostname: string): string {
   const host = hostname.trim().toLowerCase().replace(/\.$/, "");
   const tanpaKurung = host.startsWith("[") && host.endsWith("]") ? host.slice(1, -1) : host;
   return tanpaKurung;
+}
+
+/** Label DNS atau IPv4 literal; wildcard dan karakter lain ditolak. */
+const POLA_HOSTNAME = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)*$/;
+
+/** IPv6 literal dalam kurung siku, seperti bentuk `URL.hostname`. */
+const POLA_IPV6 = /^\[[0-9a-f:.]+\]$/;
+
+export interface AllowlistProvider {
+  /** Entri ternormalisasi `host:port`; kosong berarti semua provider ditolak. */
+  entri: string[];
+  /** Masalah konfigurasi; tidak kosong berarti seluruh allowlist tidak sah. */
+  masalah: string[];
+}
+
+/**
+ * Urai `TTE_ALLOWED_HOSTS`: daftar dipisah koma/whitespace, tiap entri berupa
+ * `host` (berarti port 443) atau `host:port`. Pencocokan bersifat exact — tanpa
+ * wildcard, suffix, atau substring. Satu entri tidak sah menggagalkan seluruh
+ * allowlist (fail-closed). Pesan tidak memuat nilai mentah agar aman di log.
+ */
+export function parseAllowlistProvider(mentah: string | undefined | null): AllowlistProvider {
+  const teks = (mentah ?? "").trim();
+  if (teks === "") {
+    return {
+      entri: [],
+      masalah: ["TTE_ALLOWED_HOSTS belum diatur; semua provider TTE ditolak."],
+    };
+  }
+
+  const masalah: string[] = [];
+  const entri = new Set<string>();
+  const bagian = teks.split(/[,\s]+/).filter((nilai) => nilai !== "");
+
+  bagian.forEach((nilai, indeks) => {
+    const nomor = indeks + 1;
+    // Entri boleh ditulis `host[:port]` (bentuk yang didokumentasikan) atau
+    // `https://host[:port]`; skema lain tetap ditolak saat diurai.
+    const kandidat = /^https:\/\//i.test(nilai) ? nilai : `https://${nilai}`;
+    let url: URL;
+    try {
+      url = new URL(kandidat);
+    } catch {
+      masalah.push(`Entri TTE_ALLOWED_HOSTS ke-${nomor} tidak valid.`);
+      return;
+    }
+
+    if (
+      url.username !== "" ||
+      url.password !== "" ||
+      url.search !== "" ||
+      url.hash !== "" ||
+      url.pathname !== "/"
+    ) {
+      masalah.push(
+        `Entri TTE_ALLOWED_HOSTS ke-${nomor} tidak boleh memuat kredensial, path, query, atau fragment.`,
+      );
+      return;
+    }
+
+    const host = url.hostname.toLowerCase().replace(/\.$/, "");
+    const ipv6 = host.startsWith("[");
+    if (host === "" || (ipv6 ? !POLA_IPV6.test(host) : !POLA_HOSTNAME.test(host))) {
+      masalah.push(`Entri TTE_ALLOWED_HOSTS ke-${nomor} bukan hostname yang sah.`);
+      return;
+    }
+
+    const port = url.port === "" ? "443" : url.port;
+    if (port === "0") {
+      masalah.push(`Entri TTE_ALLOWED_HOSTS ke-${nomor} memakai port yang tidak sah.`);
+      return;
+    }
+    entri.add(`${host}:${port}`);
+  });
+
+  if (masalah.length > 0) return { entri: [], masalah };
+  if (entri.size === 0) {
+    return { entri: [], masalah: ["TTE_ALLOWED_HOSTS tidak memuat entri yang sah."] };
+  }
+  return { entri: [...entri].sort(), masalah: [] };
+}
+
+/** Cocokkan URL secara exact (hostname ternormalisasi + port efektif). */
+export function urlDiizinkan(url: URL, allowedHosts: readonly string[]): boolean {
+  const host = url.hostname.toLowerCase().replace(/\.$/, "");
+  const port = url.port === "" ? "443" : url.port;
+  return allowedHosts.includes(`${host}:${port}`);
 }
 
 /**
@@ -105,18 +199,34 @@ export function periksaUrlProviderStatis(mentah: string): PemeriksaanUrl {
   return { url: masalah.length === 0 ? url : null, masalah };
 }
 
+export interface OpsiValidasiProvider {
+  /** Entri `TTE_ALLOWED_HOSTS` yang sudah diurai; kosong berarti tolak semua. */
+  allowedHosts: readonly string[];
+  /** Batas waktu total operasi; dipakai juga untuk membatalkan resolusi DNS. */
+  signal?: AbortSignal;
+}
+
 /**
- * Validasi penuh URL provider: aturan statis + resolusi DNS. Seluruh alamat
- * A/AAAA harus publik; satu alamat internal menggagalkan seluruh permintaan.
+ * Validasi penuh URL provider: allowlist platform + aturan statis + resolusi
+ * DNS. Allowlist diperiksa sebelum resolver dipanggil sehingga host yang tidak
+ * diizinkan tidak pernah diresolusi dan tidak pernah menerima kredensial.
+ * Seluruh alamat A/AAAA harus publik; satu alamat internal menggagalkan
+ * seluruh permintaan.
  */
 export async function validasiUrlProvider(
   mentah: string,
   resolver: ResolverDns,
+  opsi: OpsiValidasiProvider,
 ): Promise<UrlProviderTervalidasi> {
   const statis = periksaUrlProviderStatis(mentah);
   if (!statis.url) throw new Error(statis.masalah[0] ?? "URL API BSrE tidak valid.");
 
   const url = statis.url;
+  if (!urlDiizinkan(url, opsi.allowedHosts)) {
+    throw new Error("Host provider TTE tidak diizinkan oleh allowlist platform.");
+  }
+  if (opsi.signal?.aborted) throw new Error("Permintaan TTE melewati batas waktu.");
+
   const host = normalisasiHostname(url.hostname);
   const kelas = klasifikasiAlamat(host);
   if (kelas.adalahIp) {
@@ -125,8 +235,9 @@ export async function validasiUrlProvider(
 
   let hasil: AlamatDns[];
   try {
-    hasil = await resolver(host);
+    hasil = await resolver(host, opsi.signal);
   } catch {
+    if (opsi.signal?.aborted) throw new Error("Permintaan TTE melewati batas waktu.");
     throw new Error("Host provider TTE tidak dapat diresolusi.");
   }
   if (hasil.length === 0) throw new Error("Host provider TTE tidak dapat diresolusi.");

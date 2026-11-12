@@ -1,4 +1,4 @@
-import { lookup as lookupDns } from "node:dns/promises";
+import { Resolver } from "node:dns/promises";
 import type { ClientRequest, IncomingMessage } from "node:http";
 import https from "node:https";
 import { isIP } from "node:net";
@@ -116,18 +116,89 @@ export function buatTransportTte(opsiTransport: OpsiTransportTte = {}): Transpor
     });
 }
 
-/** Resolver produksi: seluruh alamat A/AAAA untuk satu hostname. */
-export function buatResolverDns(): ResolverDns {
-  return async (hostname) => {
-    const hasil = await lookupDns(hostname, { all: true, verbatim: true });
-    return hasil.map(({ address, family }): AlamatDns => ({ alamat: address, family }));
+/** Batas resolusi DNS bersamaan agar query yang menggantung tidak menumpuk. */
+const MAKS_RESOLUSI_BERSAMAAN = 8;
+
+/**
+ * Penjaga konkurensi: permintaan baru ditolak saat batas tercapai (fail fast)
+ * alih-alih menumpuk antrean tanpa batas. Slot selalu dilepas di `finally`,
+ * termasuk saat timeout, sehingga query yang menggantung tidak menghabiskan
+ * resource. Diekspor agar dapat diuji tanpa jaringan.
+ */
+export function buatPenjagaKonkurensi(maks: number): <T>(kerja: () => Promise<T>) => Promise<T> {
+  if (!Number.isInteger(maks) || maks < 1) {
+    throw new Error("Batas konkurensi TTE tidak valid.");
+  }
+
+  let aktif = 0;
+  return async <T>(kerja: () => Promise<T>): Promise<T> => {
+    if (aktif >= maks) throw new Error("Terlalu banyak resolusi DNS TTE bersamaan.");
+    aktif += 1;
+    try {
+      return await kerja();
+    } finally {
+      aktif -= 1;
+    }
   };
 }
 
+/**
+ * Resolver produksi: seluruh alamat A/AAAA untuk satu hostname.
+ *
+ * Memakai `dns.Resolver` (c-ares) karena menyediakan `cancel()` sehingga query
+ * benar-benar dihentikan saat batas waktu operasi habis — `dns.lookup` tidak
+ * dapat dibatalkan. Konsekuensi: resolver sistem dan entri hosts file tidak
+ * dipakai; hostname provider harus ada di DNS publik, sejalan dengan aturan
+ * "alamat hasil resolusi wajib publik" di domain.
+ *
+ * Setiap panggilan memakai instance `Resolver` baru agar `cancel()` tidak
+ * memengaruhi resolusi lain; listener abort dilepas dan query dibatalkan di
+ * `finally` untuk semua jalur (sukses, gagal, timeout).
+ */
+export function buatResolverDns(opsi: { maksBersamaan?: number } = {}): ResolverDns {
+  const jalankan = buatPenjagaKonkurensi(opsi.maksBersamaan ?? MAKS_RESOLUSI_BERSAMAAN);
+
+  return (hostname, signal) =>
+    jalankan(async () => {
+      if (signal?.aborted) throw new Error("Permintaan TTE melewati batas waktu.");
+
+      const resolver = new Resolver({ timeout: 5000, tries: 1 });
+      const kerja = Promise.allSettled([resolver.resolve4(hostname), resolver.resolve6(hostname)]);
+
+      let tolakBatal: ((error: Error) => void) | undefined;
+      const dibatalkan = new Promise<never>((_, gagal) => {
+        tolakBatal = gagal;
+      });
+      const padaAbort = () => {
+        resolver.cancel();
+        tolakBatal?.(new Error("Permintaan TTE melewati batas waktu."));
+      };
+
+      if (signal) signal.addEventListener("abort", padaAbort, { once: true });
+      try {
+        const hasil = await Promise.race([kerja, dibatalkan]);
+        const alamat: AlamatDns[] = [];
+        hasil.forEach((bagian, indeks) => {
+          if (bagian.status !== "fulfilled") return;
+          const family = indeks === 0 ? 4 : 6;
+          for (const address of bagian.value) alamat.push({ alamat: address, family });
+        });
+        if (alamat.length === 0) throw new Error("Host provider TTE tidak dapat diresolusi.");
+        return alamat;
+      } finally {
+        if (signal) signal.removeEventListener("abort", padaAbort);
+        resolver.cancel();
+      }
+    });
+}
+
 /** Klien BSrE siap pakai untuk use case (transport + resolver Node). */
-export function buatKlienBsreNode(opsi: OpsiTransportTte = {}): KlienTte {
+export function buatKlienBsreNode(
+  opsi: OpsiTransportTte & { allowedHosts: readonly string[] },
+): KlienTte {
   return buatKlienBsre({
     transport: buatTransportTte(opsi),
     resolver: buatResolverDns(),
+    allowedHosts: opsi.allowedHosts,
   });
 }

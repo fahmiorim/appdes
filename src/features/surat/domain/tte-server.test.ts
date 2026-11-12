@@ -74,7 +74,11 @@ function konfig(prefix = ""): KonfigTte {
 }
 
 function klienUji() {
-  const klien = buatKlienBsre({ transport: transportLokal(), resolver: resolverLokal });
+  const klien = buatKlienBsre({
+    transport: transportLokal(),
+    resolver: resolverLokal,
+    allowedHosts: [`provider.test:${port}`],
+  });
   if (!klien) throw new Error("klien BSrE seharusnya selalu tersedia");
   return klien;
 }
@@ -221,7 +225,11 @@ describe("adapter BSrE dengan server HTTPS lokal", () => {
   });
 
   it("menolak redirect provider tanpa mengikuti tujuan redirect", async () => {
-    const klien = buatKlienBsre({ transport: transportLokal(), resolver: resolverLokal });
+    const klien = buatKlienBsre({
+      transport: transportLokal(),
+      resolver: resolverLokal,
+      allowedHosts: [`provider.test:${port}`],
+    });
     if (!klien) throw new Error("klien BSrE seharusnya selalu tersedia");
 
     await expect(

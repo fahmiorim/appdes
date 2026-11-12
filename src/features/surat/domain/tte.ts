@@ -27,11 +27,13 @@ import { z } from "zod";
 
 import {
   periksaUrlProviderStatis,
+  urlDiizinkan,
   validasiUrlBerkas,
   validasiUrlProvider,
   type DependensiTte,
   type PermintaanHttpTte,
   type ResponsTte,
+  type UrlProviderTervalidasi,
 } from "./tte-jaringan";
 
 /** Mode adapter yang dikenal. `manual` menandai surat setelah ttd basah. */
@@ -246,19 +248,36 @@ export function gabungKonfigTte(
 
 /**
  * Daftar alasan konfigurasi belum siap dipakai, untuk ditampilkan di admin.
- * Kosong berarti konfigurasi BSrE lengkap.
+ * Kosong berarti konfigurasi BSrE lengkap dan diizinkan platform.
  *
  * Memakai aturan URL yang sama dengan validasi runtime agar konfigurasi yang
- * lolos di form tidak gagal saat surat ditandatangani.
+ * lolos di form tidak gagal saat surat ditandatangani. `opsi.allowedHosts`
+ * diisi hasil `parseAllowlistProvider(env.TTE_ALLOWED_HOSTS)`; bila diberikan,
+ * host di luar allowlist dilaporkan sebagai masalah.
  */
-export function masalahKonfigTte(config: KonfigTte): string[] {
+export function masalahKonfigTte(
+  config: KonfigTte,
+  opsi: { allowedHosts?: readonly string[] } = {},
+): string[] {
   if (config.mode !== "bsre") return [];
 
   const masalah: string[] = [];
   if (config.api === "") {
     masalah.push("URL API BSrE belum diisi.");
   } else {
-    masalah.push(...periksaUrlProviderStatis(config.api).masalah);
+    const statis = periksaUrlProviderStatis(config.api);
+    masalah.push(...statis.masalah);
+    if (statis.url && opsi.allowedHosts) {
+      if (opsi.allowedHosts.length === 0) {
+        masalah.push(
+          "Allowlist provider TTE belum diatur (TTE_ALLOWED_HOSTS); semua provider ditolak.",
+        );
+      } else if (!urlDiizinkan(statis.url, opsi.allowedHosts)) {
+        masalah.push(
+          "Host provider TTE tidak diizinkan oleh allowlist platform (TTE_ALLOWED_HOSTS).",
+        );
+      }
+    }
   }
   if (config.username === "") masalah.push("Username BSrE belum diisi.");
   if (config.nik.length !== 16) masalah.push("NIK penanda tangan harus 16 digit.");
@@ -273,6 +292,10 @@ export function masalahKonfigTte(config: KonfigTte): string[] {
  *
  * `validasiUrlProvider` sudah menolak daftar kosong; helper ini hanya
  * mempersempit tipe agar indeks tidak diakses tanpa pemeriksaan.
+ *
+ * Failover ke alamat berikutnya belum diterapkan (F-01, deferred): semua
+ * alamat tetap divalidasi publik, tetapi hanya alamat pertama yang dipakai —
+ * tidak pernah ada fallback ke alamat yang belum lolos validasi.
  */
 function alamatTujuan(daftar: readonly { alamat: string }[]): string {
   const alamat = daftar[0];
@@ -380,12 +403,42 @@ function tunda(ms: number, batas: AbortSignal): Promise<void> {
   });
 }
 
+/** Kode kesalahan jaringan yang layak diulang; kegagalan TLS tidak termasuk. */
+const KODE_TRANSIEN = new Set(["ECONNRESET", "ECONNABORTED", "ETIMEDOUT", "EPIPE", "EAI_AGAIN"]);
+
+/** Hanya kegagalan transport sementara yang boleh dikirim ulang. */
+function bolehDiulang(error: unknown): boolean {
+  const kode = (error as NodeJS.ErrnoException | undefined)?.code;
+  return typeof kode === "string" && KODE_TRANSIEN.has(kode);
+}
+
+/**
+ * Baca body respons; bila sinyal sudah aktif, laporkan batas waktu — bukan
+ * pesan internal transport (mis. `aborted`) yang membocorkan detail.
+ */
+async function bacaBody(
+  respons: ResponsTte,
+  maksByte: number,
+  signal: AbortSignal,
+): Promise<Uint8Array> {
+  try {
+    return await respons.baca(maksByte);
+  } catch (error) {
+    if (signal.aborted || (error instanceof Error && error.message === "aborted")) {
+      throw new Error("Permintaan TTE melewati batas waktu.");
+    }
+    throw error;
+  }
+}
+
 /**
  * Kirim satu permintaan ke alamat yang sudah divalidasi.
  *
  * Redirect tidak pernah diikuti (3xx langsung gagal). Retry hanya untuk 5xx
- * dan kegagalan jaringan, maksimal `MAKS_PERCOBAAN`, dan tetap dibatasi sinyal
- * waktu total operasi.
+ * dan kegagalan jaringan yang bersifat sementara; kegagalan TLS/sertifikat
+ * tidak diulang agar kredensial tidak dikirim berulang ke provider yang
+ * identitasnya tidak dapat diverifikasi. Seluruh percobaan tetap dibatasi
+ * sinyal waktu total operasi.
  */
 async function kirimTte(
   deps: DependensiTte,
@@ -403,7 +456,7 @@ async function kirimTte(
       if (permintaan.signal.aborted) {
         throw new Error("Permintaan TTE melewati batas waktu.");
       }
-      if (percobaan < MAKS_PERCOBAAN) {
+      if (bolehDiulang(error) && percobaan < MAKS_PERCOBAAN) {
         await tunda(JEDA_DASAR_MS * 2 ** percobaan, permintaan.signal);
         percobaan += 1;
         continue;
@@ -444,13 +497,18 @@ async function kirimTte(
  */
 export function buatKlienBsre(deps: DependensiTte): KlienTte {
   return async (permintaan, config) => {
-    const provider = await validasiUrlProvider(config.api, deps.resolver);
+    // Batas waktu dibuat SEBELUM validasi URL/DNS: resolusi DNS yang
+    // menggantung ikut dibatalkan dan tidak memperpanjang deadline total.
+    const batas = AbortSignal.timeout(batasWaktuOperasi(config));
+    const provider = await validasiUrlProvider(config.api, deps.resolver, {
+      allowedHosts: deps.allowedHosts,
+      signal: batas,
+    });
     // Base dengan trailing slash agar path prefix provider tidak terbuang.
     const dasar = new URL(
       provider.url.href.endsWith("/") ? provider.url.href : `${provider.url.href}/`,
     );
     const endpoint = new URL("api/sign/pdf", dasar);
-    const batas = AbortSignal.timeout(batasWaktuOperasi(config));
     const otorisasi = `Basic ${btoa(`${config.username}:${config.password}`)}`;
 
     const form = new FormData();
@@ -491,14 +549,15 @@ export function buatKlienBsre(deps: DependensiTte): KlienTte {
 
     const contentType = (respons.header("content-type") ?? "").toLowerCase();
     if (contentType.includes("application/pdf")) {
-      const bytes = await respons.baca(BATAS_RESPONS_PDF);
+      const bytes = await bacaBody(respons, BATAS_RESPONS_PDF, batas);
       if (!adalahPdf(bytes)) throw new Error("Provider TTE mengembalikan berkas bukan PDF.");
       return bytes;
     }
 
+    const isiJson = await bacaBody(respons, BATAS_RESPONS_JSON, batas);
     let json: unknown;
     try {
-      json = JSON.parse(new TextDecoder().decode(await respons.baca(BATAS_RESPONS_JSON)));
+      json = JSON.parse(new TextDecoder().decode(isiJson));
     } catch {
       throw new Error("Respons provider TTE tidak dapat dibaca.");
     }
@@ -530,7 +589,7 @@ export function buatKlienBsre(deps: DependensiTte): KlienTte {
       throw new Error(`Gagal mengunduh berkas TTE (HTTP ${responsBerkas.status}).`);
     }
 
-    const bytes = await responsBerkas.baca(BATAS_RESPONS_PDF);
+    const bytes = await bacaBody(responsBerkas, BATAS_RESPONS_PDF, batas);
     if (!adalahPdf(bytes)) throw new Error("Berkas TTE yang diunduh bukan PDF.");
     return bytes;
   };
@@ -557,10 +616,16 @@ export async function testKoneksi(
     return { ok: false, pesan: statis.masalah[0] ?? "URL API tidak valid." };
   }
 
-  let provider;
+  // Deadline dibuat sebelum DNS, sama seperti jalur tanda tangan.
+  const batas = AbortSignal.timeout(batasWaktuOperasi(config));
+  let provider: UrlProviderTervalidasi;
   try {
-    provider = await validasiUrlProvider(config.api, deps.resolver);
+    provider = await validasiUrlProvider(config.api, deps.resolver, {
+      allowedHosts: deps.allowedHosts,
+      signal: batas,
+    });
   } catch (error) {
+    if (batas.aborted) return { ok: false, pesan: "Koneksi timeout." };
     return {
       ok: false,
       pesan: error instanceof Error ? error.message : "URL API tidak valid.",
@@ -570,7 +635,6 @@ export async function testKoneksi(
   const dasar = new URL(
     provider.url.href.endsWith("/") ? provider.url.href : `${provider.url.href}/`,
   );
-  const batas = AbortSignal.timeout(batasWaktuOperasi(config));
   const otorisasi = `Basic ${btoa(`${config.username}:${config.password}`)}`;
 
   const periksa = async (url: URL): Promise<HasilTestKoneksi | null> => {
@@ -592,7 +656,14 @@ export async function testKoneksi(
     }
     if (respons.status >= 200 && respons.status < 300) {
       // Body dibaca dengan batas agar respons besar tidak menahan proses.
-      await respons.baca(BATAS_RESPONS_JSON).catch(() => new Uint8Array());
+      try {
+        await bacaBody(respons, BATAS_RESPONS_JSON, batas);
+      } catch (error) {
+        if (batas.aborted) return { ok: false, pesan: "Koneksi timeout." };
+        if (error instanceof Error && error.message.includes("melebihi batas ukuran")) {
+          return { ok: false, pesan: "Respons provider TTE melebihi batas ukuran." };
+        }
+      }
       return { ok: true, pesan: `Provider merespons HTTP ${respons.status}.` };
     }
     return null;

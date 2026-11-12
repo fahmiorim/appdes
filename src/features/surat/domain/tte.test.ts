@@ -17,7 +17,7 @@ import {
   testKoneksi,
   type KonfigTte,
 } from "./tte";
-import type { ResponsTte, TransportTte } from "./tte-jaringan";
+import type { ResolverDns, ResponsTte, TransportTte } from "./tte-jaringan";
 
 const PDF_PALSU = new Uint8Array([0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x37]); // "%PDF-1.7"
 
@@ -38,6 +38,16 @@ const KONFIG_LENGKAP: KonfigTte = {
 };
 
 const ALAMAT_PUBLIK = [{ alamat: "93.184.216.34", family: 4 }];
+
+const ALLOW_TTE = ["tte.example.go.id:443"];
+
+/** Resolver palsu yang menggantung sampai sinyal batas waktu aktif. */
+function resolverMenggantung(): ResolverDns {
+  return (_hostname, signal) =>
+    new Promise((_, gagal) => {
+      signal?.addEventListener("abort", () => gagal(new Error("aborted")), { once: true });
+    });
+}
 
 interface PanggilanTransport {
   url: string;
@@ -94,9 +104,10 @@ function transportAntre(...respons: Array<ResponsTte | Error>): {
 
 function buatKlien(
   transport: TransportTte,
-  resolver: () => Promise<{ alamat: string; family: number }[]> = async () => ALAMAT_PUBLIK,
+  resolver: ResolverDns = async () => ALAMAT_PUBLIK,
+  allowedHosts: readonly string[] = ALLOW_TTE,
 ) {
-  const klien = buatKlienBsre({ transport, resolver });
+  const klien = buatKlienBsre({ transport, resolver, allowedHosts });
   if (!klien) throw new Error("klien BSrE seharusnya selalu tersedia");
   return klien;
 }
@@ -386,6 +397,108 @@ describe("buatKlienBsre", () => {
     expect(panggilan).toHaveLength(0);
   });
 
+  it("menolak host di luar allowlist sebelum DNS dan tanpa mengirim kredensial", async () => {
+    const transport = vi.fn<TransportTte>();
+    const resolver = vi.fn<ResolverDns>(async () => ALAMAT_PUBLIK);
+
+    await expect(
+      buatKlien(transport, resolver)(PERMINTAAN, {
+        ...KONFIG_LENGKAP,
+        api: "https://evil.example.com/bsre",
+      }),
+    ).rejects.toThrow("allowlist platform");
+
+    expect(resolver).not.toHaveBeenCalled();
+    expect(transport).not.toHaveBeenCalled();
+  });
+
+  it("menolak semua provider saat allowlist kosong", async () => {
+    const transport = vi.fn<TransportTte>();
+
+    await expect(
+      buatKlien(transport, async () => ALAMAT_PUBLIK, [])(PERMINTAAN, KONFIG_LENGKAP),
+    ).rejects.toThrow("allowlist platform");
+    expect(transport).not.toHaveBeenCalled();
+  });
+
+  it("membatalkan resolusi DNS yang menggantung sesuai deadline total", async () => {
+    const { transport, panggilan } = transportAntre();
+
+    const mulai = Date.now();
+    await expect(
+      buatKlien(transport, resolverMenggantung())(PERMINTAAN, {
+        ...KONFIG_LENGKAP,
+        timeout: 100,
+      }),
+    ).rejects.toThrow("batas waktu");
+
+    expect(Date.now() - mulai).toBeLessThan(1000);
+    expect(panggilan).toHaveLength(0);
+  });
+
+  it("satu deadline mencakup DNS dan permintaan HTTP", async () => {
+    const transport: TransportTte = (_url, permintaan) =>
+      new Promise((_, gagal) => {
+        permintaan.signal.addEventListener("abort", () => gagal(new Error("aborted")), {
+          once: true,
+        });
+      });
+    const resolver: ResolverDns = (_hostname, signal) =>
+      new Promise((selesai, gagal) => {
+        const timer = setTimeout(() => selesai(ALAMAT_PUBLIK), 80);
+        signal?.addEventListener(
+          "abort",
+          () => {
+            clearTimeout(timer);
+            gagal(new Error("aborted"));
+          },
+          { once: true },
+        );
+      });
+
+    const mulai = Date.now();
+    await expect(
+      buatKlien(transport, resolver)(PERMINTAAN, { ...KONFIG_LENGKAP, timeout: 120 }),
+    ).rejects.toThrow("batas waktu");
+
+    expect(Date.now() - mulai).toBeLessThan(1000);
+  });
+
+  it("tidak retry kegagalan TLS dan tidak mengirim ulang kredensial", async () => {
+    const galat = Object.assign(new Error("sertifikat tidak valid"), {
+      code: "ERR_TLS_CERT_ALTNAME_INVALID",
+    });
+    const { transport, panggilan } = transportAntre(galat);
+
+    await expect(
+      buatKlien(transport)(PERMINTAAN, { ...KONFIG_LENGKAP, timeout: 5000 }),
+    ).rejects.toThrow("Koneksi ke provider TTE gagal");
+
+    expect(panggilan).toHaveLength(1);
+  });
+
+  it("mengulang kegagalan jaringan sementara", async () => {
+    const galat = Object.assign(new Error("reset"), { code: "ECONNRESET" });
+    const { transport, panggilan } = transportAntre(galat, responsPdf(PDF_PALSU));
+
+    const hasil = await buatKlien(transport)(PERMINTAAN, KONFIG_LENGKAP);
+
+    expect(adalahPdf(hasil)).toBe(true);
+    expect(panggilan).toHaveLength(2);
+  });
+
+  it("mengganti pesan transport mentah saat body dihentikan", async () => {
+    const { transport } = transportAntre({
+      status: 200,
+      header: () => "application/pdf",
+      baca: async () => {
+        throw new Error("aborted");
+      },
+    });
+
+    await expect(buatKlien(transport)(PERMINTAAN, KONFIG_LENGKAP)).rejects.toThrow("batas waktu");
+  });
+
   it("menolak host yang resolve ke alamat internal", async () => {
     const { transport, panggilan } = transportAntre();
 
@@ -507,6 +620,7 @@ describe("testKoneksi", () => {
     const hasil = await testKoneksi(KONFIG_LENGKAP, {
       transport,
       resolver: async () => ALAMAT_PUBLIK,
+      allowedHosts: ALLOW_TTE,
     });
 
     expect(hasil).toEqual({ ok: true, pesan: "Provider merespons HTTP 200." });
@@ -521,6 +635,7 @@ describe("testKoneksi", () => {
     const hasil = await testKoneksi(KONFIG_LENGKAP, {
       transport,
       resolver: async () => ALAMAT_PUBLIK,
+      allowedHosts: ALLOW_TTE,
     });
 
     expect(hasil.ok).toBe(false);
@@ -533,6 +648,7 @@ describe("testKoneksi", () => {
     const hasil = await testKoneksi(KONFIG_LENGKAP, {
       transport,
       resolver: async () => ALAMAT_PUBLIK,
+      allowedHosts: ALLOW_TTE,
     });
 
     expect(hasil.pesan).toContain("Redirect provider TTE ditolak");
@@ -549,6 +665,7 @@ describe("testKoneksi", () => {
     const hasil = await testKoneksi(KONFIG_LENGKAP, {
       transport,
       resolver: async () => ALAMAT_PUBLIK,
+      allowedHosts: ALLOW_TTE,
     });
 
     expect(hasil.ok).toBe(false);
@@ -572,7 +689,7 @@ describe("testKoneksi", () => {
     const mulai = Date.now();
     const hasil = await testKoneksi(
       { ...KONFIG_LENGKAP, timeout: 60 },
-      { transport, resolver: async () => ALAMAT_PUBLIK },
+      { transport, resolver: async () => ALAMAT_PUBLIK, allowedHosts: ALLOW_TTE },
     );
 
     expect(hasil.ok).toBe(false);
@@ -585,11 +702,38 @@ describe("testKoneksi", () => {
 
     const hasil = await testKoneksi(
       { ...KONFIG_LENGKAP, api: "https://127.0.0.1/bsre" },
-      { transport, resolver: async () => ALAMAT_PUBLIK },
+      { transport, resolver: async () => ALAMAT_PUBLIK, allowedHosts: ALLOW_TTE },
     );
 
     expect(hasil.ok).toBe(false);
     expect(hasil.pesan).toContain("IP internal");
+    expect(transport).not.toHaveBeenCalled();
+  });
+
+  it("menolak host di luar allowlist tanpa menghubungi jaringan", async () => {
+    const transport = vi.fn<TransportTte>();
+
+    const hasil = await testKoneksi(
+      { ...KONFIG_LENGKAP, api: "https://evil.example.com/bsre" },
+      { transport, resolver: async () => ALAMAT_PUBLIK, allowedHosts: ALLOW_TTE },
+    );
+
+    expect(hasil.ok).toBe(false);
+    expect(hasil.pesan).toContain("allowlist platform");
+    expect(transport).not.toHaveBeenCalled();
+  });
+
+  it("membatasi resolusi DNS dengan deadline yang sama", async () => {
+    const transport = vi.fn<TransportTte>();
+
+    const mulai = Date.now();
+    const hasil = await testKoneksi(
+      { ...KONFIG_LENGKAP, timeout: 100 },
+      { transport, resolver: resolverMenggantung(), allowedHosts: ALLOW_TTE },
+    );
+
+    expect(hasil).toEqual({ ok: false, pesan: "Koneksi timeout." });
+    expect(Date.now() - mulai).toBeLessThan(1000);
     expect(transport).not.toHaveBeenCalled();
   });
 });

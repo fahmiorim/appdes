@@ -19,12 +19,18 @@ import {
   type KonfigTteFormInput,
   type KonfigTteTersimpan,
 } from "@/features/surat/domain/tte";
+import {
+  parseAllowlistProvider,
+  periksaUrlProviderStatis,
+  urlDiizinkan,
+} from "@/features/surat/domain/tte-jaringan";
 import { buatKlienBsreNode } from "@/features/surat/infrastructure/tte-https";
 import {
   getKonfigTteTersimpan,
   simpanKonfigTteTersimpan,
 } from "@/features/surat/infrastructure/tte-repository";
 import { requirePermission } from "@/lib/dal";
+import { validationError } from "@/lib/errors";
 
 export interface KonfigurasiTtePageData {
   tersimpan: KonfigTteTersimpan;
@@ -38,13 +44,23 @@ function envTte(): KonfigTte {
   return parseKonfigTte(process.env as Record<string, string | undefined>);
 }
 
+/** Allowlist provider yang dikelola platform; tenant tidak dapat menambah. */
+function allowlistTte() {
+  return parseAllowlistProvider(process.env.TTE_ALLOWED_HOSTS);
+}
+
 /** Konfigurasi efektif (desa + environment) untuk pemakaian internal. */
 export async function getKonfigurasiTteEfektif(villageId: number): Promise<KonfigTte> {
   const tersimpan = await getKonfigTteTersimpan(villageId);
   return gabungKonfigTte(envTte(), tersimpan);
 }
 
-/** Data halaman `/persuratan/tte` (tanpa mengembalikan passphrase). */
+/**
+ * Data konfigurasi TTE untuk admin (tanpa mengembalikan passphrase).
+ *
+ * Catatan: route/halaman `/persuratan/tte` belum ada di repo ini; fungsi ini
+ * disiapkan untuk UI yang akan datang.
+ */
 export async function getKonfigurasiTtePageData(): Promise<KonfigurasiTtePageData> {
   const user = await requirePermission(RESOURCES.tte, "read");
   const villageId = await resolveVillageId(user);
@@ -66,7 +82,7 @@ export async function getKonfigurasiTtePageData(): Promise<KonfigurasiTtePageDat
   return {
     tersimpan,
     efektif,
-    masalah: masalahKonfigTte(untukValidasi),
+    masalah: masalahKonfigTte(untukValidasi, { allowedHosts: allowlistTte().entri }),
     passwordTersedia: envConfig.password !== "",
     canManage: hasPermission(user.permissions, RESOURCES.tte, "update"),
   };
@@ -77,6 +93,25 @@ export async function simpanKonfigurasiTteData(input: KonfigTteFormInput): Promi
   const user = await requirePermission(RESOURCES.tte, "update");
   const villageId = await resolveVillageId(user);
   const parsed = konfigTteFormSchema.parse(input);
+
+  // Allowlist ditegakkan juga di jalur simpan agar tenant tidak dapat
+  // menyimpan host di luar kebijakan platform (validasi runtime tetap ada).
+  if (parsed.api !== "") {
+    const statis = periksaUrlProviderStatis(parsed.api);
+    if (statis.url) {
+      const allowlist = allowlistTte();
+      if (allowlist.entri.length === 0) {
+        throw validationError(
+          "Allowlist provider TTE belum diatur platform (TTE_ALLOWED_HOSTS); konfigurasi tidak dapat disimpan.",
+        );
+      }
+      if (!urlDiizinkan(statis.url, allowlist.entri)) {
+        throw validationError(
+          "Host provider TTE tidak diizinkan oleh allowlist platform (TTE_ALLOWED_HOSTS).",
+        );
+      }
+    }
+  }
 
   const config: KonfigTteTersimpan = {
     provider: "bsre",
@@ -116,13 +151,14 @@ export async function tandatanganiPdfTte(input: {
   config?: KonfigTte;
 }): Promise<HasilTte> {
   const config = input.config ?? (await getKonfigurasiTteEfektif(input.villageId));
+  const allowlist = allowlistTte();
   if (!siapTte(config)) {
     return {
       ok: false,
       mode: config.mode,
       alasan:
         config.mode === "bsre"
-          ? `Konfigurasi BSrE belum lengkap: ${masalahKonfigTte(config).join(" ")}`
+          ? `Konfigurasi BSrE belum lengkap: ${masalahKonfigTte(config, { allowedHosts: allowlist.entri }).join(" ")}`
           : "TTE dinonaktifkan — surat diterbitkan tanpa tanda tangan elektronik.",
     };
   }
@@ -135,7 +171,7 @@ export async function tandatanganiPdfTte(input: {
       nomor: input.nomor,
       pdf: input.pdf,
     },
-    buatKlienBsreNode(),
+    buatKlienBsreNode({ allowedHosts: allowlist.entri }),
   );
 }
 
