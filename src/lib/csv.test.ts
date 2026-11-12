@@ -42,7 +42,7 @@ describe("toCsv", () => {
         ",",
       ),
     ).toBe(
-      'Nama,Identitas\r\n\'=HYPERLINK(""https://example.invalid"",""klik"")","Nama, ""contoh""\nbaris kedua"',
+      'Nama,Identitas\r\n"\'=HYPERLINK(""https://example.invalid"",""klik"")","Nama, ""contoh""\nbaris kedua"',
     );
   });
 });
