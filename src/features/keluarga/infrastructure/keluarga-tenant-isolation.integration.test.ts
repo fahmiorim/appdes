@@ -131,7 +131,7 @@ describe("isolasi tenant repository keluarga", () => {
     expect(daftar.rows[0]?.headName).toContain("Kepala Keluarga A");
     expect(daftar.rows[0]?.headName).not.toContain("Rahasia Desa B");
     expect(daftar.rows[0]?.memberCount).toBe(1);
-    expect(daftar.rows[0]?.regionLabel).toBeNull();
+    expect(daftar.rows[0]?.regionLabel).toBe("Wilayah tanpa nama");
 
     const anggota = await listKeluargaMembers(current.villageA, current.familyA);
     expect(anggota).toHaveLength(1);
@@ -146,7 +146,7 @@ describe("isolasi tenant repository keluarga", () => {
     expect(barisAnggota.some((row) => row.name === current.foreignResidentName)).toBe(false);
 
     const detail = await findKeluargaDetail(current.villageA, current.familyA);
-    expect(detail?.regionLabel).toBeNull();
+    expect(detail?.regionLabel).toBe("Wilayah tanpa nama");
   });
 
   it("membatasi update dan delete KK berdasarkan desa pada repository", async () => {
