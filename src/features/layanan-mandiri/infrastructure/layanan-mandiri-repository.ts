@@ -235,7 +235,10 @@ export async function listPermohonan(villageId: number) {
       residents,
       and(eq(permohonanSurat.residentId, residents.id), eq(residents.villageId, villageId)),
     )
-    .leftJoin(letters, and(eq(permohonanSurat.letterId, letters.id), eq(letters.villageId, villageId)))
+    .leftJoin(
+      letters,
+      and(eq(permohonanSurat.letterId, letters.id), eq(letters.villageId, villageId)),
+    )
     .where(eq(permohonanSurat.villageId, villageId))
     .orderBy(desc(permohonanSurat.createdAt));
 }
