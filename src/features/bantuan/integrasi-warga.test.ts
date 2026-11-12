@@ -10,7 +10,6 @@ import {
   families,
   kelompok,
   kelompokAnggota,
-  regions,
   residents,
   rumahTangga,
   villages,
@@ -77,10 +76,6 @@ async function seedFixture(): Promise<Fixture> {
     })
     .$returningId();
 
-  const [foreignRegionRow] = await db
-    .insert(regions)
-    .values({ villageId: villageB, dusun: `Dusun Lintas ${RUN}`, rw: "01", rt: "01" })
-    .$returningId();
   const [residentARow] = await db
     .insert(residents)
     .values({
