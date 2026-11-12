@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const nik = url.searchParams.get("nik")?.trim();
-    if (!nik || !/^\\d{16}$/.test(nik)) {
+    if (!nik || !/^\d{16}$/.test(nik)) {
       return privateNoStore(
         NextResponse.json({ ok: false, message: "NIK harus 16 digit." }, { status: 400 }),
       );
