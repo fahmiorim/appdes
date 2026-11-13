@@ -1,4 +1,12 @@
-import { index, int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  foreignKey,
+  index,
+  int,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { users } from "./auth";
 import { residents } from "./resident";
@@ -18,9 +26,7 @@ export const wargaPesan = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    residentId: int("resident_id")
-      .notNull()
-      .references(() => residents.id, { onDelete: "cascade" }),
+    residentId: int("resident_id").notNull(),
     pengirim: varchar("pengirim", { length: 20 }).notNull(),
     isi: text("isi").notNull(),
     dibacaWargaPada: timestamp("dibaca_warga_pada"),
@@ -33,6 +39,11 @@ export const wargaPesan = mysqlTable(
   (table) => [
     index("warga_pesan_village_resident_idx").on(table.villageId, table.residentId),
     index("warga_pesan_village_created_idx").on(table.villageId, table.createdAt),
+    foreignKey({
+      name: "warga_pesan_resident_tenant_fk",
+      columns: [table.villageId, table.residentId],
+      foreignColumns: [residents.villageId, residents.id],
+    }).onDelete("cascade"),
   ],
 );
 

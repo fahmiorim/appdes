@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { inArray } from "drizzle-orm";
+import mysql from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
@@ -25,6 +26,7 @@ import {
   updateKategori,
   updateKelompok,
 } from "@/features/kelompok/infrastructure/kelompok-repository";
+import { validasiDatabaseUji } from "@/testing/db-test-guard";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../../db/migrations", import.meta.url));
@@ -93,11 +95,25 @@ async function seedFixture(): Promise<Fixture> {
   const residentA = pastiId(residentARow, "resident A");
   const residentB = pastiId(residentBRow, "resident B");
 
-  await db.insert(kelompokAnggota).values([
-    { villageId: villageA, kelompokId: groupA, residentId: residentA, position: 90 },
-    // Baris legacy lintas tenant: child menyatakan desa A tetapi menunjuk penduduk B.
-    { villageId: villageA, kelompokId: groupA, residentId: residentB, position: 1 },
-  ]);
+  await db
+    .insert(kelompokAnggota)
+    .values({ villageId: villageA, kelompokId: groupA, residentId: residentA, position: 90 });
+
+  // Baris legacy lintas tenant: child menyatakan desa A tetapi menunjuk penduduk B.
+  // Composite FK (village_id, resident_id) menolak pasangan seperti ini, jadi
+  // fixture disisipkan dengan FOREIGN_KEY_CHECKS dimatikan untuk meniru data
+  // lama. Repository tetap wajib menyaringnya — itulah yang diuji di bawah.
+  const koneksi = await mysql.createConnection(validasiDatabaseUji(process.env).opsiKoneksi);
+  try {
+    await koneksi.query("SET FOREIGN_KEY_CHECKS=0");
+    await koneksi.query(
+      "INSERT INTO kelompok_anggota (village_id, kelompok_id, resident_id, position) VALUES (?, ?, ?, ?)",
+      [villageA, groupA, residentB, 1],
+    );
+  } finally {
+    await koneksi.query("SET FOREIGN_KEY_CHECKS=1");
+    await koneksi.end();
+  }
 
   const [foreignMember] = await db
     .select({ id: kelompokAnggota.id })

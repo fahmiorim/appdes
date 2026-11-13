@@ -361,6 +361,7 @@ describe("AUD-002 composite tenant foreign keys", () => {
       "bantuan_peserta_rtm_tenant_fk",
       "bulanan_anak_kia_tenant_fk",
       "bulanan_anak_posyandu_tenant_fk",
+      "dokumen_warga_resident_tenant_fk",
       "dtks_anggota_dtks_tenant_fk",
       "dtks_anggota_penduduk_tenant_fk",
       "dtks_keluarga_tenant_fk",
@@ -370,6 +371,8 @@ describe("AUD-002 composite tenant foreign keys", () => {
       "families_region_tenant_fk",
       "ibu_hamil_kia_tenant_fk",
       "ibu_hamil_posyandu_tenant_fk",
+      "kehadiran_izin_resident_tenant_fk",
+      "kelompok_anggota_resident_tenant_fk",
       "kia_anak_tenant_fk",
       "kia_ibu_tenant_fk",
       "letters_resident_tenant_fk",
@@ -387,6 +390,8 @@ describe("AUD-002 composite tenant foreign keys", () => {
       "suplemen_terdata_keluarga_tenant_fk",
       "suplemen_terdata_penduduk_tenant_fk",
       "suplemen_terdata_suplemen_tenant_fk",
+      "verifikasi_kontak_resident_tenant_fk",
+      "warga_pesan_resident_tenant_fk",
     ]);
   });
 

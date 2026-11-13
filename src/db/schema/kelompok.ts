@@ -1,5 +1,6 @@
 import {
   boolean,
+  foreignKey,
   index,
   int,
   mysqlTable,
@@ -105,9 +106,7 @@ export const kelompokAnggota = mysqlTable(
     kelompokId: int("kelompok_id")
       .notNull()
       .references(() => kelompok.id, { onDelete: "cascade" }),
-    residentId: int("resident_id")
-      .notNull()
-      .references(() => residents.id, { onDelete: "cascade" }),
+    residentId: int("resident_id").notNull(),
 
     /** Jabatan dalam kelompok; lihat `JABATAN_KELOMPOK`. */
     position: int("position").notNull(),
@@ -135,5 +134,11 @@ export const kelompokAnggota = mysqlTable(
     uniqueIndex("kelompok_anggota_kelompok_resident_uq").on(t.kelompokId, t.residentId),
     index("kelompok_anggota_kelompok_idx").on(t.kelompokId),
     index("kelompok_anggota_resident_idx").on(t.residentId),
+    index("kelompok_anggota_village_resident_idx").on(t.villageId, t.residentId),
+    foreignKey({
+      name: "kelompok_anggota_resident_tenant_fk",
+      columns: [t.villageId, t.residentId],
+      foreignColumns: [residents.villageId, residents.id],
+    }).onDelete("cascade"),
   ],
 );

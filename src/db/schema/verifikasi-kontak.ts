@@ -1,4 +1,4 @@
-import { index, int, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { foreignKey, index, int, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 import { residents } from "./resident";
 import { villages } from "./village";
@@ -16,9 +16,7 @@ export const verifikasiKontak = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    residentId: int("resident_id")
-      .notNull()
-      .references(() => residents.id, { onDelete: "cascade" }),
+    residentId: int("resident_id").notNull(),
     target: varchar("target", { length: 150 }).notNull(),
     /** Kanal pengiriman kode: `whatsapp` atau `email`. */
     kanal: varchar("kanal", { length: 20 }).notNull().default("whatsapp"),
@@ -27,7 +25,14 @@ export const verifikasiKontak = mysqlTable(
     terverifikasiAt: timestamp("terverifikasi_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
-  (table) => [index("verifikasi_kontak_resident_idx").on(table.villageId, table.residentId)],
+  (table) => [
+    index("verifikasi_kontak_resident_idx").on(table.villageId, table.residentId),
+    foreignKey({
+      name: "verifikasi_kontak_resident_tenant_fk",
+      columns: [table.villageId, table.residentId],
+      foreignColumns: [residents.villageId, residents.id],
+    }).onDelete("cascade"),
+  ],
 );
 
 export type VerifikasiKontak = typeof verifikasiKontak.$inferSelect;
