@@ -72,6 +72,7 @@ export const pengaduan = mysqlTable(
   },
   (t) => [
     uniqueIndex("pengaduan_village_tiket_uq").on(t.villageId, t.nomorTiket),
+    uniqueIndex("pengaduan_village_id_uq").on(t.villageId, t.id),
     index("pengaduan_village_status_idx").on(t.villageId, t.status, t.createdAt),
     index("pengaduan_village_publik_idx").on(t.villageId, t.publik),
   ],
