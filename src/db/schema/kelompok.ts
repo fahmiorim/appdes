@@ -1,6 +1,5 @@
 import {
   boolean,
-  foreignKey,
   index,
   int,
   mysqlTable,
