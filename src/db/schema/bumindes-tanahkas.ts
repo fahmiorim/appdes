@@ -1,11 +1,13 @@
 import {
   date,
   decimal,
+  foreignKey,
   index,
   int,
   mysqlTable,
   text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/mysql-core";
 
@@ -37,7 +39,10 @@ export const bumindesTanahKas = mysqlTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (t) => [index("bumindes_tanah_kas_village_idx").on(t.villageId)],
+  (t) => [
+    index("bumindes_tanah_kas_village_idx").on(t.villageId),
+    uniqueIndex("bumindes_tanah_kas_village_id_uq").on(t.villageId, t.id),
+  ],
 );
 
 export const bumindesTanahKasMutasi = mysqlTable(
@@ -47,9 +52,7 @@ export const bumindesTanahKasMutasi = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    tanahKasId: int("tanah_kas_id")
-      .notNull()
-      .references(() => bumindesTanahKas.id, { onDelete: "cascade" }),
+    tanahKasId: int("tanah_kas_id").notNull(),
     tanggal: date("tanggal", { mode: "string" }).notNull(),
     jenis: varchar("jenis", { length: 50 }).notNull(),
     uraian: varchar("uraian", { length: 500 }).notNull(),
@@ -61,6 +64,12 @@ export const bumindesTanahKasMutasi = mysqlTable(
   (t) => [
     index("bumindes_tanah_kas_mutasi_village_idx").on(t.villageId),
     index("bumindes_tanah_kas_mutasi_persil_idx").on(t.tanahKasId),
+    index("bumindes_tanah_kas_mutasi_tenant_idx").on(t.villageId, t.tanahKasId),
+    foreignKey({
+      columns: [t.villageId, t.tanahKasId],
+      foreignColumns: [bumindesTanahKas.villageId, bumindesTanahKas.id],
+      name: "bumindes_tanah_kas_mutasi_persil_tenant_fk",
+    }).onDelete("cascade"),
   ],
 );
 
