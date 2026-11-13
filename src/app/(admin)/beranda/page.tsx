@@ -32,23 +32,17 @@ export default async function AdminHomePage() {
         <div className="stats-grid">
           <Card>
             <div className="stat-card-label">Total penduduk</div>
-            <div className="stat-card-value">
-              {stats.residents.toLocaleString("id-ID")}
-            </div>
+            <div className="stat-card-value">{stats.residents.toLocaleString("id-ID")}</div>
             <div className="stat-card-note">Data penduduk terdaftar di desa</div>
           </Card>
           <Card>
             <div className="stat-card-label">Kartu keluarga</div>
-            <div className="stat-card-value">
-              {stats.families.toLocaleString("id-ID")}
-            </div>
+            <div className="stat-card-value">{stats.families.toLocaleString("id-ID")}</div>
             <div className="stat-card-note">Jumlah KK yang tercatat</div>
           </Card>
           <Card>
             <div className="stat-card-label">Surat desa</div>
-            <div className="stat-card-value">
-              {stats.letters.toLocaleString("id-ID")}
-            </div>
+            <div className="stat-card-value">{stats.letters.toLocaleString("id-ID")}</div>
             <div className="stat-card-note">Total surat pada sistem</div>
           </Card>
         </div>
