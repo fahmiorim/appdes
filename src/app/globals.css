@@ -22,8 +22,8 @@
   --radius-dialog: 22px;
   --shadow-card: 0 10px 32px rgb(20 39 76 / 6%);
   --shadow-overlay: 0 18px 55px rgb(20 39 76 / 16%);
-  --font-sans: "DM Sans", "Segoe UI", sans-serif;
-  --font-display: "Plus Jakarta Sans", "DM Sans", sans-serif;
+  --font-sans: "Segoe UI", Arial, sans-serif;
+  --font-display: "Segoe UI", Arial, sans-serif;
 }
 
 * {
@@ -617,5 +617,27 @@ input:focus-visible {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+.admin-nav-note {
+  padding: 12px;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .mobile-menu-button {
+    position: fixed;
+    z-index: 40;
+    top: 12px;
+    left: 12px;
+    min-height: 40px;
+    padding: 8px 12px;
+  }
+
+  .admin-topbar {
+    padding-left: 64px;
   }
 }

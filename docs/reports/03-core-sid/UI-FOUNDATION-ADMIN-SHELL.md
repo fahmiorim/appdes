@@ -8,11 +8,11 @@
 ## Keputusan implementasi
 
 - Root layout Next.js App Router dengan metadata aplikasi.
-- Token CSS semantik dan komponen dasar tanpa menambah dependency runtime.
-- Login memakai Better Auth username client yang sudah sesuai konfigurasi server.
-- Admin layout menggunakan `verifySession()`, data user dari DAL, dan menu berdasarkan permission RBAC.
-- Dashboard hanya menampilkan agregasi yang difilter menggunakan `user.villageId`.
-- Akun warga dialihkan ke area layanan mandiri; akun platform tidak diberi agregasi lintas desa.
+- Token CSS semantik dan komponen dasar CSS tanpa dependency baru.
+- Login memakai Better Auth username client yang sesuai dengan konfigurasi server.
+- Admin layout memakai `verifySession()` dan `hasPermission()` dari DAL/RBAC.
+- Dashboard memakai agregasi penduduk, KK, dan surat dengan filter `user.villageId` yang berasal dari sesi.
+- Akun warga dialihkan ke area layanan mandiri; akun platform tidak menerima agregasi lintas desa.
 
 ## File
 
@@ -32,7 +32,8 @@ Belum dijalankan di lingkungan repository pada saat laporan ini ditulis. CI waji
 
 ## Batasan yang diketahui
 
-- Nilai token visual adalah baseline awal, bukan token final yang telah diaudit terhadap semua screenshot.
-- Navigasi modul masih mengikuti katalog RBAC; halaman modul operasional akan diimplementasikan bertahap.
+- Nilai token visual adalah baseline awal, bukan token final yang telah diaudit terhadap seluruh screenshot.
+- Implementasi pertama memakai CSS semantik tanpa Tailwind karena dependency dan lockfile belum diperbarui; tidak ada dependency baru yang diasumsikan tersedia.
+- Sidebar hanya menampilkan Beranda yang sudah tersedia. Menu modul tidak diarahkan ke route handler/halaman yang belum memiliki UI.
 - Dashboard belum menampilkan statistik keuangan, kesehatan, atau data sensitif.
 - Belum ada migration atau deployment.

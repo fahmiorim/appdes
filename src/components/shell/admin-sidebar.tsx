@@ -4,14 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-export interface AdminMenuItem {
-  slug: string;
-  name: string;
-  url: string;
-  icon: string | null;
-}
-
-export function AdminSidebar({ items }: { items: AdminMenuItem[] }) {
+export function AdminSidebar({ canReadDashboard }: { canReadDashboard: boolean }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -33,28 +26,21 @@ export function AdminSidebar({ items }: { items: AdminMenuItem[] }) {
         </Link>
         <div className="admin-nav-label">Menu utama</div>
         <nav className="admin-nav" aria-label="Navigasi administrasi">
-          <Link
-            className="admin-nav-link"
-            href="/beranda"
-            aria-current={pathname === "/beranda" ? "page" : undefined}
-            onClick={() => setOpen(false)}
-          >
-            <span className="admin-nav-icon" aria-hidden="true">⌂</span>
-            <span>Beranda</span>
-          </Link>
-          {items.map((item) => (
+          {canReadDashboard ? (
             <Link
               className="admin-nav-link"
-              href={item.url}
-              key={item.slug}
-              aria-current={pathname === item.url ? "page" : undefined}
+              href="/beranda"
+              aria-current={pathname === "/beranda" ? "page" : undefined}
               onClick={() => setOpen(false)}
             >
-              <span className="admin-nav-icon" aria-hidden="true">{item.icon || "•"}</span>
-              <span>{item.name}</span>
+              <span className="admin-nav-icon" aria-hidden="true">⌂</span>
+              <span>Beranda</span>
             </Link>
-          ))}
+          ) : null}
         </nav>
+        <div className="admin-nav-note">
+          Menu operasional akan ditampilkan setelah halaman modul tersedia.
+        </div>
         <div className="admin-sidebar-footer">
           Sistem Informasi Desa
           <br />
