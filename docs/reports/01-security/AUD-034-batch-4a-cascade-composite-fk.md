@@ -51,7 +51,7 @@ File `src/db/b4-cascade-relations-composite-fk.integration.test.ts` masuk ke kon
 - foto galeri tanpa album (`album_id = NULL`) tetap diterima,
 - update referensi ke parent desa lain ditolak,
 - penghapusan parent menjalankan CASCADE pada child yang benar,
-- foto mandiri tetap ada setelah album lain dihapus.
+- foto mandiri tetap ada setelah album lain dihapus.\n\nFile `src/db/b4-tenant-migration-guard.integration.test.ts` membuat database disposable tersendiri, menjalankan migrasi sampai `0005`, menyuntikkan satu orphan dan satu cross-tenant legacy row untuk masing-masing enam relasi, lalu membuktikan `0006` berhenti tanpa mengganti FK lama atau memasang unique parent key.
 
 Hasil final belum dinyatakan PASS sebelum workflow CI pada PR selesai.
 
@@ -74,5 +74,5 @@ Hasil final belum dinyatakan PASS sebelum workflow CI pada PR selesai.
 
 - Batch ini menutup enam relasi CASCADE dari matriks audit; bukan seluruh AUD-034.
 - Migration hanya diuji melalui CI disposable database; belum boleh dijalankan ke database produksi.
-- Preflight migration guard belum memiliki skenario integration khusus untuk menyuntikkan data legacy orphan/cross-tenant pada keenam relasi. Itu menjadi pekerjaan verifikasi sebelum batch ini dinyatakan siap deploy.
+- Skenario migration guard disposable sudah ditambahkan pada `src/db/b4-tenant-migration-guard.integration.test.ts`: menyuntikkan orphan dan cross-tenant pada keenam relasi, memastikan migration gagal sebelum FK lama diganti. Hasil CI tetap harus diverifikasi.
 - Batch berikutnya melanjutkan relasi B2 lain yang membutuhkan unique parent key, setelah matriks diperbarui dan semantik delete diverifikasi.
