@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { LoginForm } from "@/app/(auth)/masuk/login-form";
 import { APP_NAME } from "@/lib/app-config";
 import { getCurrentUser } from "@/lib/dal";
+import { safeNextPath } from "@/lib/safe-next-path";
 
 export const metadata: Metadata = {
   title: "Masuk",
@@ -11,14 +12,6 @@ export const metadata: Metadata = {
 };
 
 type SearchParams = Promise<{ next?: string | string[] }>;
-
-function safeNextPath(value: string | string[] | undefined): string {
-  if (typeof value !== "string") return "/beranda";
-  if (!value.startsWith("/") || value.startsWith("//") || value.startsWith("/masuk")) {
-    return "/beranda";
-  }
-  return value;
-}
 
 export default async function LoginPage({ searchParams }: { searchParams: SearchParams }) {
   const user = await getCurrentUser();
