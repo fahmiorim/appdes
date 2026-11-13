@@ -169,9 +169,7 @@ describe("B2 Bantuan composite tenant FK", () => {
           .insert(bantuanPeserta)
           .values({ villageId: desaA, programId: programA, familyId: familyB }),
       () =>
-        db
-          .insert(bantuanPeserta)
-          .values({ villageId: desaA, programId: programA, rtmId: rtmB }),
+        db.insert(bantuanPeserta).values({ villageId: desaA, programId: programA, rtmId: rtmB }),
       () =>
         db
           .insert(bantuanPeserta)
