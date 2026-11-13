@@ -44,6 +44,7 @@ import {
   type PerubahanAnggota,
 } from "@/features/keluarga/domain/keluarga";
 import { formatWilayahLabel } from "@/features/wilayah/domain/wilayah";
+import { validationError } from "@/lib/errors";
 
 /** Alias `residents` untuk mencari anggota yang berperan sebagai kepala keluarga. */
 const head = aliasedTable(residents, "head");
@@ -306,6 +307,30 @@ export async function listKeluargaMemberDetails(
       fatherName: row.fatherName,
       motherName: row.motherName,
     }));
+}
+
+/**
+ * Pastikan wilayah yang dipilih benar-benar milik desa pemanggil.
+ *
+ * Composite foreign key sudah mencegah relasi lintas desa pada database baru,
+ * tetapi baris lama dan database yang belum menjalankan migration tetap perlu
+ * ditolak di layer aplikasi agar kesalahan tidak bocor sebagai error SQL.
+ */
+export async function validateKeluargaRegion(
+  villageId: number,
+  regionId: number | null,
+): Promise<void> {
+  if (regionId === null) return;
+
+  const [region] = await db
+    .select({ id: regions.id })
+    .from(regions)
+    .where(and(eq(regions.id, regionId), eq(regions.villageId, villageId)))
+    .limit(1);
+
+  if (!region) {
+    throw validationError("Wilayah tidak valid untuk desa ini.");
+  }
 }
 
 export async function insertKeluarga(villageId: number, input: KeluargaFormInput): Promise<number> {

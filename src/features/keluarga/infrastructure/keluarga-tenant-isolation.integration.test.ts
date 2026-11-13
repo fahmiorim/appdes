@@ -19,6 +19,7 @@ import {
   listKeluargaMemberDetails,
   listKeluargaMembers,
   updateKeluarga,
+  validateKeluargaRegion,
 } from "@/features/keluarga/infrastructure/keluarga-repository";
 import { validasiDatabaseUji } from "@/testing/db-test-guard";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
@@ -29,6 +30,8 @@ const RUN = randomUUID().slice(0, 8);
 interface Fixture {
   villageA: number;
   villageB: number;
+  regionA: number;
+  regionB: number;
   familyA: number;
   familyB: number;
   foreignResidentName: string;
@@ -99,7 +102,7 @@ async function seedFixture(): Promise<Fixture> {
   );
   await sisipkanLegacy("UPDATE families SET region_id = ? WHERE id = ?", [regionB, familyA]);
 
-  return { villageA, villageB, familyA, familyB, foreignResidentName };
+  return { villageA, villageB, regionA, regionB, familyA, familyB, foreignResidentName };
 }
 
 beforeAll(async () => {
@@ -166,5 +169,18 @@ describe("isolasi tenant repository keluarga", () => {
 
     const after = await findKeluargaById(current.villageA, current.familyA);
     expect(after?.number).toBe(before?.number);
+  });
+
+  it("menolak wilayah milik desa lain dan menerima wilayah sendiri", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
+    const current = fixture;
+
+    await expect(validateKeluargaRegion(current.villageA, current.regionB)).rejects.toMatchObject({
+      code: "VALIDATION",
+    });
+    await expect(
+      validateKeluargaRegion(current.villageA, current.regionA),
+    ).resolves.toBeUndefined();
+    await expect(validateKeluargaRegion(current.villageA, null)).resolves.toBeUndefined();
   });
 });
