@@ -1,11 +1,11 @@
-import type { ReactNode } from "react";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
-import { db } from "@/db";
-import { villages } from "@/db/schema";
 import { AdminSidebar } from "@/components/shell/admin-sidebar";
 import { AdminTopbar } from "@/components/shell/admin-topbar";
+import { db } from "@/db";
+import { villages } from "@/db/schema";
 import { DEFAULT_RESOURCE, hasPermission } from "@/features/rbac/application/authorization";
 import { verifySession } from "@/lib/dal";
 

@@ -33,15 +33,17 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
     <main className="auth-screen">
       <section className="auth-visual" aria-label="Informasi platform">
         <div className="brand-lockup">
-          <span className="brand-mark" aria-hidden="true">⌂</span>
+          <span className="brand-mark" aria-hidden="true">
+            ⌂
+          </span>
           <span>FlexiDesa</span>
         </div>
         <div className="auth-visual-copy">
           <span className="eyebrow">Layanan digital pemerintahan desa</span>
           <h1>Administrasi desa, lebih mudah dan terhubung.</h1>
           <p>
-            Satu ruang kerja untuk mengelola data, pelayanan, dan informasi desa
-            dengan lebih tertata.
+            Satu ruang kerja untuk mengelola data, pelayanan, dan informasi desa dengan lebih
+            tertata.
           </p>
         </div>
         <div className="auth-visual-footer">Platform layanan desa · {APP_NAME}</div>

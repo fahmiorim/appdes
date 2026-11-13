@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
 import { count, eq } from "drizzle-orm";
+import type { Metadata } from "next";
 
 import { Card } from "@/components/ui/card";
 import { db } from "@/db";
@@ -12,18 +12,9 @@ export const metadata: Metadata = {
 
 async function getDashboardStats(villageId: number) {
   const [residentRows, familyRows, letterRows] = await Promise.all([
-    db
-      .select({ total: count() })
-      .from(residents)
-      .where(eq(residents.villageId, villageId)),
-    db
-      .select({ total: count() })
-      .from(families)
-      .where(eq(families.villageId, villageId)),
-    db
-      .select({ total: count() })
-      .from(letters)
-      .where(eq(letters.villageId, villageId)),
+    db.select({ total: count() }).from(residents).where(eq(residents.villageId, villageId)),
+    db.select({ total: count() }).from(families).where(eq(families.villageId, villageId)),
+    db.select({ total: count() }).from(letters).where(eq(letters.villageId, villageId)),
   ]);
 
   return {
@@ -84,8 +75,8 @@ export default async function AdminHomePage() {
         <section className="dashboard-section">
           <h2>Area platform</h2>
           <p>
-            Akun platform terdeteksi. Dashboard pengelolaan tenant akan dibuat pada
-            tahap Super Admin; data desa tidak ditampilkan di area ini.
+            Akun platform terdeteksi. Dashboard pengelolaan tenant akan dibuat pada tahap Super
+            Admin; data desa tidak ditampilkan di area ini.
           </p>
         </section>
       )}
@@ -93,8 +84,8 @@ export default async function AdminHomePage() {
       <section className="dashboard-section">
         <h2>Mulai bekerja</h2>
         <p>
-          Fondasi dashboard sudah aktif. Halaman operasional akan dibuka bertahap
-          dengan pemeriksaan sesi, izin, dan isolasi desa pada sisi server.
+          Fondasi dashboard sudah aktif. Halaman operasional akan dibuka bertahap dengan pemeriksaan
+          sesi, izin, dan isolasi desa pada sisi server.
         </p>
         <div className="quick-links">
           <span className="button button-secondary">Data penduduk · segera hadir</span>

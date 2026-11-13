@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
+import { authClient } from "@/lib/auth-client";
 
 export function AdminTopbar({ name, villageName }: { name: string; villageName: string }) {
   const router = useRouter();
@@ -35,10 +35,14 @@ export function AdminTopbar({ name, villageName }: { name: string; villageName: 
         <strong>{villageName || "Administrasi Platform"}</strong>
       </div>
       <div className="admin-topbar-user">
-        <span className="avatar" aria-hidden="true">{initials || "U"}</span>
+        <span className="avatar" aria-hidden="true">
+          {initials || "U"}
+        </span>
         <span>
           <strong>{name}</strong>
-          <span className="form-help" style={{ display: "block" }}>Pengguna aktif</span>
+          <span className="form-help" style={{ display: "block" }}>
+            Pengguna aktif
+          </span>
         </span>
         <Button variant="secondary" onClick={handleSignOut} disabled={isSigningOut}>
           {isSigningOut ? "Keluar..." : "Keluar"}

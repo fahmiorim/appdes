@@ -2,10 +2,10 @@
 
 import { useState, type FormEvent } from "react";
 
-import { authClient } from "@/lib/auth-client";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/form-field";
+import { authClient } from "@/lib/auth-client";
 
 export function LoginForm({ nextPath }: { nextPath: string }) {
   const [username, setUsername] = useState("");

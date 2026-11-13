@@ -21,7 +21,9 @@ export function AdminSidebar({ canReadDashboard }: { canReadDashboard: boolean }
       </button>
       <aside className="admin-sidebar" data-open={open}>
         <Link className="admin-sidebar-brand" href="/beranda" onClick={() => setOpen(false)}>
-          <span className="brand-mark" aria-hidden="true">⌂</span>
+          <span className="brand-mark" aria-hidden="true">
+            ⌂
+          </span>
           <span>FlexiDesa</span>
         </Link>
         <div className="admin-nav-label">Menu utama</div>
@@ -33,7 +35,9 @@ export function AdminSidebar({ canReadDashboard }: { canReadDashboard: boolean }
               aria-current={pathname === "/beranda" ? "page" : undefined}
               onClick={() => setOpen(false)}
             >
-              <span className="admin-nav-icon" aria-hidden="true">⌂</span>
+              <span className="admin-nav-icon" aria-hidden="true">
+                ⌂
+              </span>
               <span>Beranda</span>
             </Link>
           ) : null}
