@@ -27,6 +27,7 @@ import {
   rumahTanggaNumberExists,
   setAnggotaRumahTangga,
   updateRumahTangga as updateRumahTanggaRow,
+  validateRumahTanggaRegion,
   type RumahTanggaListResult,
 } from "@/features/rumah-tangga/infrastructure/rumah-tangga-repository";
 import { formatWilayahLabel } from "@/features/wilayah/domain/wilayah";
@@ -178,6 +179,8 @@ export async function createRumahTangga(input: RumahTanggaFormInput): Promise<{ 
   const user = await requirePermission(RUMAH_TANGGA_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
 
+  await validateRumahTanggaRegion(villageId, input.regionId);
+
   const number = await nomorBerikutnya(villageId);
   const id = await insertRumahTangga(villageId, number, input);
   return { id };
@@ -189,6 +192,8 @@ export async function updateRumahTangga(id: number, input: RumahTanggaFormInput)
 
   const existing = await findRumahTanggaById(villageId, id);
   if (!existing) throw notFound("Rumah Tangga tidak ditemukan.");
+
+  await validateRumahTanggaRegion(villageId, input.regionId);
 
   await updateRumahTanggaRow(villageId, id, input);
 }
