@@ -2,7 +2,11 @@
 --
 -- Jalankan SEBELUM migration 0002_b2_dtks_suplemen_composite_fk.sql pada
 -- salinan database (bukan production):
---   mysql --default-character-set=utf8mb4 < B2-preflight.sql
+--   mysql --default-character-set=utf8mb4 <nama_database_salinan> < B2-preflight.sql
+--
+-- `<nama_database_salinan>` wajib diisi: seluruh tabel di bawah dirujuk tanpa
+-- kualifikasi database, sehingga tanpa nama database mysql menolak perintah
+-- dengan `ERROR 1046 (3D000): No database selected`.
 --
 -- Mencakup seluruh relasi yang ditegakkan composite FK oleh migration 0002:
 --   dtks.rtm_id, dtks.keluarga_id,

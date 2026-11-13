@@ -1,7 +1,7 @@
 # B2 — Rollback Runbook (DTKS & Suplemen Composite Tenant FK)
 
 **Status:** Rehearsed on disposable MySQL 8.0 (`desa_test_b2_rollback_*`) by
-`src/db/migration-guard-rollback.integration.test.ts`; the inverse schema is
+`src/db/b2-migration-guard-rollback.integration.test.ts`; the inverse schema is
 compared object-by-object with a fresh `0000 + 0001` baseline database.
 **Scope:** Recovery from a fully and successfully applied
 `0002_b2_dtks_suplemen_composite_fk.sql` back to the schema produced by
@@ -89,7 +89,7 @@ Delete rules after migration: `RESTRICT` for optional references
 
 ## Evidence from rehearsal
 
-`src/db/migration-guard-rollback.integration.test.ts`:
+`src/db/b2-migration-guard-rollback.integration.test.ts`:
 
 - creates `desa_test_b2_guard_<run>`, migrates to 0001, seeds orphan and
   cross-tenant legacy rows with `FOREIGN_KEY_CHECKS=0`, proves the read-only
