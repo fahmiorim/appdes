@@ -232,6 +232,43 @@ describe("AUD-034 B4 composite tenant FK", () => {
     })).resolves.toBeDefined();
   });
 
+  it("menolak update yang memindahkan keenam relasi ke desa lain", async () => {
+    const f = dataUji();
+    const [item] = await db.insert(bumindesItem).values({
+      villageId: f.desaA, bukuId: f.bukuA, uraian: "update guard",
+    }).$returningId();
+    const [mutasi] = await db.insert(bumindesTanahKasMutasi).values({
+      villageId: f.desaA, tanahKasId: f.tanahA, tanggal: "2026-11-14",
+      jenis: "perubahan", uraian: "update guard",
+    }).$returningId();
+    const [foto] = await db.insert(galeriFoto).values({
+      villageId: f.desaA, albumId: f.albumA, gambar: "update-guard.jpg",
+    }).$returningId();
+    const [produk] = await db.insert(lapakProduk).values({
+      villageId: f.desaA, lapakId: f.lapakA, nama: "update guard", harga: "1000",
+    }).$returningId();
+    const [bukti] = await db.insert(buktiPengirimanNotifikasi).values({
+      villageId: f.desaA, pengaduanId: f.pengaduanA, metode: "email", target: "update@example.test",
+    }).$returningId();
+    const [kandidat] = await db.insert(pemilihanKandidat).values({
+      villageId: f.desaA, pemilihanId: f.pemilihanA, nomorUrut: 3, nama: "update guard",
+    }).$returningId();
+
+    const kasus: Array<{ nama: string; jalankan: () => Promise<unknown> }> = [
+      { nama: "bumindes_item", jalankan: () => db.update(bumindesItem).set({ bukuId: f.bukuB }).where(eq(bumindesItem.id, idDari(item, "item update"))) },
+      { nama: "bumindes_tanah_kas_mutasi", jalankan: () => db.update(bumindesTanahKasMutasi).set({ tanahKasId: f.tanahB }).where(eq(bumindesTanahKasMutasi.id, idDari(mutasi, "mutasi update"))) },
+      { nama: "galeri_foto", jalankan: () => db.update(galeriFoto).set({ albumId: f.albumB }).where(eq(galeriFoto.id, idDari(foto, "foto update"))) },
+      { nama: "lapak_produk", jalankan: () => db.update(lapakProduk).set({ lapakId: f.lapakB }).where(eq(lapakProduk.id, idDari(produk, "produk update"))) },
+      { nama: "bukti_pengiriman_notifikasi", jalankan: () => db.update(buktiPengirimanNotifikasi).set({ pengaduanId: f.pengaduanB }).where(eq(buktiPengirimanNotifikasi.id, idDari(bukti, "bukti update"))) },
+      { nama: "pemilihan_kandidat", jalankan: () => db.update(pemilihanKandidat).set({ pemilihanId: f.pemilihanB }).where(eq(pemilihanKandidat.id, idDari(kandidat, "kandidat update"))) },
+    ];
+
+    for (const item of kasus) {
+      const errorCode = await kodeGalat(item.jalankan);
+      expect([1452, "ER_NO_REFERENCED_ROW_2"], item.nama).toContain(errorCode);
+    }
+  });
+
   it("menghapus anak melalui CASCADE tanpa menghapus data desa lain", async () => {
     const f = dataUji();
 
