@@ -24,6 +24,23 @@
 | 5 | Reliability dan operasi | P1/P2 | Backup DB+media, restore drill, monitoring, SOP |
 | 6 | Integrasi dan fitur tambahan | P3 | TTE, WhatsApp, API lanjutan, GIS, plugin setelah hardening |
 
+## 2A. Arsitektur domain FlexiDesa
+
+**Dokumen acuan:** [FLEXIDESA-MULTI-TENANT-DOMAIN-ARCHITECTURE.md](architecture/FLEXIDESA-MULTI-TENANT-DOMAIN-ARCHITECTURE.md).
+
+Target hostname:
+- `flexidesa.id`: landing page platform.
+- `admin.flexidesa.id`: konsol Super Admin platform.
+- `demo.flexidesa.id`: tenant demo khusus dengan data sintetis.
+- `<slug>.flexidesa.id`: website dan Admin Desa tenant.
+- Domain custom: hanya setelah verifikasi kepemilikan dan TLS.
+
+Pekerjaan domain dilakukan setelah hardening isolasi tenant prioritas P0/P1. Urutan implementasi: keputusan hostname/auth → classifier dan reserved slug → server-side tenant context → routing platform/demo → auth multi-host → staging DNS/TLS/reverse proxy → custom domain verification.
+
+Invarian: host platform/reserved/unknown tidak boleh jatuh ke tenant; tidak ada fallback single-tenant implisit pada production FlexiDesa; hostname bukan autentikasi; sesi default host-only; seluruh operasi privat tetap memeriksa session, permission, dan tenant di server.
+
+**Catatan baseline:** tenant resolver, wildcard slug, domain alias, provisioning desa, dan host-only cookie sudah ditemukan pada audit statis. Proxy belum menjadi classifier domain platform, Better Auth masih memakai satu `BETTER_AUTH_URL`, custom domain verification belum ditemukan, dan DNS/TLS/reverse proxy belum diverifikasi.
+
 ## 3. Rincian fase
 
 ### Fase 0 — Baseline, kualitas, dan lingkungan
