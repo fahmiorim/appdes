@@ -43,6 +43,13 @@
       "when": 1794601432310,
       "tag": "0005_b3_inventaris_composite_fk",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1794608110629,
+      "tag": "0006_b4_bumindes_composite_fk",
+      "breakpoints": true
     }
   ]
 }

@@ -361,6 +361,7 @@ describe("AUD-002 composite tenant foreign keys", () => {
       "bantuan_peserta_rtm_tenant_fk",
       "bulanan_anak_kia_tenant_fk",
       "bulanan_anak_posyandu_tenant_fk",
+      "bumindes_item_buku_tenant_fk",
       "dokumen_warga_resident_tenant_fk",
       "dtks_anggota_dtks_tenant_fk",
       "dtks_anggota_penduduk_tenant_fk",

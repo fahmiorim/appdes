@@ -3,41 +3,44 @@
 | Item | Nilai |
 | --- | --- |
 | Task | Issue #34 — audit lanjutan relasi tenant-bound (tahap inventaris) |
-| Branch | `task/AUD-034-tenant-relation-audit` (baseline) → `task/AUD-034-batch-3-tenant-hardening` (revisi) |
-| Base commit | `343ef35a7858303eb82afc69c8caca7848a1a8e7` (baseline) → `de1bf1be98abf664b01d01f00308b67f404c6997` (revisi Batch 3) |
+| Branch | `task/AUD-034-tenant-relation-audit` (baseline) → `task/AUD-034-batch-3-tenant-hardening` (Batch 3) → `task/AUD-034-b4-bumindes-composite-fk` (Batch 4) |
+| Base commit | `343ef35a7858303eb82afc69c8caca7848a1a8e7` (baseline) → `de1bf1be98abf664b01d01f00308b67f404c6997` (revisi Batch 3) → `3338364a45e4c8e0c4d6f1cf78c4b5286f3321a4` (Batch 4) |
 | Tanggal | 14 November 2026 |
-| Sifat | Baseline read-only; revisi Batch 3 memperbarui status setelah PR #36, #37, dan migration `0005` |
-| Migration terakhir tercakup | `0005_b3_inventaris_composite_fk.sql` |
+| Sifat | Baseline read-only; revisi status Batch 3 dan Batch 4 memperbarui relasi setelah migration `0005` dan `0006` |
+| Migration terakhir tercakup | `0006_b4_bumindes_composite_fk.sql` |
 
 ## 1. Ringkasan
 
 - **124 tabel tenant-scoped** memiliki `village_id`; **23 tabel** tidak memilikinya.
-- **12 tabel** sudah memiliki `UNIQUE (village_id, id)` sehingga bisa menjadi parent composite FK (meningkat dari 11 setelah `inventaris` pada `0005`).
-- **122 dari 124** tabel tenant sudah memiliki minimal satu composite FK.
-- **52 relasi** child→parent yang keduanya tenant-scoped memakai FK single-column pada baseline `343ef35`. Batch 1 (PR #36) menutup 5 relasi `resident_id`, Batch 3 menutup 1 relasi inventaris, sehingga **46 relasi** masih terbuka:
+- **12 tabel** pada baseline branch ini sudah memiliki `UNIQUE (village_id, id)`; migration `0006` menambah satu kandidat parent, sehingga menjadi **13 setelah migration diterapkan**.
+- Setelah migration `0006` diterapkan, relasi child→parent tenant-scoped single-column yang terbuka pada baseline berkurang satu lagi; hitungan tabel dengan minimal satu composite FK perlu dihitung ulang saat matriks diinventaris ulang.
+- **52 relasi** child→parent yang keduanya tenant-scoped memakai FK single-column pada baseline `343ef35`. Batch 1 (PR #36) menutup 5 relasi `resident_id`, Batch 3 menutup 1 relasi inventaris, dan Batch 4 branch ini menambahkan migration untuk menutup 1 relasi BUMDes; setelah `0006` diterapkan, **45 relasi** masih terbuka:
   - **7 relasi** ber-`ON DELETE SET NULL` yang menunggu keputusan desain,
   - **1 relasi** `letter_number_archive.letter_id`,
-  - **22 relasi** pada Matriks B2 yang parent-nya belum punya unique key, dan
+  - **21 relasi** masih terbuka pada Matriks B2 setelah `bumindes_item.buku_id` ditutup oleh `0006`, dan
   - **16 relasi** menunjuk `users` (`created_by`/`actor_id`) yang bukan relasi tenant-bound.
 - **23 tabel non-tenant** diklasifikasikan: 10 tabel referensi global/platform, 6 tabel auth, 3 tabel preferensi per-user, dan 4 tabel anak tenant yang tidak membawa `village_id`.
 - Dua tabel tenant tanpa composite FK sama sekali: `keuangan_jurnal`, `keuangan_saldo_bank` (hanya berelasi ke `villages`).
 
-Kesimpulan tahap ini: enforcement database sudah jauh lebih luas daripada laporan integrasi lama (angka "44 relasi deferred" tidak lagi akurat). Sisa pekerjaan terkonsentrasi pada 23 relasi nyata yang parent-nya belum punya unique key, ditambah keputusan desain untuk relasi ber-`ON DELETE SET NULL`.
+Kesimpulan tahap ini: enforcement database sudah jauh lebih luas daripada laporan integrasi lama (angka "44 relasi deferred" tidak lagi akurat). Setelah Batch 4, sisa pekerjaan terkonsentrasi pada 21 relasi Matriks B2 yang belum ditutup, ditambah keputusan desain untuk relasi ber-`ON DELETE SET NULL`.
 
 ## 2. Metode dan sumber bukti
 
-Inventaris dibangkitkan dari seluruh migrasi yang sudah merged:
+Inventaris baseline menggunakan migration yang sudah ada pada base Batch 3; status relasi dalam revisi ini juga mencatat migration `0005` dan kandidat `0006` pada branch Batch 4:
 
 - `src/db/migrations/0000_baseline.sql`
 - `src/db/migrations/0001_aud002_composite_tenant_fk.sql`
 - `src/db/migrations/0002_b2_dtks_suplemen_composite_fk.sql`
 - `src/db/migrations/0003_b2_bantuan_composite_fk.sql`
+- `src/db/migrations/0004_b2_resident_composite_fk.sql`
+- `src/db/migrations/0005_b3_inventaris_composite_fk.sql`
+- `src/db/migrations/0006_b4_bumindes_composite_fk.sql` (kandidat pada branch task ini; belum merged)
 
 Cara kerja:
 
 1. Ambil setiap `CREATE TABLE` dan tandai tabel yang memiliki `village_id`, termasuk kolom yang ditambahkan lewat `ALTER TABLE ... ADD village_id` (mis. `dtks_ref_lampiran` pada `0002`).
 2. Kumpulkan `FOREIGN KEY` dari definisi inline maupun `ALTER TABLE ... ADD CONSTRAINT`.
-3. Buang constraint yang sudah di-`DROP FOREIGN KEY` oleh migrasi berikutnya, agar relasi yang telah diganti composite FK tidak terhitung dua kali.
+3. Buang constraint yang sudah di-`DROP FOREIGN KEY` oleh migrasi berikutnya, agar relasi yang telah diganti composite FK tidak terhitung dua kali; `0006` pada revisi branch ini dihitung sebagai kandidat, bukan migration merged.
 4. Cocokkan setiap FK single-column dengan kemampuan parent menghasilkan `UNIQUE (village_id, id)`.
 5. Verifikasi layer aplikasi dilakukan dengan membaca repository dan use case terkait (bukan asumsi).
 
@@ -45,14 +48,14 @@ Analisis bersifat statis; tidak ada query yang dijalankan ke database.
 
 ## 3. Parent yang sudah siap untuk composite FK
 
-`UNIQUE (village_id, id)` tersedia pada 12 tabel:
+`UNIQUE (village_id, id)` tersedia pada 12 tabel base; ditambah `bumindes_buku` pada migration kandidat `0006` (13 setelah diterapkan):
 
 ```
 dtks, dtks_lampiran, families, inventaris, kia, letter_types, letters,
 posyandu, regions, residents, rtm, suplemen
 ```
 
-`inventaris` ditambahkan oleh `0005` khusus agar `inventaris_mutasi` dapat memakai composite FK. Tabel lain yang menerima composite FK saat ini hanya menunjuk ke salah satu dari 12 parent tersebut.
+`inventaris` ditambahkan oleh `0005`; kandidat migration `0006` menambahkan unique key `bumindes_buku`. Setelah `0006` diterapkan, ada 13 parent yang siap untuk composite FK.
 
 ## 4. Matriks A — relasi yang sudah DB-enforced
 
@@ -67,6 +70,7 @@ posyandu, regions, residents, rtm, suplemen
 | Keluarga/RTM | `keluarga`, `rumah_tangga` | PR #29/#30: region guard + composite FK wilayah |
 | Kelompok | `kelompok`, `kelompok_anggota` | PR #23: composite FK kelompok→desa |
 | Inventaris | `inventaris`, `inventaris_mutasi` | `0005` (Batch 3): unique parent `inventaris (village_id, id)` + composite FK `inventaris_mutasi (village_id, inventaris_id)` cascade |
+| BUMDes | `bumindes_buku`, `bumindes_item` | Kandidat `0006` (Batch 4, branch belum merged): unique parent `bumindes_buku (village_id, id)` + composite FK `bumindes_item (village_id, buku_id)` cascade |
 
 ## 5. Matriks B1 — 13 relasi siap composite FK
 
@@ -110,7 +114,7 @@ Rekomendasi: opsi 1 untuk `letter_number_archive` dan `notifikasi_terkirim`, sed
 | `polygon` | `area.ref_polygon` | 1 |
 | `berita_kategori` | `berita.kategori_id` | 1 |
 | `pengaduan` | `bukti_pengiriman_notifikasi.pengaduan_id` | 1 |
-| `bumindes_buku` | `bumindes_item.buku_id` | 1 |
+| `bumindes_buku` | `bumindes_item.buku_id` | 1 — **ditambahkan pada kandidat Batch 4** (`0006`, composite FK cascade; belum diterapkan) |
 | `bumindes_tanah_kas` | `bumindes_tanah_kas_mutasi.tanah_kas_id` | 1 |
 | `galeri_album` | `galeri_foto.album_id` | 1 |
 | `incoming_letters` | `incoming_letter_dispositions.incoming_letter_id` | 1 |
@@ -125,7 +129,7 @@ Rekomendasi: opsi 1 untuk `letter_number_archive` dan `notifikasi_terkirim`, sed
 | `jabatan_perangkat` | `perangkat_desa.jabatan_id` | 1 |
 | `roles` | `users.role_id` | 1 |
 
-Total 23 relasi pada baseline; **22 masih terbuka** setelah `0005` menutup `inventaris_mutasi.inventaris_id`. Sisanya (16 relasi) menunjuk `users` melalui `created_by`/`actor_id` dan **bukan** relasi tenant-bound: aktor bisa berupa platform user dengan `village_id = null`.
+Total 23 relasi pada baseline; 22 tersisa setelah `0005`, lalu **21 tersisa setelah kandidat `0006` diterapkan** untuk menutup `bumindes_item.buku_id`. Sisanya (16 relasi) menunjuk `users` melalui `created_by`/`actor_id` dan **bukan** relasi tenant-bound: aktor bisa berupa platform user dengan `village_id = null`.
 
 ## 7. Matriks C — 23 tabel tanpa `village_id`
 
@@ -162,9 +166,9 @@ Empat tabel anak pada baris terakhir tidak dapat diberi composite FK tanpa menam
 | 4 | 20 parent pada Matriks B2: tambah `UNIQUE (village_id, id)` lalu composite FK per modul | sedang; butuh urutan migration dan preflight |
 | 5 | `survey_soal`/`responden`/`jawaban`, `pembangunan_dokumentasi` | tinggi; butuh kolom baru + backfill, harus diputuskan maintainer |
 
-Setiap batch memakai migration baru; tidak ada migrasi merged yang diubah.
+Setiap batch memakai migration baru; tidak ada migrasi yang sudah diterapkan/merged yang diubah.
 
-Status setelah Batch 3: Batch 1 (PR #36) dan Batch 2 (PR #37) sudah merged; Batch 3 menutup celah aplikasi inventaris + composite FK `inventaris_mutasi` (`0005`). Isi baris "Batch 3" lama (`letter_number_archive`, `notifikasi_terkirim`: `SET NULL` → `RESTRICT`) **belum dikerjakan** karena mengubah perilaku hapus dan perlu persetujuan maintainer; usulan pindah ke Batch 4 bersama relasi Matriks B2.
+Status terbaru: Batch 1 (PR #36) dan Batch 2 (PR #37) sudah merged; Batch 3 menutup celah aplikasi inventaris + composite FK `inventaris_mutasi` (`0005`); branch Batch 4 ini menambahkan kandidat migration composite FK `bumindes_item.buku_id` (`0006`), belum merged/diterapkan. AUD-034 **belum selesai**. Perubahan `letter_number_archive`/`notifikasi_terkirim` dari `SET NULL` ke `RESTRICT` belum dikerjakan karena mengubah perilaku hapus dan memerlukan persetujuan maintainer; sisa relasi Matriks B2 juga dikerjakan per modul pada task terpisah.
 
 ## 10. Preflight read-only yang direncanakan
 
