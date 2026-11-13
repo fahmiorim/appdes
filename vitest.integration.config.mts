@@ -25,6 +25,8 @@ export default defineConfig({
       "src/db/b2-bantuan-composite-fk.integration.test.ts",
       "src/db/b2-dtks-suplemen-composite-fk.integration.test.ts",
       "src/db/b2-migration-guard-rollback.integration.test.ts",
+      "src/db/b2-resident-composite-fk.integration.test.ts",
+      "src/db/b2-resident-migration-guard.integration.test.ts",
       "src/db/tenant-composite-fk.integration.test.ts",
       "src/features/bantuan/integrasi-warga.test.ts",
       "src/features/kelompok/infrastructure/kelompok-tenant-isolation.integration.test.ts",

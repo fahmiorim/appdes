@@ -29,6 +29,13 @@
       "when": 1794582000000,
       "tag": "0003_b2_bantuan_composite_fk",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1794596103608,
+      "tag": "0004_b2_resident_composite_fk",
+      "breakpoints": true
     }
   ]
 }
