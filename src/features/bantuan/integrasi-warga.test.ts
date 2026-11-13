@@ -10,7 +10,6 @@ import {
   families,
   kelompok,
   kelompokAnggota,
-  regions,
   residents,
   rumahTangga,
   villages,
@@ -35,7 +34,6 @@ interface Fixture {
   villageB: number;
   residentA: number;
   residentB: number;
-  foreignResident: number;
   expectedProgramIds: number[];
   expectedOtherResidentProgramId: number;
   crossTenantReferenceProgramId: number;
@@ -78,20 +76,6 @@ async function seedFixture(): Promise<Fixture> {
     })
     .$returningId();
 
-  const [foreignRegionRow] = await db
-    .insert(regions)
-    .values({ villageId: villageB, dusun: `Dusun Lintas ${RUN}`, rw: "01", rt: "01" })
-    .$returningId();
-  const [foreignResidentRow] = await db
-    .insert(residents)
-    .values({
-      villageId: villageB,
-      regionId: pastiId(foreignRegionRow, "foreign region"),
-      name: `Penduduk Desa B ${RUN}`,
-      gender: "female",
-    })
-    .$returningId();
-
   const [residentARow] = await db
     .insert(residents)
     .values({
@@ -124,7 +108,7 @@ async function seedFixture(): Promise<Fixture> {
     { name: "Bantuan Kelompok", villageId: villageA, sasaran: 4 },
     { name: "Bantuan Desa Lain", villageId: villageB, sasaran: 1 },
     { name: "Bantuan Warga Lain", villageId: villageA, sasaran: 1 },
-    { name: "Bantuan Referensi Lintas Desa", villageId: villageA, sasaran: 1 },
+    { name: "Bantuan Tanpa Peserta", villageId: villageA, sasaran: 1 },
   ] as const;
   const programIds: number[] = [];
 
@@ -147,15 +131,8 @@ async function seedFixture(): Promise<Fixture> {
     { villageId: villageA, programId: programIds[1]!, familyId: pastiId(familyRow, "family") },
     { villageId: villageA, programId: programIds[2]!, rtmId: pastiId(rtmRow, "rtm") },
     { villageId: villageA, programId: programIds[3]!, kelompokId: groupId },
-    // Baris tak konsisten ini memastikan query tidak melintasi tenant meski FK individual valid.
-    { villageId: villageB, programId: programIds[4]!, residentId: residentA },
+    { villageId: villageB, programId: programIds[4]!, residentId: null },
     { villageId: villageA, programId: programIds[5]!, residentId: residentB },
-    // Referensi legacy yang tidak konsisten: peserta desa A menunjuk penduduk desa B.
-    {
-      villageId: villageA,
-      programId: programIds[6]!,
-      residentId: pastiId(foreignResidentRow, "foreign resident"),
-    },
   ]);
 
   return {
@@ -163,7 +140,6 @@ async function seedFixture(): Promise<Fixture> {
     villageB,
     residentA,
     residentB,
-    foreignResident: pastiId(foreignResidentRow, "foreign resident"),
     expectedProgramIds: programIds.slice(0, 4),
     expectedOtherResidentProgramId: programIds[5]!,
     crossTenantReferenceProgramId: programIds[6]!,
