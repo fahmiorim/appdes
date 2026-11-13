@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 
 import { db } from "@/db";
 import { bulananAnak, ibuHamil, kia, posyandu } from "@/db/schema";
@@ -53,6 +53,33 @@ export async function listKia(villageId: number): Promise<KiaRow[]> {
     .where(eq(kia.villageId, villageId))
     .orderBy(desc(kia.id));
   return rows as unknown as KiaRow[];
+}
+
+/** Referensi ibu/anak pada satu baris KIA, dibatasi desa aktif. */
+export async function findKiaReferenceById(
+  villageId: number,
+  id: number,
+): Promise<{ ibuId: number; anakId: number | null } | null> {
+  const [row] = await db
+    .select({ ibuId: kia.ibuId, anakId: kia.anakId })
+    .from(kia)
+    .where(and(eq(kia.id, id), eq(kia.villageId, villageId)))
+    .limit(1);
+  return row ?? null;
+}
+
+/** Pastikan referensi ibu/anak KIA benar-benar dimiliki desa aktif. */
+export async function kiaResidentReferencesOwned(
+  villageId: number,
+  ibuId: number,
+  anakId: number | null | undefined,
+): Promise<boolean> {
+  const ids = [...new Set([ibuId, ...(anakId == null ? [] : [anakId])])];
+  const rows = await db
+    .select({ id: residents.id })
+    .from(residents)
+    .where(and(eq(residents.villageId, villageId), inArray(residents.id, ids)));
+  return rows.length === ids.length;
 }
 
 export async function createKia(input: {
