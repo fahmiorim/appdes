@@ -35,7 +35,10 @@ function buatFolderMigrasiSampai0005(): string {
       path.join(folder, `${entry.tag}.sql`),
     );
   }
-  fs.writeFileSync(path.join(folder, "meta", "_journal.json"), JSON.stringify({ ...journal, entries }, null, 2));
+  fs.writeFileSync(
+    path.join(folder, "meta", "_journal.json"),
+    JSON.stringify({ ...journal, entries }, null, 2),
+  );
   return folder;
 }
 
@@ -104,21 +107,45 @@ beforeAll(async () => {
     await conn.query("INSERT INTO villages (id, name, code) VALUES (903, 'B4 Guard A', 'B4GDA')");
     await conn.query("INSERT INTO villages (id, name, code) VALUES (904, 'B4 Guard B', 'B4GDB')");
 
-    await conn.query("INSERT INTO bumindes_buku (id, village_id, kode_buku, nama_buku) VALUES (903,903,'B4A','Buku A'),(904,904,'B4B','Buku B')");
-    await conn.query("INSERT INTO bumindes_tanah_kas (id, village_id, nomor_persil) VALUES (903,903,'TA'),(904,904,'TB')");
-    await conn.query("INSERT INTO galeri_album (id, village_id, nama, slug) VALUES (903,903,'Album A','album-a'),(904,904,'Album B','album-b')");
-    await conn.query("INSERT INTO lapak (id, village_id, nama) VALUES (903,903,'Lapak A'),(904,904,'Lapak B')");
-    await conn.query("INSERT INTO pengaduan (id, village_id, nomor_tiket, judul, isi, nama_pelapor) VALUES (903,903,'PGA','A','A','A'),(904,904,'PGB','B','B','B')");
-    await conn.query("INSERT INTO pemilihan (id, village_id, tahun, jenis) VALUES (903,903,2026,'kepala_desa'),(904,904,2026,'kepala_desa')");
+    await conn.query(
+      "INSERT INTO bumindes_buku (id, village_id, kode_buku, nama_buku) VALUES (903,903,'B4A','Buku A'),(904,904,'B4B','Buku B')",
+    );
+    await conn.query(
+      "INSERT INTO bumindes_tanah_kas (id, village_id, nomor_persil) VALUES (903,903,'TA'),(904,904,'TB')",
+    );
+    await conn.query(
+      "INSERT INTO galeri_album (id, village_id, nama, slug) VALUES (903,903,'Album A','album-a'),(904,904,'Album B','album-b')",
+    );
+    await conn.query(
+      "INSERT INTO lapak (id, village_id, nama) VALUES (903,903,'Lapak A'),(904,904,'Lapak B')",
+    );
+    await conn.query(
+      "INSERT INTO pengaduan (id, village_id, nomor_tiket, judul, isi, nama_pelapor) VALUES (903,903,'PGA','A','A','A'),(904,904,'PGB','B','B','B')",
+    );
+    await conn.query(
+      "INSERT INTO pemilihan (id, village_id, tahun, jenis) VALUES (903,903,2026,'kepala_desa'),(904,904,2026,'kepala_desa')",
+    );
 
     // Simulate legacy records: one cross-tenant reference and one orphan per relation.
     await conn.query("SET FOREIGN_KEY_CHECKS=0");
-    await conn.query("INSERT INTO bumindes_item (village_id,buku_id,uraian) VALUES (903,904,'cross'),(903,999999,'orphan')");
-    await conn.query("INSERT INTO bumindes_tanah_kas_mutasi (village_id,tanah_kas_id,tanggal,jenis,uraian) VALUES (903,904,'2026-01-01','ubah','cross'),(903,999999,'2026-01-01','ubah','orphan')");
-    await conn.query("INSERT INTO galeri_foto (village_id,album_id,gambar) VALUES (903,904,'cross.jpg'),(903,999999,'orphan.jpg')");
-    await conn.query("INSERT INTO lapak_produk (village_id,lapak_id,nama,harga) VALUES (903,904,'cross',1),(903,999999,'orphan',1)");
-    await conn.query("INSERT INTO bukti_pengiriman_notifikasi (village_id,pengaduan_id,metode,target) VALUES (903,904,'email','cross@example.test'),(903,999999,'email','orphan@example.test')");
-    await conn.query("INSERT INTO pemilihan_kandidat (village_id,pemilihan_id,nomor_urut,nama) VALUES (903,904,1,'cross'),(903,999999,2,'orphan')");
+    await conn.query(
+      "INSERT INTO bumindes_item (village_id,buku_id,uraian) VALUES (903,904,'cross'),(903,999999,'orphan')",
+    );
+    await conn.query(
+      "INSERT INTO bumindes_tanah_kas_mutasi (village_id,tanah_kas_id,tanggal,jenis,uraian) VALUES (903,904,'2026-01-01','ubah','cross'),(903,999999,'2026-01-01','ubah','orphan')",
+    );
+    await conn.query(
+      "INSERT INTO galeri_foto (village_id,album_id,gambar) VALUES (903,904,'cross.jpg'),(903,999999,'orphan.jpg')",
+    );
+    await conn.query(
+      "INSERT INTO lapak_produk (village_id,lapak_id,nama,harga) VALUES (903,904,'cross',1),(903,999999,'orphan',1)",
+    );
+    await conn.query(
+      "INSERT INTO bukti_pengiriman_notifikasi (village_id,pengaduan_id,metode,target) VALUES (903,904,'email','cross@example.test'),(903,999999,'email','orphan@example.test')",
+    );
+    await conn.query(
+      "INSERT INTO pemilihan_kandidat (village_id,pemilihan_id,nomor_urut,nama) VALUES (903,904,1,'cross'),(903,999999,2,'orphan')",
+    );
     await conn.query("SET FOREIGN_KEY_CHECKS=1");
   } finally {
     conn.release();
