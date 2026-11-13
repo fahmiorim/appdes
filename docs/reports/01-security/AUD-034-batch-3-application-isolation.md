@@ -96,6 +96,13 @@ Join mutasi memakai pola yang sama terhadap `inventaris.villageId`. Konsekuensi:
 
 - **Preflight read-only, fail-closed.** `0005` menghitung `orphan` dan `cross-tenant` untuk `inventaris_mutasi.inventaris_id`, menulis temuan ke tabel sementara `_b3_inventaris_preflight_findings`, lalu memicu `ER_DUP_ENTRY` (sengaja menyisipkan baris yang sama dua kali ke tabel ber-PK) bila ada temuan. Pesan error memuat relasi, jenis, dan jumlah baris (mis. `B3 inv: inventaris_mutasi.inventaris_id cross-tenant = 1 baris`). Tanpa temuan, statement menyisipkan nol baris dan migration lanjut. Tidak ada `UPDATE`/`DELETE`/backfill data domain.
 - **Prefiks pesan dipendekkan** (`B3 inv: `) karena InnoDB memotong nilai kunci duplikat pada pesan error setelah 64 karakter; sudah diverifikasi oleh test guard.
+- **Sisa tabel helper saat preflight gagal (runbook).** MySQL melakukan auto-commit pada DDL, dan statement pemicu `ER_DUP_ENTRY` menghentikan migrator sebelum statement cleanup, sehingga `_b3_inventaris_preflight_findings` dan `_b3_inventaris_preflight_abort` **tetap ada** setelah kegagalan. Ini disengaja agar temuan dapat diperiksa:
+
+  ```sql
+  SELECT relasi, jenis, jumlah FROM _b3_inventaris_preflight_findings;
+  ```
+
+  Retry aman karena migration dimulai dengan `DROP TABLE IF EXISTS` untuk kedua tabel. Cleanup manual (setelah temuan dicatat) dapat dilakukan dengan `DROP TABLE IF EXISTS _b3_inventaris_preflight_abort; DROP TABLE IF EXISTS _b3_inventaris_preflight_findings;`. Tabel hanya berisi agregat jumlah per relasi/jenis — tidak ada NIK atau data pribadi — dan tidak dipakai aplikasi saat runtime.
 - **Backup & rollback.** Sebelum dijalankan pada database berisi data: ambil backup logis (`mysqldump`) atau snapshot. Rollback = jalankan migrasi balik manual: `ALTER TABLE inventaris_mutasi DROP FOREIGN KEY inventaris_mutasi_inventaris_tenant_fk`, tambahkan kembali `FOREIGN KEY (inventaris_id) REFERENCES inventaris(id) ON DELETE CASCADE`, lalu `ALTER TABLE inventaris DROP INDEX inventaris_village_id_uq`. Tidak disediakan `down` otomatis karena repo tidak memakai pola itu.
 - **Metadata lock.** `ALTER TABLE` pada `inventaris_mutasi` dan `inventaris` memerlukan exclusive metadata lock. Jalankan pada jendela sepi; `ADD CONSTRAINT UNIQUE` pada tabel besar dapat memakan waktu dan disk sementara. Preflight dijalankan lebih dulu agar kegagalan terjadi sebelum `ALTER`.
 - **Data legacy.** Bila preflight menemukan referensi lintas desa, migration **berhenti** dan data harus diputuskan maintainer (perbaiki manual atau hapus). Batch ini tidak menyediakan cleanup otomatis.
@@ -112,8 +119,10 @@ MySQL 8.0.30 lokal, database disposable `desa_test_aud034b3` (loopback, `TEST_DA
 | Pasangan `(village_id, inventaris_id)` sah diterima | `b3-inventaris-composite-fk` | PASS |
 | Update yang memindahkan mutasi ke inventaris desa lain ditolak, baris tidak berubah | `b3-inventaris-composite-fk` | PASS |
 | Hapus inventaris meng-cascade mutasinya tanpa menyentuh mutasi desa lain | `b3-inventaris-composite-fk` | PASS |
-| Preflight `0005` gagal dengan pesan `... cross-tenant = 1 baris` saat ada data legacy | `b3-inventaris-migration-guard` | PASS |
-| Saat preflight gagal, FK lama tetap ada dan unique index tidak terpasang (fail-closed) | `b3-inventaris-migration-guard` | PASS |
+| Preflight `0005` gagal dengan pesan `... cross-tenant = 1 baris` saat ada referensi lintas desa | `b3-inventaris-migration-guard` | PASS |
+| Preflight `0005` gagal dengan pesan `... orphan = 1 baris` saat mutasi menunjuk ID yang tidak ada | `b3-inventaris-migration-guard` | PASS |
+| Saat preflight gagal (kedua skenario), FK lama tetap ada dan unique index tidak terpasang (fail-closed) | `b3-inventaris-migration-guard` | PASS |
+| Sisa tabel helper hanya berisi agregat temuan (`relasi`, `jenis`, `jumlah`) dan retry dimulai dengan `DROP IF EXISTS` | `b3-inventaris-migration-guard` | PASS |
 | `listInventaris` menampilkan kategori desa sendiri | `inventaris-tenant-isolation` | PASS |
 | `listInventaris` tidak membocorkan nama/kode kategori desa lain pada baris legacy | `inventaris-tenant-isolation` | PASS |
 | `listInventaris` mempertahankan `NULL` untuk aset tanpa kategori | `inventaris-tenant-isolation` | PASS |
@@ -128,7 +137,7 @@ MySQL 8.0.30 lokal, database disposable `desa_test_aud034b3` (loopback, `TEST_DA
 | Update aset desa lain → `NOT_FOUND`, tanpa perubahan | `inventaris-tenant-isolation` | PASS |
 | `ajukanMutasi` atas aset desa lain → `NOT_FOUND`, tidak ada mutasi tertulis | `inventaris-tenant-isolation` | PASS |
 
-Status TDD: ketiga file test ditulis lebih dulu dan dijalankan pada kode `main` sebelum implementasi. Hasil RED tercatat: 7 test gagal (join kategori, join mutasi, create kategori lintas desa, keseragaman pesan, update kategori lintas desa, bentuk constraint, preflight) — semuanya gagal karena celah yang dituju, bukan karena error setup. Setelah implementasi: 24/24 PASS.
+Status TDD: ketiga file test ditulis lebih dulu dan dijalankan pada kode `main` sebelum implementasi. Hasil RED tercatat: 7 test gagal (join kategori, join mutasi, create kategori lintas desa, keseragaman pesan, update kategori lintas desa, bentuk constraint, preflight) — semuanya gagal karena celah yang dituju, bukan karena error setup. Setelah implementasi: 28/28 PASS (guard test diperluas menjadi dua skenario preflight: `cross-tenant` dan `orphan`, masing-masing 3 assertion).
 
 ## 8. Hasil seluruh CI checks
 
@@ -138,7 +147,7 @@ Status TDD: ketiga file test ditulis lebih dulu dan dijalankan pada kode `main` 
 | `npm run lint` | **PASS** | `eslint .` tanpa temuan |
 | `npm run format:check` | **PASS** | Prettier bersih (3 file dirapikan sebelum check akhir) |
 | `npm run test:unit` | **PASS** | 192 file / 1720 test |
-| `npm run test:integration` | **PASS** | 30 file / 183 test (MySQL 8.0.30, disposable) |
+| `npm run test:integration` | **PASS** | 30 file / 187 test (MySQL 8.0.30, disposable) |
 | `npm run build` | **PASS** | Next.js production build selesai |
 
 Selama verifikasi ditemukan satu kegagalan tidak terkait perubahan produksi: `dtks-tenant-isolation` menghitung `dtks_ref_lampiran` secara **global**, sehingga suite `b2-dtks-suplemen-composite-fk` yang berjalan paralel pada database yang sama membuat hitungan menjadi 3. Test tersebut lulus bila dijalankan sendiri maupun berpasangan, jadi penyebabnya isolasi test, bukan regresi. Perbaikan: hitungan dibatasi `village_id` desa uji (assertion tetap 2 → 1, tidak dilonggarkan).
