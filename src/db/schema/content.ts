@@ -1,6 +1,7 @@
 import {
   boolean,
   date,
+  foreignKey,
   index,
   int,
   mysqlTable,
@@ -217,7 +218,10 @@ export const galeriAlbum = mysqlTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [uniqueIndex("galeri_album_village_slug_unique").on(table.villageId, table.slug)],
+  (table) => [
+    uniqueIndex("galeri_album_village_slug_unique").on(table.villageId, table.slug),
+    uniqueIndex("galeri_album_village_id_uq").on(table.villageId, table.id),
+  ],
 );
 
 /** `galeri_foto` — foto dalam album; `albumId` null = foto lepas (slider). */
@@ -228,7 +232,7 @@ export const galeriFoto = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    albumId: int("album_id").references(() => galeriAlbum.id, { onDelete: "cascade" }),
+    albumId: int("album_id"),
 
     gambar: varchar("gambar", { length: 255 }).notNull(),
     judul: varchar("judul", { length: 150 }),
@@ -247,6 +251,12 @@ export const galeriFoto = mysqlTable(
   (table) => [
     index("galeri_foto_village_idx").on(table.villageId),
     index("galeri_foto_album_idx").on(table.albumId),
+    index("galeri_foto_village_album_idx").on(table.villageId, table.albumId),
+    foreignKey({
+      columns: [table.villageId, table.albumId],
+      foreignColumns: [galeriAlbum.villageId, galeriAlbum.id],
+      name: "galeri_foto_album_tenant_fk",
+    }).onDelete("cascade"),
   ],
 );
 
