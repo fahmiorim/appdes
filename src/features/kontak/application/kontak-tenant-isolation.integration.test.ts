@@ -8,6 +8,8 @@ import { anggotaGrupKontak, kontak, kontakGrup, residents, villages } from "@/db
 import {
   addAnggotaGrupUseCase,
   createKontakUseCase,
+  updateKontakGrupUseCase,
+  updateKontakUseCase,
 } from "@/features/kontak/application/use-cases";
 import { listAnggotaGrupDetail } from "@/features/kontak/infrastructure/kontak-repository";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
@@ -31,9 +33,18 @@ interface Fixture {
   pendudukB: number;
   kontakA: number;
   kontakB: number;
+  /** Kontak desa A khusus untuk menguji update dengan penduduk desa lain. */
+  kontakUjiResident: number;
+  /** Kontak desa A khusus untuk update yang sah. */
+  kontakUjiSah: number;
+  /** Kontak desa A khusus untuk menguji `villageId` spoof. */
+  kontakUjiSpoof: number;
+  /** Kontak desa B sebagai target update dari desa A. */
+  kontakUjiAsing: number;
   grupA: number;
   grupB: number;
   grupLegacy: number;
+  grupUji: number;
 }
 
 let fixture: Fixture | null = null;
@@ -52,6 +63,19 @@ function dataUji(): Fixture {
 async function hitungKontakBernama(nama: string): Promise<number> {
   const [row] = await db.select({ nilai: count() }).from(kontak).where(eq(kontak.nama, nama));
   return Number(row?.nilai ?? 0);
+}
+
+async function bacaKontak(id: number) {
+  const [row] = await db
+    .select({
+      nama: kontak.nama,
+      telepon: kontak.telepon,
+      residentId: kontak.residentId,
+      villageId: kontak.villageId,
+    })
+    .from(kontak)
+    .where(eq(kontak.id, id));
+  return row;
 }
 
 async function hitungAnggota(grupId: number): Promise<number> {
@@ -106,6 +130,23 @@ beforeAll(async () => {
     .values({ villageId: desaB, residentId: pendudukB, nama: `Kontak B ${RUN}` })
     .$returningId();
 
+  const [kontakUjiResidentRow] = await db
+    .insert(kontak)
+    .values({ villageId: desaA, residentId: pendudukA, nama: `Kontak Uji Resident ${RUN}` })
+    .$returningId();
+  const [kontakUjiSahRow] = await db
+    .insert(kontak)
+    .values({ villageId: desaA, residentId: pendudukA, nama: `Kontak Uji Sah ${RUN}` })
+    .$returningId();
+  const [kontakUjiSpoofRow] = await db
+    .insert(kontak)
+    .values({ villageId: desaA, residentId: pendudukA, nama: `Kontak Uji Spoof ${RUN}` })
+    .$returningId();
+  const [kontakUjiAsingRow] = await db
+    .insert(kontak)
+    .values({ villageId: desaB, residentId: pendudukB, nama: `Kontak Uji Asing ${RUN}` })
+    .$returningId();
+
   const [grupARow] = await db
     .insert(kontakGrup)
     .values({ villageId: desaA, namaGrup: `Grup A ${RUN}` })
@@ -118,6 +159,10 @@ beforeAll(async () => {
     .insert(kontakGrup)
     .values({ villageId: desaA, namaGrup: `Grup Legacy ${RUN}` })
     .$returningId();
+  const [grupUjiRow] = await db
+    .insert(kontakGrup)
+    .values({ villageId: desaA, namaGrup: `Grup Uji ${RUN}` })
+    .$returningId();
 
   fixture = {
     desaA,
@@ -126,9 +171,14 @@ beforeAll(async () => {
     pendudukB,
     kontakA: pastiId(kontakARow, "kontak A"),
     kontakB: pastiId(kontakBRow, "kontak B"),
+    kontakUjiResident: pastiId(kontakUjiResidentRow, "kontak uji resident"),
+    kontakUjiSah: pastiId(kontakUjiSahRow, "kontak uji sah"),
+    kontakUjiSpoof: pastiId(kontakUjiSpoofRow, "kontak uji spoof"),
+    kontakUjiAsing: pastiId(kontakUjiAsingRow, "kontak uji asing"),
     grupA: pastiId(grupARow, "grup A"),
     grupB: pastiId(grupBRow, "grup B"),
     grupLegacy: pastiId(grupLegacyRow, "grup legacy"),
+    grupUji: pastiId(grupUjiRow, "grup uji"),
   };
 });
 
@@ -206,6 +256,132 @@ describe("createKontakUseCase — residentId lintas desa", () => {
     const [row] = await db.select().from(kontak).where(eq(kontak.id, id));
     expect(row?.villageId).toBe(desaA);
     expect(row?.residentId).toBeNull();
+  });
+});
+
+describe("updateKontakUseCase — pembaruan lintas desa", () => {
+  it("menolak penduduk desa lain dan tidak mengubah kontak", async () => {
+    const { desaA, pendudukA, pendudukB, kontakUjiResident } = dataUji();
+
+    const kesalahan = await updateKontakUseCase(desaA, {
+      id: kontakUjiResident,
+      villageId: desaA,
+      residentId: pendudukB,
+      nama: `Nama Diubah ${RUN}`,
+    }).catch((error: unknown) => error);
+
+    expect(kesalahan).toMatchObject({
+      code: "VALIDATION",
+      message: "Penduduk tidak ditemukan.",
+    });
+    expect(await bacaKontak(kontakUjiResident)).toMatchObject({
+      nama: `Kontak Uji Resident ${RUN}`,
+      residentId: pendudukA,
+      villageId: desaA,
+    });
+  });
+
+  it("menyimpan perubahan dengan penduduk desa sendiri", async () => {
+    const { desaA, pendudukA, kontakUjiSah } = dataUji();
+
+    await updateKontakUseCase(desaA, {
+      id: kontakUjiSah,
+      villageId: desaA,
+      residentId: pendudukA,
+      nama: `Kontak Uji Sah Baru ${RUN}`,
+      telepon: "081200000001",
+    });
+
+    expect(await bacaKontak(kontakUjiSah)).toMatchObject({
+      nama: `Kontak Uji Sah Baru ${RUN}`,
+      telepon: "081200000001",
+      residentId: pendudukA,
+      villageId: desaA,
+    });
+  });
+
+  it("tidak dapat memindahkan kontak lewat villageId dari input", async () => {
+    const { desaA, desaB, kontakUjiSpoof } = dataUji();
+
+    await updateKontakUseCase(desaA, {
+      id: kontakUjiSpoof,
+      villageId: desaB,
+      nama: `Kontak Uji Spoof Baru ${RUN}`,
+    });
+
+    expect(await bacaKontak(kontakUjiSpoof)).toMatchObject({
+      nama: `Kontak Uji Spoof Baru ${RUN}`,
+      villageId: desaA,
+    });
+  });
+
+  it("menolak kontak desa lain dengan pesan yang sama seperti kontak tidak ada", async () => {
+    const { desaA, desaB, kontakUjiAsing } = dataUji();
+
+    const asing = await updateKontakUseCase(desaA, {
+      id: kontakUjiAsing,
+      villageId: desaB,
+      nama: `Diambil Alih ${RUN}`,
+    }).catch((error: unknown) => error);
+    const tidakAda = await updateKontakUseCase(desaA, {
+      id: 999_999_999,
+      villageId: desaA,
+      nama: `Tidak Ada ${RUN}`,
+    }).catch((error: unknown) => error);
+
+    expect(asing).toMatchObject({ code: "NOT_FOUND", message: "Kontak tidak ditemukan." });
+    expect(tidakAda).toMatchObject({ code: "NOT_FOUND", message: "Kontak tidak ditemukan." });
+    expect(await bacaKontak(kontakUjiAsing)).toMatchObject({
+      nama: `Kontak Uji Asing ${RUN}`,
+      villageId: desaB,
+    });
+  });
+});
+
+describe("updateKontakGrupUseCase — pembaruan lintas desa", () => {
+  it("menolak grup desa lain dan tidak mengubahnya", async () => {
+    const { desaA, desaB, grupB } = dataUji();
+
+    const kesalahan = await updateKontakGrupUseCase(desaA, {
+      id: grupB,
+      villageId: desaA,
+      namaGrup: `Grup Diambil Alih ${RUN}`,
+    }).catch((error: unknown) => error);
+
+    expect(kesalahan).toMatchObject({
+      code: "NOT_FOUND",
+      message: "Grup kontak tidak ditemukan.",
+    });
+    const [row] = await db
+      .select({ namaGrup: kontakGrup.namaGrup, villageId: kontakGrup.villageId })
+      .from(kontakGrup)
+      .where(eq(kontakGrup.id, grupB));
+    expect(row).toEqual({ namaGrup: `Grup B ${RUN}`, villageId: desaB });
+  });
+
+  it("memperbarui grup desa sendiri tanpa memindahkan desa", async () => {
+    const { desaA, desaB, grupUji } = dataUji();
+
+    await updateKontakGrupUseCase(desaA, {
+      id: grupUji,
+      villageId: desaB,
+      namaGrup: `Grup Uji Baru ${RUN}`,
+      keterangan: "diperbarui",
+    });
+
+    const [row] = await db
+      .select({
+        namaGrup: kontakGrup.namaGrup,
+        keterangan: kontakGrup.keterangan,
+        villageId: kontakGrup.villageId,
+      })
+      .from(kontakGrup)
+      .where(eq(kontakGrup.id, grupUji));
+    expect(row).toEqual({
+      namaGrup: `Grup Uji Baru ${RUN}`,
+      keterangan: "diperbarui",
+      villageId: desaA,
+    });
   });
 });
 
