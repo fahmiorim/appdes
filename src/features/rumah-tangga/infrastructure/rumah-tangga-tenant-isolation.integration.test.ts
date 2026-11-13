@@ -18,6 +18,7 @@ import {
   listRumahTanggaMembers,
   setAnggotaRumahTangga,
   updateRumahTangga,
+  validateRumahTanggaRegion,
 } from "@/features/rumah-tangga/infrastructure/rumah-tangga-repository";
 import { validasiDatabaseUji } from "@/testing/db-test-guard";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
@@ -28,6 +29,8 @@ const RUN = randomUUID().slice(0, 8);
 interface Fixture {
   villageA: number;
   villageB: number;
+  regionA: number;
+  regionB: number;
   rtmA: number;
   rtmB: number;
   residentB: number;
@@ -114,7 +117,7 @@ async function seedFixture(): Promise<Fixture> {
   );
   await sisipkanLegacy("UPDATE rtm SET region_id = ? WHERE id = ?", [regionB, rtmA]);
 
-  return { villageA, villageB, rtmA, rtmB, residentB };
+  return { villageA, villageB, regionA, regionB, rtmA, rtmB, residentB };
 }
 
 beforeAll(async () => {
@@ -183,5 +186,18 @@ describe("isolasi tenant repository rumah tangga", () => {
       .where(eq(residents.id, current.residentB))
       .limit(1);
     expect(resident?.rtmId).toBe(current.rtmB);
+  });
+
+  it("menolak wilayah milik desa lain dan menerima wilayah sendiri", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
+    const current = fixture;
+
+    await expect(
+      validateRumahTanggaRegion(current.villageA, current.regionB),
+    ).rejects.toMatchObject({ code: "VALIDATION" });
+    await expect(
+      validateRumahTanggaRegion(current.villageA, current.regionA),
+    ).resolves.toBeUndefined();
+    await expect(validateRumahTanggaRegion(current.villageA, null)).resolves.toBeUndefined();
   });
 });

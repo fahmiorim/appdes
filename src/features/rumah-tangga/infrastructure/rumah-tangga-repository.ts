@@ -14,6 +14,7 @@ import {
   type RumahTanggaMember,
 } from "@/features/rumah-tangga/domain/rumah-tangga";
 import { formatWilayahLabel } from "@/features/wilayah/domain/wilayah";
+import { validationError } from "@/lib/errors";
 
 export interface ListRumahTanggaParams {
   villageId: number;
@@ -278,6 +279,30 @@ export async function listRumahTanggaMembers(
       nationalId: row.nationalId,
       level: row.level,
     }));
+}
+
+/**
+ * Pastikan wilayah yang dipilih milik desa pemanggil.
+ *
+ * Composite foreign key menolak relasi lintas desa, tetapi error SQL tidak
+ * ramah pengguna dan dapat membocorkan nama constraint. Guard ini memberi
+ * kesalahan validasi yang konsisten untuk create maupun update.
+ */
+export async function validateRumahTanggaRegion(
+  villageId: number,
+  regionId: number | null,
+): Promise<void> {
+  if (regionId === null) return;
+
+  const [region] = await db
+    .select({ id: regions.id })
+    .from(regions)
+    .where(and(eq(regions.id, regionId), eq(regions.villageId, villageId)))
+    .limit(1);
+
+  if (!region) {
+    throw validationError("Wilayah tidak valid untuk desa ini.");
+  }
 }
 
 export async function insertRumahTangga(
