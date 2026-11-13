@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { eq, inArray, sql } from "drizzle-orm";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
 import {
@@ -20,11 +20,14 @@ import {
 import { deleteKeluarga } from "@/features/keluarga/infrastructure/keluarga-repository";
 import {
   deleteDtks,
+  deleteLampiranDtks,
+  insertLampiranDtks,
   lepasLampiran,
   listLampiranTerpasang,
   tautkanLampiran,
 } from "@/features/penduduk/infrastructure/dtks-repository";
 import { deletePenduduk } from "@/features/penduduk/infrastructure/penduduk-repository";
+import { deleteSuplemen } from "@/features/penduduk/infrastructure/suplemen-repository";
 import { deleteRumahTangga } from "@/features/rumah-tangga/infrastructure/rumah-tangga-repository";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
@@ -114,46 +117,6 @@ const FK_LAMA = [
   "suplemen_terdata_keluarga_id_families_id_fk",
 ] as const;
 
-interface Fixture {
-  desaA: number;
-  desaB: number;
-  familyA: number;
-  familyB: number;
-  rtmA: number;
-  rtmA2: number;
-  rtmB: number;
-  rtmB2: number;
-  rtmB3: number;
-  rtmNullA: number;
-  rtmC: number;
-  residentA: number;
-  residentB: number;
-  residentD: number;
-  dtksA: number;
-  dtksB: number;
-  dtksB2: number;
-  dtksNullA: number;
-  dtksC: number;
-  anggotaA: number;
-  anggotaB2: number;
-  lampiranA: number;
-  lampiranB: number;
-  junctionA: number;
-  junctionB2: number;
-  suplemenA: number;
-  suplemenB: number;
-  suplemenD: number;
-  suplemenKeluarga: number;
-  terdataA: number;
-  terdataB: number;
-  terdataC: number;
-  terdataD: number;
-  familyC: number;
-  residentC: number;
-}
-
-let fixture: Fixture | null = null;
-
 function idDari(baris: { id: number } | undefined, label: string): number {
   const id = baris?.id;
   if (id === undefined) throw new Error(`Seed uji gagal: ${label} tidak terbentuk.`);
@@ -189,233 +152,147 @@ async function jalankanDanTangkap(aksi: () => Promise<unknown>): Promise<unknown
 
 beforeAll(async () => {
   await siapkanDatabaseUji(db, { migrationsFolder: MIGRATIONS_FOLDER });
-
-  const [desaARow] = await db
-    .insert(villages)
-    .values({ name: `Desa B2 A ${RUN}`, code: `A${RUN}` })
-    .$returningId();
-  const [desaBRow] = await db
-    .insert(villages)
-    .values({ name: `Desa B2 B ${RUN}`, code: `B${RUN}` })
-    .$returningId();
-  const desaA = idDari(desaARow, "desa A");
-  const desaB = idDari(desaBRow, "desa B");
-
-  const [regionARow] = await db
-    .insert(regions)
-    .values({ villageId: desaA, dusun: `Dusun B2 A ${RUN}`, rw: "001", rt: "001" })
-    .$returningId();
-  const [regionBRow] = await db
-    .insert(regions)
-    .values({ villageId: desaB, dusun: `Dusun B2 B ${RUN}`, rw: "001", rt: "001" })
-    .$returningId();
-  const regionA = idDari(regionARow, "region A");
-  const regionB = idDari(regionBRow, "region B");
-
-  const [familyARow] = await db
-    .insert(families)
-    .values({ villageId: desaA, number: `B2KK${RUN}A`, regionId: regionA })
-    .$returningId();
-  const [familyBRow] = await db
-    .insert(families)
-    .values({ villageId: desaB, number: `B2KK${RUN}B`, regionId: regionB })
-    .$returningId();
-  const [familyCRow] = await db
-    .insert(families)
-    .values({ villageId: desaA, number: `B2KK${RUN}C`, regionId: regionA })
-    .$returningId();
-  const familyA = idDari(familyARow, "family A");
-  const familyB = idDari(familyBRow, "family B");
-  const familyC = idDari(familyCRow, "family C");
-
-  const buatRtm = async (villageId: number, regionId: number, label: string) => {
-    const [row] = await db
-      .insert(rumahTangga)
-      .values({ villageId, number: `B2${label}${RUN}`, regionId })
-      .$returningId();
-    return idDari(row, `rtm ${label}`);
-  };
-
-  const rtmA = await buatRtm(desaA, regionA, "RTMA");
-  const rtmA2 = await buatRtm(desaA, regionA, "RTMA2");
-  const rtmB = await buatRtm(desaB, regionB, "RTMB");
-  const rtmB2 = await buatRtm(desaB, regionB, "RTMB2");
-  const rtmB3 = await buatRtm(desaB, regionB, "RTMB3");
-  const rtmNullA = await buatRtm(desaA, regionA, "RTMN");
-  const rtmC = await buatRtm(desaA, regionA, "RTMC");
-
-  const buatPenduduk = async (input: {
-    villageId: number;
-    label: string;
-    gender: "male" | "female";
-    familyId?: number | null;
-    rtmId?: number | null;
-  }) => {
-    const [row] = await db
-      .insert(residents)
-      .values({
-        villageId: input.villageId,
-        name: `Penduduk B2 ${input.label} ${RUN}`,
-        gender: input.gender,
-        familyId: input.familyId ?? null,
-        rtmId: input.rtmId ?? null,
-      })
-      .$returningId();
-    return idDari(row, `penduduk ${input.label}`);
-  };
-
-  const residentA = await buatPenduduk({
-    villageId: desaA,
-    label: "A",
-    gender: "male",
-    familyId: familyA,
-    rtmId: rtmA,
-  });
-  const residentB = await buatPenduduk({
-    villageId: desaB,
-    label: "B",
-    gender: "female",
-    familyId: familyB,
-    rtmId: rtmB,
-  });
-  const residentD = await buatPenduduk({ villageId: desaA, label: "D", gender: "female" });
-  const residentC = await buatPenduduk({
-    villageId: desaA,
-    label: "C",
-    gender: "male",
-    familyId: familyC,
-  });
-
-  const buatDtks = async (input: {
-    villageId: number;
-    rtmId: number;
-    keluargaId?: number | null;
-  }) => {
-    const [row] = await db
-      .insert(dtks)
-      .values({
-        villageId: input.villageId,
-        rtmId: input.rtmId,
-        keluargaId: input.keluargaId ?? null,
-      })
-      .$returningId();
-    return idDari(row, `dtks ${input.villageId}`);
-  };
-
-  const dtksA = await buatDtks({ villageId: desaA, rtmId: rtmA, keluargaId: familyA });
-  const dtksB = await buatDtks({ villageId: desaB, rtmId: rtmB, keluargaId: familyB });
-  const dtksB2 = await buatDtks({ villageId: desaB, rtmId: rtmB2 });
-  const dtksNullA = await buatDtks({ villageId: desaA, rtmId: rtmNullA, keluargaId: null });
-  const dtksC = await buatDtks({ villageId: desaA, rtmId: rtmC, keluargaId: familyC });
-
-  const [anggotaARow] = await db
-    .insert(dtksAnggota)
-    .values({ villageId: desaA, dtksId: dtksA, pendudukId: residentA })
-    .$returningId();
-  const [anggotaB2Row] = await db
-    .insert(dtksAnggota)
-    .values({ villageId: desaB, dtksId: dtksB2, pendudukId: residentB })
-    .$returningId();
-
-  const [lampiranARow] = await db
-    .insert(dtksLampiran)
-    .values({ villageId: desaA, nama: `Lampiran A ${RUN}`, berkas: `dtks/a-${RUN}.pdf` })
-    .$returningId();
-  const [lampiranBRow] = await db
-    .insert(dtksLampiran)
-    .values({ villageId: desaB, nama: `Lampiran B ${RUN}`, berkas: `dtks/b-${RUN}.pdf` })
-    .$returningId();
-  const lampiranA = idDari(lampiranARow, "lampiran A");
-  const lampiranB = idDari(lampiranBRow, "lampiran B");
-
-  const [junctionARow] = await db
-    .insert(dtksRefLampiran)
-    .values({ villageId: desaA, dtksId: dtksA, lampiranId: lampiranA })
-    .$returningId();
-  const [junctionB2Row] = await db
-    .insert(dtksRefLampiran)
-    .values({ villageId: desaB, dtksId: dtksB2, lampiranId: lampiranB })
-    .$returningId();
-
-  const buatSuplemen = async (villageId: number, label: string, sasaran: number) => {
-    const [row] = await db
-      .insert(suplemen)
-      .values({
-        villageId,
-        nama: `Suplemen ${label} ${RUN}`,
-        slug: `suplemen-${label.toLowerCase()}-${RUN}`,
-        sasaran,
-      })
-      .$returningId();
-    return idDari(row, `suplemen ${label}`);
-  };
-
-  const suplemenA = await buatSuplemen(desaA, "A", 1);
-  const suplemenB = await buatSuplemen(desaB, "B", 1);
-  const suplemenD = await buatSuplemen(desaA, "D", 1);
-  const suplemenKeluarga = await buatSuplemen(desaA, "K", 2);
-
-  const [terdataARow] = await db
-    .insert(suplemenTerdata)
-    .values({ villageId: desaA, suplemenId: suplemenA, pendudukId: residentA })
-    .$returningId();
-  const [terdataBRow] = await db
-    .insert(suplemenTerdata)
-    .values({ villageId: desaB, suplemenId: suplemenB, pendudukId: residentB })
-    .$returningId();
-  const [terdataCRow] = await db
-    .insert(suplemenTerdata)
-    .values({ villageId: desaA, suplemenId: suplemenKeluarga, keluargaId: familyC })
-    .$returningId();
-  const [terdataDRow] = await db
-    .insert(suplemenTerdata)
-    .values({ villageId: desaA, suplemenId: suplemenD, pendudukId: residentD })
-    .$returningId();
-
-  fixture = {
-    desaA,
-    desaB,
-    familyA,
-    familyB,
-    rtmA,
-    rtmA2,
-    rtmB,
-    rtmB2,
-    rtmB3,
-    rtmNullA,
-    rtmC,
-    residentA,
-    residentB,
-    residentD,
-    dtksA,
-    dtksB,
-    dtksB2,
-    dtksNullA,
-    dtksC,
-    anggotaA: idDari(anggotaARow, "anggota A"),
-    anggotaB2: idDari(anggotaB2Row, "anggota B2"),
-    lampiranA,
-    lampiranB,
-    junctionA: idDari(junctionARow, "junction A"),
-    junctionB2: idDari(junctionB2Row, "junction B2"),
-    suplemenA,
-    suplemenB,
-    suplemenD,
-    suplemenKeluarga,
-    terdataA: idDari(terdataARow, "terdata A"),
-    terdataB: idDari(terdataBRow, "terdata B"),
-    terdataC: idDari(terdataCRow, "terdata C"),
-    terdataD: idDari(terdataDRow, "terdata D"),
-    familyC,
-    residentC,
-  };
 });
 
-afterAll(async () => {
-  if (fixture === null) return;
-  const desaIds = [fixture.desaA, fixture.desaB];
+/**
+ * Factory per kebutuhan.
+ *
+ * Sebelumnya satu fungsi seed membuat ± 40 baris pada tujuh tabel untuk tiap
+ * test, termasuk tabel yang tidak disentuh test tersebut. Sekarang setiap test
+ * hanya membuat baris yang dipakainya: dua desa dari `beforeEach`, sisanya dari
+ * factory yang relevan. Tidak ada test yang mewarisi state test lain, dan biaya
+ * seeding turun menjadi beberapa insert saja per test.
+ */
+let desaA = 0;
+let desaB = 0;
 
-  // Anak lebih dahulu; DTKS/Suplemen memakai RESTRICT pada referensi opsional.
+async function buatDesa(label: "A" | "B"): Promise<number> {
+  const [baris] = await db
+    .insert(villages)
+    .values({ name: `Desa B2 ${label} ${RUN}`, code: `${label}${RUN}`.slice(0, 10) })
+    .$returningId();
+  return idDari(baris, `desa ${label}`);
+}
+
+async function buatKeluarga(villageId: number, label: string): Promise<number> {
+  const [baris] = await db
+    .insert(families)
+    .values({ villageId, number: `B2KK${label}${RUN}` })
+    .$returningId();
+  return idDari(baris, `keluarga ${label}`);
+}
+
+async function buatRtm(villageId: number, label: string): Promise<number> {
+  const [baris] = await db
+    .insert(rumahTangga)
+    .values({ villageId, number: `B2${label}${RUN}` })
+    .$returningId();
+  return idDari(baris, `rtm ${label}`);
+}
+
+async function buatPenduduk(input: {
+  villageId: number;
+  label: string;
+  gender: "male" | "female";
+  familyId?: number | null;
+  rtmId?: number | null;
+}): Promise<number> {
+  const [baris] = await db
+    .insert(residents)
+    .values({
+      villageId: input.villageId,
+      name: `Penduduk B2 ${input.label} ${RUN}`,
+      gender: input.gender,
+      familyId: input.familyId ?? null,
+      rtmId: input.rtmId ?? null,
+    })
+    .$returningId();
+  return idDari(baris, `penduduk ${input.label}`);
+}
+
+async function buatDtks(input: {
+  villageId: number;
+  rtmId: number;
+  keluargaId?: number | null;
+}): Promise<number> {
+  const [baris] = await db
+    .insert(dtks)
+    .values({
+      villageId: input.villageId,
+      rtmId: input.rtmId,
+      keluargaId: input.keluargaId ?? null,
+    })
+    .$returningId();
+  return idDari(baris, "dtks");
+}
+
+async function buatAnggota(input: {
+  villageId: number;
+  dtksId: number;
+  pendudukId: number;
+}): Promise<number> {
+  const [baris] = await db.insert(dtksAnggota).values(input).$returningId();
+  return idDari(baris, "anggota dtks");
+}
+
+async function buatLampiran(villageId: number, label: string): Promise<number> {
+  const [baris] = await db
+    .insert(dtksLampiran)
+    .values({
+      villageId,
+      nama: `Lampiran ${label} ${RUN}`,
+      berkas: `dtks/${label.toLowerCase()}-${RUN}.pdf`,
+    })
+    .$returningId();
+  return idDari(baris, `lampiran ${label}`);
+}
+
+async function buatJunction(input: {
+  villageId: number;
+  dtksId: number;
+  lampiranId: number;
+}): Promise<number> {
+  const [baris] = await db.insert(dtksRefLampiran).values(input).$returningId();
+  return idDari(baris, "junction lampiran");
+}
+
+async function buatSuplemen(villageId: number, label: string, sasaran = 1): Promise<number> {
+  const [baris] = await db
+    .insert(suplemen)
+    .values({
+      villageId,
+      nama: `Suplemen ${label} ${RUN}`,
+      slug: `suplemen-${label.toLowerCase()}-${RUN}`,
+      sasaran,
+    })
+    .$returningId();
+  return idDari(baris, `suplemen ${label}`);
+}
+
+async function buatTerdata(input: {
+  villageId: number;
+  suplemenId: number;
+  pendudukId?: number | null;
+  keluargaId?: number | null;
+}): Promise<number> {
+  const [baris] = await db
+    .insert(suplemenTerdata)
+    .values({
+      villageId: input.villageId,
+      suplemenId: input.suplemenId,
+      pendudukId: input.pendudukId ?? null,
+      keluargaId: input.keluargaId ?? null,
+    })
+    .$returningId();
+  return idDari(baris, "terdata suplemen");
+}
+
+/**
+ * Hapus seluruh baris pada desa test. Urutan anak→parent wajib: referensi
+ * opsional DTKS/Suplemen memakai RESTRICT, jadi menghapus `residents` atau
+ * `families` lebih dulu akan ditolak database.
+ */
+async function bersihkanFixture(desaIds: number[]): Promise<void> {
   await db.delete(dtksAnggota).where(inArray(dtksAnggota.villageId, desaIds));
   await db.delete(dtksRefLampiran).where(inArray(dtksRefLampiran.villageId, desaIds));
   await db.delete(dtks).where(inArray(dtks.villageId, desaIds));
@@ -427,6 +304,15 @@ afterAll(async () => {
   await db.delete(rumahTangga).where(inArray(rumahTangga.villageId, desaIds));
   await db.delete(regions).where(inArray(regions.villageId, desaIds));
   await db.delete(villages).where(inArray(villages.id, desaIds));
+}
+
+beforeEach(async () => {
+  desaA = await buatDesa("A");
+  desaB = await buatDesa("B");
+});
+
+afterEach(async () => {
+  await bersihkanFixture([desaA, desaB]);
 });
 
 describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
@@ -478,6 +364,11 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
   });
 
   it("menjadikan village_id pada dtks_ref_lampiran wajib dan konsisten dengan parent DTKS", async () => {
+    const rtm = await buatRtm(desaA, "RTMKolom");
+    const dtksId = await buatDtks({ villageId: desaA, rtmId: rtm });
+    const lampiran = await buatLampiran(desaA, "Kolom");
+    const junction = await buatJunction({ villageId: desaA, dtksId, lampiranId: lampiran });
+
     const kolom = (await db.execute(sql`
       SELECT IS_NULLABLE AS nullable
       FROM information_schema.COLUMNS
@@ -494,24 +385,33 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
       WHERE d.id IS NULL OR d.village_id <> r.village_id
     `)) as unknown as [Array<{ jumlah: number | string }>, unknown];
     expect(Number(menyimpang[0][0]?.jumlah)).toBe(0);
+
+    // Baris yang dibuat test ini harus terisi desa pemilik DTKS, bukan NULL.
+    const [barisJunction] = await db
+      .select({ villageId: dtksRefLampiran.villageId })
+      .from(dtksRefLampiran)
+      .where(eq(dtksRefLampiran.id, junction))
+      .limit(1);
+    expect(barisJunction).toEqual({ villageId: desaA });
   });
 
   it("menolak insert lintas tenant pada seluruh relasi DTKS dan junction lampiran", async () => {
-    if (fixture === null) throw new Error("Fixture tidak tersedia.");
-    const {
-      desaA,
-      desaB,
-      rtmA,
-      familyA,
-      familyB,
-      residentA,
-      residentB,
-      dtksA,
-      dtksB,
-      dtksB2,
-      lampiranA,
-      lampiranB,
-    } = fixture;
+    const rtmA = await buatRtm(desaA, "RTMA");
+    const rtmA2 = await buatRtm(desaA, "RTMA2");
+    const rtmB = await buatRtm(desaB, "RTMB");
+    const rtmB2 = await buatRtm(desaB, "RTMB2");
+    const rtmB3 = await buatRtm(desaB, "RTMB3");
+    const familyA = await buatKeluarga(desaA, "A");
+    const familyB = await buatKeluarga(desaB, "B");
+    const residentA = await buatPenduduk({ villageId: desaA, label: "A", gender: "male" });
+    const residentB = await buatPenduduk({ villageId: desaB, label: "B", gender: "female" });
+    const dtksA = await buatDtks({ villageId: desaA, rtmId: rtmA });
+    const dtksB = await buatDtks({ villageId: desaB, rtmId: rtmB });
+    const dtksB2 = await buatDtks({ villageId: desaB, rtmId: rtmB2 });
+    const lampiranA = await buatLampiran(desaA, "A");
+    const lampiranB = await buatLampiran(desaB, "B");
+    const suplemenA = await buatSuplemen(desaA, "A");
+    const suplemenB = await buatSuplemen(desaB, "B");
 
     const kasus: Array<{ nama: string; jalankan: () => Promise<unknown> }> = [
       {
@@ -524,7 +424,7 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
       {
         nama: "dtks.keluarga_id",
         jalankan: () =>
-          db.insert(dtks).values({ villageId: desaB, rtmId: fixture!.rtmB3, keluargaId: familyA }),
+          db.insert(dtks).values({ villageId: desaB, rtmId: rtmB3, keluargaId: familyA }),
       },
       {
         nama: "dtks_anggota.dtks_id",
@@ -555,21 +455,21 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
         jalankan: () =>
           db
             .insert(suplemenTerdata)
-            .values({ villageId: desaB, suplemenId: fixture!.suplemenA, pendudukId: residentB }),
+            .values({ villageId: desaB, suplemenId: suplemenA, pendudukId: residentB }),
       },
       {
         nama: "suplemen_terdata.penduduk_id",
         jalankan: () =>
           db
             .insert(suplemenTerdata)
-            .values({ villageId: desaB, suplemenId: fixture!.suplemenB, pendudukId: residentA }),
+            .values({ villageId: desaB, suplemenId: suplemenB, pendudukId: residentA }),
       },
       {
         nama: "suplemen_terdata.keluarga_id",
         jalankan: () =>
           db
             .insert(suplemenTerdata)
-            .values({ villageId: desaB, suplemenId: fixture!.suplemenB, keluargaId: familyA }),
+            .values({ villageId: desaB, suplemenId: suplemenB, keluargaId: familyA }),
       },
       {
         nama: "dtks_ref_lampiran lintas desa dengan village_id child yang sama",
@@ -585,7 +485,7 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
         jalankan: () =>
           db.insert(dtks).values({
             villageId: desaA,
-            rtmId: fixture!.rtmA2,
+            rtmId: rtmA2,
             keluargaId: familyB,
             versiKuisioner: "regsos_ek2022_k",
           }),
@@ -607,19 +507,34 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
   });
 
   it("menolak update yang memindahkan referensi ke tenant lain, termasuk perubahan village_id", async () => {
-    if (fixture === null) throw new Error("Fixture tidak tersedia.");
-    const {
-      desaB,
-      rtmB,
-      familyB,
-      residentB,
-      dtksA,
-      anggotaA,
-      junctionA,
-      lampiranB,
-      terdataA,
-      terdataC,
-    } = fixture;
+    const rtmA = await buatRtm(desaA, "RTMA");
+    const rtmB = await buatRtm(desaB, "RTMB");
+    const familyA = await buatKeluarga(desaA, "A");
+    const familyB = await buatKeluarga(desaB, "B");
+    const familyC = await buatKeluarga(desaA, "C");
+    const residentA = await buatPenduduk({ villageId: desaA, label: "A", gender: "male" });
+    const residentB = await buatPenduduk({ villageId: desaB, label: "B", gender: "female" });
+    const dtksA = await buatDtks({ villageId: desaA, rtmId: rtmA, keluargaId: familyA });
+    const lampiranA = await buatLampiran(desaA, "A");
+    const lampiranB = await buatLampiran(desaB, "B");
+    const anggotaA = await buatAnggota({ villageId: desaA, dtksId: dtksA, pendudukId: residentA });
+    const junctionA = await buatJunction({
+      villageId: desaA,
+      dtksId: dtksA,
+      lampiranId: lampiranA,
+    });
+    const suplemenA = await buatSuplemen(desaA, "A");
+    const suplemenKeluarga = await buatSuplemen(desaA, "K", 2);
+    const terdataA = await buatTerdata({
+      villageId: desaA,
+      suplemenId: suplemenA,
+      pendudukId: residentA,
+    });
+    const terdataC = await buatTerdata({
+      villageId: desaA,
+      suplemenId: suplemenKeluarga,
+      keluargaId: familyC,
+    });
 
     const percobaan: Array<{ nama: string; jalankan: () => Promise<unknown> }> = [
       {
@@ -680,15 +595,28 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
       .where(eq(dtks.id, dtksA))
       .limit(1);
     expect(tersimpan).toEqual({
-      villageId: fixture.desaA,
-      rtmId: fixture.rtmA,
-      keluargaId: fixture.familyA,
+      villageId: desaA,
+      rtmId: rtmA,
+      keluargaId: familyA,
     });
   });
 
   it("menerima referensi NULL tanpa mengubah village_id", async () => {
-    if (fixture === null) throw new Error("Fixture tidak tersedia.");
-    const { desaA, dtksNullA, terdataA } = fixture;
+    const rtm = await buatRtm(desaA, "RTMNull");
+    const dtksNullA = await buatDtks({ villageId: desaA, rtmId: rtm });
+    const familyA = await buatKeluarga(desaA, "A");
+    const residentA = await buatPenduduk({
+      villageId: desaA,
+      label: "A",
+      gender: "male",
+      familyId: familyA,
+    });
+    const suplemenA = await buatSuplemen(desaA, "A");
+    const terdataA = await buatTerdata({
+      villageId: desaA,
+      suplemenId: suplemenA,
+      pendudukId: residentA,
+    });
 
     const [dtksTersimpan] = await db
       .select({ villageId: dtks.villageId, keluargaId: dtks.keluargaId })
@@ -715,8 +643,42 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
   });
 
   it("men-cascade hanya anggota dan junction lampiran milik tenant yang sama", async () => {
-    if (fixture === null) throw new Error("Fixture tidak tersedia.");
-    const { desaA, dtksA, anggotaA, junctionA, anggotaB2, junctionB2 } = fixture;
+    const rtmA = await buatRtm(desaA, "RTMA");
+    const rtmB2 = await buatRtm(desaB, "RTMB2");
+    const familyA = await buatKeluarga(desaA, "A");
+    const familyB = await buatKeluarga(desaB, "B");
+    const residentA = await buatPenduduk({
+      villageId: desaA,
+      label: "A",
+      gender: "male",
+      familyId: familyA,
+    });
+    const residentB = await buatPenduduk({
+      villageId: desaB,
+      label: "B",
+      gender: "female",
+      familyId: familyB,
+    });
+    const dtksA = await buatDtks({ villageId: desaA, rtmId: rtmA, keluargaId: familyA });
+    const dtksB2 = await buatDtks({ villageId: desaB, rtmId: rtmB2 });
+    const lampiranA = await buatLampiran(desaA, "A");
+    const lampiranB = await buatLampiran(desaB, "B");
+    const anggotaA = await buatAnggota({ villageId: desaA, dtksId: dtksA, pendudukId: residentA });
+    const anggotaB2 = await buatAnggota({
+      villageId: desaB,
+      dtksId: dtksB2,
+      pendudukId: residentB,
+    });
+    const junctionA = await buatJunction({
+      villageId: desaA,
+      dtksId: dtksA,
+      lampiranId: lampiranA,
+    });
+    const junctionB2 = await buatJunction({
+      villageId: desaB,
+      dtksId: dtksB2,
+      lampiranId: lampiranB,
+    });
 
     await db.delete(dtks).where(eq(dtks.id, dtksA));
 
@@ -744,8 +706,20 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
   });
 
   it("men-cascade hanya terdata milik Suplemen yang sama", async () => {
-    if (fixture === null) throw new Error("Fixture tidak tersedia.");
-    const { suplemenA, terdataA, terdataB } = fixture;
+    const residentA = await buatPenduduk({ villageId: desaA, label: "A", gender: "male" });
+    const residentB = await buatPenduduk({ villageId: desaB, label: "B", gender: "female" });
+    const suplemenA = await buatSuplemen(desaA, "A");
+    const suplemenB = await buatSuplemen(desaB, "B");
+    const terdataA = await buatTerdata({
+      villageId: desaA,
+      suplemenId: suplemenA,
+      pendudukId: residentA,
+    });
+    const terdataB = await buatTerdata({
+      villageId: desaB,
+      suplemenId: suplemenB,
+      pendudukId: residentB,
+    });
 
     await db.delete(suplemen).where(eq(suplemen.id, suplemenA));
 
@@ -757,8 +731,11 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
   });
 
   it("hanya menautkan dan melepas lampiran untuk desa pemilik DTKS", async () => {
-    if (fixture === null) throw new Error("Fixture tidak tersedia.");
-    const { desaA, desaB, dtksB2, lampiranA, lampiranB } = fixture;
+    const rtmB2 = await buatRtm(desaB, "RTMB2");
+    const dtksB2 = await buatDtks({ villageId: desaB, rtmId: rtmB2 });
+    const lampiranA = await buatLampiran(desaA, "A");
+    const lampiranB = await buatLampiran(desaB, "B");
+    await buatJunction({ villageId: desaB, dtksId: dtksB2, lampiranId: lampiranB });
 
     // Lampiran desa A tidak boleh ditautkan ke DTKS desa B lewat repository.
     await expect(tautkanLampiran(desaA, dtksB2, lampiranA)).rejects.toThrow(
@@ -783,8 +760,17 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
   });
 
   it("melepas referensi DTKS dan Suplemen saat keluarga dihapus lewat repository", async () => {
-    if (fixture === null) throw new Error("Fixture tidak tersedia.");
-    const { desaA, familyC, dtksC, terdataC } = fixture;
+    const rtmC = await buatRtm(desaA, "RTMC");
+    const familyC = await buatKeluarga(desaA, "C");
+    // Penduduk dalam KK ini harus tetap punya family_id NULL setelah KK dihapus.
+    await buatPenduduk({ villageId: desaA, label: "C", gender: "male", familyId: familyC });
+    const dtksC = await buatDtks({ villageId: desaA, rtmId: rtmC, keluargaId: familyC });
+    const suplemenKeluarga = await buatSuplemen(desaA, "K", 2);
+    const terdataC = await buatTerdata({
+      villageId: desaA,
+      suplemenId: suplemenKeluarga,
+      keluargaId: familyC,
+    });
 
     await deleteKeluarga(desaA, familyC);
 
@@ -804,8 +790,13 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
   });
 
   it("melepas referensi Suplemen saat penduduk dihapus lewat repository", async () => {
-    if (fixture === null) throw new Error("Fixture tidak tersedia.");
-    const { desaA, residentD, terdataD } = fixture;
+    const residentD = await buatPenduduk({ villageId: desaA, label: "D", gender: "female" });
+    const suplemenD = await buatSuplemen(desaA, "D");
+    const terdataD = await buatTerdata({
+      villageId: desaA,
+      suplemenId: suplemenD,
+      pendudukId: residentD,
+    });
 
     await deletePenduduk(desaA, residentD);
 
@@ -818,8 +809,8 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
   });
 
   it("tetap menolak hapus RTM selama DTKS masih merujuknya, lalu berhasil setelah DTKS dihapus", async () => {
-    if (fixture === null) throw new Error("Fixture tidak tersedia.");
-    const { desaA, rtmC, dtksC } = fixture;
+    const rtmC = await buatRtm(desaA, "RTMC");
+    const dtksC = await buatDtks({ villageId: desaA, rtmId: rtmC });
 
     const error = await jalankanDanTangkap(() =>
       db.delete(rumahTangga).where(eq(rumahTangga.id, rtmC)),
@@ -835,5 +826,70 @@ describe("B2 composite tenant foreign keys DTKS dan Suplemen", () => {
       .from(rumahTangga)
       .where(eq(rumahTangga.id, rtmC));
     expect(sisa).toHaveLength(0);
+  });
+
+  it("men-cascade junction saat lampiran DTKS dihapus lewat repository", async () => {
+    const rtm = await buatRtm(desaA, "RTMNull");
+    const dtksNullA = await buatDtks({ villageId: desaA, rtmId: rtm });
+
+    const lampiranId = await insertLampiranDtks({
+      villageId: desaA,
+      nama: `Lampiran hapus ${RUN}`,
+      berkas: `dtks/hapus-${RUN}.pdf`,
+      keterangan: null,
+    });
+    await tautkanLampiran(desaA, dtksNullA, lampiranId);
+    expect((await listLampiranTerpasang(desaA, dtksNullA)).map((row) => row.id)).toEqual([
+      lampiranId,
+    ]);
+
+    await deleteLampiranDtks(desaA, lampiranId);
+
+    // Junction ikut terhapus lewat cascade; kalau aturan cascade berubah menjadi
+    // RESTRICT, delete di atas gagal dan test ini menangkapnya.
+    const junction = await db
+      .select({ id: dtksRefLampiran.id })
+      .from(dtksRefLampiran)
+      .where(eq(dtksRefLampiran.lampiranId, lampiranId));
+    const sisaLampiran = await db
+      .select({ id: dtksLampiran.id })
+      .from(dtksLampiran)
+      .where(eq(dtksLampiran.id, lampiranId));
+    expect(junction).toEqual([]);
+    expect(sisaLampiran).toEqual([]);
+  });
+
+  it("men-cascade terdata saat Suplemen dihapus lewat repository", async () => {
+    const residentA = await buatPenduduk({ villageId: desaA, label: "A", gender: "male" });
+
+    const [barisSuplemen] = await db
+      .insert(suplemen)
+      .values({
+        villageId: desaA,
+        nama: `Suplemen hapus ${RUN}`,
+        slug: `suplemen-hapus-${RUN}`,
+        sasaran: 1,
+        keterangan: null,
+      })
+      .$returningId();
+    const suplemenId = idDari(barisSuplemen, "suplemen hapus");
+    const [barisTerdata] = await db
+      .insert(suplemenTerdata)
+      .values({ villageId: desaA, suplemenId, pendudukId: residentA })
+      .$returningId();
+    const terdataId = idDari(barisTerdata, "terdata suplemen hapus");
+
+    await deleteSuplemen(desaA, suplemenId);
+
+    const sisaSuplemen = await db
+      .select({ id: suplemen.id })
+      .from(suplemen)
+      .where(eq(suplemen.id, suplemenId));
+    const sisaTerdata = await db
+      .select({ id: suplemenTerdata.id })
+      .from(suplemenTerdata)
+      .where(eq(suplemenTerdata.id, terdataId));
+    expect(sisaSuplemen).toEqual([]);
+    expect(sisaTerdata).toEqual([]);
   });
 });

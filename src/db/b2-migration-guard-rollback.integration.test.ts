@@ -51,6 +51,12 @@ let migrasiSampai0001: string | null = null;
 let konteksGuard: Konteks | null = null;
 let konteksRollback: Konteks | null = null;
 let konteksBaseline: Konteks | null = null;
+let konteksBackfill: Konteks | null = null;
+let galatBackfill: unknown = null;
+let isiJunctionBackfill: Array<{ id: number; desa: number; desaDtks: number }> = [];
+let nullableJunctionBackfill = "TIDAK_ADA";
+let tabelBantuTersisaBackfill: string[] = [];
+let fkTenantBackfill: string[] = [];
 let temuanPreflight: Temuan[] = [];
 const hitunganSebelumPreflight: Record<string, number> = {};
 const hitunganSesudahPreflight: Record<string, number> = {};
@@ -225,6 +231,58 @@ async function suntikDataLegacy(konteks: Konteks): Promise<void> {
     await isiDataLegacy(insertId);
   } finally {
     await conn.query("SET FOREIGN_KEY_CHECKS=1");
+    conn.release();
+  }
+}
+
+/**
+ * Data legacy yang **sah**: seluruh referensi sudah berada pada desa yang benar,
+ * tetapi dibentuk sebelum 0002 sehingga `dtks_ref_lampiran` belum punya
+ * `village_id`. Inilah bentuk data produksi yang harus dilalui backfill.
+ *
+ * Kebalikan dari `suntikDataLegacy`, foreign key dibiarkan aktif agar rehearsal
+ * membuktikan datanya memang valid sebelum migration, bukan sekadar lolos guard.
+ */
+async function suntikDataLegacySah(konteks: Konteks): Promise<void> {
+  const conn = await konteks.pool.getConnection();
+  const insertId = async (sql: string, params: unknown[]): Promise<number> => {
+    const [hasil] = await conn.query(sql, params);
+    return Number((hasil as { insertId: number }).insertId);
+  };
+
+  try {
+    for (const label of ["A", "B"]) {
+      const desa = await insertId("INSERT INTO villages (name, code) VALUES (?, ?)", [
+        `B2 Backfill ${label} ${RUN}`,
+        `F${RUN}${label}`.slice(0, 10),
+      ]);
+      const rtm = await insertId("INSERT INTO rtm (village_id, number) VALUES (?, ?)", [
+        desa,
+        `B2BFRTM${label}${RUN}`,
+      ]);
+      const dtksId = await insertId("INSERT INTO dtks (village_id, rtm_id) VALUES (?, ?)", [
+        desa,
+        rtm,
+      ]);
+
+      // Dua lampiran per desa: backfill harus mengisi setiap baris junction,
+      // bukan hanya yang pertama.
+      for (const urut of [1, 2]) {
+        const lampiran = await insertId(
+          "INSERT INTO dtks_lampiran (village_id, nama, berkas) VALUES (?, ?, ?)",
+          [
+            desa,
+            `Backfill Lampiran ${urut} ${label} ${RUN}`,
+            `dtks/bf-${urut}-${label}-${RUN}.pdf`,
+          ],
+        );
+        await insertId("INSERT INTO dtks_ref_lampiran (dtks_id, lampiran_id) VALUES (?, ?)", [
+          dtksId,
+          lampiran,
+        ]);
+      }
+    }
+  } finally {
     conn.release();
   }
 }
@@ -421,12 +479,68 @@ beforeAll(async () => {
   konteksBaseline = await bukaKonteks(namaBaseline);
   await jalankanMigrasi(konteksBaseline, migrasiSampai0001);
   skemaBaseline = await bacaSkema(konteksBaseline);
+
+  // --- Rehearsal backfill: 0002 harus berhasil di atas data legacy yang sah.
+  const namaBackfill = `desa_test_b2_backfill_${RUN}`;
+  await buatDatabaseKosong(namaBackfill);
+  konteksBackfill = await bukaKonteks(namaBackfill);
+  await jalankanMigrasi(konteksBackfill, migrasiSampai0001);
+  await suntikDataLegacySah(konteksBackfill);
+  try {
+    await jalankanMigrasi(konteksBackfill, MIGRATIONS_FOLDER);
+  } catch (error) {
+    galatBackfill = error;
+  }
+
+  // Bila migration gagal, kolom `village_id` belum tentu ada: berhenti di sini
+  // agar test melaporkan galat migration yang sebenarnya, bukan galat query.
+  if (galatBackfill !== null) return;
+
+  const [junction] = await konteksBackfill.pool.query<RowDataPacket[]>(
+    `SELECT r.id AS id, r.village_id AS desa, d.village_id AS desaDtks
+     FROM dtks_ref_lampiran AS r
+     JOIN dtks AS d ON d.id = r.dtks_id
+     ORDER BY r.id`,
+  );
+  isiJunctionBackfill = junction.map((row) => ({
+    id: Number(row.id),
+    desa: Number(row.desa),
+    desaDtks: Number(row.desaDtks),
+  }));
+
+  const [kolomJunction] = await konteksBackfill.pool.query<RowDataPacket[]>(
+    `SELECT IS_NULLABLE AS nullable FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'dtks_ref_lampiran' AND COLUMN_NAME = 'village_id'`,
+    [namaBackfill],
+  );
+  if (kolomJunction.length > 0) nullableJunctionBackfill = String(kolomJunction[0]?.nullable);
+
+  const [tabelBantu] = await konteksBackfill.pool.query<RowDataPacket[]>(
+    `SELECT TABLE_NAME AS nama FROM information_schema.TABLES
+     WHERE TABLE_SCHEMA = ?
+       AND TABLE_NAME IN ('_b2_preflight_findings', '_b2_preflight_abort')`,
+    [namaBackfill],
+  );
+  tabelBantuTersisaBackfill = tabelBantu.map((row) => String(row.nama)).sort();
+
+  const [fkBackfill] = await konteksBackfill.pool.query<RowDataPacket[]>(
+    `SELECT CONSTRAINT_NAME AS nama FROM information_schema.REFERENTIAL_CONSTRAINTS
+     WHERE CONSTRAINT_SCHEMA = ?
+       AND TABLE_NAME IN ('dtks', 'dtks_anggota', 'dtks_lampiran', 'dtks_ref_lampiran',
+                          'suplemen', 'suplemen_terdata')`,
+    [namaBackfill],
+  );
+  fkTenantBackfill = fkBackfill
+    .map((row) => String(row.nama))
+    .filter((nama) => nama.endsWith("_tenant_fk"))
+    .sort();
 });
 
 afterAll(async () => {
   await tutupDanBuang(konteksGuard);
   await tutupDanBuang(konteksRollback);
   await tutupDanBuang(konteksBaseline);
+  await tutupDanBuang(konteksBackfill);
   if (migrasiSampai0001 !== null) {
     fs.rmSync(migrasiSampai0001, { recursive: true, force: true });
   }
@@ -482,5 +596,26 @@ describe("B2 preflight, migration guard, dan rollback", () => {
 
   it("inverse migration memulihkan schema baseline untuk seluruh tabel terdampak", () => {
     expect(skemaRollback).toEqual(skemaBaseline);
+  });
+
+  it("migration berhasil di atas data legacy yang sah dan mengisi village_id junction", () => {
+    // Migration tidak boleh berhenti: seluruh referensi memang sudah sewilayah.
+    expect(galatBackfill).toBeNull();
+
+    // Backfill harus mengisi setiap baris junction dengan desa DTKS induknya,
+    // bukan hanya sebagian atau nilai bawaan.
+    expect(isiJunctionBackfill).toHaveLength(4);
+    for (const baris of isiJunctionBackfill) {
+      expect(baris.desa, `junction ${baris.id}`).toBe(baris.desaDtks);
+    }
+    expect(new Set(isiJunctionBackfill.map((baris) => baris.desa)).size).toBe(2);
+
+    // Baru setelah backfill kolom dipromosikan menjadi NOT NULL.
+    expect(nullableJunctionBackfill).toBe("NO");
+
+    // Jalur sukses membuang tabel bantu preflight dan memasang seluruh
+    // constraint tenant (9 relasi pada 6 tabel).
+    expect(tabelBantuTersisaBackfill).toEqual([]);
+    expect(fkTenantBackfill).toHaveLength(9);
   });
 });

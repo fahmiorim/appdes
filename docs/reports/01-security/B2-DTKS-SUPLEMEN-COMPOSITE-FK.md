@@ -77,8 +77,8 @@ Jalur hapus yang ditelusuri: `deleteKeluarga`, `deletePenduduk`,
 | `src/features/penduduk/infrastructure/penduduk-repository.ts` | `deletePenduduk` melepas `suplemen_terdata.penduduk_id` dalam transaksi |
 | `src/db/migrasi-paritas.test.ts` | pengurai paritas juga membaca `ALTER TABLE ... ADD` (kolom baru pada tabel lama) |
 | `src/db/tenant-composite-fk.integration.test.ts` | daftar `*_tenant_fk` yang diharapkan ditambah 9 constraint B2 |
-| `src/db/b2-dtks-suplemen-composite-fk.integration.test.ts` | test baru: constraint, lintas tenant, nullable, cascade, delete repository, lampiran |
-| `src/db/b2-migration-guard-rollback.integration.test.ts` | test baru: preflight read-only, guard migration, rollback rehearsal |
+| `src/db/b2-dtks-suplemen-composite-fk.integration.test.ts` | test baru: constraint, lintas tenant, nullable, cascade, delete repository, lampiran, cascade hapus lampiran/Suplemen lewat repository, fixture per test (§10) |
+| `src/db/b2-migration-guard-rollback.integration.test.ts` | test baru: preflight read-only, guard migration, rollback rehearsal, rehearsal backfill atas data legacy sah (§9) |
 | `vitest.integration.config.mts` | mendaftarkan dua berkas test integrasi baru |
 | `docs/reports/01-security/B2-preflight.sql` | preflight read-only untuk operator |
 | `docs/reports/01-security/B2-rollback.sql` | inverse migration |
@@ -155,13 +155,15 @@ membuat `desa_test_b2_guard_*`, `desa_test_b2_rollback_*`,
 
 Test yang dijalankan (semua PASS):
 
-- `src/db/b2-dtks-suplemen-composite-fk.integration.test.ts` — 11 test:
+- `src/db/b2-dtks-suplemen-composite-fk.integration.test.ts` — 11 test (ditambah 2 test
+  pada §10):
   keberadaan 9 composite FK + aturan delete, tidak ada FK single-column lama,
   `village_id` junction `NOT NULL` dan konsisten, insert lintas tenant (10
   kasus), update lintas tenant (7 kasus), referensi `NULL`, cascade DTKS,
   cascade Suplemen, repository lampiran, set-null hapus keluarga, set-null hapus
   penduduk, RESTRICT RTM.
-- `src/db/b2-migration-guard-rollback.integration.test.ts` — 4 test.
+- `src/db/b2-migration-guard-rollback.integration.test.ts` — 4 test (ditambah 1 test
+  backfill pada §10).
 - `src/db/tenant-composite-fk.integration.test.ts` — 10 test (regresi AUD-002).
 - Suite integrasi lain (isolasi desa, referensi penduduk, GIS, surat, dsb.) —
   PASS.
@@ -221,3 +223,83 @@ Langkah berikutnya untuk reviewer:
    lalu migration, dengan jendela maintenance dan backup teruji.
 4. Putuskan kelanjutan PR #11 (B2 query) dan PR B2 composite ini secara
    terpisah; keduanya belum di-merge.
+
+## 10. Revisi 13 November 2026 — tindak lanjut review
+
+Review read-only menemukan dua kesalahan dokumen operator dan dua celah bukti
+test. Semuanya ditutup pada revisi ini; tidak ada perubahan pada schema,
+migration, atau kode aplikasi.
+
+### 10.1 Dokumen
+
+| Temuan | Perbaikan |
+| --- | --- |
+| `B2-rollback-runbook.md` menyebut `src/db/migration-guard-rollback.integration.test.ts` (berkas tidak ada) | Diperbaiki menjadi `src/db/b2-migration-guard-rollback.integration.test.ts` pada kedua tempat |
+| `B2-preflight.sql` mendokumentasikan `mysql ... < B2-preflight.sql` tanpa nama database, padahal semua tabel dirujuk tanpa kualifikasi | Perintah memakai placeholder `<nama_database_salinan>`, dengan catatan `ERROR 1046` bila kosong |
+
+### 10.2 Test baru
+
+- **Backfill 0002 di atas data legacy yang sah**
+  (`b2-migration-guard-rollback.integration.test.ts`). Database disposable
+  keempat (`desa_test_b2_backfill_*`) dimigrasi ke `0000 + 0001`, diisi dua desa
+  dengan dua junction lampiran masing-masing (foreign key tetap aktif, jadi
+  datanya benar-benar valid sebelum 0002), lalu dimigrasi penuh. Test
+  memeriksa: migration berhasil, keempat baris junction terisi desa DTKS
+  induknya (dua desa berbeda), kolom menjadi `NOT NULL`, tabel bantu preflight
+  sudah dibuang, dan tepat 9 constraint `*_tenant_fk` terpasang.
+- **Cascade hapus lampiran DTKS lewat repository**
+  (`b2-dtks-suplemen-composite-fk.integration.test.ts`): `deleteLampiranDtks`
+  pada lampiran yang masih tertaut harus menghapus junction-nya.
+- **Cascade hapus Suplemen lewat repository** (berkas yang sama):
+  `deleteSuplemen` pada Suplemen yang masih punya terdata harus menghapus baris
+  `suplemen_terdata`.
+- **Fixture factory per kebutuhan**
+  (`b2-dtks-suplemen-composite-fk.integration.test.ts`). Sebelumnya satu fungsi
+  seed membuat ± 40 baris pada tujuh tabel untuk tiap test, lalu dimutasi antar
+  `it` (DTKS, Suplemen, keluarga, penduduk, RTM, dan lampiran dihapus oleh test
+  yang berbeda), sehingga test hanya lulus bila urutannya utuh dan satu test
+  tidak bisa dijalankan sendiri. Sekarang `beforeEach` hanya membuat dua desa,
+  setiap test memanggil factory yang dipakainya (`buatRtm`, `buatDtks`,
+  `buatAnggota`, `buatLampiran`, `buatJunction`, `buatSuplemen`, `buatTerdata`,
+  dst.), dan `afterEach` membersihkan baris dengan urutan anak→parent. Assertion
+  tidak dilonggarkan: test kolom junction justru ditambah pemeriksaan bahwa baris
+  yang dibuatnya terisi desa pemilik DTKS.
+
+### 10.3 Validasi revisi
+
+| Perintah | Hasil |
+| --- | --- |
+| `npm run typecheck` | PASS |
+| `npm run lint` | PASS |
+| `npm run format:check` | PASS |
+| `npx vitest run --config vitest.config.mts src/db/migrasi-paritas.test.ts` | PASS — 7 test |
+| `npx vitest run --config vitest.integration.config.mts src/db/b2-` | PASS — 2 berkas, 18 test |
+| Test tunggal `-t "tetap menolak hapus RTM"` | PASS — 1 test, 12 skipped |
+
+Test integrasi dijalankan pada instance MySQL 8.0.30 disposable yang dibuat
+khusus untuk verifikasi ini: datadir baru di `node_modules/.cache`, port 3309,
+host loopback, tanpa data lain. Database target bernama `desa_test_b2_local`
+sehingga lolos allowlist `db-test-guard`; instance dimatikan dan datadir dihapus
+setelah verifikasi.
+
+Hasil pada kode revisi ini (factory per kebutuhan):
+
+- `b2-dtks-suplemen-composite-fk.integration.test.ts` — 13 test PASS.
+  Durasi tidak dipakai sebagai klaim: run pertama mencatat 489 ms, run berikutnya
+  pada lineage `main` terbaru mencatat 23 detik untuk berkas yang sama, jadi
+  angka itu tidak stabil dan bukan bukti percepatan. Yang berkurang secara
+  struktural hanya jumlah baris seed per test.
+- `b2-migration-guard-rollback.integration.test.ts` — 5 test PASS (termasuk
+  rehearsal backfill atas data legacy sah).
+- Test RTM dijalankan sendirian (`-t`) juga PASS, dan setelah suite selesai
+  tidak ada baris fixture tersisa (`villages` "Desa B2 %" = 0,
+  `dtks_ref_lampiran` = 0).
+
+Tidak ada FAIL dan tidak ada SKIPPED pada kedua berkas B2. Suite integrasi
+penuh tidak dijalankan ulang pada revisi ini; berkas di luar B2 tidak berubah
+sejak run sebelumnya.
+
+Saat push, branch ini ternyata sudah di-force-push maintainer ke `947d5f5`
+(lineage `main` terbaru dengan merge PR #11). Perubahan §10 di-port ke atas
+lineage tersebut dan dijalankan ulang di sana: 18 test B2 PASS, `typecheck`,
+`lint`, dan `format:check` PASS.
