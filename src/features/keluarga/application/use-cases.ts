@@ -27,6 +27,7 @@ import {
   listKeluarga as listKeluargaRows,
   listLogAnggotaKk,
   updateKeluarga as updateKeluargaRow,
+  validateKeluargaRegion,
   type KeluargaListResult,
 } from "@/features/keluarga/infrastructure/keluarga-repository";
 import { formatWilayahLabel } from "@/features/wilayah/domain/wilayah";
@@ -168,6 +169,8 @@ export async function createKeluarga(input: KeluargaFormInput): Promise<{ id: nu
   const user = await requirePermission(KELUARGA_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
 
+  await validateKeluargaRegion(villageId, input.regionId);
+
   if (await keluargaNumberExists(villageId, input.number, null)) {
     throw conflict("Nomor KK tersebut sudah terdaftar.");
   }
@@ -192,6 +195,8 @@ export async function updateKeluarga(id: number, input: KeluargaFormInput): Prom
 
   const existing = await findKeluargaById(villageId, id);
   if (!existing) throw notFound("Kartu Keluarga tidak ditemukan.");
+
+  await validateKeluargaRegion(villageId, input.regionId);
 
   if (await keluargaNumberExists(villageId, input.number, id)) {
     throw conflict("Nomor KK tersebut sudah terdaftar.");
