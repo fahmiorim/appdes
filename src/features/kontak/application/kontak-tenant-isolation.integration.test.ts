@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { anggotaGrupKontak, kontak, kontakGrup, residents, villages } from "@/db/schema";
 import {
   addAnggotaGrupUseCase,
+  createKontakGrupUseCase,
   createKontakUseCase,
   updateKontakGrupUseCase,
   updateKontakUseCase,
@@ -245,6 +246,51 @@ describe("createKontakUseCase — residentId lintas desa", () => {
     expect(row?.villageId).toBe(desaA);
     expect(row?.residentId).toBe(pendudukA);
     expect(row?.nama).toBe(nama);
+  });
+
+  it("mengabaikan id dari payload create kontak", async () => {
+    const { desaA, desaB, pendudukA } = dataUji();
+    const nama = `Kontak Id Payload ${RUN}`;
+    const idPalsu = 900_000_001;
+
+    const id = await createKontakUseCase(desaA, {
+      id: idPalsu,
+      villageId: desaB,
+      residentId: pendudukA,
+      nama,
+    });
+
+    expect(id).not.toBe(idPalsu);
+    expect(await bacaKontak(idPalsu)).toBeUndefined();
+    expect(await bacaKontak(id)).toMatchObject({
+      nama,
+      villageId: desaA,
+      residentId: pendudukA,
+    });
+  });
+
+  it("mengabaikan id dari payload create grup", async () => {
+    const { desaA, desaB } = dataUji();
+    const namaGrup = `Grup Id Payload ${RUN}`;
+    const idPalsu = 900_000_002;
+
+    const id = await createKontakGrupUseCase(desaA, {
+      id: idPalsu,
+      villageId: desaB,
+      namaGrup,
+    });
+
+    expect(id).not.toBe(idPalsu);
+    const [row] = await db
+      .select({ namaGrup: kontakGrup.namaGrup, villageId: kontakGrup.villageId })
+      .from(kontakGrup)
+      .where(eq(kontakGrup.id, id));
+    expect(row).toEqual({ namaGrup, villageId: desaA });
+    const [palsu] = await db
+      .select({ id: kontakGrup.id })
+      .from(kontakGrup)
+      .where(eq(kontakGrup.id, idPalsu));
+    expect(palsu).toBeUndefined();
   });
 
   it("menerima kontak tanpa tautan penduduk", async () => {

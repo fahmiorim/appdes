@@ -74,11 +74,30 @@ async function pastikanPendudukDesa(
   }
 }
 
+/**
+ * Field yang boleh diisi klien saat create.
+ *
+ * `id` dibuat database (auto-increment) dan `villageId` hanya berasal dari
+ * argumen server, sehingga payload tidak dapat menentukan primary key sendiri.
+ * Nilai `undefined` dibiarkan agar default kolom (mis. `hubungWarga`) tetap
+ * berlaku seperti sebelumnya.
+ */
+function dataKontakBaru(input: KontakInput) {
+  return {
+    residentId: input.residentId,
+    nama: input.nama,
+    telepon: input.telepon,
+    email: input.email,
+    telegram: input.telegram,
+    hubungWarga: input.hubungWarga,
+    keterangan: input.keterangan,
+  };
+}
+
 export async function createKontakUseCase(villageId: number, input: KontakInput) {
   await pastikanPendudukDesa(villageId, input.residentId);
 
-  // `villageId` dari input tidak pernah dipakai sebagai otorisasi.
-  return createKontak({ ...input, villageId });
+  return createKontak({ ...dataKontakBaru(input), villageId });
 }
 
 /**
@@ -125,7 +144,12 @@ export async function listKontakGrupUseCase(villageId: number) {
 }
 
 export async function createKontakGrupUseCase(villageId: number, input: KontakGrupInput) {
-  return createKontakGrup({ ...input, villageId });
+  // `id` tidak diteruskan: primary key dibuat database, `villageId` dari server.
+  return createKontakGrup({
+    namaGrup: input.namaGrup,
+    keterangan: input.keterangan,
+    villageId,
+  });
 }
 
 export async function updateKontakGrupUseCase(villageId: number, input: KontakGrupInput) {

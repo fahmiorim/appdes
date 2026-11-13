@@ -40,9 +40,9 @@ Scope Batch 2 membatasi perubahan pada temuan yang terbukti dari jalur aktif. Du
 ## File berubah
 
 - `src/features/kontak/infrastructure/kontak-repository.ts` — tambah `findKontak(villageId, id)`, `findKontakGrup(villageId, id)`, `residentExists(villageId, residentId)` (semua tenant-scoped); `listAnggotaGrupDetail` sekarang menyaring join `kontak` dengan `kontak.villageId = villageId`.
-- `src/features/kontak/application/use-cases.ts` — helper `pastikanPendudukDesa` dipakai `createKontakUseCase` dan `updateKontakUseCase`; `updateKontakUseCase` memverifikasi kontak target milik desa aktif lalu hanya mengirim field yang di-whitelist; `updateKontakGrupUseCase` mendapat pemeriksaan tenant dan whitelist yang sama; `addAnggotaGrupUseCase` memverifikasi grup dan kontak milik desa aktif sebelum insert; 11 alias repository langsung dihapus dari ekspor (lihat tindak lanjut review).
+- `src/features/kontak/application/use-cases.ts` — helper `pastikanPendudukDesa` dipakai `createKontakUseCase` dan `updateKontakUseCase`; jalur create hanya mengirim field domain sehingga `id` dibuat database; `updateKontakUseCase` memverifikasi kontak target milik desa aktif lalu hanya mengirim field yang di-whitelist; `updateKontakGrupUseCase` mendapat pemeriksaan tenant dan whitelist yang sama; `addAnggotaGrupUseCase` memverifikasi grup dan kontak milik desa aktif sebelum insert; 11 alias repository langsung dihapus dari ekspor (lihat tindak lanjut review).
 - `src/features/kehadiran/infrastructure/kehadiran-repository.ts` — join `residents` pada rekap izin ditambah `residents.villageId = kehadiranIzin.villageId`; komentar menjelaskan alasan (NIK unik per desa).
-- `src/features/kontak/application/kontak-tenant-isolation.integration.test.ts` (baru) — 14 test: penolakan `residentId`/`kontakId`/`grupId` lintas desa pada create, update, dan tambah anggota; pesan seragam untuk data tidak ada; jalur sah satu desa; `villageId` spoof tidak dapat memindahkan kontak/grup; ID kontak/grup desa lain menghasilkan `NOT_FOUND` dan barisnya tidak berubah; pembacaan baris anggota legacy.
+- `src/features/kontak/application/kontak-tenant-isolation.integration.test.ts` (baru) — 16 test: penolakan `residentId`/`kontakId`/`grupId` lintas desa pada create, update, dan tambah anggota; pesan seragam untuk data tidak ada; jalur sah satu desa; `villageId` spoof tidak dapat memindahkan kontak/grup; ID kontak/grup desa lain menghasilkan `NOT_FOUND` dan barisnya tidak berubah; `id` pada payload create diabaikan (row memakai auto-increment); pembacaan baris anggota legacy.
 - `src/features/kehadiran/infrastructure/rekap-kehadiran-tenant-isolation.integration.test.ts` (baru) — 3 test: izin sah desa sendiri terhitung, izin yang menunjuk penduduk desa lain dengan NIK sama tidak terhitung, desa lain tidak melihat perangkat desa ini.
 - `vitest.integration.config.mts` — mendaftarkan kedua integration test baru.
 
@@ -73,9 +73,9 @@ Dijalankan pada MySQL **8.0.30** lokal, database uji disposable `desa_test` (loo
 - **PASS** — `npm run lint` (`eslint .`). Percobaan pertama menemukan satu error `@typescript-eslint/no-unused-vars` (`eq` tidak terpakai di test kehadiran); import dihapus lalu lint diulang dan lulus.
 - **PASS** — `npm run format:check` (`prettier --check .`). Percobaan pertama menandai file test kontak baru; `npx prettier --write` dijalankan pada file itu, lalu pemeriksaan ulang lulus.
 - **PASS** — `npm run test:unit`: **192 test files, 1720 tests passed**.
-- **PASS** — test terfokus Batch 2 (`vitest run --config vitest.integration.config.mts <dua file baru>`): **2 files, 17 tests passed** (kontak 14, rekap 3).
+- **PASS** — test terfokus Batch 2 (`vitest run --config vitest.integration.config.mts <dua file baru>`): **2 files, 19 tests passed** (kontak 16, rekap 3).
 - **PASS (bukti red)** — file test kontak dijalankan terhadap `src/features/kontak/application/use-cases.ts` versi `origin/main`: **10 gagal / 4 lulus**, termasuk seluruh test update, create lintas desa, dan tambah anggota lintas desa. Versi Batch 2 dipulihkan setelah pengujian dan diff diverifikasi kembali.
-- **PASS** — `npm run test:integration` (seluruh suite): **27 test files, 157 tests passed**, termasuk dua file baru dan suite composite FK/migration guard Batch 1. Durasi ±78 detik.
+- **PASS** — `npm run test:integration` (seluruh suite): **27 test files, 159 tests passed**, termasuk dua file baru dan suite composite FK/migration guard Batch 1. Durasi ±78 detik.
 - **PASS** — `npm run build` (Next.js production build).
 - **PASS** — `git diff --check`.
 
@@ -87,6 +87,15 @@ Review maintainer pada PR #37 meminta empat hal; semuanya dikerjakan pada commit
 2. **Audit jalur tulis yang melewati use case** — 11 alias repository langsung di `use-cases.ts` diperiksa dengan `grep` per simbol di `src/**`: tidak ada call-site di luar file deklarasinya (termasuk tidak ada di `src/app/**`). Semuanya dihapus, dan modul diberi komentar bahwa hanya use case yang boleh diekspor agar validasi tenant tidak bisa dilewati.
 3. **Payload update di-whitelist** — `updateKontakUseCase` hanya mengirim `residentId`, `nama`, `telepon`, `email`, `telegram`, `hubungWarga`, `keterangan`; `updateKontakGrupUseCase` hanya `namaGrup` dan `keterangan`. `id` dan `villageId` tidak lagi masuk SET.
 4. **Verifikasi ulang** — typecheck, lint, format, unit, seluruh integration MySQL 8, dan build dijalankan ulang setelah perubahan; angka aktual tercatat di bagian Validasi. Laporan dan body PR diperbarui.
+
+## Tindak lanjut review lanjutan (HEAD `78fd628`)
+
+Review kedua meminta hardening pada jalur create karena `KontakInput`/`KontakGrupInput` membawa `id` opsional:
+
+- `createKontakUseCase` kini hanya mengirim `residentId`, `nama`, `telepon`, `email`, `telegram`, `hubungWarga`, `keterangan` + `villageId` dari argumen server. `id` tidak lagi diteruskan, sehingga primary key selalu auto-increment.
+- `createKontakGrupUseCase` hanya mengirim `namaGrup`, `keterangan`, dan `villageId` dari argumen server.
+- Dua regression test baru mengirim `id: 900000001` / `id: 900000002` pada payload create dan memastikan row tersimpan dengan ID hasil auto-increment, `villageId` desa aktif, serta tidak ada row dengan ID yang dikirim. Terhadap kode HEAD `78fd628`, kedua test ini **gagal** (ID payload dipakai); setelah whitelist, **lulus**.
+- Typecheck, lint, format, unit, seluruh integration MySQL 8, dan build dijalankan ulang setelah perubahan.
 
 ## Risiko tersisa
 
@@ -100,4 +109,4 @@ Review maintainer pada PR #37 meminta empat hal; semuanya dikerjakan pada commit
 
 ## Kesimpulan
 
-Celah isolasi tenant pada layer aplikasi untuk direktori kontak dan rekap kehadiran sudah ditutup dengan perubahan minimal tanpa migration: tiga query tenant-scoped baru, validasi kepemilikan sebelum tulis, whitelist field update, penghapusan 11 alias repository yang bisa melewati validasi, join rekap dibatasi desa, dan 17 test isolasi (kontak 14, rekap 3). Test kontak terbukti gagal pada kode `origin/main` (10 dari 14) dan lulus setelah perbaikan. Seluruh pemeriksaan lokal (typecheck, lint, format, unit, integration MySQL 8, build) lulus. Lapak dan `users.resident_id` dicatat sebagai temuan tanpa jalur aktif dan tidak diubah. Batch 3 tidak dimulai; menunggu review maintainer.
+Celah isolasi tenant pada layer aplikasi untuk direktori kontak dan rekap kehadiran sudah ditutup dengan perubahan minimal tanpa migration: tiga query tenant-scoped baru, validasi kepemilikan sebelum tulis, whitelist field update, penghapusan 11 alias repository yang bisa melewati validasi, join rekap dibatasi desa, dan 19 test isolasi (kontak 16, rekap 3). Test kontak terbukti gagal pada kode `origin/main` (10 dari 14 saat itu) dan dua test `id` payload gagal pada HEAD `78fd628`; semuanya lulus setelah perbaikan. Seluruh pemeriksaan lokal (typecheck, lint, format, unit, integration MySQL 8, build) lulus. Lapak dan `users.resident_id` dicatat sebagai temuan tanpa jalur aktif dan tidak diubah. Batch 3 tidak dimulai; menunggu review maintainer.
