@@ -3,6 +3,7 @@
 - **Task:** Fondasi UI, alur masuk, dan shell Dashboard Admin Desa.
 - **Base commit:** `3338364a45e4c8e0c4d6f1cf78c4b5286f3321a4`.
 - **Branch:** `feat/ui-foundation-admin-shell`.
+- **Pull request:** https://github.com/fahmiorim/appdes/pull/39.
 - **Status:** Implementasi awal; menunggu CI dan review.
 
 ## Keputusan implementasi
