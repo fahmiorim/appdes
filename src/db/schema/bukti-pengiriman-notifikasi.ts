@@ -1,5 +1,7 @@
 import {
   boolean,
+  foreignKey,
+  index,
   int,
   mysqlTable,
   text,
@@ -25,9 +27,7 @@ export const buktiPengirimanNotifikasi = mysqlTable(
       .references(() => villages.id, { onDelete: "cascade" }),
 
     /** FK ke pengaduan */
-    pengaduanId: int("pengaduan_id")
-      .notNull()
-      .references(() => pengaduan.id, { onDelete: "cascade" }),
+    pengaduanId: int("pengaduan_id").notNull(),
 
     /** Metode: 'email' | 'whatsapp' */
     metode: varchar("metode", { length: 20 }).notNull(),
@@ -55,6 +55,12 @@ export const buktiPengirimanNotifikasi = mysqlTable(
       t.metode,
       t.target,
     ),
+    index("bukti_pengiriman_village_pengaduan_idx").on(t.villageId, t.pengaduanId),
+    foreignKey({
+      columns: [t.villageId, t.pengaduanId],
+      foreignColumns: [pengaduan.villageId, pengaduan.id],
+      name: "bukti_pengiriman_pengaduan_tenant_fk",
+    }).onDelete("cascade"),
   ],
 );
 
