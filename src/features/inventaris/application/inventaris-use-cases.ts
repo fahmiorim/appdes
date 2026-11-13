@@ -45,7 +45,7 @@ import { hasPermission } from "@/features/rbac/application/authorization";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { findRoleById } from "@/features/rbac/infrastructure/rbac-repository";
 import { requirePermission } from "@/lib/dal";
-import { conflict, forbidden, notFound } from "@/lib/errors";
+import { conflict, forbidden, notFound, validationError } from "@/lib/errors";
 
 const INVENTARIS_RESOURCE = RESOURCES.inventaris;
 const MUTASI_RESOURCE = RESOURCES.mutasiInventaris;
@@ -169,6 +169,18 @@ export async function hapusInventarisKategori(id: number) {
 export async function saveInventaris(input: InventarisInput, id?: number) {
   const user = await requirePermission(INVENTARIS_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
+
+  // `kategoriId` berasal dari formulir. FK kategori masih single-column dengan
+  // ON DELETE SET NULL (lihat AUD-034 Batch 3), jadi database hanya memeriksa
+  // keberadaan kategori — bukan desanya. Validasi di sini mencegah aset desa
+  // aktif ditautkan ke kategori desa lain. Pesannya sama untuk kategori yang
+  // tidak ada dan milik desa lain agar keberadaan baris tenant lain tidak
+  // dapat disimpulkan.
+  const kategoriId = typeof input.kategoriId === "number" ? input.kategoriId : null;
+  if (kategoriId !== null && !(await getInventarisKategori(villageId, kategoriId))) {
+    throw validationError("Kategori inventaris tidak ditemukan.");
+  }
+
   if (id) {
     const existing = await getInventaris(villageId, id);
     if (!existing) throw notFound("Data inventaris tidak ditemukan.");

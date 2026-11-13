@@ -147,7 +147,16 @@ export async function listInventaris(
         kategoriKode: inventarisKategori.kode,
       })
       .from(inventaris)
-      .leftJoin(inventarisKategori, eq(inventaris.kategoriId, inventarisKategori.id))
+      // Predikat desa wajib: join hanya dengan id akan menampilkan nama/kode
+      // kategori desa lain pada baris legacy, dan hasil ini diekspor lewat
+      // route admin/publik yang aktif.
+      .leftJoin(
+        inventarisKategori,
+        and(
+          eq(inventaris.kategoriId, inventarisKategori.id),
+          eq(inventarisKategori.villageId, inventaris.villageId),
+        ),
+      )
       .where(where)
       .orderBy(desc(inventaris.createdAt)),
     db.select({ value: count() }).from(inventaris).where(where),
@@ -239,6 +248,13 @@ export async function listMutasi(villageId: number, inventarisId?: number): Prom
       )
     : eq(inventarisMutasi.villageId, villageId);
 
+  // Sama seperti kategori: tanpa predikat desa, mutasi legacy dapat
+  // menampilkan nama/nomor barang milik desa lain.
+  const tautanInventaris = and(
+    eq(inventarisMutasi.inventarisId, inventaris.id),
+    eq(inventaris.villageId, inventarisMutasi.villageId),
+  );
+
   return db
     .select({
       id: inventarisMutasi.id,
@@ -263,7 +279,7 @@ export async function listMutasi(villageId: number, inventarisId?: number): Prom
       tanggalPersetujuan: inventarisMutasi.tanggalPersetujuan,
     })
     .from(inventarisMutasi)
-    .leftJoin(inventaris, eq(inventarisMutasi.inventarisId, inventaris.id))
+    .leftJoin(inventaris, tautanInventaris)
     .where(where)
     .orderBy(desc(inventarisMutasi.createdAt));
 }

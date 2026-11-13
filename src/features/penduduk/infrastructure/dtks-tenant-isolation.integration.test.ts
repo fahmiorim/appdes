@@ -103,8 +103,14 @@ async function sisipkanLegacy(sql: string, paramsLegacy: unknown[]): Promise<num
   }
 }
 
-async function hitungTautan(): Promise<number> {
-  const [row] = await db.select({ nilai: count() }).from(dtksRefLampiran);
+// Dibatasi ke desa uji: suite integration lain berjalan paralel pada database
+// yang sama dan juga menulis `dtks_ref_lampiran`, sehingga hitungan global
+// membuat assertion bergantung pada jadwal test file lain.
+async function hitungTautan(villageId: number): Promise<number> {
+  const [row] = await db
+    .select({ nilai: count() })
+    .from(dtksRefLampiran)
+    .where(eq(dtksRefLampiran.villageId, villageId));
   return Number(row?.nilai ?? 0);
 }
 
@@ -417,23 +423,23 @@ describe("B2 DTKS daftar RTM dan lampiran", () => {
 
   it("menolak tautan lampiran lintas desa tanpa menulis relasi", async () => {
     const { desaA, desaB, dtksA, dtksB, lampiranA, lampiranB } = dataUji();
-    const sebelum = await hitungTautan();
+    const sebelum = await hitungTautan(desaA);
 
     await expect(tautkanLampiran(desaA, dtksA, lampiranB)).rejects.toThrow("Lampiran");
     await expect(tautkanLampiran(desaA, dtksB, lampiranA)).rejects.toThrow("DTKS");
     await expect(tautkanLampiran(desaB, dtksA, lampiranB)).rejects.toThrow("DTKS");
 
-    expect(await hitungTautan()).toBe(sebelum);
+    expect(await hitungTautan(desaA)).toBe(sebelum);
   });
 
   it("menolak pelepasan lampiran lintas desa dan tidak menghapus relasi desa lain", async () => {
     const { desaA, dtksA, lampiranA, lampiranB } = dataUji();
 
     await expect(lepasLampiran(desaA, dtksA, lampiranB)).rejects.toThrow("Lampiran");
-    expect(await hitungTautan()).toBe(2);
+    expect(await hitungTautan(desaA)).toBe(2);
 
     await lepasLampiran(desaA, dtksA, lampiranA);
-    expect(await hitungTautan()).toBe(1);
+    expect(await hitungTautan(desaA)).toBe(1);
   });
 });
 
