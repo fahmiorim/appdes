@@ -48,17 +48,19 @@ Migration melakukan DDL `ALTER TABLE` untuk lima FK; MySQL harus memeriksa data 
   - `src/features/kelompok/infrastructure/kelompok-tenant-isolation.integration.test.ts`
   - `src/features/bantuan/integrasi-warga.test.ts`
   - `src/features/pesan-warga/integrasi-pesan-warga.test.ts`
-  - Hasil final: **6 test files passed, 23 tests passed**, termasuk uji guard migration dengan database terisolasi yang dibuat dan dibuang oleh test.
+  - Hasil implementasi awal: **6 test files passed, 23 tests passed**, termasuk uji guard migration dengan database terisolasi yang dibuat dan dibuang oleh test.
+  - Setelah CI menunjukkan test inventaris `src/db/tenant-composite-fk.integration.test.ts` masih membandingkan daftar lama 33 FK, ekspektasinya diperbarui untuk lima FK Batch 1. Test tersebut diulang secara terfokus dan lulus: **1 file, 10 tests passed**.
 - **PASS** — `git diff --check`
-- **SKIPPED** — full unit suite dan full integration suite: perubahan dibatasi pada constraint/schema dan focused integration suite telah dijalankan.
-- **SKIPPED** — build produksi dan lint seluruh repository: tidak diperlukan untuk migration/schema terfokus; typecheck dan lint semua file TS terdampak dijalankan.
+- **PASS di CI SHA awal** — job full unit/quality (`typecheck`, repository lint, format check, unit suite) lulus. Full unit suite tidak diulang lokal setelah fix test-only ini.
+- **SKIPPED** — build produksi. Lint seluruh repository termasuk dalam job unit/quality CI pada SHA awal dan lulus; lint test yang diperbarui dijalankan lagi secara lokal.
 
 Percobaan awal menemukan dua masalah yang diperbaiki sebelum hasil final: pesan guard terlalu panjang untuk kolom `varchar(64)`, dan fixture kelompok lintas tenant tertolak oleh constraint baru. Pesan dipendekkan; fixture legacy tetap diuji melalui koneksi test terjaga dengan `FOREIGN_KEY_CHECKS=0`, tanpa mengubah assertion repository. Suite final diulang setelah perbaikan dan lulus.
 
 ## Keterbatasan dan status penyerahan
 
 - Preflight test menggunakan fixture sintetis pada MySQL 8 disposable, bukan salinan data tenant bersama/production. Data legacy nyata belum diperiksa.
-- Build produksi, full unit suite, dan seluruh integration suite tidak dijalankan.
-- Task tidak membuat PR, tidak merge, dan tidak deploy.
+- Full integration suite CI pada SHA awal gagal pada `src/db/tenant-composite-fk.integration.test.ts`: ekspektasi daftar constraint belum memuat lima FK baru. Test tersebut diperbarui dan lulus secara terfokus; hasil CI untuk commit perbaikan menyusul.
+- Build produksi tidak dijalankan.
+- PR #36 dibuat; belum merge dan tidak ada deployment.
 
-**Kesimpulan:** implementasi dan focused verification lulus pada database test MySQL 8. Siap untuk review maintainer setelah pemeriksaan ulang diff dan pengambilan keputusan deployment/preflight data aktual.
+**Kesimpulan:** implementasi dan focused verification lulus pada database test MySQL 8. Perbaikan assertion untuk daftar FK telah dibuat; tunggu hasil CI PR #36 untuk SHA terbaru sebelum menyatakan quality gate penuh lulus. Deployment tetap memerlukan preflight data aktual yang disetujui.
