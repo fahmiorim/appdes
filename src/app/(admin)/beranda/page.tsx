@@ -11,10 +11,8 @@ export const metadata: Metadata = {
 
 export default async function AdminHomePage() {
   const user = await verifySession();
-  const village =
-    user.villageId === null ? null : await getNamaDesaUseCase(user.villageId);
-  const stats =
-    user.villageId === null ? null : await dashboardStats(user.villageId);
+  const village = user.villageId === null ? null : await getNamaDesaUseCase(user.villageId);
+  const stats = user.villageId === null ? null : await dashboardStats(user.villageId);
 
   return (
     <>
@@ -37,9 +35,7 @@ export default async function AdminHomePage() {
             <div className="stat-card-value">
               {stats.residents.toLocaleString("id-ID")}
             </div>
-            <div className="stat-card-note">
-              Data penduduk terdaftar di desa
-            </div>
+            <div className="stat-card-note">Data penduduk terdaftar di desa</div>
           </Card>
           <Card>
             <div className="stat-card-label">Kartu keluarga</div>
@@ -60,8 +56,8 @@ export default async function AdminHomePage() {
         <section className="dashboard-section">
           <h2>Area platform</h2>
           <p>
-            Akun platform terdeteksi. Dashboard pengelolaan tenant akan dibuat
-            pada tahap Super Admin; data desa tidak ditampilkan di area ini.
+            Akun platform terdeteksi. Dashboard pengelolaan tenant akan dibuat pada tahap Super
+            Admin; data desa tidak ditampilkan di area ini.
           </p>
         </section>
       )}
@@ -69,20 +65,13 @@ export default async function AdminHomePage() {
       <section className="dashboard-section">
         <h2>Mulai bekerja</h2>
         <p>
-          Fondasi dashboard sudah aktif. Halaman operasional akan dibuka
-          bertahap dengan pemeriksaan sesi, izin, dan isolasi desa pada sisi
-          server.
+          Fondasi dashboard sudah aktif. Halaman operasional akan dibuka bertahap dengan pemeriksaan
+          sesi, izin, dan isolasi desa pada sisi server.
         </p>
         <div className="quick-links">
-          <span className="button button-secondary">
-            Data penduduk · segera hadir
-          </span>
-          <span className="button button-secondary">
-            Persuratan · segera hadir
-          </span>
-          <span className="button button-secondary">
-            Inventaris · segera hadir
-          </span>
+          <span className="button button-secondary">Data penduduk · segera hadir</span>
+          <span className="button button-secondary">Persuratan · segera hadir</span>
+          <span className="button button-secondary">Inventaris · segera hadir</span>
         </div>
       </section>
     </>
