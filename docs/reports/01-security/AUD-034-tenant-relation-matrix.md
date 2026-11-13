@@ -219,6 +219,6 @@ Batch 4A menambahkan composite FK dengan `ON DELETE CASCADE` pada enam relasi di
 
 Setiap parent memperoleh `UNIQUE (village_id, id)`; child memperoleh composite index dan composite FK. `galeri_foto.album_id` tetap nullable sehingga foto mandiri tidak berubah perilakunya. Preflight migration memeriksa orphan dan cross-tenant sebelum mengganti constraint; tidak ada backfill atau mutasi data.
 
-Implementasi dan integration test tercatat pada `AUD-034-batch-4a-cascade-composite-fk.md`. Sampai CI PR selesai, statusnya **implemented / pending verification**, bukan dinyatakan merged atau production-ready.
+Implementasi dan integration test tercatat pada `AUD-034-batch-4a-cascade-composite-fk.md`. CI PR #40 lulus (192 file unit / 1.720 tes dan 32 file integrasi / 195 tes MySQL 8). Status batch ini **verified in CI / awaiting review and merge**; belum merged dan belum production-ready.
 
 **Sisa Matriks B2:** 16 relasi (di luar relasi `SET NULL`, user/platform, dan tabel anak tanpa `village_id`). Issue #34 tetap terbuka.
