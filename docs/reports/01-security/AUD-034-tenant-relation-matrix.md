@@ -3,19 +3,22 @@
 | Item | Nilai |
 | --- | --- |
 | Task | Issue #34 — audit lanjutan relasi tenant-bound (tahap inventaris) |
-| Branch | `task/AUD-034-tenant-relation-audit` |
-| Base commit | `343ef35a7858303eb82afc69c8caca7848a1a8e7` (`origin/main`) |
+| Branch | `task/AUD-034-tenant-relation-audit` (baseline) → `task/AUD-034-batch-3-tenant-hardening` (revisi) |
+| Base commit | `343ef35a7858303eb82afc69c8caca7848a1a8e7` (baseline) → `de1bf1be98abf664b01d01f00308b67f404c6997` (revisi Batch 3) |
 | Tanggal | 14 November 2026 |
-| Sifat | Read-only: tidak ada perubahan kode, schema, migration, atau data |
+| Sifat | Baseline read-only; revisi Batch 3 memperbarui status setelah PR #36, #37, dan migration `0005` |
+| Migration terakhir tercakup | `0005_b3_inventaris_composite_fk.sql` |
 
 ## 1. Ringkasan
 
 - **124 tabel tenant-scoped** memiliki `village_id`; **23 tabel** tidak memilikinya.
-- **11 tabel** sudah memiliki `UNIQUE (village_id, id)` sehingga bisa menjadi parent composite FK.
+- **12 tabel** sudah memiliki `UNIQUE (village_id, id)` sehingga bisa menjadi parent composite FK (meningkat dari 11 setelah `inventaris` pada `0005`).
 - **122 dari 124** tabel tenant sudah memiliki minimal satu composite FK.
-- **52 relasi** child→parent yang keduanya tenant-scoped masih memakai FK single-column:
-  - **13 relasi** parent-nya sudah siap (unique key tersedia),
-  - **39 relasi** memerlukan unique key parent baru, dan **16 di antaranya** menunjuk `users` (`created_by`/`actor_id`) yang bukan relasi tenant-bound.
+- **52 relasi** child→parent yang keduanya tenant-scoped memakai FK single-column pada baseline `343ef35`. Batch 1 (PR #36) menutup 5 relasi `resident_id`, Batch 3 menutup 1 relasi inventaris, sehingga **46 relasi** masih terbuka:
+  - **7 relasi** ber-`ON DELETE SET NULL` yang menunggu keputusan desain,
+  - **1 relasi** `letter_number_archive.letter_id`,
+  - **22 relasi** pada Matriks B2 yang parent-nya belum punya unique key, dan
+  - **16 relasi** menunjuk `users` (`created_by`/`actor_id`) yang bukan relasi tenant-bound.
 - **23 tabel non-tenant** diklasifikasikan: 10 tabel referensi global/platform, 6 tabel auth, 3 tabel preferensi per-user, dan 4 tabel anak tenant yang tidak membawa `village_id`.
 - Dua tabel tenant tanpa composite FK sama sekali: `keuangan_jurnal`, `keuangan_saldo_bank` (hanya berelasi ke `villages`).
 
@@ -42,14 +45,14 @@ Analisis bersifat statis; tidak ada query yang dijalankan ke database.
 
 ## 3. Parent yang sudah siap untuk composite FK
 
-`UNIQUE (village_id, id)` tersedia pada 11 tabel:
+`UNIQUE (village_id, id)` tersedia pada 12 tabel:
 
 ```
-dtks, dtks_lampiran, families, kia, letter_types, letters,
+dtks, dtks_lampiran, families, inventaris, kia, letter_types, letters,
 posyandu, regions, residents, rtm, suplemen
 ```
 
-Tabel lain yang menerima composite FK saat ini hanya menunjuk ke salah satu dari 11 parent tersebut.
+`inventaris` ditambahkan oleh `0005` khusus agar `inventaris_mutasi` dapat memakai composite FK. Tabel lain yang menerima composite FK saat ini hanya menunjuk ke salah satu dari 12 parent tersebut.
 
 ## 4. Matriks A — relasi yang sudah DB-enforced
 
@@ -63,10 +66,13 @@ Tabel lain yang menerima composite FK saat ini hanya menunjuk ke salah satu dari
 | Bantuan | `bantuan_program`, `bantuan_peserta` | `0003`: composite FK ke `residents`, `families`, `rtm`, `kelompok` |
 | Keluarga/RTM | `keluarga`, `rumah_tangga` | PR #29/#30: region guard + composite FK wilayah |
 | Kelompok | `kelompok`, `kelompok_anggota` | PR #23: composite FK kelompok→desa |
+| Inventaris | `inventaris`, `inventaris_mutasi` | `0005` (Batch 3): unique parent `inventaris (village_id, id)` + composite FK `inventaris_mutasi (village_id, inventaris_id)` cascade |
 
 ## 5. Matriks B1 — 13 relasi siap composite FK
 
 Parent sudah memiliki `UNIQUE (village_id, id)`, sehingga hanya perlu migrasi pada tabel child.
+
+Status: lima relasi `ON DELETE cascade` di bawah (`dokumen_warga`, `kehadiran_izin`, `kelompok_anggota`, `verifikasi_kontak`, `warga_pesan`) **sudah** memakai composite FK sejak `0004` (Batch 1, PR #36). Delapan relasi `SET NULL` lainnya tetap single-column dan dijaga di application layer.
 
 | Child | Kolom | Parent | `ON DELETE` saat ini | Catatan |
 | --- | --- | --- | --- | --- |
@@ -109,8 +115,8 @@ Rekomendasi: opsi 1 untuk `letter_number_archive` dan `notifikasi_terkirim`, sed
 | `galeri_album` | `galeri_foto.album_id` | 1 |
 | `incoming_letters` | `incoming_letter_dispositions.incoming_letter_id` | 1 |
 | `letter_classifications` | `incoming_letters`, `letter_dinas`, `letter_types`, `outgoing_letters` | 4 |
-| `inventaris_kategori` | `inventaris.kategori_id` | 1 |
-| `inventaris` | `inventaris_mutasi.inventaris_id` | 1 |
+| `inventaris_kategori` | `inventaris.kategori_id` | 1 — **blocker semantik** (`SET NULL`, `village_id` NOT NULL); Batch 3 menjaganya di application layer |
+| `inventaris` | `inventaris_mutasi.inventaris_id` | 1 — **selesai** Batch 3 (`0005`, composite FK cascade) |
 | `kelompok_master` | `kelompok.category_id` | 1 |
 | `kelompok` | `kelompok_anggota.kelompok_id` | 1 |
 | `lapak` | `lapak_produk.lapak_id` | 1 |
@@ -119,7 +125,7 @@ Rekomendasi: opsi 1 untuk `letter_number_archive` dan `notifikasi_terkirim`, sed
 | `jabatan_perangkat` | `perangkat_desa.jabatan_id` | 1 |
 | `roles` | `users.role_id` | 1 |
 
-Total 23 relasi. Sisanya (16 relasi) menunjuk `users` melalui `created_by`/`actor_id` dan **bukan** relasi tenant-bound: aktor bisa berupa platform user dengan `village_id = null`.
+Total 23 relasi pada baseline; **22 masih terbuka** setelah `0005` menutup `inventaris_mutasi.inventaris_id`. Sisanya (16 relasi) menunjuk `users` melalui `created_by`/`actor_id` dan **bukan** relasi tenant-bound: aktor bisa berupa platform user dengan `village_id = null`.
 
 ## 7. Matriks C — 23 tabel tanpa `village_id`
 
@@ -136,9 +142,11 @@ Empat tabel anak pada baris terakhir tidak dapat diberi composite FK tanpa menam
 
 | Temuan | Bukti | Status |
 | --- | --- | --- |
-| `addAnggotaGrupUseCase` menerima `kontakId` dari input tanpa memverifikasi desa kontak | `src/features/kontak/application/use-cases.ts:104-113`, `src/features/kontak/infrastructure/kontak-repository.ts:72-76` | **belum aman** — kontak desa lain bisa ditautkan |
-| `createKontakUseCase` menerima `residentId` dari input | `src/features/kontak/application/use-cases.ts:73`, `src/db/schema/kontak.ts:22` | **belum aman** — perlu lookup resident per `villageId` |
-| Rekap kehadiran melakukan join `residents` tanpa predikat desa | `src/features/kehadiran/infrastructure/kehadiran-repository.ts:119-120` | **belum aman** — NIK desa lain bisa muncul bila data silang ada |
+| `addAnggotaGrupUseCase` menerima `kontakId` dari input tanpa memverifikasi desa kontak | `src/features/kontak/application/use-cases.ts:104-113`, `src/features/kontak/infrastructure/kontak-repository.ts:72-76` | **diperbaiki Batch 2** (PR #37) + test lintas desa |
+| `createKontakUseCase` menerima `residentId` dari input | `src/features/kontak/application/use-cases.ts:73`, `src/db/schema/kontak.ts:22` | **diperbaiki Batch 2** (PR #37) + test lintas desa |
+| Rekap kehadiran melakukan join `residents` tanpa predikat desa | `src/features/kehadiran/infrastructure/kehadiran-repository.ts:119-120` | **diperbaiki Batch 2** (PR #37) — join dibatasi `village_id` |
+| `listInventaris` join kategori & `listMutasi` join inventaris tanpa predikat desa | `src/features/inventaris/infrastructure/inventaris-repository.ts` | **diperbaiki Batch 3** — kedua join dibatasi desa |
+| `saveInventaris` meneruskan `kategoriId` mentah | `src/features/inventaris/application/inventaris-use-cases.ts` | **diperbaiki Batch 3** — lookup kategori per desa + pesan seragam |
 | `createLapak`/`updateLapak` menerima `residentId` mentah | `src/features/lapak/infrastructure/lapak-repository.ts:100-115` | belum diverifikasi lebih lanjut (modul belum punya route aktif) |
 | Kepemilikan role lintas tenant | `src/features/rbac/application/authorization.ts:40-41`, `src/features/rbac/application/grup-use-cases.ts:119` | **app-enforced** |
 | Unggah dokumen warga memakai `residentId` dari sesi | `src/features/layanan-mandiri/application/warga-use-cases.ts:162-170` | **app-enforced** |
@@ -155,6 +163,8 @@ Empat tabel anak pada baris terakhir tidak dapat diberi composite FK tanpa menam
 | 5 | `survey_soal`/`responden`/`jawaban`, `pembangunan_dokumentasi` | tinggi; butuh kolom baru + backfill, harus diputuskan maintainer |
 
 Setiap batch memakai migration baru; tidak ada migrasi merged yang diubah.
+
+Status setelah Batch 3: Batch 1 (PR #36) dan Batch 2 (PR #37) sudah merged; Batch 3 menutup celah aplikasi inventaris + composite FK `inventaris_mutasi` (`0005`). Isi baris "Batch 3" lama (`letter_number_archive`, `notifikasi_terkirim`: `SET NULL` → `RESTRICT`) **belum dikerjakan** karena mengubah perilaku hapus dan perlu persetujuan maintainer; usulan pindah ke Batch 4 bersama relasi Matriks B2.
 
 ## 10. Preflight read-only yang direncanakan
 
@@ -180,7 +190,7 @@ Hasil preflight menentukan apakah migration `ADD CONSTRAINT` bisa langsung dijal
 
 ## 12. Blocker dan keputusan yang dibutuhkan
 
-1. **`ON DELETE SET NULL` vs composite FK** — perlu keputusan untuk `kontak`, `lapak`, `pendapat`, `family_member_logs`, `users`, `letter_number_archive`, `notifikasi_terkirim`.
+1. **`ON DELETE SET NULL` vs composite FK** — perlu keputusan untuk `kontak`, `lapak`, `pendapat`, `family_member_logs`, `users`, `letter_number_archive`, `notifikasi_terkirim`, dan `inventaris_kategori` (Batch 3 memilih mempertahankan FK single-column + validasi application layer untuk kategori inventaris).
 2. **Platform user** — `users.village_id` nullable; composite FK `users.resident_id` hanya bisa diberlakukan bila baris platform dikecualikan, yang tidak didukung MySQL partial index.
 3. **Tabel anak survey/pembangunan** — perlu penambahan `village_id` + backfill. Issue melarang backfill otomatis, sehingga butuh persetujuan eksplisit.
 4. **Data legacy invalid** — belum diukur; preflight read-only harus dijalankan pada database uji berisi salinan data sebelum migration dinyatakan aman.
@@ -189,5 +199,6 @@ Hasil preflight menentukan apakah migration `ADD CONSTRAINT` bisa langsung dijal
 
 - Inventaris berbasis pembacaan migrasi dan kode, bukan eksekusi query.
 - Modul yang belum punya route aktif (mis. `lapak`) diverifikasi sebatas repository.
-- Angka relasi dapat berubah bila ada migration baru; laporan ini terikat pada `343ef35`.
-- Tidak ada perubahan kode/schema pada tahap ini; implementasi menunggu review matriks dan keputusan blocker.
+- Angka relasi dapat berubah bila ada migration baru; revisi ini terikat pada `de1bf1be` + `0005`.
+- Baseline tidak mengubah kode/schema. Batch 3 mengubah schema inventaris, repository, use case, dan menambah test; rinciannya ada di `AUD-034-batch-3-application-isolation.md`.
+- Status "diperbaiki Batch 2" mengacu pada laporan `AUD-034-batch-2-application-isolation.md`, bukan verifikasi ulang menyeluruh di Batch 3.
