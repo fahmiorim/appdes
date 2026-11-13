@@ -2,12 +2,14 @@ import {
   boolean,
   date,
   decimal,
+  foreignKey,
   index,
   int,
   mysqlEnum,
   mysqlTable,
   text,
   timestamp,
+  uniqueIndex,
   varchar,
 } from "drizzle-orm/mysql-core";
 
@@ -96,6 +98,7 @@ export const inventaris = mysqlTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
+    uniqueIndex("inventaris_village_id_uq").on(table.villageId, table.id),
     index("inv_village_kategori").on(table.villageId, table.kategoriId),
     index("inv_village_no").on(table.villageId, table.nomorInventaris),
   ],
@@ -108,9 +111,12 @@ export const inventarisMutasi = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    inventarisId: int("inventaris_id")
-      .notNull()
-      .references(() => inventaris.id, { onDelete: "cascade" }),
+    /**
+     * Barang yang dimutasi. FK-nya composite bersama `village_id` (lihat
+     * `inventaris_mutasi_inventaris_tenant_fk`), sehingga mutasi tidak dapat
+     * menunjuk inventaris desa lain.
+     */
+    inventarisId: int("inventaris_id").notNull(),
     jenis: mysqlEnum("jenis", MUTASI_JENIS).notNull(),
     status: mysqlEnum("status", MUTASI_STATUS).notNull().default("diajukan"),
     tanggalMutasi: date("tanggal_mutasi", { mode: "string" }).notNull(),
@@ -138,6 +144,11 @@ export const inventarisMutasi = mysqlTable(
   (table) => [
     index("inv_mut_village_inv").on(table.villageId, table.inventarisId),
     index("inv_mut_village_status").on(table.villageId, table.status),
+    foreignKey({
+      name: "inventaris_mutasi_inventaris_tenant_fk",
+      columns: [table.villageId, table.inventarisId],
+      foreignColumns: [inventaris.villageId, inventaris.id],
+    }).onDelete("cascade"),
   ],
 );
 
