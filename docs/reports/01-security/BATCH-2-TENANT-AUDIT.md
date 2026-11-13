@@ -1,100 +1,128 @@
-# Batch 2 — Audit Isolasi Tenant (Read-only)
+# Batch 2 — Audit Isolasi Tenant (Revisi terhadap `main` Terbaru)
 
 - **Repository:** `fahmiorim/appdes`
 - **Base branch:** `main`
-- **Base commit:** `615712b87a76798cb85a9f5cc26b7b03483cecf1`
+- **Base commit audit ulang:** `a80be9ff2aed2740663a11db9d2f097d23f50094`
 - **Branch audit:** `task/AUD-021-batch2-tenant-audit`
-- **Tanggal:** 12 November 2026
-- **Mode:** audit source code dan schema; belum ada perubahan aplikasi atau database.
-- **Batasan:** database development existing, termasuk `desa_dev`, tidak diakses atau diubah.
+- **Tanggal audit awal:** 12 November 2026
+- **Tanggal audit ulang:** 14 November 2026
+- **Mode:** audit statis read-only terhadap source code dan schema `main`; tidak ada
+  perubahan aplikasi, schema, migration, atau database.
+- **Batasan:** database development (`desa_dev`) tidak diakses atau diubah; tidak
+  ada test runtime yang dijalankan pada putaran audit ini.
 
-## 1. Tujuan
+## 0. Mengapa laporan ini direvisi
 
-Melanjutkan AUD-002/AUD-003/AUD-007 dengan memetakan celah isolasi antar-desa yang masih tersisa. Sasaran utamanya adalah memastikan data tenant A tidak dapat dibaca, dihitung, ditautkan, diubah, atau dihapus melalui jalur tenant B, termasuk bila terdapat baris legacy yang relasinya tidak konsisten.
+Laporan versi pertama disusun terhadap base `615712b`. Setelah itu `main` menerima
+rangkaian PR perbaikan tenant: #11 dan #12 (DTKS & Suplemen), #13–#18 (hardening
+Bantuan, Kelompok, Keluarga, Rumah Tangga, Statistik), #23, #25, dan #27
+(composite FK). Akibatnya banyak temuan pada laporan awal sudah tidak sesuai kode.
 
-Audit ini membedakan tiga lapisan:
-1. **Database integrity:** composite foreign key dan unique parent key.
-2. **Repository/query isolation:** predicate tenant pada JOIN, subquery, aggregate, update, dan delete.
-3. **Application authorization:** user, permission, dan tenant context pada setiap entrypoint.
+Revisi ini memeriksa ulang setiap temuan terhadap `a80be9f` dan menandainya:
 
-## 2. Ringkasan hasil
+- **Sudah diperbaiki** — predicate/composite FK sudah ada; disertai bukti.
+- **False positive** — klaim awal tidak sesuai kode, bahkan pada saat itu.
+  Setelah diperiksa ulang terhadap base `615712b`, tidak ada temuan yang masuk
+  kategori ini: seluruh klaim awal memang sesuai kode saat itu.
+- **Masih terbuka** — belum ada perbaikan pada `main`.
 
-### Temuan prioritas tinggi — DTKS
+Temuan kode dipisahkan dari rekomendasi hardening. Tidak ada temuan yang
+dinyatakan sebagai kerentanan aktif bila predicate tenant sudah ada.
 
-| ID | Lokasi | Temuan | Dampak potensial |
+## 1. Ringkasan status
+
+| Status | Jumlah |
+|---|---|
+| Sudah diperbaiki | 11 |
+| False positive | 0 |
+| Masih terbuka (kode/skema) | 1 |
+| Rekomendasi hardening (bukan temuan) | 4 |
+
+Tidak ada temuan kode terbuka pada DTKS, Suplemen, Bantuan, Kelompok, Keluarga,
+Rumah Tangga, dan Statistik. Yang tersisa adalah pekerjaan skema/test untuk modul
+di luar cakupan putaran ini.
+
+## 2. DTKS
+
+| ID | Lokasi | Status | Bukti pada `a80be9f` |
 |---|---|---|---|
-| D2-01 | `dtks-repository.ts:listDtks` | JOIN `rtm`, `families`, dan `regions` hanya berdasarkan ID. JOIN kepala RTM ke `residents` juga belum menyertakan tenant. | Baris legacy dengan relasi lintas desa dapat memengaruhi label, filter dusun, atau identitas kepala RTM. |
-| D2-02 | `dtks-repository.ts:listDtksAnggota` | JOIN `dtks_anggota` ke `residents` hanya berdasarkan `pendudukId`; WHERE membatasi tenant pada tabel anak saja. | Identitas penduduk tenant lain dapat tampil pada anggota DTKS legacy yang tidak konsisten. |
-| D2-03 | `dtks-repository.ts:listDtksEkspor` | JOIN RTM, wilayah, KK, dan alias kepala RTM belum semuanya membatasi tenant. Agregat anggota mengambil baris berdasarkan `dtksId` saja. | Ekspor/rekap dapat membaca label atau jumlah dari relasi yang tidak cocok tenant. |
-| D2-04 | `dtks-repository.ts:listLampiranTerpasang` | Query memfilter tenant DTKS, tetapi tidak memastikan `dtksLampiran.villageId` sama dengan tenant DTKS. | Lampiran tenant lain dapat ikut ditampilkan jika link legacy lintas desa ada. |
-| D2-05 | `dtks-repository.ts:tautkanLampiran/lepasLampiran` | Parameter `villageId` tidak digunakan (`void villageId`); operasi link hanya menggunakan ID DTKS dan lampiran. | Validasi tenant bergantung pada caller dan tidak ditegakkan pada repository. |
-| D2-06 | `schema/dtks.ts` | FK `dtks.rtm_id`, `dtks.keluarga_id`, `dtks_anggota.dtks_id`, dan `dtks_anggota.penduduk_id` masih single-column. | Database belum menolak semua referensi lintas desa untuk relasi DTKS. |
-| D2-07 | `schema/dtks.ts:dtks_ref_lampiran` | Tabel penghubung tidak membawa `village_id`. | Tidak bisa langsung memakai composite FK tenant tanpa perubahan struktur/backfill atau strategi validasi lain. |
+| D2-01 | `dtks-repository.ts:listDtks` | **Sudah diperbaiki** (PR #11) | JOIN `rumahTangga`, `families`, dan `regions` memakai `and(eq(<tabel>.id, ...), eq(<tabel>.villageId, villageId))`; kepala RTM diambil dengan `eq(residents.villageId, villageId)`; pencarian nama/NIK memakai `EXISTS` yang juga menyertakan `residents.villageId`. |
+| D2-02 | `dtks-repository.ts:listDtksAnggota` | **Sudah diperbaiki** (PR #11) | `innerJoin(dtks, ... eq(dtks.villageId, villageId))` dan `innerJoin(residents, ... eq(residents.villageId, villageId))`; WHERE menyertakan `dtksAnggota.villageId`. |
+| D2-03 | `dtks-repository.ts:listDtksEkspor` | **Sudah diperbaiki** (PR #11) | JOIN RTM, wilayah, KK, dan alias kepala RTM semuanya tenant-scoped; agregat anggota memakai `innerJoin` ke `dtks` dengan `villageId` plus filter `dtksAnggota.villageId`. |
+| D2-04 | `dtks-repository.ts:listLampiranTerpasang` | **Sudah diperbaiki** (PR #12) | JOIN `dtksRefLampiran` → `dtksLampiran` menyertakan `eq(dtksRefLampiran.villageId, dtksLampiran.villageId)`, dan JOIN ke `dtks` menyertakan `eq(dtksRefLampiran.villageId, dtks.villageId)`. |
+| D2-05 | `dtks-repository.ts:tautkanLampiran/lepasLampiran` | **Sudah diperbaiki** (PR #12) | `villageId` tidak lagi `void`; `pastikanLampiranDanDtksSatuDesa()` memvalidasi DTKS dan lampiran ke desa aktif sebelum insert/delete, dan operasi tulis memakai `dtksRefLampiran.villageId`. |
+| D2-06 | `schema/dtks.ts` | **Sudah diperbaiki** (PR #12) | Composite FK + unique parent key: `dtks (village_id, rtm_id)`, `dtks (village_id, keluarga_id)`, `dtks_anggota (village_id, dtks_id)`, `dtks_anggota (village_id, penduduk_id)`; diterapkan di migrasi `0002_b2_dtks_suplemen_composite_fk.sql`. |
+| D2-07 | `schema/dtks.ts:dtks_ref_lampiran` | **Sudah diperbaiki** (PR #12) | Pada base `615712b` tabel ini memang hanya punya `dtks_id`/`lampiran_id` (temuan valid). Migrasi `0002` kini menambahkan `village_id` (baris 160–167, `NOT NULL` + FK ke `villages`), index `(village_id, dtks_id)`/`(village_id, lampiran_id)`, dan composite FK ke `dtks` serta `dtks_lampiran` (baris 201–205). |
 
-### Temuan prioritas tinggi — Suplemen
+## 3. Suplemen
 
-| ID | Lokasi | Temuan | Dampak potensial |
+| ID | Lokasi | Status | Bukti pada `a80be9f` |
 |---|---|---|---|
-| S2-01 | `suplemen-repository.ts:listSuplemen` | Subquery `terdataCount` menghitung berdasarkan `id_suplemen` saja, tidak mengikat `village_id` dengan parent suplemen. | Jumlah data tenant lain berpotensi masuk hitungan jika terdapat relasi legacy lintas tenant. |
-| S2-02 | `suplemen-repository.ts:listSuplemenTerdata` | JOIN ke `residents` dan `families` hanya berdasarkan ID. | Nama/NIK/nomor KK dari tenant lain berpotensi tampil pada label terdata. |
-| S2-03 | `suplemen-publik-repository.ts:getSuplemenPublikBySlug` | Pengambilan kolom isian menggunakan `suplemenId` saja, tanpa predicate `villageId`. | Metadata kolom publik dapat terpengaruh oleh baris terdata tenant lain yang menunjuk ID suplemen sama. |
-| S2-04 | `schema/suplemen.ts` | FK `suplemen_terdata.id_suplemen`, `penduduk_id`, dan `keluarga_id` masih single-column. | Database belum memastikan semua referensi berasal dari desa yang sama. |
-| S2-05 | `schema/suplemen.ts` | FK penduduk/keluarga menggunakan `SET NULL`; perubahan menjadi composite FK perlu desain cleanup yang mempertahankan perilaku penghapusan dan nilai nullable. | Perlu migrasi dan test delete terpisah, bukan sekadar mengganti definisi FK. |
+| S2-01 | `suplemen-repository.ts:listSuplemen` | **Sudah diperbaiki** (PR #11) | Subquery `terdataCount` kini berbunyi `... WHERE suplemen_terdata.id_suplemen = suplemen.id AND suplemen_terdata.village_id = ${villageId}` (baris 47). |
+| S2-02 | `suplemen-repository.ts:listSuplemenTerdata` | **Sudah diperbaiki** (PR #11) | `innerJoin` ke `suplemen` dengan `eq(suplemen.villageId, villageId)`; `leftJoin` ke `residents` dan `families` masing-masing dengan predicate `villageId`; WHERE memakai `suplemenTerdata.villageId`. ID referensi yang gagal di-resolve tidak dikembalikan ke pemanggil. |
+| S2-03 | `suplemen-publik-repository.ts:getSuplemenPublikBySlug` | **Sudah diperbaiki** (PR #11) | Query data terdata memakai `eq(suplemenTerdata.suplemenId, row.id)` **dan** `eq(suplemenTerdata.villageId, villageId)` (baris 72). |
+| S2-04 | `schema/suplemen.ts` | **Sudah diperbaiki** (PR #12) | Composite FK `(village_id, id_suplemen)`, `(village_id, penduduk_id)`, `(village_id, keluarga_id)`; unique key `suplemen_village_id_uq`. |
+| S2-05 | `schema/suplemen.ts` perilaku delete | **Sudah diperbaiki** (PR #12) | FK composite memakai `ON DELETE restrict` (bukan `SET NULL`, karena `village_id` bagian dari key); pelepasan referensi dilakukan transaksi aplikasi. Ini keputusan desain yang tercatat di schema dan migrasi. |
 
-### Temuan tambahan lintas modul
+## 4. Bantuan, Kelompok, Keluarga, Rumah Tangga, Statistik
 
-| Modul | Lokasi yang perlu ditangani | Temuan awal |
+| Modul | Status | Bukti pada `a80be9f` |
 |---|---|---|
-| Bantuan | `bantuan-repository.ts` | JOIN peserta ke penduduk/keluarga/RTM/kelompok dan wilayah belum konsisten menyertakan tenant predicate. `updateBantuanRow` dan `deleteBantuanRow` menulis berdasarkan ID saja setelah pemeriksaan scope di use case; repository sebaiknya tetap menerima dan menerapkan `villageId`. |
-| Kelompok | `kelompok-repository.ts` | JOIN anggota ke penduduk/kelompok/kategori belum konsisten tenant-scoped. Beberapa update/delete repository memakai ID saja setelah validasi use case. Perlu predicate tenant sebagai pertahanan berlapis. |
-| Keluarga | `keluarga-repository.ts` | JOIN kepala keluarga dan wilayah berdasarkan ID saja. Composite FK Batch 1 melindungi relasi region dan penduduk pada data baru, tetapi query tetap perlu aman untuk data legacy. |
-| Rumah Tangga | `rumah-tangga-repository.ts` | JOIN wilayah berdasarkan ID saja. Composite FK region sudah ada; tambahkan predicate tenant agar pembacaan legacy tetap terisolasi. |
-| Statistik | `statistik-repository.ts` | Beberapa JOIN wilayah/penduduk perlu diperiksa satu per satu terhadap predicate tenant dan parent scope. |
-| Autentikasi/RBAC | `dal.ts`, `rbac-repository.ts` | Gerbang utama mengambil user aktif dari DB dan memeriksa permission. Audit lanjutan perlu memeriksa seluruh entrypoint dan operasi pengelolaan role/module, bukan menyimpulkan aman hanya dari gerbang pusat. |
+| Bantuan | **Sudah diperbaiki** (#13, #25) | Seluruh JOIN peserta ke program, penduduk, KK, RTM, kelompok, dan wilayah memakai predicate `villageId`; `updateBantuan(villageId, id, ...)` dan `deleteBantuan(villageId, id)` membatasi dengan `village_id` (bukan lagi ID saja). |
+| Kelompok | **Sudah diperbaiki** (#14, #23) | JOIN anggota/penduduk/kategori tenant-scoped; `updateKelompok` memanggil `assertKategoriTenant`, `deleteKelompok` memakai `(village_id, id)`; query publik anggota memakai `kelompokAnggota.villageId`. |
+| Keluarga | **Sudah diperbaiki** (#15, #29) | JOIN kepala keluarga memakai `(family_id, village_id, relation)`; JOIN wilayah memakai `(families.region_id, regions.village_id = villageId)`; guard `validateKeluargaRegion` menolak `regionId` desa lain saat create/update. |
+| Rumah Tangga | **Sudah diperbaiki** (#16, #30) | JOIN wilayah memakai `(rumahTangga.regionId, regions.villageId)`; `validateRumahTanggaRegion` menolak wilayah desa lain. |
+| Statistik | **Sudah diperbaiki** (#17) | Seluruh JOIN `regions` pada laporan statistik memakai `and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId))`; JOIN bantuan peserta juga tenant-scoped. |
 
-## 3. Relasi deferred AUD-002
+## 5. Temuan yang masih terbuka
 
-Laporan AUD-002 sebelumnya mencatat 44 relasi single-column yang belum ditegakkan dengan composite FK. Kelompok utamanya:
-- Bantuan: `bantuan_peserta` ke program, penduduk, keluarga, RTM, dan kelompok.
-- DTKS: RTM, anggota DTKS, penduduk, dan keluarga.
-- Suplemen: parent suplemen, penduduk, dan keluarga.
-- Kelompok, inventaris, kehadiran, kontak, lapak, surat, notifikasi, GIS, Bumindes, galeri, dokumen warga, dan pemilihan.
-- Relasi `SET NULL` memerlukan keputusan cleanup/retensi data sebelum diubah menjadi `RESTRICT`.
-- `pembangunan_dokumentasi`, `dtks_ref_lampiran`, dan anak survei tidak membawa `village_id`; pendekatannya harus diputuskan berdasarkan parent dan kebutuhan query, bukan dipaksakan menjadi composite FK tanpa desain migrasi.
+| ID | Lokasi | Temuan | Catatan |
+|---|---|---|---|
+| B2-R1 | `src/db/schema/*` (modul di luar DTKS/Suplemen/Bantuan/Kesehatan/Surat/Permohonan/Mutasi/GIS/Keluarga/RTM) | Composite FK tenant belum ada untuk modul seperti inventaris, kehadiran, kontak, lapak, notifikasi, survey, bumindes, dokumen warga, dan pemilihan. | Ini pekerjaan **defense-in-depth skema**, bukan bukti kebocoran query. Query layer modul tersebut belum diaudit ulang pada putaran ini, jadi statusnya "belum diverifikasi", bukan "rentan". |
 
-Daftar relasi lengkap dan alasan deferred tetap tercatat pada `AUD-002-database-tenant-integrity.md`.
+Daftar 44 relasi deferred pada laporan AUD-002 tidak lagi akurat sebagai satu
+angka: sebagian sudah ditutup oleh #12, #23, #25, dan #27. Hitungan ulang relasi
+yang benar-benar tersisa perlu dilakukan bersama audit query modul terkait.
 
-## 4. Authorization dan tenant context
+## 6. Rekomendasi hardening (bukan temuan aktif)
 
-Pemeriksaan awal pada `src/lib/dal.ts` menunjukkan:
-- User aktif dan `villageId/roleId` dibaca ulang dari database, bukan hanya mengandalkan cookie sesi.
-- `requirePermission(resource, action)` memeriksa izin efektif.
-- Use case modul Bantuan yang diperiksa memanggil permission guard dan menyelesaikan `villageId` sebelum memanggil repository.
+1. **Audit entrypoint menyeluruh:** meski `dal.ts` sudah membaca user aktif,
+   status desa, dan permission dari database, setiap Server Action/Route Handler
+   baru tetap perlu diuji dengan ID milik desa lain (read/create/update/delete/export).
+2. **Rollout composite FK bertahap:** lanjutkan per modul dengan preflight data
+   lintas desa, backfill/cleanup, forward + rollback migration, dan test pada
+   database disposable.
+3. **Regression test lintas tenant** untuk modul yang belum punya: inventaris,
+   kehadiran, kontak, lapak, notifikasi, survey, bumindes, dokumen warga, pemilihan.
+4. **Cleanup data legacy:** baris lintas desa yang sudah terlanjur ada perlu
+   laporan preflight sebelum constraint baru dipaksakan.
 
-Hal ini merupakan fondasi yang baik, tetapi belum cukup untuk menyatakan semua entrypoint aman. Audit berikutnya harus memeriksa Server Action, Route Handler, Server Component, dan repository yang dapat dipanggil dari lebih dari satu jalur. Setiap operasi tulis harus menggunakan tenant context hasil sesi/host yang tervalidasi, bukan ID tenant dari input klien.
+## 7. Kondisi test saat ini
 
-## 5. Kesenjangan test
+Klaim lama "integration test DTKS/Suplemen belum terdaftar" sudah tidak berlaku.
+`vitest.integration.config.mts` pada `a80be9f` memuat:
 
-- Konfigurasi `vitest.integration.config.mts` saat ini belum mendaftarkan integration test khusus DTKS atau Suplemen.
-- Test domain dan test use case publik Suplemen yang ada belum membuktikan isolasi database dua desa.
-- Pola test integrasi AUD-003/AUD-007 sudah tersedia: database disposable, dua/lebih desa sintetis, baris legacy lintas tenant dibuat hanya melalui koneksi test terpisah, lalu diuji pada list/detail/export/count/write.
-- Test Batch 2 harus menggunakan `TEST_DATABASE_URL` dan guard database disposable. Jangan menyentuh `desa_dev` atau database development existing.
+- `src/db/b2-dtks-suplemen-composite-fk.integration.test.ts`
+- `src/features/penduduk/infrastructure/dtks-tenant-isolation.integration.test.ts`
+- `src/features/penduduk/infrastructure/suplemen-tenant-isolation.integration.test.ts`
+- ditambah test tenant isolation bantuan, kelompok, keluarga, rumah tangga,
+  statistik, RBAC, GIS, surat, dan permohonan.
 
-## 6. Urutan implementasi yang direkomendasikan
+Test tersebut tidak dijalankan pada putaran audit ini (read-only, tanpa database
+disposable di sesi ini). Statusnya terdaftar, bukan terverifikasi lulus.
 
-1. **B2-DTKS-QUERY:** perbaiki seluruh JOIN, EXISTS, aggregate, export, dan lampiran agar tenant-scoped; tambahkan regression test legacy cross-tenant.
-2. **B2-DTKS-DB:** tambahkan composite FK untuk relasi DTKS yang memiliki `village_id`; tambahkan unique parent key bila belum ada; desain khusus untuk `dtks_ref_lampiran`.
-3. **B2-SUPLEMEN-QUERY:** perbaiki subquery count, JOIN, detail publik, impor, dan seluruh jalur baca/tulis.
-4. **B2-SUPLEMEN-DB:** composite FK untuk parent suplemen, penduduk, dan keluarga; rancang perilaku delete/null secara eksplisit.
-5. **B2-CROSS-MODULE:** prioritaskan Bantuan dan Kelompok, lalu repository lain dari daftar 44 deferred.
-6. **B2-AUTH-REGRESSION:** audit entrypoint dan uji akses desa A terhadap ID desa B untuk read/create/update/delete/export.
+## 8. Keterbatasan
 
-Setiap task harus berupa perubahan terfokus, memiliki test positif dan negatif, dan tidak menggabungkan banyak modul dalam satu PR besar. Migration wajib memiliki preflight, forward, inverse/rollback, serta test pada database disposable yang baru.
+- Audit statis: tidak ada query yang dieksekusi terhadap MySQL.
+- Cakupan putaran ini adalah temuan laporan Batch 2 dan lima modul yang diminta
+  maintainer; modul lain belum diverifikasi ulang.
+- Tidak ada perubahan kode, schema, migration, atau database pada PR ini.
 
-## 7. Batasan dan status
+## 9. Kesimpulan
 
-- Audit ini membaca source code/schema pada `main` dan dokumen audit terdahulu.
-- Belum menjalankan test lokal atau integration test karena tidak ada akses ke workspace lokal dan database disposable milik developer pada sesi ini.
-- Belum ada perubahan kode aplikasi, schema, migration, atau database.
-- Branch ini hanya memuat laporan audit.
-- Tidak ada merge ke `main`.
+Dari 12 temuan pada laporan awal: **11 sudah diperbaiki** di `main` melalui PR
+#11–#18, #23, #25, #27, #29, dan #30, dan **tidak ada false positive** — seluruh
+klaim awal memang sesuai kode pada base `615712b`. Tidak ada temuan query
+terbuka pada modul yang diperiksa ulang. Sisa pekerjaan bersifat hardening skema
+dan test untuk modul di luar cakupan, bukan perbaikan kebocoran tenant yang
+sedang aktif.
