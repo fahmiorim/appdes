@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { accounts, roles, users, villageDomains, villages } from "@/db/schema";
+import { accounts, roles, sessions, users, villageDomains, villages } from "@/db/schema";
 import { conflict, notFound } from "@/lib/errors";
 
 /**
@@ -195,16 +195,19 @@ export async function resetAdminDesa(
   const admin = await findAdminDesa(villageId);
   if (!admin) throw conflict("Desa ini belum memiliki akun administrator.");
 
-  const hasil = await db
-    .update(accounts)
-    .set({ password: passwordHash })
-    .where(and(eq(accounts.userId, admin.id), eq(accounts.providerId, "credential")));
+  await db.transaction(async (tx) => {
+    const hasil = await tx
+      .update(accounts)
+      .set({ password: passwordHash })
+      .where(and(eq(accounts.userId, admin.id), eq(accounts.providerId, "credential")));
 
-  if (hasil[0].affectedRows === 0) {
-    throw conflict("Akun administrator tidak memiliki kredensial sandi.");
-  }
+    if (hasil[0].affectedRows === 0) {
+      throw conflict("Akun administrator tidak memiliki kredensial sandi.");
+    }
 
-  await db.update(users).set({ active: true }).where(eq(users.id, admin.id));
+    await tx.delete(sessions).where(eq(sessions.userId, admin.id));
+    await tx.update(users).set({ active: true }).where(eq(users.id, admin.id));
+  });
 
   return admin;
 }
