@@ -6,7 +6,7 @@
 | Base | `main` pada `3338364a45e4c8e0c4d6f1cf78c4b5286f3321a4` |
 | Migration | `0006_b4_cascade_relations_composite_fk.sql` |
 | Cakupan | 6 relasi tenant-bound dengan perilaku `ON DELETE CASCADE` |
-| Status | Implementasi di branch; menunggu CI dan review |
+| Status | CI lulus; siap review, belum merge |
 | Operasional | Tidak ada migration dijalankan pada development/production; tidak ada backfill atau perubahan data |
 
 ## 1. Relasi yang diperkuat
@@ -53,7 +53,7 @@ File `src/db/b4-cascade-relations-composite-fk.integration.test.ts` masuk ke kon
 - penghapusan parent menjalankan CASCADE pada child yang benar,
 - foto mandiri tetap ada setelah album lain dihapus.\n\nFile `src/db/b4-tenant-migration-guard.integration.test.ts` membuat database disposable tersendiri, menjalankan migrasi sampai `0005`, menyuntikkan satu orphan dan satu cross-tenant legacy row untuk masing-masing enam relasi, lalu membuktikan `0006` berhenti tanpa mengganti FK lama atau memasang unique parent key.
 
-Hasil final belum dinyatakan PASS sebelum workflow CI pada PR selesai.
+**CI PR #40 lulus:** 192 unit-test files / 1.720 unit tests, serta 32 integration-test files / 195 integration tests pada MySQL 8. Typecheck, lint, dan format check juga lulus.
 
 ## 5. File implementasi
 
@@ -73,6 +73,6 @@ Hasil final belum dinyatakan PASS sebelum workflow CI pada PR selesai.
 ## 6. Batasan dan langkah berikut
 
 - Batch ini menutup enam relasi CASCADE dari matriks audit; bukan seluruh AUD-034.
-- Migration hanya diuji melalui CI disposable database; belum boleh dijalankan ke database produksi.
-- Skenario migration guard disposable sudah ditambahkan pada `src/db/b4-tenant-migration-guard.integration.test.ts`: menyuntikkan orphan dan cross-tenant pada keenam relasi, memastikan migration gagal sebelum FK lama diganti. Hasil CI tetap harus diverifikasi.
+- Migration dan guard diuji melalui CI disposable database; belum boleh dijalankan ke database produksi.
+- Skenario migration guard disposable sudah ditambahkan pada `src/db/b4-tenant-migration-guard.integration.test.ts`: menyuntikkan orphan dan cross-tenant pada keenam relasi, memastikan migration gagal sebelum FK lama diganti. Skenario guard dan seluruh integration suite lulus pada CI MySQL 8.
 - Batch berikutnya melanjutkan relasi B2 lain yang membutuhkan unique parent key, setelah matriks diperbarui dan semantik delete diverifikasi.
