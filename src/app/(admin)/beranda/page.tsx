@@ -1,43 +1,19 @@
-import { count, eq } from "drizzle-orm";
 import type { Metadata } from "next";
 
 import { Card } from "@/components/ui/card";
-import { db } from "@/db";
-import { families, letters, residents, villages } from "@/db/schema";
+import { dashboardStats } from "@/features/dashboard/application/dashboard-use-cases";
+import { getNamaDesaUseCase } from "@/features/desa/application/use-cases";
 import { verifySession } from "@/lib/dal";
 
 export const metadata: Metadata = {
   title: "Beranda",
 };
 
-async function getDashboardStats(villageId: number) {
-  const [residentRows, familyRows, letterRows] = await Promise.all([
-    db.select({ total: count() }).from(residents).where(eq(residents.villageId, villageId)),
-    db.select({ total: count() }).from(families).where(eq(families.villageId, villageId)),
-    db.select({ total: count() }).from(letters).where(eq(letters.villageId, villageId)),
-  ]);
-
-  return {
-    residents: residentRows[0]?.total ?? 0,
-    families: familyRows[0]?.total ?? 0,
-    letters: letterRows[0]?.total ?? 0,
-  };
-}
-
 export default async function AdminHomePage() {
   const user = await verifySession();
   const village =
-    user.villageId === null
-      ? null
-      : (
-          await db
-            .select({ name: villages.name })
-            .from(villages)
-            .where(eq(villages.id, user.villageId))
-            .limit(1)
-        )[0];
-
-  const stats = user.villageId === null ? null : await getDashboardStats(user.villageId);
+    user.villageId === null ? null : await getNamaDesaUseCase(user.villageId);
+  const stats = user.villageId === null ? null : await dashboardStats(user.villageId);
 
   return (
     <>
@@ -46,8 +22,8 @@ export default async function AdminHomePage() {
           <span className="eyebrow">Ringkasan desa</span>
           <h1>Selamat datang, {user.name.split(" ")[0]}</h1>
           <p>
-            {village?.name
-              ? `Berikut gambaran data administrasi ${village.name}.`
+            {village
+              ? `Berikut gambaran data administrasi ${village}.`
               : "Anda masuk sebagai administrator platform."}
           </p>
         </div>
