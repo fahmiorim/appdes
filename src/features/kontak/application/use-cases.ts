@@ -21,14 +21,18 @@ import {
   createKontakGrup,
   deleteKontak,
   deleteKontakGrup,
+  findKontak,
+  findKontakGrup,
   listAnggotaGrupDetail,
   listKontak,
   listKontakGrup,
   removeAnggotaGrup,
+  residentExists,
   updateKontak,
   updateKontakGrup,
 } from "@/features/kontak/infrastructure/kontak-repository";
 import { requirePermission } from "@/lib/dal";
+import { notFound, validationError } from "@/lib/errors";
 
 /** Data halaman grup kontak beserta opsi kontak; izin baca grup kontak diperiksa di sini. */
 export async function muatGrupKontakData(villageId: number) {
@@ -70,12 +74,36 @@ export async function listKontakUseCase(villageId: number) {
   return listKontak(villageId);
 }
 
+/**
+ * Pastikan penduduk yang ditautkan benar-benar milik desa aktif.
+ *
+ * Pesan kesalahan sengaja sama untuk "tidak ada" dan "milik desa lain" agar
+ * keberadaan data tenant lain tidak terbocorkan.
+ */
+async function pastikanPendudukDesa(
+  villageId: number,
+  residentId: number | null | undefined,
+): Promise<void> {
+  if (residentId === null || residentId === undefined) return;
+
+  if (!(await residentExists(villageId, residentId))) {
+    throw validationError("Penduduk tidak ditemukan.", {
+      residentId: ["Penduduk tidak ditemukan."],
+    });
+  }
+}
+
 export async function createKontakUseCase(villageId: number, input: KontakInput) {
+  await pastikanPendudukDesa(villageId, input.residentId);
+
+  // `villageId` dari input tidak pernah dipakai sebagai otorisasi.
   return createKontak({ ...input, villageId });
 }
 
 export async function updateKontakUseCase(villageId: number, input: KontakInput) {
-  await updateKontak(input.id!, villageId, input);
+  await pastikanPendudukDesa(villageId, input.residentId);
+
+  await updateKontak(input.id!, villageId, { ...input, villageId });
 }
 
 export async function deleteKontakUseCase(villageId: number, id: number) {
@@ -107,6 +135,16 @@ export async function addAnggotaGrupUseCase(
   grupId: number,
   input: { kontakId: number; peran: string | null },
 ) {
+  if (!(await findKontakGrup(villageId, grupId))) {
+    throw notFound("Grup kontak tidak ditemukan.");
+  }
+
+  if (!(await findKontak(villageId, input.kontakId))) {
+    throw validationError("Kontak tidak ditemukan.", {
+      kontakId: ["Kontak tidak ditemukan."],
+    });
+  }
+
   await addAnggotaGrup({
     villageId,
     grupId,

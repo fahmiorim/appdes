@@ -97,7 +97,10 @@ interface RekapBaris {
  * Tambahkan hari izin/sakit/cuti yang **disetujui** ke rekap perangkat.
  *
  * Izin warga ditautkan ke perangkat lewat NIK (keduanya berasal dari penduduk
- * desa). Hari yang sudah punya catatan kehadiran tidak dihitung dua kali.
+ * desa). NIK hanya unik per desa, jadi join `residents` wajib dibatasi
+ * `village_id`; tanpa itu identitas penduduk desa lain dengan NIK sama dapat
+ * menambah rekap. Hari yang sudah punya catatan kehadiran tidak dihitung dua
+ * kali.
  * Cuti dihitung sebagai izin agar bentuk rekap lama tetap kompatibel.
  */
 async function tambahkanIzinDisetujui(
@@ -116,7 +119,13 @@ async function tambahkanIzinDisetujui(
       nik: residents.nationalId,
     })
     .from(kehadiranIzin)
-    .innerJoin(residents, eq(residents.id, kehadiranIzin.residentId))
+    .innerJoin(
+      residents,
+      and(
+        eq(residents.id, kehadiranIzin.residentId),
+        eq(residents.villageId, kehadiranIzin.villageId),
+      ),
+    )
     .where(and(eq(kehadiranIzin.villageId, villageId), eq(kehadiranIzin.status, "disetujui")));
 
   if (izinRows.length === 0) return;

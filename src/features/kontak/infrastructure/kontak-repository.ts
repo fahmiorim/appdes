@@ -3,10 +3,30 @@ import "server-only";
 import { and, desc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { anggotaGrupKontak, kontak, kontakGrup } from "@/db/schema";
+import { anggotaGrupKontak, kontak, kontakGrup, residents } from "@/db/schema";
 
 export async function listKontak(villageId: number) {
   return db.select().from(kontak).where(eq(kontak.villageId, villageId)).orderBy(desc(kontak.id));
+}
+
+/** Kontak milik desa tersebut; `null` bila tidak ada atau milik desa lain. */
+export async function findKontak(villageId: number, id: number) {
+  const [row] = await db
+    .select({ id: kontak.id })
+    .from(kontak)
+    .where(and(eq(kontak.villageId, villageId), eq(kontak.id, id)))
+    .limit(1);
+  return row ?? null;
+}
+
+/** Apakah penduduk benar-benar terdaftar pada desa tersebut. */
+export async function residentExists(villageId: number, residentId: number): Promise<boolean> {
+  const [row] = await db
+    .select({ id: residents.id })
+    .from(residents)
+    .where(and(eq(residents.villageId, villageId), eq(residents.id, residentId)))
+    .limit(1);
+  return Boolean(row);
 }
 
 export async function createKontak(input: typeof kontak.$inferInsert) {
@@ -42,6 +62,16 @@ export async function createKontakGrup(input: typeof kontakGrup.$inferInsert) {
   const [res] = await db.insert(kontakGrup).values(input);
   const result = res as { insertId: bigint | number };
   return Number(result.insertId);
+}
+
+/** Grup kontak milik desa tersebut; `null` bila tidak ada atau milik desa lain. */
+export async function findKontakGrup(villageId: number, id: number) {
+  const [row] = await db
+    .select({ id: kontakGrup.id })
+    .from(kontakGrup)
+    .where(and(eq(kontakGrup.villageId, villageId), eq(kontakGrup.id, id)))
+    .limit(1);
+  return row ?? null;
 }
 
 export async function updateKontakGrup(
@@ -92,7 +122,10 @@ export async function listAnggotaGrupDetail(villageId: number, grupId: number) {
       telegram: kontak.telegram,
     })
     .from(anggotaGrupKontak)
-    .innerJoin(kontak, eq(anggotaGrupKontak.kontakId, kontak.id))
+    .innerJoin(
+      kontak,
+      and(eq(anggotaGrupKontak.kontakId, kontak.id), eq(kontak.villageId, villageId)),
+    )
     .where(and(eq(anggotaGrupKontak.villageId, villageId), eq(anggotaGrupKontak.grupId, grupId)))
     .orderBy(desc(anggotaGrupKontak.id));
 }
