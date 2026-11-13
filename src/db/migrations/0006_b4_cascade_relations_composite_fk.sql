@@ -87,40 +87,40 @@ ALTER TABLE bukti_pengiriman_notifikasi DROP FOREIGN KEY bukti_pengiriman_notifi
 ALTER TABLE pemilihan_kandidat DROP FOREIGN KEY pemilihan_kandidat_pemilihan_id_pemilihan_id_fk;
 --> statement-breakpoint
 
-ALTER TABLE bumindes_buku ADD CONSTRAINT bumindes_buku_village_id_uq UNIQUE (village_id, id);
+ALTER TABLE bumindes_buku ADD CONSTRAINT `bumindes_buku_village_id_uq` UNIQUE (village_id, id);
 --> statement-breakpoint
-ALTER TABLE bumindes_tanah_kas ADD CONSTRAINT bumindes_tanah_kas_village_id_uq UNIQUE (village_id, id);
+ALTER TABLE bumindes_tanah_kas ADD CONSTRAINT `bumindes_tanah_kas_village_id_uq` UNIQUE (village_id, id);
 --> statement-breakpoint
-ALTER TABLE galeri_album ADD CONSTRAINT galeri_album_village_id_uq UNIQUE (village_id, id);
+ALTER TABLE galeri_album ADD CONSTRAINT `galeri_album_village_id_uq` UNIQUE (village_id, id);
 --> statement-breakpoint
-ALTER TABLE lapak ADD CONSTRAINT lapak_village_id_uq UNIQUE (village_id, id);
+ALTER TABLE lapak ADD CONSTRAINT `lapak_village_id_uq` UNIQUE (village_id, id);
 --> statement-breakpoint
-ALTER TABLE pengaduan ADD CONSTRAINT pengaduan_village_id_uq UNIQUE (village_id, id);
+ALTER TABLE pengaduan ADD CONSTRAINT `pengaduan_village_id_uq` UNIQUE (village_id, id);
 --> statement-breakpoint
-ALTER TABLE pemilihan ADD CONSTRAINT pemilihan_village_id_uq UNIQUE (village_id, id);
---> statement-breakpoint
-
-ALTER TABLE bumindes_item ADD INDEX bumindes_item_village_buku_idx (village_id, buku_id);
---> statement-breakpoint
-ALTER TABLE bumindes_tanah_kas_mutasi ADD INDEX bumindes_tanah_kas_mutasi_tenant_idx (village_id, tanah_kas_id);
---> statement-breakpoint
-ALTER TABLE galeri_foto ADD INDEX galeri_foto_village_album_idx (village_id, album_id);
---> statement-breakpoint
-ALTER TABLE lapak_produk ADD INDEX lapak_produk_village_lapak_idx (village_id, lapak_id);
---> statement-breakpoint
-ALTER TABLE bukti_pengiriman_notifikasi ADD INDEX bukti_pengiriman_village_pengaduan_idx (village_id, pengaduan_id);
---> statement-breakpoint
-ALTER TABLE pemilihan_kandidat ADD INDEX pemilihan_kandidat_village_pemilihan_idx (village_id, pemilihan_id);
+ALTER TABLE pemilihan ADD CONSTRAINT `pemilihan_village_id_uq` UNIQUE (village_id, id);
 --> statement-breakpoint
 
-ALTER TABLE bumindes_item ADD CONSTRAINT bumindes_item_buku_tenant_fk FOREIGN KEY (village_id, buku_id) REFERENCES bumindes_buku (village_id, id) ON DELETE CASCADE ON UPDATE NO ACTION;
+CREATE INDEX `bumindes_item_village_buku_idx` ON bumindes_item (village_id, buku_id);
 --> statement-breakpoint
-ALTER TABLE bumindes_tanah_kas_mutasi ADD CONSTRAINT bumindes_tanah_kas_mutasi_persil_tenant_fk FOREIGN KEY (village_id, tanah_kas_id) REFERENCES bumindes_tanah_kas (village_id, id) ON DELETE CASCADE ON UPDATE NO ACTION;
+CREATE INDEX `bumindes_tanah_kas_mutasi_tenant_idx` ON bumindes_tanah_kas_mutasi (village_id, tanah_kas_id);
 --> statement-breakpoint
-ALTER TABLE galeri_foto ADD CONSTRAINT galeri_foto_album_tenant_fk FOREIGN KEY (village_id, album_id) REFERENCES galeri_album (village_id, id) ON DELETE CASCADE ON UPDATE NO ACTION;
+CREATE INDEX `galeri_foto_village_album_idx` ON galeri_foto (village_id, album_id);
 --> statement-breakpoint
-ALTER TABLE lapak_produk ADD CONSTRAINT lapak_produk_lapak_tenant_fk FOREIGN KEY (village_id, lapak_id) REFERENCES lapak (village_id, id) ON DELETE CASCADE ON UPDATE NO ACTION;
+CREATE INDEX `lapak_produk_village_lapak_idx` ON lapak_produk (village_id, lapak_id);
 --> statement-breakpoint
-ALTER TABLE bukti_pengiriman_notifikasi ADD CONSTRAINT bukti_pengiriman_pengaduan_tenant_fk FOREIGN KEY (village_id, pengaduan_id) REFERENCES pengaduan (village_id, id) ON DELETE CASCADE ON UPDATE NO ACTION;
+CREATE INDEX `bukti_pengiriman_village_pengaduan_idx` ON bukti_pengiriman_notifikasi (village_id, pengaduan_id);
 --> statement-breakpoint
-ALTER TABLE pemilihan_kandidat ADD CONSTRAINT pemilihan_kandidat_parent_tenant_fk FOREIGN KEY (village_id, pemilihan_id) REFERENCES pemilihan (village_id, id) ON DELETE CASCADE ON UPDATE NO ACTION;
+CREATE INDEX `pemilihan_kandidat_village_pemilihan_idx` ON pemilihan_kandidat (village_id, pemilihan_id);
+--> statement-breakpoint
+
+ALTER TABLE bumindes_item ADD CONSTRAINT `bumindes_item_buku_tenant_fk` FOREIGN KEY (village_id, buku_id) REFERENCES bumindes_buku (village_id, id) ON DELETE CASCADE ON UPDATE NO ACTION;
+--> statement-breakpoint
+ALTER TABLE bumindes_tanah_kas_mutasi ADD CONSTRAINT `bumindes_tanah_kas_mutasi_persil_tenant_fk` FOREIGN KEY (village_id, tanah_kas_id) REFERENCES bumindes_tanah_kas (village_id, id) ON DELETE CASCADE ON UPDATE NO ACTION;
+--> statement-breakpoint
+ALTER TABLE galeri_foto ADD CONSTRAINT `galeri_foto_album_tenant_fk` FOREIGN KEY (village_id, album_id) REFERENCES galeri_album (village_id, id) ON DELETE CASCADE ON UPDATE NO ACTION;
+--> statement-breakpoint
+ALTER TABLE lapak_produk ADD CONSTRAINT `lapak_produk_lapak_tenant_fk` FOREIGN KEY (village_id, lapak_id) REFERENCES lapak (village_id, id) ON DELETE CASCADE ON UPDATE NO ACTION;
+--> statement-breakpoint
+ALTER TABLE bukti_pengiriman_notifikasi ADD CONSTRAINT `bukti_pengiriman_pengaduan_tenant_fk` FOREIGN KEY (village_id, pengaduan_id) REFERENCES pengaduan (village_id, id) ON DELETE CASCADE ON UPDATE NO ACTION;
+--> statement-breakpoint
+ALTER TABLE pemilihan_kandidat ADD CONSTRAINT `pemilihan_kandidat_parent_tenant_fk` FOREIGN KEY (village_id, pemilihan_id) REFERENCES pemilihan (village_id, id) ON DELETE CASCADE ON UPDATE NO ACTION;
