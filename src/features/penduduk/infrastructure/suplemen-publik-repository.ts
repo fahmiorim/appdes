@@ -67,7 +67,9 @@ export async function getSuplemenPublikBySlug(
   const terdata = await db
     .select({ isian: suplemenTerdata.dataFormIsian })
     .from(suplemenTerdata)
-    .where(eq(suplemenTerdata.suplemenId, row.id));
+    // Slug hanya boleh membuka data terdata milik desa yang sama dengan
+    // suplemen; relasi legacy lintas desa tidak ikut dihitung atau dibaca.
+    .where(and(eq(suplemenTerdata.suplemenId, row.id), eq(suplemenTerdata.villageId, villageId)));
 
   const kolom = new Set<string>();
   for (const item of terdata) {

@@ -17,6 +17,7 @@ import {
   religions,
   residentMutations,
   residents,
+  suplemenTerdata,
 } from "@/db/schema";
 import {
   HEAD_OF_FAMILY_RELATION_ID,
@@ -572,6 +573,14 @@ export async function updatePenduduk(
     .where(and(eq(residents.id, id), eq(residents.villageId, villageId)));
 }
 
+/**
+ * Hapus penduduk.
+ *
+ * Referensi yang boleh kosong dilepas di dalam transaksi sebelum baris dihapus.
+ * `suplemen_terdata` memakai FK `RESTRICT` pada composite key, jadi pelepasan
+ * harus eksplisit di sini. Sebaliknya `dtks_anggota` sengaja tetap `RESTRICT`:
+ * penduduk yang tercatat sebagai anggota DTKS harus dikeluarkan dari DTKS dulu.
+ */
 export async function deletePenduduk(villageId: number, id: number): Promise<void> {
   await db.transaction(async (tx) => {
     await tx
@@ -582,6 +591,10 @@ export async function deletePenduduk(villageId: number, id: number): Promise<voi
       .update(residentMutations)
       .set({ residentId: null })
       .where(and(eq(residentMutations.villageId, villageId), eq(residentMutations.residentId, id)));
+    await tx
+      .update(suplemenTerdata)
+      .set({ pendudukId: null })
+      .where(and(eq(suplemenTerdata.villageId, villageId), eq(suplemenTerdata.pendudukId, id)));
     await tx.delete(residents).where(and(eq(residents.villageId, villageId), eq(residents.id, id)));
   });
 }

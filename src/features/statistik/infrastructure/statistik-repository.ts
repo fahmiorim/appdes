@@ -65,7 +65,10 @@ export async function getStatistikPenduduk(
           female: sql<number>`COUNT(CASE WHEN ${residents.gender} = 'female' THEN 1 END)`,
         })
         .from(residents)
-        .leftJoin(regions, eq(residents.regionId, regions.id))
+        .leftJoin(
+          regions,
+          and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
+        )
         .where(baseWhere)
         .groupBy(residents.gender);
 
@@ -105,7 +108,10 @@ export async function getStatistikPenduduk(
           female: sql<number>`COUNT(CASE WHEN ${residents.gender} = 'female' THEN 1 END)`,
         })
         .from(residents)
-        .leftJoin(regions, eq(residents.regionId, regions.id))
+        .leftJoin(
+          regions,
+          and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
+        )
         .where(baseWhere)
         .groupBy(residents.religionId);
 
@@ -145,7 +151,10 @@ export async function getStatistikPenduduk(
           female: sql<number>`COUNT(CASE WHEN ${residents.gender} = 'female' THEN 1 END)`,
         })
         .from(residents)
-        .leftJoin(regions, eq(residents.regionId, regions.id))
+        .leftJoin(
+          regions,
+          and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
+        )
         .where(baseWhere)
         .groupBy(residents.educationId);
 
@@ -185,7 +194,10 @@ export async function getStatistikPenduduk(
           female: sql<number>`COUNT(CASE WHEN ${residents.gender} = 'female' THEN 1 END)`,
         })
         .from(residents)
-        .leftJoin(regions, eq(residents.regionId, regions.id))
+        .leftJoin(
+          regions,
+          and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
+        )
         .where(baseWhere)
         .groupBy(residents.occupationId);
 
@@ -225,7 +237,10 @@ export async function getStatistikPenduduk(
           female: sql<number>`COUNT(CASE WHEN ${residents.gender} = 'female' THEN 1 END)`,
         })
         .from(residents)
-        .leftJoin(regions, eq(residents.regionId, regions.id))
+        .leftJoin(
+          regions,
+          and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
+        )
         .where(baseWhere)
         .groupBy(residents.maritalStatusId);
 
@@ -265,7 +280,10 @@ export async function getStatistikPenduduk(
           female: sql<number>`COUNT(CASE WHEN ${residents.gender} = 'female' THEN 1 END)`,
         })
         .from(residents)
-        .leftJoin(regions, eq(residents.regionId, regions.id))
+        .leftJoin(
+          regions,
+          and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
+        )
         .where(baseWhere)
         .groupBy(residents.regionId);
 
@@ -306,7 +324,10 @@ export async function getStatistikPenduduk(
       const all = await db
         .select({ birthDate: residents.birthDate, gender: residents.gender })
         .from(residents)
-        .leftJoin(regions, eq(residents.regionId, regions.id))
+        .leftJoin(
+          regions,
+          and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
+        )
         .where(baseWhere);
 
       const groups: Record<string, { total: number; male: number; female: number }> = {
@@ -361,7 +382,10 @@ export async function getStatistikPenduduk(
       const all = await db
         .select({ birthDate: residents.birthDate, gender: residents.gender })
         .from(residents)
-        .leftJoin(regions, eq(residents.regionId, regions.id))
+        .leftJoin(
+          regions,
+          and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
+        )
         .where(baseWhere);
       const ranges = await listRentangUmur(villageId);
       const groups = new Map(ranges.map((k) => [k.label, { total: 0, male: 0, female: 0 }]));
@@ -394,7 +418,10 @@ export async function getStatistikPenduduk(
       const all = await db
         .select({ birthDate: residents.birthDate, gender: residents.gender })
         .from(residents)
-        .leftJoin(regions, eq(residents.regionId, regions.id))
+        .leftJoin(
+          regions,
+          and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
+        )
         .where(baseWhere);
 
       const groups: Record<string, { total: number; male: number; female: number }> = {
@@ -501,8 +528,14 @@ export async function getStatistikBantuan(
           female: sql<number>`COUNT(CASE WHEN ${residents.gender} = 'female' AND ${residents.lifeStatus} = 'alive' THEN 1 END)`,
         })
         .from(bantuanPeserta)
-        .leftJoin(residents, eq(bantuanPeserta.residentId, residents.id))
-        .leftJoin(regions, eq(residents.regionId, regions.id))
+        .leftJoin(
+          residents,
+          and(eq(bantuanPeserta.residentId, residents.id), eq(residents.villageId, villageId)),
+        )
+        .leftJoin(
+          regions,
+          and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)),
+        )
         .where(
           and(
             inArray(bantuanPeserta.programId, programIds),
@@ -558,8 +591,11 @@ export async function getStatistikBantuan(
           eq(bantuanPeserta.villageId, villageId),
         ),
       )
-      .leftJoin(residents, eq(bantuanPeserta.residentId, residents.id))
-      .leftJoin(regions, eq(residents.regionId, regions.id))
+      .leftJoin(
+        residents,
+        and(eq(bantuanPeserta.residentId, residents.id), eq(residents.villageId, villageId)),
+      )
+      .leftJoin(regions, and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(
         and(
           params.sasaran

@@ -404,3 +404,15 @@ Role slug `administrator` memberi hak penuh dalam konteks aplikasi desa dan buka
 ## 8. Kesimpulan
 
 Repository menunjukkan fondasi arsitektur yang terstruktur dan beberapa kontrol keamanan yang baik. Namun, integritas tenant dan integrasi TTE harus menjadi prioritas. Audit ini **tidak menyatakan aplikasi bebas kerentanan**. Status kesiapan produksi hanya dapat ditetapkan setelah temuan prioritas tinggi ditangani dan pengujian runtime, database, serta pemulihan selesai.
+
+## Lampiran — Arsitektur domain FlexiDesa
+
+Dokumen arsitektur target dan rencana implementasi hostname multi-tenant tersedia di [FLEXIDESA-MULTI-TENANT-DOMAIN-ARCHITECTURE.md](architecture/FLEXIDESA-MULTI-TENANT-DOMAIN-ARCHITECTURE.md).
+
+Lampiran tersebut memperjelas perbedaan antara:
+- kondisi source code yang telah ditemukan pada baseline audit;
+- keputusan arsitektur target untuk `flexidesa.id`, `admin.flexidesa.id`, `demo.flexidesa.id`, dan `<slug>.flexidesa.id`;
+- kontrol yang belum tersedia atau belum diverifikasi;
+- security invariants, test matrix, acceptance criteria, dan urutan rollout.
+
+**Penting:** dokumen arsitektur bukan bukti bahwa routing domain, DNS wildcard, TLS, reverse proxy, atau autentikasi multi-host sudah diterapkan. Semua itu tetap memerlukan implementasi, pengujian staging, dan verifikasi deployment terpisah.

@@ -1,5 +1,6 @@
 import {
   date,
+  foreignKey,
   index,
   int,
   mysqlEnum,
@@ -45,14 +46,16 @@ export const dtks = mysqlTable(
       .references(() => villages.id, { onDelete: "cascade" }),
 
     /** RTM yang jadi subjek DTKS (wajib). */
-    rtmId: int("rtm_id")
-      .notNull()
-      .references(() => rumahTangga.id, { onDelete: "restrict" }),
+    rtmId: int("rtm_id").notNull(),
 
-    /** Keluarga (KK) opsional — bila beda dari RTM. */
-    keluargaId: int("keluarga_id").references(() => families.id, {
-      onDelete: "set null",
-    }),
+    /**
+     * Keluarga (KK) opsional — bila beda dari RTM.
+     *
+     * FK-nya `RESTRICT` (bukan `SET NULL`) karena composite FK menyertakan
+     * `village_id NOT NULL`; pelepasan referensi dilakukan transaksi aplikasi
+     * saat keluarga dihapus. Lihat migration `0002_b2_dtks_suplemen_composite_fk`.
+     */
+    keluargaId: int("keluarga_id"),
 
     /** Versi kuisioner. */
     versiKuisioner: mysqlEnum("versi_kuisioner", DTKS_VERSI).notNull().default("regsos_ek2022_k"),
@@ -83,10 +86,22 @@ export const dtks = mysqlTable(
   },
   (t) => [
     uniqueIndex("dtks_village_rtm_versi_uq").on(t.villageId, t.rtmId, t.versiKuisioner),
+    uniqueIndex("dtks_village_id_uq").on(t.villageId, t.id),
     index("dtks_village_status_idx").on(t.villageId, t.status),
     index("dtks_village_versi_idx").on(t.villageId, t.versiKuisioner),
     index("dtks_rtm_idx").on(t.rtmId),
     index("dtks_keluarga_idx").on(t.keluargaId),
+    index("dtks_village_keluarga_idx").on(t.villageId, t.keluargaId),
+    foreignKey({
+      name: "dtks_rtm_tenant_fk",
+      columns: [t.villageId, t.rtmId],
+      foreignColumns: [rumahTangga.villageId, rumahTangga.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "dtks_keluarga_tenant_fk",
+      columns: [t.villageId, t.keluargaId],
+      foreignColumns: [families.villageId, families.id],
+    }).onDelete("restrict"),
   ],
 );
 
@@ -101,14 +116,10 @@ export const dtksAnggota = mysqlTable(
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
 
-    dtksId: int("dtks_id")
-      .notNull()
-      .references(() => dtks.id, { onDelete: "cascade" }),
+    dtksId: int("dtks_id").notNull(),
 
     /** Penduduk yang tercatat sebagai anggota DTKS. */
-    pendudukId: int("penduduk_id")
-      .notNull()
-      .references(() => residents.id, { onDelete: "restrict" }),
+    pendudukId: int("penduduk_id").notNull(),
 
     /** Hubungan dengan kepala RTM (mis. kepala, istri, anak, dll). */
     hubunganId: int("hubungan_id"),
@@ -130,6 +141,18 @@ export const dtksAnggota = mysqlTable(
     index("dtks_anggota_village_idx").on(t.villageId),
     index("dtks_anggota_dtks_idx").on(t.dtksId),
     index("dtks_anggota_penduduk_idx").on(t.pendudukId),
+    index("dtks_anggota_village_dtks_idx").on(t.villageId, t.dtksId),
+    index("dtks_anggota_village_penduduk_idx").on(t.villageId, t.pendudukId),
+    foreignKey({
+      name: "dtks_anggota_dtks_tenant_fk",
+      columns: [t.villageId, t.dtksId],
+      foreignColumns: [dtks.villageId, dtks.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "dtks_anggota_penduduk_tenant_fk",
+      columns: [t.villageId, t.pendudukId],
+      foreignColumns: [residents.villageId, residents.id],
+    }).onDelete("restrict"),
   ],
 );
 
@@ -154,24 +177,43 @@ export const dtksLampiran = mysqlTable(
 
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
-  (t) => [index("dtks_lampiran_village_idx").on(t.villageId)],
+  (t) => [
+    index("dtks_lampiran_village_idx").on(t.villageId),
+    uniqueIndex("dtks_lampiran_village_id_uq").on(t.villageId, t.id),
+  ],
 );
 
 /**
  * `dtks_ref_lampiran` — Many-to-many antara DTKS dan Lampiran.
+ *
+ * `village_id` wajib dan harus sama dengan desa DTKS maupun desa lampiran;
+ * dijaga composite FK, jadi junction tidak bisa menautkan dokumen lintas desa.
  */
 export const dtksRefLampiran = mysqlTable(
   "dtks_ref_lampiran",
   {
     id: int("id").autoincrement().primaryKey(),
-    dtksId: int("dtks_id")
+    villageId: int("village_id")
       .notNull()
-      .references(() => dtks.id, { onDelete: "cascade" }),
-    lampiranId: int("lampiran_id")
-      .notNull()
-      .references(() => dtksLampiran.id, { onDelete: "cascade" }),
+      .references(() => villages.id, { onDelete: "cascade" }),
+    dtksId: int("dtks_id").notNull(),
+    lampiranId: int("lampiran_id").notNull(),
   },
-  (t) => [uniqueIndex("dtks_ref_lampiran_dtks_lampiran_uq").on(t.dtksId, t.lampiranId)],
+  (t) => [
+    uniqueIndex("dtks_ref_lampiran_dtks_lampiran_uq").on(t.dtksId, t.lampiranId),
+    index("dtks_ref_lampiran_village_dtks_idx").on(t.villageId, t.dtksId),
+    index("dtks_ref_lampiran_village_lampiran_idx").on(t.villageId, t.lampiranId),
+    foreignKey({
+      name: "dtks_ref_lampiran_dtks_tenant_fk",
+      columns: [t.villageId, t.dtksId],
+      foreignColumns: [dtks.villageId, dtks.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "dtks_ref_lampiran_lampiran_tenant_fk",
+      columns: [t.villageId, t.lampiranId],
+      foreignColumns: [dtksLampiran.villageId, dtksLampiran.id],
+    }).onDelete("cascade"),
+  ],
 );
 
 /**

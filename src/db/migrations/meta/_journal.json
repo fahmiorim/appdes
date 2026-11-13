@@ -15,6 +15,20 @@
       "when": 1794495797658,
       "tag": "0001_aud002_composite_tenant_fk",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1794502943127,
+      "tag": "0002_b2_dtks_suplemen_composite_fk",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1794582000000,
+      "tag": "0003_b2_bantuan_composite_fk",
+      "breakpoints": true
     }
   ]
 }

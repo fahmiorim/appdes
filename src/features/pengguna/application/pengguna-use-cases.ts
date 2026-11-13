@@ -70,7 +70,7 @@ async function ensureEmailAvailable(email: string, excludeId?: string): Promise<
 }
 
 async function ensureRoleExists(roleId: number, villageId: number): Promise<void> {
-  const role = await getRoleById(roleId);
+  const role = await getRoleById(roleId, villageId);
   if (!role || role.villageId !== villageId || isPlatformRole(role)) {
     throw conflict("Grup akses tidak tersedia untuk desa ini.");
   }

@@ -20,6 +20,8 @@ import {
   deleteIbuHamil,
   deleteKia,
   deletePosyandu,
+  findKiaReferenceById,
+  kiaResidentReferencesOwned,
   listBulananAnak,
   listIbuHamil,
   listKia,
@@ -93,6 +95,9 @@ export async function hapusPosyandu(id: number) {
 export async function tambahKia(input: Omit<Parameters<typeof createKia>[0], "villageId">) {
   const villageId = await konteksKia("update");
   const parsed = kiaSchema.omit({ id: true, villageId: true }).parse(input);
+  if (!(await kiaResidentReferencesOwned(villageId, parsed.ibuId, parsed.anakId))) {
+    throw new AppError("VALIDATION", "Data ibu atau anak tidak ditemukan pada desa ini.");
+  }
   return createKia({ ...parsed, villageId });
 }
 
@@ -100,6 +105,13 @@ export async function ubahKia(id: number, input: unknown) {
   validasiId(id);
   const villageId = await konteksKia("update");
   const parsed = kiaSchema.omit({ id: true, villageId: true }).partial().parse(input);
+  const current = await findKiaReferenceById(villageId, id);
+  if (!current) throw new AppError("NOT_FOUND", "Data KIA tidak ditemukan.");
+  const ibuId = parsed.ibuId ?? current.ibuId;
+  const anakId = parsed.anakId === undefined ? current.anakId : parsed.anakId;
+  if (!(await kiaResidentReferencesOwned(villageId, ibuId, anakId))) {
+    throw new AppError("VALIDATION", "Data ibu atau anak tidak ditemukan pada desa ini.");
+  }
   return updateKia(id, villageId, parsed);
 }
 

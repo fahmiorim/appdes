@@ -51,7 +51,7 @@ function whereDtks(villageId: number, params: ListDtksParams): SQL {
     filters.push(
       or(
         like(rumahTangga.number, term),
-        sql`exists (select 1 from ${residents} where ${residents.rtmId} = ${rumahTangga.id} and (${residents.name} like ${term} or ${residents.nationalId} like ${term}))`,
+        sql`exists (select 1 from ${residents} where ${residents.rtmId} = ${rumahTangga.id} and ${residents.villageId} = ${villageId} and (${residents.name} like ${term} or ${residents.nationalId} like ${term}))`,
       )!,
     );
   }
@@ -80,7 +80,7 @@ export async function listDtks(villageId: number, params: ListDtksParams): Promi
     filters.push(
       or(
         like(rumahTangga.number, term),
-        sql`exists (select 1 from ${residents} where ${residents.rtmId} = ${rumahTangga.id} and (${residents.name} like ${term} or ${residents.nationalId} like ${term}))`,
+        sql`exists (select 1 from ${residents} where ${residents.rtmId} = ${rumahTangga.id} and ${residents.villageId} = ${villageId} and (${residents.name} like ${term} or ${residents.nationalId} like ${term}))`,
       )!,
     );
   }
@@ -91,9 +91,17 @@ export async function listDtks(villageId: number, params: ListDtksParams): Promi
     db
       .select({ value: count() })
       .from(dtks)
-      .innerJoin(rumahTangga, eq(dtks.rtmId, rumahTangga.id))
-      .leftJoin(families, eq(dtks.keluargaId, families.id))
-      .leftJoin(regions, eq(rumahTangga.regionId, regions.id))
+      // JOIN tenant-scoped: relasi legacy lintas desa tidak boleh ikut
+      // menghitung atau menampilkan identitas desa lain.
+      .leftJoin(
+        rumahTangga,
+        and(eq(dtks.rtmId, rumahTangga.id), eq(rumahTangga.villageId, villageId)),
+      )
+      .leftJoin(families, and(eq(dtks.keluargaId, families.id), eq(families.villageId, villageId)))
+      .leftJoin(
+        regions,
+        and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)),
+      )
       .where(where),
     // Ambil kepala RTM
     db
@@ -103,7 +111,14 @@ export async function listDtks(villageId: number, params: ListDtksParams): Promi
         nik: residents.nationalId,
       })
       .from(rumahTangga)
-      .innerJoin(residents, and(eq(residents.rtmId, rumahTangga.id), eq(residents.rtmLevel, 1)))
+      .innerJoin(
+        residents,
+        and(
+          eq(residents.rtmId, rumahTangga.id),
+          eq(residents.rtmLevel, 1),
+          eq(residents.villageId, villageId),
+        ),
+      )
       .where(eq(rumahTangga.villageId, villageId)),
     // Hitung jumlah anggota DTKS per form
     db
@@ -112,6 +127,7 @@ export async function listDtks(villageId: number, params: ListDtksParams): Promi
         count: count(),
       })
       .from(dtksAnggota)
+      .innerJoin(dtks, and(eq(dtksAnggota.dtksId, dtks.id), eq(dtks.villageId, villageId)))
       .where(eq(dtksAnggota.villageId, villageId))
       .groupBy(dtksAnggota.dtksId),
   ]);
@@ -135,9 +151,12 @@ export async function listDtks(villageId: number, params: ListDtksParams): Promi
       keluargaNumber: families.number,
     })
     .from(dtks)
-    .innerJoin(rumahTangga, eq(dtks.rtmId, rumahTangga.id))
-    .leftJoin(families, eq(dtks.keluargaId, families.id))
-    .leftJoin(regions, eq(rumahTangga.regionId, regions.id))
+    .leftJoin(
+      rumahTangga,
+      and(eq(dtks.rtmId, rumahTangga.id), eq(rumahTangga.villageId, villageId)),
+    )
+    .leftJoin(families, and(eq(dtks.keluargaId, families.id), eq(families.villageId, villageId)))
+    .leftJoin(regions, and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)))
     .where(where)
     .orderBy(desc(dtks.updatedAt))
     .limit(perPage)
@@ -148,7 +167,7 @@ export async function listDtks(villageId: number, params: ListDtksParams): Promi
     return {
       id: r.id,
       villageId: r.villageId,
-      rtmNumber: r.rtmNumber,
+      rtmNumber: r.rtmNumber ?? "-",
       rtmKepalaName: krt?.name ?? "-",
       rtmKepalaNik: krt?.nik ?? null,
       keluargaNumber: r.keluargaNumber ?? null,
@@ -207,7 +226,13 @@ export async function listDtksAnggota(
       keterangan: dtksAnggota.keterangan,
     })
     .from(dtksAnggota)
-    .innerJoin(residents, eq(dtksAnggota.pendudukId, residents.id))
+    // Parent DTKS harus milik tenant yang sama, dan identitas penduduk hanya
+    // dibaca dari residents tenant tersebut.
+    .innerJoin(dtks, and(eq(dtksAnggota.dtksId, dtks.id), eq(dtks.villageId, villageId)))
+    .innerJoin(
+      residents,
+      and(eq(dtksAnggota.pendudukId, residents.id), eq(residents.villageId, villageId)),
+    )
     .where(and(eq(dtksAnggota.dtksId, dtksId), eq(dtksAnggota.villageId, villageId)));
 
   return rows;
@@ -316,10 +341,20 @@ export async function listDtksEkspor(
       namaKk: families.number,
     })
     .from(dtks)
-    .leftJoin(rumahTangga, eq(dtks.rtmId, rumahTangga.id))
-    .leftJoin(regions, eq(rumahTangga.regionId, regions.id))
-    .leftJoin(families, eq(dtks.keluargaId, families.id))
-    .leftJoin(head, and(eq(head.rtmId, dtks.rtmId), eq(head.rtmLevel, RTM_LEVEL_KEPALA)))
+    .leftJoin(
+      rumahTangga,
+      and(eq(dtks.rtmId, rumahTangga.id), eq(rumahTangga.villageId, villageId)),
+    )
+    .leftJoin(regions, and(eq(rumahTangga.regionId, regions.id), eq(regions.villageId, villageId)))
+    .leftJoin(families, and(eq(dtks.keluargaId, families.id), eq(families.villageId, villageId)))
+    .leftJoin(
+      head,
+      and(
+        eq(head.rtmId, dtks.rtmId),
+        eq(head.rtmLevel, RTM_LEVEL_KEPALA),
+        eq(head.villageId, villageId),
+      ),
+    )
     .where(where)
     .orderBy(asc(rumahTangga.number));
 
@@ -331,10 +366,14 @@ export async function listDtksEkspor(
       : await db
           .select({ dtksId: dtksAnggota.dtksId, jumlah: count() })
           .from(dtksAnggota)
+          .innerJoin(dtks, and(eq(dtksAnggota.dtksId, dtks.id), eq(dtks.villageId, villageId)))
           .where(
-            inArray(
-              dtksAnggota.dtksId,
-              rows.map((row) => row.id),
+            and(
+              eq(dtksAnggota.villageId, villageId),
+              inArray(
+                dtksAnggota.dtksId,
+                rows.map((row) => row.id),
+              ),
             ),
           )
           .groupBy(dtksAnggota.dtksId);
@@ -395,9 +434,18 @@ export async function listLampiranTerpasang(
       createdAt: dtksLampiran.createdAt,
     })
     .from(dtksRefLampiran)
-    .innerJoin(dtksLampiran, eq(dtksRefLampiran.lampiranId, dtksLampiran.id))
-    .innerJoin(dtks, eq(dtksRefLampiran.dtksId, dtks.id))
-    .where(and(eq(dtksRefLampiran.dtksId, dtksId), eq(dtks.villageId, villageId)))
+    .innerJoin(
+      dtksLampiran,
+      and(
+        eq(dtksRefLampiran.lampiranId, dtksLampiran.id),
+        eq(dtksRefLampiran.villageId, dtksLampiran.villageId),
+      ),
+    )
+    .innerJoin(
+      dtks,
+      and(eq(dtksRefLampiran.dtksId, dtks.id), eq(dtksRefLampiran.villageId, dtks.villageId)),
+    )
+    .where(and(eq(dtksRefLampiran.dtksId, dtksId), eq(dtksRefLampiran.villageId, villageId)))
     .orderBy(desc(dtksLampiran.createdAt));
 }
 
@@ -417,14 +465,38 @@ export async function deleteLampiranDtks(villageId: number, id: number): Promise
     .where(and(eq(dtksLampiran.id, id), eq(dtksLampiran.villageId, villageId)));
 }
 
-/** Tautkan lampiran ke DTKS (idempoten karena ada indeks unik). */
+/**
+ * Pastikan DTKS dan lampiran benar-benar milik desa yang sama sebelum relasi
+ * dibuat atau dilepas. Tabel relasi tidak memiliki `village_id`, sehingga
+ * kepemilikan harus diverifikasi dari kedua parent.
+ */
+async function pastikanLampiranDanDtksSatuDesa(
+  villageId: number,
+  dtksId: number,
+  lampiranId: number,
+): Promise<void> {
+  const [dtksRow] = await db
+    .select({ id: dtks.id })
+    .from(dtks)
+    .where(and(eq(dtks.id, dtksId), eq(dtks.villageId, villageId)))
+    .limit(1);
+  if (!dtksRow) throw new Error("Data DTKS tidak ditemukan.");
+
+  const [lampiranRow] = await db
+    .select({ id: dtksLampiran.id })
+    .from(dtksLampiran)
+    .where(and(eq(dtksLampiran.id, lampiranId), eq(dtksLampiran.villageId, villageId)))
+    .limit(1);
+  if (!lampiranRow) throw new Error("Lampiran tidak ditemukan.");
+}
+
 export async function tautkanLampiran(
   villageId: number,
   dtksId: number,
   lampiranId: number,
 ): Promise<void> {
-  await db.insert(dtksRefLampiran).ignore().values({ dtksId, lampiranId }).execute();
-  void villageId;
+  await pastikanLampiranDanDtksSatuDesa(villageId, dtksId, lampiranId);
+  await db.insert(dtksRefLampiran).ignore().values({ villageId, dtksId, lampiranId }).execute();
 }
 
 export async function lepasLampiran(
@@ -432,10 +504,16 @@ export async function lepasLampiran(
   dtksId: number,
   lampiranId: number,
 ): Promise<void> {
+  await pastikanLampiranDanDtksSatuDesa(villageId, dtksId, lampiranId);
   await db
     .delete(dtksRefLampiran)
-    .where(and(eq(dtksRefLampiran.dtksId, dtksId), eq(dtksRefLampiran.lampiranId, lampiranId)));
-  void villageId;
+    .where(
+      and(
+        eq(dtksRefLampiran.villageId, villageId),
+        eq(dtksRefLampiran.dtksId, dtksId),
+        eq(dtksRefLampiran.lampiranId, lampiranId),
+      ),
+    );
 }
 
 // --- Pengaturan program -----------------------------------------------------
@@ -506,6 +584,13 @@ export async function listRumahTanggaDenganKepala(
       kepalaNik: residents.nationalId,
     })
     .from(rumahTangga)
-    .leftJoin(residents, and(eq(residents.rtmId, rumahTangga.id), eq(residents.rtmLevel, 1)))
+    .leftJoin(
+      residents,
+      and(
+        eq(residents.rtmId, rumahTangga.id),
+        eq(residents.rtmLevel, 1),
+        eq(residents.villageId, villageId),
+      ),
+    )
     .where(eq(rumahTangga.villageId, villageId));
 }

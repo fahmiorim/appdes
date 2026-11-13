@@ -53,7 +53,9 @@ export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
   secret: env.BETTER_AUTH_SECRET,
 
-  database: drizzleAdapter(db, { provider: "mysql", usePlural: true }),
+  // `transaction: true` membuat penyimpanan password baru, penandaan token reset,
+  // dan pencabutan sesi berjalan atomik saat reset password.
+  database: drizzleAdapter(db, { provider: "mysql", usePlural: true, transaction: true }),
 
   emailAndPassword: {
     enabled: true,
@@ -63,6 +65,8 @@ export const auth = betterAuth({
     minPasswordLength: 6,
     maxPasswordLength: 72,
     requireEmailVerification: false,
+    // Reset password wajib mencabut seluruh sesi perangkat lama.
+    revokeSessionsOnPasswordReset: true,
     sendResetPassword: async ({ user, token }, request) => {
       await auditReset(
         {
@@ -115,9 +119,10 @@ export const auth = betterAuth({
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 hari
     updateAge: 60 * 60 * 24, // perpanjang bila sesi dipakai setelah 1 hari
+    // Sesi harus selalu diverifikasi ke database. Cookie cache stateless dapat
+    // mempertahankan sesi yang sudah dicabut sampai cache kedaluwarsa.
     cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60, // cache cookie 5 menit untuk mengurangi query DB
+      enabled: false,
     },
   },
 
