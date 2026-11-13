@@ -11,7 +11,7 @@ CREATE TABLE `_b4_bumindes_preflight_findings` (
 ) ENGINE=InnoDB;
 --> statement-breakpoint
 INSERT INTO `_b4_bumindes_preflight_findings` (`relasi`, `jenis`, `jumlah`)
-SELECT t.relasi, t.jenis, t.jumlah
+SELECT temuan.relasi, temuan.jenis, temuan.jumlah
 FROM (
   SELECT 'bumindes_item.buku_id' AS relasi, 'orphan' AS jenis, COUNT(*) AS jumlah
   FROM `bumindes_item` AS c
