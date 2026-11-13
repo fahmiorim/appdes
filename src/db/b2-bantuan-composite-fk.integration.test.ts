@@ -3,7 +3,15 @@ import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
-import { bantuanPeserta, bantuanProgram, families, kelompok, residents, rumahTangga, villages } from "@/db/schema";
+import {
+  bantuanPeserta,
+  bantuanProgram,
+  families,
+  kelompok,
+  residents,
+  rumahTangga,
+  villages,
+} from "@/db/schema";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("./migrations", import.meta.url));
@@ -18,55 +26,94 @@ let rtmB = 0;
 let kelompokB = 0;
 
 function idDari(baris: { id: number } | undefined, label: string): number {
-  if (baris?.id === undefined) throw new Error(`Seed uji gagal: ${label} tidak terbentuk.`);
+  if (baris?.id === undefined) {
+    throw new Error(`Seed uji gagal: ${label} tidak terbentuk.`);
+  }
   return baris.id;
 }
 
 beforeAll(async () => {
   await siapkanDatabaseUji(db, { migrationsFolder: MIGRATIONS_FOLDER });
-  const [a] = await db.insert(villages).values({ name: "Bantuan Tenant A", code: "BTA" }).$returningId();
-  const [b] = await db.insert(villages).values({ name: "Bantuan Tenant B", code: "BTB" }).$returningId();
+  const [a] = await db
+    .insert(villages)
+    .values({ name: "Bantuan Tenant A", code: "BTA" })
+    .$returningId();
+  const [b] = await db
+    .insert(villages)
+    .values({ name: "Bantuan Tenant B", code: "BTB" })
+    .$returningId();
   desaA = idDari(a, "desa A");
   desaB = idDari(b, "desa B");
 
-  const [program] = await db.insert(bantuanProgram).values({
-    villageId: desaA,
-    name: "Program A",
-    slug: "program-a",
-    sasaran: 1,
-  }).$returningId();
+  const [program] = await db
+    .insert(bantuanProgram)
+    .values({
+      villageId: desaA,
+      name: "Program A",
+      slug: "program-a",
+      sasaran: 1,
+    })
+    .$returningId();
   programA = idDari(program, "program A");
-  const [programOther] = await db.insert(bantuanProgram).values({
-    villageId: desaB,
-    name: "Program B",
-    slug: "program-b",
-    sasaran: 1,
-  }).$returningId();
+  const [programOther] = await db
+    .insert(bantuanProgram)
+    .values({
+      villageId: desaB,
+      name: "Program B",
+      slug: "program-b",
+      sasaran: 1,
+    })
+    .$returningId();
   programB = idDari(programOther, "program B");
 
-  const [ra] = await db.insert(residents).values({
-    villageId: desaA,
-    name: "Penduduk A",
-    gender: "male",
-  }).$returningId();
-  const [rb] = await db.insert(residents).values({
-    villageId: desaB,
-    name: "Penduduk B",
-    gender: "male",
-  }).$returningId();
+  const [ra] = await db
+    .insert(residents)
+    .values({
+      villageId: desaA,
+      name: "Penduduk A",
+      gender: "male",
+    })
+    .$returningId();
+  const [rb] = await db
+    .insert(residents)
+    .values({
+      villageId: desaB,
+      name: "Penduduk B",
+      gender: "male",
+    })
+    .$returningId();
   residentA = idDari(ra, "resident A");
   residentB = idDari(rb, "resident B");
-  const [family] = await db.insert(families).values({ villageId: desaB, number: "1234567890123456" }).$returningId();
+
+  const [family] = await db
+    .insert(families)
+    .values({ villageId: desaB, number: "1234567890123456" })
+    .$returningId();
   familyB = idDari(family, "family B");
-  const [rtm] = await db.insert(rumahTangga).values({ villageId: desaB, number: "RTM-B2-001" }).$returningId();
+  const [rtm] = await db
+    .insert(rumahTangga)
+    .values({ villageId: desaB, number: "RTM-B2-001" })
+    .$returningId();
   rtmB = idDari(rtm, "rtm B");
-  const [group] = await db.insert(kelompok).values({ villageId: desaB, name: "Kelompok B", slug: "kelompok-b", type: "kelompok" }).$returningId();
+  const [group] = await db
+    .insert(kelompok)
+    .values({
+      villageId: desaB,
+      name: "Kelompok B",
+      slug: "kelompok-b",
+      type: "kelompok",
+    })
+    .$returningId();
   kelompokB = idDari(group, "kelompok B");
 });
 
 afterAll(async () => {
-  if (desaA) await db.delete(villages).where(eq(villages.id, desaA));
-  if (desaB) await db.delete(villages).where(eq(villages.id, desaB));
+  if (desaA) {
+    await db.delete(villages).where(eq(villages.id, desaA));
+  }
+  if (desaB) {
+    await db.delete(villages).where(eq(villages.id, desaB));
+  }
 });
 
 describe("B2 Bantuan composite tenant FK", () => {
@@ -91,7 +138,16 @@ describe("B2 Bantuan composite tenant FK", () => {
           'bantuan_peserta_kelompok_tenant_fk'
         )
       GROUP BY k.CONSTRAINT_NAME, k.TABLE_NAME, r.DELETE_RULE
-    `)) as unknown as [Array<{nama:string;tabel:string;kolom:string;referensi:string;aturan:string}>,unknown];
+    `)) as unknown as [
+      Array<{
+        nama: string;
+        tabel: string;
+        kolom: string;
+        referensi: string;
+        aturan: string;
+      }>,
+      unknown,
+    ];
     expect(result[0]).toHaveLength(5);
     for (const row of result[0]) {
       expect(row.tabel).toBe("bantuan_peserta");
@@ -104,10 +160,22 @@ describe("B2 Bantuan composite tenant FK", () => {
   it("menolak referensi program dan semua jenis sasaran lintas tenant", async () => {
     const attempts = [
       () => db.insert(bantuanPeserta).values({ villageId: desaA, programId: programB }),
-      () => db.insert(bantuanPeserta).values({ villageId: desaA, programId: programA, residentId: residentB }),
-      () => db.insert(bantuanPeserta).values({ villageId: desaA, programId: programA, familyId: familyB }),
-      () => db.insert(bantuanPeserta).values({ villageId: desaA, programId: programA, rtmId: rtmB }),
-      () => db.insert(bantuanPeserta).values({ villageId: desaA, programId: programA, kelompokId: kelompokB }),
+      () =>
+        db
+          .insert(bantuanPeserta)
+          .values({ villageId: desaA, programId: programA, residentId: residentB }),
+      () =>
+        db
+          .insert(bantuanPeserta)
+          .values({ villageId: desaA, programId: programA, familyId: familyB }),
+      () =>
+        db
+          .insert(bantuanPeserta)
+          .values({ villageId: desaA, programId: programA, rtmId: rtmB }),
+      () =>
+        db
+          .insert(bantuanPeserta)
+          .values({ villageId: desaA, programId: programA, kelompokId: kelompokB }),
     ];
     for (const attempt of attempts) {
       let error: unknown;
@@ -129,14 +197,17 @@ describe("B2 Bantuan composite tenant FK", () => {
   });
 
   it("menerima peserta sah dan tetap mengizinkan target nullable", async () => {
-    const [inserted] = await db.insert(bantuanPeserta).values({
-      villageId: desaA,
-      programId: programA,
-      residentId: residentA,
-      familyId: null,
-      rtmId: null,
-      kelompokId: null,
-    }).$returningId();
+    const [inserted] = await db
+      .insert(bantuanPeserta)
+      .values({
+        villageId: desaA,
+        programId: programA,
+        residentId: residentA,
+        familyId: null,
+        rtmId: null,
+        kelompokId: null,
+      })
+      .$returningId();
     expect(idDari(inserted, "peserta")).toBeGreaterThan(0);
   });
 });
