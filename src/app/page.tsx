@@ -17,10 +17,19 @@ export const dynamic = "force-dynamic";
 
 function mediaUrl(value: string | null | undefined, villageId: number): string | null {
   if (!value) return null;
-  if (/^https?:\/\//i.test(value)) return value;
-  if (value.startsWith("/")) return value;
-  const path = value.split("/").filter(Boolean).map(encodeURIComponent).join("/");
-  return `/api/publik/media/${path.startsWith(`${villageId}/`) ? path : `${villageId}/${path}`}`;
+
+  // Media publik disimpan sebagai jalur relatif. Jangan izinkan URL eksternal
+  // atau jalur absolut melewati endpoint yang memeriksa kepemilikan tenant.
+  const segments = value.split(/[\\/]/).filter(Boolean);
+  if (
+    segments.length === 0 ||
+    segments.some((segment) => segment === "." || segment === ".." || segment.includes(".."))
+  ) {
+    return null;
+  }
+
+  const path = segments[0] === String(villageId) ? segments : [String(villageId), ...segments];
+  return `/api/publik/media/${path.map(encodeURIComponent).join("/")}`;
 }
 
 function formatNumber(value: number): string {
