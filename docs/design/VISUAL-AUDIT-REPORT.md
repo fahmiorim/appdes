@@ -1,69 +1,72 @@
 # Laporan Audit Desain FlexiDesa
 
 - **Tanggal:** 14 November 2026
-- **Repository baseline:** `main` — `681753bba9cadbbce3938473f6343e9f9ca83f0e`
-- **Branch pekerjaan:** `chore/design-audit-and-baseline`
-- **Cakupan:** inventaris referensi, pemeriksaan struktur UI, konsistensi Design System, kesiapan visual validation.
+- **Baseline repository:** `main` — `681753bba9cadbbce3938473f6343e9f9ca83f0e`
+- **Branch implementasi:** `chore/design-audit-and-baseline`
+- **Cakupan:** 39 screenshot referensi, struktur halaman aktif, Design System, revisi Login.
 
-## 1. Inventaris referensi
+## 1. Audit aset visual
 
-Repository mencatat 39 PNG:
+39 PNG berhasil dibaca dari repository melalui preview artifact GitHub Actions dan ditinjau dalam tiga contact sheet:
+- 21 screenshot website publik.
+- 11 screenshot akun/autentikasi.
+- 7 screenshot halaman pendukung.
 
-| Kelompok | Jumlah | Hasil inventaris |
-|---|---:|---|
-| Website publik desa | 21 | Nama file dan tujuan halaman tercatat di `SCREENSHOT-INVENTORY.md` |
-| Akun dan autentikasi | 11 | Nama file dan tujuan halaman tercatat di `SCREENSHOT-INVENTORY.md` |
-| Halaman pendukung | 7 | Nama file dan tujuan halaman tercatat di `SCREENSHOT-INVENTORY.md` |
-| **Total** | **39** | **Inventaris struktur lengkap** |
+Tiga referensi diperiksa pada resolusi penuh:
+- Login: `docs/account/Modern Indonesian Village Login Portal.png`, 1199 × 1312.
+- Beranda publik: `docs/public/Sistem Informasi Desa Suka Maju.png`, 1024 × 1536.
+- Halaman 404: `docs/pendukung/SID Desa Sukamaju 404 Page.png`, 1536 × 1024.
 
-**Batas audit:** daftar dan pengelompokan file dapat diverifikasi dari Git tree dan dokumen, tetapi isi piksel PNG belum dapat dibuka pada sesi ini. GitHub connector mengembalikan konten kosong untuk file PNG dan jaringan runtime tidak dapat mengunduh raw asset. Karena itu, warna/font/spacing tidak diklaim sudah diukur atau diaudit secara visual.
+## 2. Pola visual yang teramati
 
-## 2. Halaman UI yang ditemukan pada `main`
+Pola lintas halaman:
+- Header putih dengan identitas desa di kiri, navigasi di tengah, dan tombol masuk di kanan.
+- Biru cerah sebagai warna aksi/brand, ungu sebagai aksen dan gradient.
+- Latar konten putih atau biru sangat muda.
+- Kartu dengan radius cukup besar, border halus, dan shadow lembut.
+- Ikon dalam container berwarna lembut.
+- Footer navy gelap dengan beberapa kolom informasi.
 
-| Route/surface | File | Status |
-|---|---|---|
-| Login `/masuk` | `src/app/(auth)/masuk/page.tsx`, `login-form.tsx` | Implemented; belum dibandingkan dengan mockup |
-| Dashboard Admin `/beranda` | `src/app/(admin)/beranda/page.tsx` | Implemented; belum ada screenshot desain khusus |
-| Dashboard Super Admin `/super-admin` | `src/app/(admin)/super-admin/page.tsx` | Implemented; belum ada screenshot desain khusus |
-| Admin shell | `src/app/(admin)/layout.tsx`, `src/components/shell/*` | Implemented; belum ada screenshot desain khusus |
+Pola khusus Login:
+- Hero dua kolom: promosi layanan di kiri dan kartu login di kanan.
+- Ilustrasi keamanan di atas judul form.
+- Empat manfaat layanan pada strip kartu horizontal.
+- Footer navy empat kolom.
+- Mockup menampilkan email/NIK, Google sign-in, lupa sandi, dan registrasi. Implementasi saat ini hanya mendukung sign-in username; kontrol yang belum memiliki backend tidak ditambahkan sebagai elemen palsu.
 
-Folder route dan route handler API/PDF/ekspor tidak dihitung sebagai halaman UI. Halaman website publik, registrasi, OTP, profil akun, pengaturan, dan halaman pendukung belum ditemukan sebagai page UI pada baseline yang diperiksa.
+## 3. Baseline warna dan tipografi
 
-## 3. Temuan konsistensi visual yang dapat dibuktikan dari kode
+Sampel pixel dari mockup login menunjukkan:
+- Biru hero sekitar `#0387FE`.
+- Ungu hero sekitar `#A776FC`.
+- Biru tombol sekitar `#0166FE`.
+- Footer sekitar `#0D2136`.
 
-1. `src/app/globals.css` mengimpor DM Sans dan Plus Jakarta Sans, tetapi token font aktif menggunakan Segoe UI/Arial. Import dan token tidak konsisten.
-2. Token warna, radius, shadow, dan tipografi sudah memiliki nilai konkret, tetapi belum memiliki bukti bahwa nilai tersebut berasal dari screenshot referensi.
-3. Login menggunakan split layout desktop; panel visual disembunyikan pada breakpoint 900px. Kesesuaian perilaku mobile belum terverifikasi terhadap screenshot.
-4. Dashboard Admin dan Super Admin memakai admin shell yang sama dengan perbedaan label/navigasi. Belum ada spesifikasi visual khusus untuk kedua persona.
+Token awal implementasi dipilih mendekati referensi: brand `#0B65F5`, accent `#8A58F5`, background `#F4F8FE`, footer `#0D2136`. Nama font sumber tidak dapat dipastikan dari PNG; DM Sans dan Plus Jakarta Sans dipakai sebagai padanan visual sementara.
 
-## 4. Keputusan sementara
+## 4. Implementasi yang diubah pada branch
 
-- Screenshot tetap menjadi sumber kebenaran untuk halaman yang memiliki referensi.
-- Tidak mengesahkan token warna, font, radius, shadow, atau breakpoint final sebelum PNG dibuka dan diperiksa.
-- Tidak mengubah login dengan tebakan visual. Implementasi harus menunggu inspeksi screenshot login agar tidak mengganti satu asumsi dengan asumsi lain.
-- Admin Desa dan Super Admin akan ditetapkan sebagai product design baru; bukan direkayasa seolah-olah memiliki screenshot referensi.
-- Tidak ada perubahan database, migrasi, atau deployment.
+1. Login diubah dari split panel navy generik menjadi halaman publik dengan header, hero biru-ungu, kartu login, benefit strip, dan footer navy.
+2. Hero memakai foto kantor desa yang diekstrak dari area foto screenshot login sebagai asset terpisah: `public/images/login-village-office.jpg`.
+3. Login form tetap memakai autentikasi username yang sudah didukung backend dan menambahkan toggle tampil/sembunyikan kata sandi.
+4. Token warna, font, radius, dan shadow global diselaraskan dengan baseline screenshot.
+5. Design System dinaikkan ke Draft v0.3 dan matriks implementasi diperbarui.
 
-## 5. Tahap berikutnya untuk menuntaskan visual audit
+## 5. Batasan dan status visual QA
 
-1. Akses 39 PNG asli melalui checkout lokal atau unggahan aset yang dapat dirender.
-2. Catat ukuran gambar dan viewport; ukur warna, font, layout, spacing, radius, shadow, dan komponen berulang.
-3. Pilih referensi representatif dan audit seluruh pola unik.
-4. Revisi `DESIGN-SYSTEM.md` dengan token yang memiliki bukti screenshot.
-5. Revisi login terhadap mockup pada viewport desktop dan mobile.
-6. Dokumentasikan Admin Desa dan Super Admin sebagai product design terpisah.
-7. Jalankan Next.js di browser, tangkap screenshot desktop/mobile, dan lakukan visual comparison.
-8. Perbarui `SCREENSHOT-IMPLEMENTATION-MATRIX.md` dengan status yang disertai bukti.
+- Contact sheet semua 39 referensi sudah ditinjau; tiga screenshot representatif telah diperiksa penuh.
+- Belum ada browser screenshot dari route aplikasi pada viewport desktop/mobile, sehingga status Login belum dapat disebut `visually reviewed` atau `accepted`.
+- Admin Desa dan Super Admin tidak memiliki screenshot khusus di inventaris; keduanya membutuhkan spesifikasi produk yang terpisah.
+- Belum ada perubahan database, migrasi, atau deployment.
 
-## 6. Status
+## 6. Pekerjaan lanjutan
 
-- [x] Inventaris 39 screenshot dan klasifikasi kelompok
-- [x] Pemeriksaan route/page UI aktual pada baseline
-- [x] Identifikasi inkonsistensi font import dan token
-- [x] Perbarui matriks agar mencerminkan implementasi saat ini
-- [x] Perbarui status Design System dan gate pengesahan
-- [ ] Inspeksi visual piksel untuk seluruh PNG
-- [ ] Revisi login berdasarkan mockup
-- [ ] Spesifikasi visual Admin Desa dan Super Admin
-- [ ] Screenshot browser desktop/mobile
-- [ ] Visual comparison dan acceptance
+- [x] Inventaris dan tinjau 39 screenshot.
+- [x] Periksa tiga screenshot representatif pada resolusi penuh.
+- [x] Tetapkan baseline warna dan padanan font sementara.
+- [x] Revisi Login dan aset hero.
+- [x] Perbarui Design System dan matriks.
+- [ ] Jalankan contrast check WCAG AA.
+- [ ] Ambil screenshot browser desktop/mobile dan lakukan pixel/visual comparison.
+- [ ] Selesaikan spesifikasi visual Admin Desa dan Super Admin.
+- [ ] Visual acceptance setelah hasil browser dibandingkan.
