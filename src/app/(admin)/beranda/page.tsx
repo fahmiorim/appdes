@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
 import { dashboardStats } from "@/features/dashboard/application/dashboard-use-cases";
 import { getNamaDesaUseCase } from "@/features/desa/application/use-cases";
+import { isSuperAdminUser } from "@/features/multi-desa/application/provisioning-use-cases";
 import { verifySession } from "@/lib/dal";
 
 export const metadata: Metadata = {
@@ -11,6 +13,11 @@ export const metadata: Metadata = {
 
 export default async function AdminHomePage() {
   const user = await verifySession();
+
+  if (await isSuperAdminUser(user)) {
+    redirect("/super-admin");
+  }
+
   const village = user.villageId === null ? null : await getNamaDesaUseCase(user.villageId);
   const stats = user.villageId === null ? null : await dashboardStats(user.villageId);
 
@@ -23,7 +30,7 @@ export default async function AdminHomePage() {
           <p>
             {village
               ? `Berikut gambaran data administrasi ${village}.`
-              : "Anda masuk sebagai administrator platform."}
+              : "Akun ini tidak terhubung dengan desa."}
           </p>
         </div>
       </div>
@@ -48,25 +55,17 @@ export default async function AdminHomePage() {
         </div>
       ) : (
         <section className="dashboard-section">
-          <h2>Area platform</h2>
-          <p>
-            Akun platform terdeteksi. Dashboard pengelolaan tenant akan dibuat pada tahap Super
-            Admin; data desa tidak ditampilkan di area ini.
-          </p>
+          <h2>Data desa belum tersedia</h2>
+          <p>Akun ini belum terhubung dengan tenant desa.</p>
         </section>
       )}
 
       <section className="dashboard-section">
         <h2>Mulai bekerja</h2>
         <p>
-          Fondasi dashboard sudah aktif. Halaman operasional akan dibuka bertahap dengan pemeriksaan
-          sesi, izin, dan isolasi desa pada sisi server.
+          Gunakan menu administrasi untuk mengelola data, pelayanan, dan informasi desa sesuai
+          dengan hak akses akun Anda.
         </p>
-        <div className="quick-links">
-          <span className="button button-secondary">Data penduduk · segera hadir</span>
-          <span className="button button-secondary">Persuratan · segera hadir</span>
-          <span className="button button-secondary">Inventaris · segera hadir</span>
-        </div>
       </section>
     </>
   );
