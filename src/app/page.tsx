@@ -58,7 +58,10 @@ export default async function PublicHomePage() {
   const location = locationLabel(desa);
   const welcome = profil?.sambutan?.trim();
   const intro = welcome
-    ? welcome.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").slice(0, 280)
+    ? welcome
+        .replace(/<[^>]*>/g, " ")
+        .replace(/\s+/g, " ")
+        .slice(0, 280)
     : `Selamat datang di website resmi ${desa.namaDesa ?? "desa kami"}. Temukan informasi, kabar terbaru, dan layanan desa dalam satu tempat.`;
 
   return (
@@ -66,7 +69,9 @@ export default async function PublicHomePage() {
       <div className={styles.topline}>
         <div className={styles.container + " " + styles.toplineInner}>
           <span>Website Resmi Pemerintah Desa</span>
-          <span className={styles.toplineLocation}>{location || "Melayani dengan transparan dan terbuka"}</span>
+          <span className={styles.toplineLocation}>
+            {location || "Melayani dengan transparan dan terbuka"}
+          </span>
         </div>
       </div>
 
@@ -85,19 +90,33 @@ export default async function PublicHomePage() {
             ) : (
               <span className={styles.brandMark} aria-hidden="true">
                 <svg viewBox="0 0 48 48" fill="none">
-                  <path d="M7 21.5 24 8l17 13.5v18H7v-18Z" stroke="currentColor" strokeWidth="2.8" strokeLinejoin="round" />
-                  <path d="M17 39V25h14v14M12 19h24M20 16h8" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" />
+                  <path
+                    d="M7 21.5 24 8l17 13.5v18H7v-18Z"
+                    stroke="currentColor"
+                    strokeWidth="2.8"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M17 39V25h14v14M12 19h24M20 16h8"
+                    stroke="currentColor"
+                    strokeWidth="2.8"
+                    strokeLinecap="round"
+                  />
                 </svg>
               </span>
             )}
             <span className={styles.brandCopy}>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>{desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}</small>
+              <small>
+                {desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}
+              </small>
             </span>
           </Link>
 
           <nav className={styles.desktopNav} aria-label="Navigasi utama">
-            <Link className={styles.navActive} href="/">Beranda</Link>
+            <Link className={styles.navActive} href="/">
+              Beranda
+            </Link>
             <a href="#profil">Profil Desa</a>
             <a href="#berita">Berita</a>
             <a href="#agenda">Agenda</a>
@@ -112,22 +131,43 @@ export default async function PublicHomePage() {
 
       <section className={styles.hero}>
         {heroImage ? (
-          <Image src={heroImage} alt="" fill priority unoptimized sizes="100vw" className={styles.heroImage} />
+          <Image
+            src={heroImage}
+            alt=""
+            fill
+            priority
+            unoptimized
+            sizes="100vw"
+            className={styles.heroImage}
+          />
         ) : null}
         <div className={styles.heroOverlay} />
         <div className={styles.container + " " + styles.heroInner}>
           <div className={styles.heroContent}>
-            <span className={styles.eyebrow}><span /> PORTAL RESMI DESA</span>
-            <h1>Membangun Desa,<br /><em>Melayani Warga.</em></h1>
+            <span className={styles.eyebrow}>
+              <span /> PORTAL RESMI DESA
+            </span>
+            <h1>
+              Membangun Desa,
+              <br />
+              <em>Melayani Warga.</em>
+            </h1>
             <p>{intro}</p>
             <div className={styles.heroActions}>
-              <a className={styles.primaryButton} href="#profil">Jelajahi Desa <span aria-hidden="true">→</span></a>
-              <Link className={styles.secondaryButton} href="/masuk">Layanan Warga <span aria-hidden="true">↗</span></Link>
+              <a className={styles.primaryButton} href="#profil">
+                Jelajahi Desa <span aria-hidden="true">→</span>
+              </a>
+              <Link className={styles.secondaryButton} href="/masuk">
+                Layanan Warga <span aria-hidden="true">↗</span>
+              </Link>
             </div>
           </div>
           <div className={styles.heroCaption}>
             <span className={styles.captionDot} />
-            <span>{desa.namaDesa ?? "Desa"}{location ? ` · ${location}` : ""}</span>
+            <span>
+              {desa.namaDesa ?? "Desa"}
+              {location ? ` · ${location}` : ""}
+            </span>
           </div>
         </div>
       </section>
@@ -141,15 +181,24 @@ export default async function PublicHomePage() {
           </div>
           <div className={styles.statItem}>
             <span className={styles.statIcon}>♙</span>
-            <span><strong>{formatNumber(statistik.total)}</strong><small>Penduduk</small></span>
+            <span>
+              <strong>{formatNumber(statistik.total)}</strong>
+              <small>Penduduk</small>
+            </span>
           </div>
           <div className={styles.statItem}>
             <span className={styles.statIcon}>⌂</span>
-            <span><strong>{formatNumber(statistik.keluarga)}</strong><small>Kepala keluarga</small></span>
+            <span>
+              <strong>{formatNumber(statistik.keluarga)}</strong>
+              <small>Kepala keluarga</small>
+            </span>
           </div>
           <div className={styles.statItem}>
             <span className={styles.statIcon}>◉</span>
-            <span><strong>{formatNumber(statistik.perDusun.length)}</strong><small>Dusun</small></span>
+            <span>
+              <strong>{formatNumber(statistik.perDusun.length)}</strong>
+              <small>Dusun</small>
+            </span>
           </div>
         </div>
       </section>
@@ -169,25 +218,33 @@ export default async function PublicHomePage() {
               <span className={styles.serviceIcon}>▤</span>
               <strong>Layanan Mandiri</strong>
               <span>Ajukan kebutuhan administrasi dan pantau layanan warga.</span>
-              <b>Masuk layanan <i>→</i></b>
+              <b>
+                Masuk layanan <i>→</i>
+              </b>
             </Link>
             <a href="#profil" className={styles.serviceCard}>
               <span className={styles.serviceIcon}>⌂</span>
               <strong>Profil Desa</strong>
               <span>Kenali sejarah, visi, misi, dan potensi desa.</span>
-              <b>Kenali desa <i>→</i></b>
+              <b>
+                Kenali desa <i>→</i>
+              </b>
             </a>
             <a href="#berita" className={styles.serviceCard}>
               <span className={styles.serviceIcon}>▧</span>
               <strong>Berita & Informasi</strong>
               <span>Ikuti kabar dan informasi terbaru dari pemerintah desa.</span>
-              <b>Baca informasi <i>→</i></b>
+              <b>
+                Baca informasi <i>→</i>
+              </b>
             </a>
             <a href="#agenda" className={styles.serviceCard}>
               <span className={styles.serviceIcon}>▦</span>
               <strong>Agenda Kegiatan</strong>
               <span>Lihat kegiatan dan agenda desa yang akan datang.</span>
-              <b>Lihat agenda <i>→</i></b>
+              <b>
+                Lihat agenda <i>→</i>
+              </b>
             </a>
           </div>
         </div>
@@ -197,7 +254,11 @@ export default async function PublicHomePage() {
         <div className={styles.container + " " + styles.profileGrid}>
           <div className={styles.profileVisual}>
             <div className={styles.profileVisualMain}>
-              <span className={styles.profileSeal}>DESA<br />KITA</span>
+              <span className={styles.profileSeal}>
+                DESA
+                <br />
+                KITA
+              </span>
               <span className={styles.profileVisualLabel}>BERSAMA MEMBANGUN DESA</span>
             </div>
             <div className={styles.profileNote}>
@@ -207,12 +268,29 @@ export default async function PublicHomePage() {
           </div>
           <div className={styles.profileCopy}>
             <span className={styles.sectionKicker}>MENGENAL DESA</span>
-            <h2>Desa yang tumbuh<br />bersama warganya.</h2>
-            <p>{profil?.sejarah?.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").slice(0, 420) || intro}</p>
+            <h2>
+              Desa yang tumbuh
+              <br />
+              bersama warganya.
+            </h2>
+            <p>
+              {profil?.sejarah
+                ?.replace(/<[^>]*>/g, " ")
+                .replace(/\s+/g, " ")
+                .slice(0, 420) || intro}
+            </p>
             {profil?.visi ? (
-              <blockquote><span>VISI DESA</span>{profil.visi.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").slice(0, 220)}</blockquote>
+              <blockquote>
+                <span>VISI DESA</span>
+                {profil.visi
+                  .replace(/<[^>]*>/g, " ")
+                  .replace(/\s+/g, " ")
+                  .slice(0, 220)}
+              </blockquote>
             ) : null}
-            <a className={styles.textLink} href="#berita">Lihat informasi desa <span>→</span></a>
+            <a className={styles.textLink} href="#berita">
+              Lihat informasi desa <span>→</span>
+            </a>
           </div>
         </div>
       </section>
@@ -235,13 +313,33 @@ export default async function PublicHomePage() {
                 return (
                   <article className={styles.newsCard} key={item.id}>
                     <div className={styles.newsImage}>
-                      {image ? <Image src={image} alt="" fill sizes="(max-width: 700px) 100vw, 33vw" unoptimized /> : <span className={styles.newsImageFallback}>INFO<br />DESA</span>}
+                      {image ? (
+                        <Image
+                          src={image}
+                          alt=""
+                          fill
+                          sizes="(max-width: 700px) 100vw, 33vw"
+                          unoptimized
+                        />
+                      ) : (
+                        <span className={styles.newsImageFallback}>
+                          INFO
+                          <br />
+                          DESA
+                        </span>
+                      )}
                       <span className={styles.newsNumber}>0{index + 1}</span>
                     </div>
                     <div className={styles.newsBody}>
                       <div className={styles.newsMeta}>
                         <span>{item.kategori || "Informasi"}</span>
-                        <time dateTime={date.toISOString()}>{new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "long", year: "numeric" }).format(date)}</time>
+                        <time dateTime={date.toISOString()}>
+                          {new Intl.DateTimeFormat("id-ID", {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          }).format(date)}
+                        </time>
                       </div>
                       <h3>{item.judul}</h3>
                       <p>{item.ringkasan || "Baca informasi selengkapnya dari pemerintah desa."}</p>
@@ -268,14 +366,29 @@ export default async function PublicHomePage() {
             <p>Catat kegiatan dan pertemuan yang akan datang.</p>
           </div>
           <div className={styles.agendaList}>
-            {agenda.length > 0 ? agenda.map((item) => (
-              <article className={styles.agendaItem} key={item.id}>
-                <span className={styles.agendaDate}>{new Date(`${item.mulai}T00:00:00`).toLocaleDateString("id-ID", { day: "2-digit", month: "short" })}</span>
-                <span className={styles.agendaText}><strong>{item.judul}</strong><small>{agendaTanggalPanjang(item.mulai)}{item.lokasi ? ` · ${item.lokasi}` : ""}</small></span>
-                <span className={styles.agendaArrow}>↗</span>
-              </article>
-            )) : (
-              <div className={styles.agendaEmpty}>Belum ada agenda kegiatan yang dipublikasikan.</div>
+            {agenda.length > 0 ? (
+              agenda.map((item) => (
+                <article className={styles.agendaItem} key={item.id}>
+                  <span className={styles.agendaDate}>
+                    {new Date(`${item.mulai}T00:00:00`).toLocaleDateString("id-ID", {
+                      day: "2-digit",
+                      month: "short",
+                    })}
+                  </span>
+                  <span className={styles.agendaText}>
+                    <strong>{item.judul}</strong>
+                    <small>
+                      {agendaTanggalPanjang(item.mulai)}
+                      {item.lokasi ? ` · ${item.lokasi}` : ""}
+                    </small>
+                  </span>
+                  <span className={styles.agendaArrow}>↗</span>
+                </article>
+              ))
+            ) : (
+              <div className={styles.agendaEmpty}>
+                Belum ada agenda kegiatan yang dipublikasikan.
+              </div>
             )}
           </div>
         </div>
@@ -286,7 +399,10 @@ export default async function PublicHomePage() {
           <div className={styles.footerMain}>
             <div className={styles.footerBrand}>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <p>Portal informasi resmi untuk mewujudkan pelayanan publik desa yang terbuka, mudah, dan terpercaya.</p>
+              <p>
+                Portal informasi resmi untuk mewujudkan pelayanan publik desa yang terbuka, mudah,
+                dan terpercaya.
+              </p>
             </div>
             <div className={styles.footerContact}>
               <span>ALAMAT KANTOR DESA</span>
@@ -303,8 +419,13 @@ export default async function PublicHomePage() {
             </div>
           </div>
           <div className={styles.footerBottom}>
-            <span>© {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. Seluruh hak cipta dilindungi.</span>
-            <span>Didukung oleh <strong>FlexiDesa</strong></span>
+            <span>
+              © {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. Seluruh hak cipta
+              dilindungi.
+            </span>
+            <span>
+              Didukung oleh <strong>FlexiDesa</strong>
+            </span>
           </div>
         </div>
       </footer>
