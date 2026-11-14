@@ -54,7 +54,8 @@ export function TenantTable({ desa }: { desa: DesaSuperAdminRow[] }) {
           </select>
         </label>
         <span className="tenant-result-count">
-          Menampilkan {angka.format(filtered.length)} dari {angka.format(desa.length)} desa
+          Menampilkan {angka.format(filtered.length)} dari{" "}
+          {angka.format(desa.length)} desa
         </span>
       </div>
 
@@ -77,15 +78,27 @@ export function TenantTable({ desa }: { desa: DesaSuperAdminRow[] }) {
                 <tr key={item.id}>
                   <td>
                     <strong>{item.name || "Tanpa nama"}</strong>
-                    <span className="tenant-secondary">Kode: {item.code || "—"}</span>
+                    <span className="tenant-secondary">
+                      Kode: {item.code || "—"}
+                    </span>
                   </td>
-                  <td>{item.domain || <span className="tenant-secondary">Belum diatur</span>}</td>
+                  <td>
+                    {item.domain || (
+                      <span className="tenant-secondary">Belum diatur</span>
+                    )}
+                  </td>
                   <td>{angka.format(item.pengguna)}</td>
                   <td>{angka.format(item.penduduk)}</td>
                   <td>{angka.format(item.jenisSurat)}</td>
                   <td>{tanggal.format(new Date(item.createdAt))}</td>
                   <td>
-                    <span className={item.active ? "tenant-status is-active" : "tenant-status is-inactive"}>
+                    <span
+                      className={
+                        item.active
+                          ? "tenant-status is-active"
+                          : "tenant-status is-inactive"
+                      }
+                    >
                       <span aria-hidden="true" />
                       {item.active ? "Aktif" : "Nonaktif"}
                     </span>
