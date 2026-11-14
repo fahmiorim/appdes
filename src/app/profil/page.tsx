@@ -26,8 +26,8 @@ function mediaUrl(value: string | null | undefined, villageId: number): string |
 
 function plainText(value: string | null | undefined): string {
   return (value ?? "")
-    .replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script>/gi, " ")
-    .replace(/<style\\b[^>]*>[\\s\\S]*?<\\/style>/gi, " ")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]*>/g, " ")
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
@@ -35,7 +35,7 @@ function plainText(value: string | null | undefined): string {
     .replace(/&gt;/gi, ">")
     .replace(/&quot;/gi, '"')
     .replace(/&#39;/gi, "'")
-    .replace(/\\s+/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
@@ -57,10 +57,10 @@ export default async function ProfilDesaPage() {
   const lokasi = locationLabel(desa);
   const sejarah = plainText(profil?.sejarah);
   const misi = (profil?.misi ?? "")
-    .split(/\\r?\\n/)
+    .split(/\r?\n/)
     .map((item) => plainText(item))
     .filter(Boolean);
-  const koordinat = profil?.koordinat?.match(/^(-?\\d{1,3}(?:\\.\\d+)?)\\s*,\\s*(-?\\d{1,3}(?:\\.\\d+)?)$/);
+  const koordinat = profil?.koordinat?.match(/^(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)$/);
   const petaUrl = koordinat
     ? `https://www.google.com/maps?q=${encodeURIComponent(profil?.koordinat ?? "")}`
     : null;
