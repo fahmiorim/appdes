@@ -26,9 +26,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
     <div className="login-site">
       <header className="login-site-header">
         <a className="login-brand" href="#top" aria-label="FlexiDesa, beranda">
-          <span className="login-brand-symbol" aria-hidden="true">
-            FD
-          </span>
+          <img className="login-brand-symbol" src="/images/flexidesa-mark.svg" alt="" />
           <span className="login-brand-copy">
             <strong>FlexiDesa</strong>
             <small>Sistem Informasi Desa</small>
@@ -74,13 +72,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
           <div className="login-form-area">
             <section className="login-card" id="login-card" aria-labelledby="login-title">
               <div className="login-illustration" aria-hidden="true">
-                <span className="login-illustration-device">
-                  <span className="login-illustration-user">●</span>
-                  <span className="login-illustration-line" />
-                  <span className="login-illustration-line short" />
-                </span>
-                <span className="login-illustration-lock">✓</span>
-                <span className="login-illustration-leaf">✦</span>
+                <img src="/images/login-security.svg" alt="" />
               </div>
               <span className="login-card-eyebrow">SELAMAT DATANG KEMBALI</span>
               <h2 id="login-title">Masuk ke Akun</h2>
@@ -99,36 +91,28 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
 
         <section className="login-benefits" aria-label="Keunggulan layanan desa">
           <article className="login-benefit">
-            <span className="login-benefit-icon" aria-hidden="true">
-              ↯
-            </span>
+            <span className="login-benefit-icon" aria-hidden="true"><img src="/images/benefit-fast.svg" alt="" /></span>
             <div>
               <h3>Cepat &amp; Mudah</h3>
               <p>Akses layanan desa kapan saja, di mana saja.</p>
             </div>
           </article>
           <article className="login-benefit">
-            <span className="login-benefit-icon" aria-hidden="true">
-              ◈
-            </span>
+            <span className="login-benefit-icon" aria-hidden="true"><img src="/images/benefit-secure.svg" alt="" /></span>
             <div>
               <h3>Aman &amp; Terpercaya</h3>
               <p>Data Anda dilindungi dengan sistem keamanan.</p>
             </div>
           </article>
           <article className="login-benefit">
-            <span className="login-benefit-icon" aria-hidden="true">
-              ▱
-            </span>
+            <span className="login-benefit-icon" aria-hidden="true"><img src="/images/benefit-services.svg" alt="" /></span>
             <div>
               <h3>Layanan Lengkap</h3>
               <p>Berbagai layanan administrasi dan informasi desa.</p>
             </div>
           </article>
           <article className="login-benefit">
-            <span className="login-benefit-icon" aria-hidden="true">
-              ▣
-            </span>
+            <span className="login-benefit-icon" aria-hidden="true"><img src="/images/benefit-devices.svg" alt="" /></span>
             <div>
               <h3>Multi Perangkat</h3>
               <p>Dapat diakses melalui komputer, tablet, dan ponsel.</p>
@@ -140,9 +124,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
       <footer className="login-footer">
         <div className="login-footer-main">
           <div className="login-footer-brand">
-            <span className="login-brand-symbol" aria-hidden="true">
-              FD
-            </span>
+            <img className="login-brand-symbol" src="/images/flexidesa-mark.svg" alt="" />
             <div>
               <strong>FlexiDesa</strong>
               <span>{APP_NAME}</span>
