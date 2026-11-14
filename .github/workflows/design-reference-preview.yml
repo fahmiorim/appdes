@@ -1,0 +1,52 @@
+name: Design reference preview
+on:
+  push:
+    branches:
+      - chore/design-audit-and-baseline
+    paths:
+      - ".github/workflows/design-reference-preview.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build contact sheets from repository design references
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageOps, ImageDraw
+          folders = ["docs/public", "docs/account", "docs/pendukung"]
+          out = Path("design-preview")
+          out.mkdir(exist_ok=True)
+          for folder in folders:
+              files = sorted(Path(folder).glob("*.png"))
+              if not files:
+                  continue
+              thumb_w, thumb_h, label_h, cols = 360, 250, 48, 2
+              rows = (len(files) + cols - 1) // cols
+              sheet = Image.new("RGB", (cols*thumb_w, rows*(thumb_h+label_h)), "white")
+              draw = ImageDraw.Draw(sheet)
+              for i, path in enumerate(files):
+                  im = Image.open(path).convert("RGB")
+                  im.thumbnail((thumb_w-16, thumb_h-16))
+                  tile = Image.new("RGB", (thumb_w, thumb_h), "#f1f5f9")
+                  tile.paste(im, ((thumb_w-im.width)//2, (thumb_h-im.height)//2))
+                  x, y = (i%cols)*thumb_w, (i//cols)*(thumb_h+label_h)
+                  sheet.paste(tile, (x,y))
+                  draw.text((x+8,y+thumb_h+5), path.name[:52], fill="#111827")
+              sheet.save(out / (folder.split("/")[-1] + "-contact-sheet.jpg"), quality=88)
+              print(f"{folder}: {len(files)} images -> {out / (folder.split('/')[-1] + '-contact-sheet.jpg')}")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: design-reference-contact-sheets
+          path: design-preview/*.jpg
+          if-no-files-found: error
+          retention-days: 2
