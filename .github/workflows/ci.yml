@@ -121,14 +121,16 @@ jobs:
 
       - name: Start Next.js
         run: |
-          npm run dev -- --hostname 127.0.0.1 > /tmp/flexidesa-next.log 2>&1 &
+          npm run build > /tmp/flexidesa-build.log 2>&1
+          npm run start -- --hostname 127.0.0.1 > /tmp/flexidesa-next.log 2>&1 &
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:3000/masuk > /dev/null; then
               exit 0
             fi
             sleep 2
           done
-          cat /tmp/flexidesa-next.log
+          cat /tmp/flexidesa-build.log || true
+          cat /tmp/flexidesa-next.log || true
           exit 1
 
       - name: Capture desktop
