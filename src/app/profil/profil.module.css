@@ -37,7 +37,8 @@
   color: inherit;
   text-decoration: none;
 }
-.logo, .logoFallback {
+.logo,
+.logoFallback {
   width: 46px;
   height: 46px;
   object-fit: contain;
@@ -52,7 +53,8 @@
   font-size: 25px;
   font-weight: 800;
 }
-.brand strong, .brand small {
+.brand strong,
+.brand small {
   display: block;
 }
 .brand strong {
@@ -75,7 +77,8 @@
 .nav a {
   text-decoration: none;
 }
-.nav a[aria-current="page"], .nav a:hover {
+.nav a[aria-current="page"],
+.nav a:hover {
   color: #0b65f5;
 }
 .login {
@@ -92,7 +95,7 @@
 }
 .hero {
   padding: 54px 0 68px;
-  background: linear-gradient(115deg,#0d2e65 0%,#1258a5 58%,#087e9a 100%);
+  background: linear-gradient(115deg, #0d2e65 0%, #1258a5 58%, #087e9a 100%);
   color: #fff;
 }
 .breadcrumb {
@@ -106,21 +109,22 @@
   color: inherit;
   text-decoration: none;
 }
-.eyebrow, .kicker {
+.eyebrow,
+.kicker {
   margin: 0 0 12px;
   color: #1681f5;
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: .16em;
+  letter-spacing: 0.16em;
 }
 .eyebrow {
   color: #8bd8ff;
 }
 .hero h1 {
   margin: 0;
-  font-size: clamp(38px,5.5vw,62px);
+  font-size: clamp(38px, 5.5vw, 62px);
   line-height: 1.05;
-  letter-spacing: -.055em;
+  letter-spacing: -0.055em;
   font-weight: 800;
 }
 .heroText {
@@ -141,7 +145,7 @@
 }
 .introGrid {
   display: grid;
-  grid-template-columns: .75fr 1.25fr;
+  grid-template-columns: 0.75fr 1.25fr;
   align-items: center;
   gap: 64px;
 }
@@ -175,12 +179,12 @@
   color: #8a96a9;
   font-size: 9px;
   font-weight: 800;
-  letter-spacing: .16em;
+  letter-spacing: 0.16em;
 }
 .identityCard h2 {
   margin: 9px 0;
   font-size: 24px;
-  letter-spacing: -.04em;
+  letter-spacing: -0.04em;
 }
 .identityCard > p:not(.cardLabel) {
   color: #748097;
@@ -197,11 +201,16 @@
   font-size: 10px;
   font-weight: 700;
 }
-.introCopy h2, .contentCard h2, .visionCard h2, .missionCard h2, .sectionHeading h2, .contactPanel h2 {
+.introCopy h2,
+.contentCard h2,
+.visionCard h2,
+.missionCard h2,
+.sectionHeading h2,
+.contactPanel h2 {
   margin: 0 0 16px;
-  font-size: clamp(27px,3.5vw,40px);
+  font-size: clamp(27px, 3.5vw, 40px);
   line-height: 1.14;
-  letter-spacing: -.05em;
+  letter-spacing: -0.05em;
 }
 .introCopy > p:not(.kicker) {
   color: #6e7b92;
@@ -210,7 +219,7 @@
 }
 .quickFacts {
   display: grid;
-  grid-template-columns: repeat(3,1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
   margin-top: 28px;
   padding-top: 22px;
@@ -235,11 +244,13 @@
 }
 .contentGrid {
   display: grid;
-  grid-template-columns: 1.1fr .9fr;
+  grid-template-columns: 1.1fr 0.9fr;
   gap: 24px;
   align-items: start;
 }
-.contentCard, .visionCard, .missionCard {
+.contentCard,
+.visionCard,
+.missionCard {
   padding: 32px;
   border: 1px solid #e5ebf4;
   border-radius: 16px;
@@ -248,7 +259,8 @@
 .contentCard {
   min-height: 100%;
 }
-.bodyCopy, .visionCard > p:last-child {
+.bodyCopy,
+.visionCard > p:last-child {
   color: #697891;
   font-size: 13px;
   line-height: 2;
@@ -259,7 +271,7 @@
   gap: 18px;
 }
 .visionCard {
-  background: linear-gradient(135deg,#0d3973,#1768ae);
+  background: linear-gradient(135deg, #0d3973, #1768ae);
   color: #fff;
 }
 .visionCard .kicker {
@@ -316,7 +328,7 @@
 }
 .officialGrid {
   display: grid;
-  grid-template-columns: repeat(4,minmax(0,1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
 .officialCard {
@@ -331,7 +343,7 @@
   min-height: 220px;
   place-items: center;
   overflow: hidden;
-  background: linear-gradient(145deg,#e8f0fc,#c7d9ef);
+  background: linear-gradient(145deg, #e8f0fc, #c7d9ef);
   color: #2866b3;
   font-size: 54px;
   font-weight: 800;
@@ -442,7 +454,7 @@
     gap: 32px;
   }
   .officialGrid {
-    grid-template-columns: repeat(2,minmax(0,1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .nav {
     gap: 14px;
@@ -463,7 +475,8 @@
     min-height: 70px;
     gap: 10px;
   }
-  .logo, .logoFallback {
+  .logo,
+  .logoFallback {
     width: 38px;
     height: 38px;
   }
@@ -489,17 +502,21 @@
   .heroText {
     font-size: 13px;
   }
-  .introSection, .contentSection, .officialSection {
+  .introSection,
+  .contentSection,
+  .officialSection {
     padding: 56px 0;
   }
-  .introGrid, .contentGrid {
+  .introGrid,
+  .contentGrid {
     grid-template-columns: 1fr;
     gap: 28px;
   }
   .identityCard {
     padding: 26px;
   }
-  .introCopy h2, .contentCard h2 {
+  .introCopy h2,
+  .contentCard h2 {
     font-size: 30px;
   }
   .quickFacts {
@@ -508,7 +525,9 @@
   .quickFacts strong {
     font-size: 10px;
   }
-  .contentCard, .visionCard, .missionCard {
+  .contentCard,
+  .visionCard,
+  .missionCard {
     padding: 24px;
   }
   .sectionHeading {
@@ -516,7 +535,7 @@
     flex-direction: column;
   }
   .officialGrid {
-    grid-template-columns: repeat(2,minmax(0,1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
   .officialPhoto {
