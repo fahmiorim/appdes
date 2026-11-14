@@ -45,7 +45,7 @@ Tidak ada screenshot yang diberi status “implemented” hanya karena nama modu
 
 | Screenshot | Halaman/tujuan | Komponen utama | Route kandidat | Bukti/status baseline |
 |---|---|---|---|---|
-| Modern Indonesian Village Login Portal.png | Login | Auth shell, username, password, validation | `/masuk` | UI tersedia (`src/app/(auth)/masuk/page.tsx`); visual review terhadap PNG belum dilakukan |
+| Modern Indonesian Village Login Portal.png | Login | Auth shell, username, password, validation | `/masuk` | UI direvisi terhadap struktur screenshot login (header publik, hero, kartu form, benefit strip, footer); browser visual comparison masih pending |
 | SID Desa Sukamaju Registration Page.png | Registrasi | Registration form, terms link | `/daftar` | Flow dan eligibility perlu validasi; UI page belum ditemukan |
 | SID Desa Sukamaju OTP Verification.png | Verifikasi OTP | OTP input, resend, expiry notice | `/verifikasi` | UI page belum ditemukan; provider/flow perlu validasi |
 | SID Desa Sukamaju_ Akun Terverifikasi.png | Konfirmasi verifikasi | Success state, next action | `/akun/terverifikasi` | UI page belum ditemukan |
