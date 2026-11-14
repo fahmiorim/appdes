@@ -7,7 +7,7 @@ on:
       - ".github/workflows/design-reference-preview.yml"
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
   actions: write
 jobs:
   preview:
@@ -26,6 +26,12 @@ jobs:
           folders = ["docs/public", "docs/account", "docs/pendukung"]
           out = Path("design-preview")
           out.mkdir(exist_ok=True)
+          # Crop only the village-office photograph area from the login mockup.
+          # This avoids shipping the full screenshot as a production image asset.
+          source = Path("docs/account/Modern Indonesian Village Login Portal.png")
+          image = Image.open(source).convert("RGB")
+          Path("public/images").mkdir(parents=True, exist_ok=True)
+          image.crop((0, 490, 615, 850)).save("public/images/login-village-office.jpg", quality=92, optimize=True)
           for folder in folders:
               files = sorted(Path(folder).glob("*.png"))
               if not files:
@@ -45,6 +51,16 @@ jobs:
               sheet.save(out / (folder.split("/")[-1] + "-contact-sheet.jpg"), quality=88)
               print(f"{folder}: {len(files)} images -> {out / (folder.split('/')[-1] + '-contact-sheet.jpg')}")
           PY
+      - name: Commit generated login hero asset to working branch
+        if: github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/images/login-village-office.jpg
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(design): add cropped login hero image [skip ci]"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: design-reference-contact-sheets
