@@ -17,8 +17,7 @@ export function TenantTable({ desa }: { desa: DesaSuperAdminRow[] }) {
     const normalizedQuery = query.trim().toLocaleLowerCase("id-ID");
 
     return desa.filter((item) => {
-      const matchesStatus =
-        status === "semua" || (status === "aktif" ? item.active : !item.active);
+      const matchesStatus = status === "semua" || (status === "aktif" ? item.active : !item.active);
       const searchable = [item.name, item.code, item.domain]
         .filter(Boolean)
         .join(" ")
@@ -79,11 +78,7 @@ export function TenantTable({ desa }: { desa: DesaSuperAdminRow[] }) {
                     <strong>{item.name || "Tanpa nama"}</strong>
                     <span className="tenant-secondary">Kode: {item.code || "—"}</span>
                   </td>
-                  <td>
-                    {item.domain || (
-                      <span className="tenant-secondary">Belum diatur</span>
-                    )}
-                  </td>
+                  <td>{item.domain || <span className="tenant-secondary">Belum diatur</span>}</td>
                   <td>{angka.format(item.pengguna)}</td>
                   <td>{angka.format(item.penduduk)}</td>
                   <td>{angka.format(item.jenisSurat)}</td>
@@ -91,9 +86,7 @@ export function TenantTable({ desa }: { desa: DesaSuperAdminRow[] }) {
                   <td>
                     <span
                       className={
-                        item.active
-                          ? "tenant-status is-active"
-                          : "tenant-status is-inactive"
+                        item.active ? "tenant-status is-active" : "tenant-status is-inactive"
                       }
                     >
                       <span aria-hidden="true" />
