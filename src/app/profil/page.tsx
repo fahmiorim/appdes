@@ -87,7 +87,9 @@ export default async function ProfilDesaPage() {
                 unoptimized
               />
             ) : (
-              <span className={styles.logoFallback} aria-hidden="true">D</span>
+              <span className={styles.logoFallback} aria-hidden="true">
+                D
+              </span>
             )}
             <span>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
@@ -96,18 +98,24 @@ export default async function ProfilDesaPage() {
           </Link>
           <nav className={styles.nav} aria-label="Navigasi utama">
             <Link href="/">Beranda</Link>
-            <Link href="/profil" aria-current="page">Profil Desa</Link>
+            <Link href="/profil" aria-current="page">
+              Profil Desa
+            </Link>
             <Link href="/#berita">Berita</Link>
             <Link href="/#agenda">Agenda</Link>
           </nav>
-          <Link href="/masuk" className={styles.login}>Masuk <span aria-hidden="true">↗</span></Link>
+          <Link href="/masuk" className={styles.login}>
+            Masuk <span aria-hidden="true">↗</span>
+          </Link>
         </div>
       </header>
 
       <section className={styles.hero}>
         <div className={styles.container}>
           <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-            <Link href="/">Beranda</Link><span>/</span><span aria-current="page">Profil Desa</span>
+            <Link href="/">Beranda</Link>
+            <span>/</span>
+            <span aria-current="page">Profil Desa</span>
           </nav>
           <p className={styles.eyebrow}>MENGENAL LEBIH DEKAT</p>
           <h1>Profil {desa.namaDesa ?? "Desa"}</h1>
@@ -149,9 +157,18 @@ export default async function ProfilDesaPage() {
               <p>Informasi gambaran umum desa akan ditampilkan di sini setelah dilengkapi oleh pemerintah desa.</p>
             )}
             <div className={styles.quickFacts}>
-              <div><span>Desa</span><strong>{desa.namaDesa ?? "—"}</strong></div>
-              <div><span>Kecamatan</span><strong>{desa.namaKecamatan ?? "—"}</strong></div>
-              <div><span>Kabupaten</span><strong>{desa.namaKabupaten ?? "—"}</strong></div>
+              <div>
+                <span>Desa</span>
+                <strong>{desa.namaDesa ?? "—"}</strong>
+              </div>
+              <div>
+                <span>Kecamatan</span>
+                <strong>{desa.namaKecamatan ?? "—"}</strong>
+              </div>
+              <div>
+                <span>Kabupaten</span>
+                <strong>{desa.namaKabupaten ?? "—"}</strong>
+              </div>
             </div>
           </div>
         </div>
@@ -162,19 +179,27 @@ export default async function ProfilDesaPage() {
           <article className={styles.contentCard}>
             <p className={styles.kicker}>SEJARAH DESA</p>
             <h2>Perjalanan dan cerita desa</h2>
-            {sejarah ? <p className={styles.bodyCopy}>{sejarah}</p> : <p className={styles.muted}>Sejarah desa belum dipublikasikan.</p>}
+            {sejarah ? <p className={styles.bodyCopy}>{sejarah}</p> : (
+              <p className={styles.muted}>Sejarah desa belum dipublikasikan.</p>
+            )}
           </article>
           <aside className={styles.sideStack}>
             <div className={styles.visionCard}>
               <p className={styles.kicker}>VISI DESA</p>
               <h2>Arah dan cita-cita bersama</h2>
-              <p>{plainText(profil?.visi) || "Visi desa belum dipublikasikan."}</p>
+              <p>
+                {plainText(profil?.visi) || "Visi desa belum dipublikasikan."}
+              </p>
             </div>
             <div className={styles.missionCard}>
               <p className={styles.kicker}>MISI DESA</p>
               <h2>Langkah untuk mewujudkan visi</h2>
               {misi.length ? (
-                <ol>{misi.map((item, index) => <li key={index}>{item}</li>)}</ol>
+                <ol>
+                  {misi.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ol>
               ) : <p className={styles.muted}>Misi desa belum dipublikasikan.</p>}
             </div>
           </aside>
@@ -184,7 +209,11 @@ export default async function ProfilDesaPage() {
       <section className={styles.officialSection}>
         <div className={styles.container}>
           <div className={styles.sectionHeading}>
-            <div><p className={styles.kicker}>PEMERINTAHAN DESA</p><h2>Perangkat desa</h2><p>Kenali perangkat yang menjalankan pelayanan dan pemerintahan desa.</p></div>
+            <div>
+              <p className={styles.kicker}>PEMERINTAHAN DESA</p>
+              <h2>Perangkat desa</h2>
+              <p>Kenali perangkat yang menjalankan pelayanan dan pemerintahan desa.</p>
+            </div>
             <span className={styles.count}>{perangkat.length} perangkat aktif</span>
           </div>
           {perangkat.length ? (
@@ -195,7 +224,17 @@ export default async function ProfilDesaPage() {
                 return (
                   <article className={styles.officialCard} key={item.id}>
                     <div className={styles.officialPhoto}>
-                      {foto ? <Image src={foto} alt={`Foto ${nama}`} fill sizes="(max-width: 700px) 50vw, 220px" unoptimized /> : <span aria-hidden="true">{item.nama.slice(0, 1).toUpperCase()}</span>}
+                      {foto ? (
+                        <Image
+                          src={foto}
+                          alt={`Foto ${nama}`}
+                          fill
+                          sizes="(max-width: 700px) 50vw, 220px"
+                          unoptimized
+                        />
+                      ) : (
+                        <span aria-hidden="true">{item.nama.slice(0, 1).toUpperCase()}</span>
+                      )}
                     </div>
                     <div className={styles.officialInfo}>
                       <h3>{nama}</h3>
@@ -214,7 +253,11 @@ export default async function ProfilDesaPage() {
 
       <section className={styles.contactSection}>
         <div className={styles.container + " " + styles.contactPanel}>
-          <div><p className={styles.kicker}>INFORMASI WILAYAH</p><h2>Kunjungi kantor desa</h2><p>{desa.alamatKantor || lokasi || "Alamat kantor desa belum dilengkapi."}</p></div>
+          <div>
+            <p className={styles.kicker}>INFORMASI WILAYAH</p>
+            <h2>Kunjungi kantor desa</h2>
+            <p>{desa.alamatKantor || lokasi || "Alamat kantor desa belum dilengkapi."}</p>
+          </div>
           <div className={styles.contactActions}>
             {desa.telepon ? <a href={`tel:${desa.telepon}`}>Hubungi kantor desa</a> : null}
             {petaUrl ? <a href={petaUrl} target="_blank" rel="noreferrer">Lihat lokasi di peta ↗</a> : null}
@@ -224,8 +267,16 @@ export default async function ProfilDesaPage() {
 
       <footer className={styles.footer}>
         <div className={styles.container + " " + styles.footerInner}>
-          <div><strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong><p>{lokasi || "Website resmi pemerintah desa"}</p></div>
-          <div className={styles.footerLinks}><Link href="/">Beranda</Link><Link href="/profil">Profil Desa</Link><Link href="/#berita">Berita</Link><Link href="/masuk">Layanan Warga</Link></div>
+          <div>
+            <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
+            <p>{lokasi || "Website resmi pemerintah desa"}</p>
+          </div>
+          <div className={styles.footerLinks}>
+            <Link href="/">Beranda</Link>
+            <Link href="/profil">Profil Desa</Link>
+            <Link href="/#berita">Berita</Link>
+            <Link href="/masuk">Layanan Warga</Link>
+          </div>
           <small>© {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. Didukung FlexiDesa.</small>
         </div>
       </footer>
