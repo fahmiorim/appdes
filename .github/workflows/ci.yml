@@ -58,7 +58,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: design-reference-contact-sheets
-          path: design-preview/*.jpg
+          path: |
+            design-preview/*.jpg
+            docs/account/*.png
+            docs/public/*.png
+            docs/pendukung/*.png
           if-no-files-found: error
           retention-days: 2
 
