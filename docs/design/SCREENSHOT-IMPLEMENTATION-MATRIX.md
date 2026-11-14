@@ -21,7 +21,6 @@ Tidak ada screenshot yang diberi status “implemented” hanya karena nama modu
 |---|---|---|---|---|
 | Sistem Informasi Desa Suka Maju.png | Beranda desa | Public shell, hero, berita terbaru, ringkasan, agenda, footer | `/` | UI diimplementasikan pada PR #46; visual review pending |
 | Profil Desa Suka Maju_ Informasi dan Potensi Desa.png | Profil desa | Breadcrumb, identitas desa, sejarah, visi/misi, perangkat, informasi wilayah | `/profil` | Implemented pada PR ini; visual review desktop/mobile pending |
-| Profil Desa Suka Maju_ Informasi dan Potensi Desa.png | Profil desa | Breadcrumb, profile header, content section, media | `/profil` | Referensi ada; UI page belum ditemukan |
 | Sejarah Desa Suka Maju_ Jejak Perjalanan Desa.png | Sejarah | Timeline/content, media | `/profil/sejarah` | Referensi ada; UI page belum ditemukan |
 | Visi & Misi Desa Suka Maju.png | Visi dan misi | Page header, content cards | `/profil/visi-misi` | Referensi ada; UI page belum ditemukan |
 | Pemerintahan Desa Suka Maju Dashboard.png | Struktur pemerintahan | Organization chart/list, official card | `/pemerintahan` | Referensi ada; UI page belum ditemukan |
