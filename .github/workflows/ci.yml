@@ -98,7 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      NODE_ENV: development
+      NODE_ENV: production
       APP_URL: http://127.0.0.1:3000
       DATABASE_URL: mysql://visual:visual@127.0.0.1:3306/visual_placeholder
       BETTER_AUTH_SECRET: visual-qa-only-secret-that-is-at-least-32-characters
