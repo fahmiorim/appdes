@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { AdminSidebar } from "@/components/shell/admin-sidebar";
 import { AdminTopbar } from "@/components/shell/admin-topbar";
 import { getNamaDesaUseCase } from "@/features/desa/application/use-cases";
+import { isSuperAdminUser } from "@/features/multi-desa/application/provisioning-use-cases";
 import { DEFAULT_RESOURCE, hasPermission } from "@/features/rbac/application/authorization";
 import { verifySession } from "@/lib/dal";
 
@@ -12,6 +13,11 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
 
   if (user.residentId !== null) {
     redirect("/layanan-mandiri");
+  }
+
+  const isPlatformAdmin = await isSuperAdminUser(user);
+  if (user.villageId === null && !isPlatformAdmin) {
+    redirect("/masuk");
   }
 
   const canReadDashboard = hasPermission(user.permissions, DEFAULT_RESOURCE, "read");
@@ -23,9 +29,12 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
 
   return (
     <div className="admin-frame">
-      <AdminSidebar canReadDashboard={canReadDashboard} />
+      <AdminSidebar canReadDashboard={canReadDashboard} isPlatformAdmin={isPlatformAdmin} />
       <div className="admin-main">
-        <AdminTopbar name={user.name} villageName={villageName ?? ""} />
+        <AdminTopbar
+          name={user.name}
+          villageName={isPlatformAdmin ? "Super Admin Platform" : (villageName ?? "")}
+        />
         <main className="admin-content">{children}</main>
       </div>
     </div>
