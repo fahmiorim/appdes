@@ -826,7 +826,6 @@ input:focus-visible {
   }
 }
 
-
 /* Login page — aligned to docs/account/Modern Indonesian Village Login Portal.png */
 .login-site {
   min-height: 100vh;
@@ -996,8 +995,12 @@ input:focus-visible {
     linear-gradient(180deg, transparent 72%, rgb(8 116 246 / 12%) 100%),
     url("/images/login-village-office.jpg");
   background-repeat: no-repeat;
-  background-position: left top, center center;
-  background-size: 100% 100%, cover;
+  background-position:
+    left top,
+    center center;
+  background-size:
+    100% 100%,
+    cover;
 }
 
 .login-form-area {
