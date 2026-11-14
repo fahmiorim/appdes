@@ -93,10 +93,72 @@ jobs:
       - name: Integration test
         run: npm run test:integration
 
+  visual-login:
+    name: Visual QA login (desktop/mobile)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NODE_ENV: development
+      APP_URL: http://127.0.0.1:3000
+      DATABASE_URL: mysql://visual:visual@127.0.0.1:3306/visual_placeholder
+      BETTER_AUTH_SECRET: visual-qa-only-secret-that-is-at-least-32-characters
+      BETTER_AUTH_URL: http://127.0.0.1:3000
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: npm
+
+      - name: Install dependency
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx --yes playwright install --with-deps chromium
+
+      - name: Start Next.js
+        run: |
+          npm run dev -- --hostname 127.0.0.1 > /tmp/flexidesa-next.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:3000/masuk > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/flexidesa-next.log
+          exit 1
+
+      - name: Capture desktop
+        run: |
+          mkdir -p artifacts
+          npx --yes playwright screenshot --browser chromium --viewport-size "1440,1000" --full-page http://127.0.0.1:3000/masuk artifacts/login-desktop.png
+
+      - name: Capture mobile
+        run: |
+          npx --yes playwright screenshot --browser chromium --viewport-size "390,844" --full-page http://127.0.0.1:3000/masuk artifacts/login-mobile.png
+
+      - name: Include design reference
+        if: always()
+        run: |
+          mkdir -p artifacts
+          cp "docs/account/Modern Indonesian Village Login Portal.png" artifacts/reference-login.png
+
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flexidesa-login-visual-qa
+          path: artifacts/*.png
+          if-no-files-found: warn
+          retention-days: 7
+
   summary:
     name: Ringkasan CI
     runs-on: ubuntu-latest
-    needs: [quality, integration]
+    needs: [quality, integration, visual-login]
     if: always()
     steps:
       - name: Tulis ringkasan
@@ -108,8 +170,9 @@ jobs:
             echo "|---|---|"
             echo "| Unit/quality | ${{ needs.quality.result }} |"
             echo "| Integration | ${{ needs.integration.result }} |"
+            echo "| Visual QA login | ${{ needs.visual-login.result }} |"
             echo ""
-            if [ "${{ needs.quality.result }}" != "success" ] || [ "${{ needs.integration.result }}" != "success" ]; then
+            if [ "${{ needs.quality.result }}" != "success" ] || [ "${{ needs.integration.result }}" != "success" ] || [ "${{ needs.visual-login.result }}" != "success" ]; then
               echo "**Status keseluruhan: GAGAL**"
             else
               echo "**Status keseluruhan: LULUS**"
@@ -117,5 +180,5 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Tegakkan status keseluruhan
-        if: needs.quality.result != 'success' || needs.integration.result != 'success'
+        if: needs.quality.result != 'success' || needs.integration.result != 'success' || needs.visual-login.result != 'success'
         run: exit 1
