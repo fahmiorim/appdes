@@ -81,6 +81,15 @@ Referensi yang diperiksa: `docs/account/Modern Indonesian Village Login Portal.p
 
 Nilai tersebut adalah token baseline v0.3; tetap lakukan contrast check dan screenshot comparison sebelum status stable.
 
+### 4.1.2 Aset visual reusable
+
+Aset vektor halaman login disimpan di `public/images/` dan dipakai ulang melalui path statis:
+- `flexidesa-mark.svg`: simbol brand platform.
+- `login-security.svg`: ilustrasi keamanan di kartu login.
+- `benefit-fast.svg`, `benefit-secure.svg`, `benefit-services.svg`, `benefit-devices.svg`: ikon empat manfaat layanan.
+
+Aset ini adalah aset implementasi FlexiDesa, bukan klaim bahwa logo/ilustrasi tersebut merupakan file sumber dari desain referensi. Identitas logo desa/tenant yang resmi harus tetap berasal dari konfigurasi tenant.
+
 ### 4.2 Tipografi
 
 Token ukuran yang perlu distandarkan:
