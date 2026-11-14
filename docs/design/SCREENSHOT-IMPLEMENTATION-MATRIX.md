@@ -110,9 +110,9 @@ Untuk setiap baris:
 ## G. Temuan baseline yang memengaruhi rencana
 
 - Screenshot di `docs/` tetap menjadi sumber kebenaran untuk halaman yang memiliki referensi.
-- `DESIGN-SYSTEM.md` masih Draft v0.2; nilai token visual belum boleh dinyatakan final sebelum PNG benar-benar diperiksa.
-- Kode login saat ini memakai layout dua kolom pada desktop dan menyembunyikan panel visual pada viewport di bawah 900px. Kesesuaiannya dengan mockup belum dapat disimpulkan tanpa perbandingan visual.
-- CSS memuat import Google Fonts DM Sans dan Plus Jakarta Sans, tetapi token font aktif masih menunjuk ke Segoe UI/Arial. Ini merupakan inkonsistensi implementasi yang harus diselesaikan setelah font pada screenshot teridentifikasi.
+- `DESIGN-SYSTEM.md` Draft v0.3; baseline warna telah diturunkan dari screenshot, sedangkan nama font sumber masih berupa padanan visual sementara.
+- Login telah direvisi mengikuti struktur mockup: header publik, hero biru-ungu, foto kantor desa, kartu login, benefit strip, dan footer navy. Browser screenshot desktop/mobile masih diperlukan untuk acceptance.
+- Token font aktif menggunakan DM Sans dan Plus Jakarta Sans sebagai padanan visual sementara; nama font sumber tidak dapat dipastikan hanya dari screenshot raster.
 - Dashboard Admin dan Super Admin belum memiliki screenshot desain khusus. Keduanya harus memakai keputusan produk terdokumentasi, bukan diklaim mengikuti screenshot yang tidak tersedia.
 
 ## Referensi
