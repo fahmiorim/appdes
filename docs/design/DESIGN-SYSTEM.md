@@ -1,6 +1,6 @@
 # FlexiDesa Design System
 
-> Status: **Draft v0.2 — aturan dan inventaris telah diperbarui terhadap baseline 14 November 2026; nilai visual final tetap menunggu inspeksi PNG dan visual comparison.**
+> Status: **Draft v0.3 — referensi visual 39 screenshot telah ditinjau melalui contact sheet; login diperiksa pada resolusi penuh dan token awal diturunkan dari bukti visual.**
 > Sumber referensi: 39 screenshot di `docs/public/`, `docs/account/`, dan `docs/pendukung/`.
 
 ## 1. Tujuan dan aturan sumber kebenaran
@@ -13,7 +13,7 @@ Urutan sumber kebenaran:
 3. Implementasi komponen UI.
 4. Preferensi atau improvisasi individual tidak boleh mengalahkan referensi tanpa keputusan desain tercatat.
 
-**Penting:** jangan mengunci kode warna HEX, font, radius, shadow, atau ukuran final hanya berdasarkan tebakan dari nama file. Audit visual terhadap file PNG asli harus dilakukan sebelum nilai token final disahkan.
+**Penting:** screenshot PNG telah diperiksa secara visual. Nilai warna berikut adalah baseline hasil sampling dan pembacaan visual, bukan pengesahan final. Nama font persis tidak dapat dipastikan hanya dari raster; font yang dipilih merupakan padanan visual sementara sampai sumber desain aslinya diketahui.
 
 ## 2. Prinsip desain
 
@@ -63,6 +63,24 @@ Persyaratan:
 - Warna tenant dibatasi pada token/slot tema yang aman; tenant tidak boleh mengubah warna status semantik.
 - Dark theme hanya diterapkan bila screenshot/keputusan produk menetapkannya; jangan mengasumsikan seluruh aplikasi harus dark.
 
+### 4.1.1 Baseline warna hasil inspeksi screenshot
+
+Referensi yang diperiksa: `docs/account/Modern Indonesian Village Login Portal.png` (1199 × 1312), `docs/public/Sistem Informasi Desa Suka Maju.png` (1024 × 1536), dan `docs/pendukung/SID Desa Sukamaju 404 Page.png` (1536 × 1024). Sampel pixel login mengonfirmasi biru hero sekitar `#0387FE`, ungu sekitar `#A776FC`, tombol sekitar `#0166FE`, dan footer sekitar `#0D2136`.
+
+| Peran | Baseline CSS | Bukti/pemakaian |
+|---|---|---|
+| Brand/action blue | `#0B65F5` | Tombol utama, link, ikon aktif; didekatkan ke biru tombol referensi |
+| Brand blue strong | `#064FC9` | Hover/pressed |
+| Accent purple | `#8A58F5` | Gradient hero dan aksen sekunder |
+| Accent soft | `#F1ECFF` | Panel aksen lembut |
+| Page background | `#F4F8FE` | Latar halaman |
+| Footer navy | `#0D2136` | Footer gelap pada referensi publik/login/pendukung |
+| Main text | `#111A3B` | Heading dan teks utama |
+| Muted text | `#58688B` | Deskripsi dan metadata |
+| Border | `#DCE4F5` | Outline input, divider, card |
+
+Nilai tersebut adalah token baseline v0.3; tetap lakukan contrast check dan screenshot comparison sebelum status stable.
+
 ### 4.2 Tipografi
 
 Token ukuran yang perlu distandarkan:
@@ -77,7 +95,7 @@ Token ukuran yang perlu distandarkan:
 | `--font-size-2xl` | Page title |
 | `--font-size-display` | Hero/angka utama yang memang menonjol |
 
-Aturan: gunakan hierarchy konsisten, line-height nyaman, panjang baris terkendali untuk artikel, dan jangan menggunakan banyak jenis font. Nama font dan skala final menunggu audit screenshot.
+Aturan: gunakan hierarchy konsisten, line-height nyaman, panjang baris terkendali untuk artikel, dan jangan menggunakan banyak jenis font. Screenshot memakai sans-serif geometris tebal. Karena nama font tidak dapat diidentifikasi pasti dari PNG, implementasi memakai DM Sans untuk body dan Plus Jakarta Sans untuk heading sebagai padanan visual sementara.
 
 ### 4.3 Spacing, layout, dan breakpoint
 
@@ -197,9 +215,9 @@ Sebelum mengubah status dokumen menjadi stable:
 |---|---|
 | Inventaris screenshot | 39 file terdaftar: 21 publik, 11 akun, 7 pendukung |
 | Audit struktur repository | Dilakukan pada `main` `681753b`; halaman UI aktif: `/masuk`, `/beranda`, `/super-admin` |
-| Audit visual piksel PNG | Belum selesai; aset biner tidak dapat dirender melalui koneksi repository yang tersedia pada sesi ini |
+| Audit visual referensi | Contact sheet 39 PNG ditinjau; login, beranda publik, dan 404 diperiksa pada resolusi penuh |
 | Prinsip dan semantik token | Draft; dapat dipakai sebagai kontrak semantik |
-| Nilai warna/font final | Belum disahkan; jangan menebak dari CSS yang ada atau nama file screenshot |
+| Baseline warna | Draft v0.3 diturunkan dari sampel visual; perlu contrast check dan browser comparison |
 | Komponen bersama | Spesifikasi awal; perlu visual review dan konsolidasi |
 | Admin Desa dan Super Admin | Tidak memiliki screenshot khusus; perlu keputusan produk yang dicatat terpisah dari referensi screenshot |
 | Responsive rules final | Belum diverifikasi pada viewport desktop/mobile |
