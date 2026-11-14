@@ -93,7 +93,9 @@ export default async function ProfilDesaPage() {
             )}
             <span>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>{desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}</small>
+              <small>
+                {desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}
+              </small>
             </span>
           </Link>
           <nav className={styles.nav} aria-label="Navigasi utama">
@@ -138,7 +140,9 @@ export default async function ProfilDesaPage() {
                   height={92}
                   unoptimized
                 />
-              ) : <span aria-hidden="true">D</span>}
+              ) : (
+                <span aria-hidden="true">D</span>
+              )}
             </div>
             <p className={styles.cardLabel}>PEMERINTAH DESA</p>
             <h2>{desa.namaDesa ?? "Nama Desa"}</h2>
@@ -154,7 +158,10 @@ export default async function ProfilDesaPage() {
             ) : sejarah ? (
               <p>{sejarah.slice(0, 520)}</p>
             ) : (
-              <p>Informasi gambaran umum desa akan ditampilkan di sini setelah dilengkapi oleh pemerintah desa.</p>
+              <p>
+                Informasi gambaran umum desa akan ditampilkan di sini setelah dilengkapi oleh
+                pemerintah desa.
+              </p>
             )}
             <div className={styles.quickFacts}>
               <div>
@@ -179,7 +186,9 @@ export default async function ProfilDesaPage() {
           <article className={styles.contentCard}>
             <p className={styles.kicker}>SEJARAH DESA</p>
             <h2>Perjalanan dan cerita desa</h2>
-            {sejarah ? <p className={styles.bodyCopy}>{sejarah}</p> : (
+            {sejarah ? (
+              <p className={styles.bodyCopy}>{sejarah}</p>
+            ) : (
               <p className={styles.muted}>Sejarah desa belum dipublikasikan.</p>
             )}
           </article>
@@ -187,9 +196,7 @@ export default async function ProfilDesaPage() {
             <div className={styles.visionCard}>
               <p className={styles.kicker}>VISI DESA</p>
               <h2>Arah dan cita-cita bersama</h2>
-              <p>
-                {plainText(profil?.visi) || "Visi desa belum dipublikasikan."}
-              </p>
+              <p>{plainText(profil?.visi) || "Visi desa belum dipublikasikan."}</p>
             </div>
             <div className={styles.missionCard}>
               <p className={styles.kicker}>MISI DESA</p>
@@ -200,7 +207,9 @@ export default async function ProfilDesaPage() {
                     <li key={index}>{item}</li>
                   ))}
                 </ol>
-              ) : <p className={styles.muted}>Misi desa belum dipublikasikan.</p>}
+              ) : (
+                <p className={styles.muted}>Misi desa belum dipublikasikan.</p>
+              )}
             </div>
           </aside>
         </div>
@@ -220,7 +229,9 @@ export default async function ProfilDesaPage() {
             <div className={styles.officialGrid}>
               {perangkat.map((item) => {
                 const foto = mediaUrl(item.foto, desa.id);
-                const nama = [item.gelarDepan, item.nama, item.gelarBelakang].filter(Boolean).join(" ");
+                const nama = [item.gelarDepan, item.nama, item.gelarBelakang]
+                  .filter(Boolean)
+                  .join(" ");
                 return (
                   <article className={styles.officialCard} key={item.id}>
                     <div className={styles.officialPhoto}>
@@ -260,7 +271,11 @@ export default async function ProfilDesaPage() {
           </div>
           <div className={styles.contactActions}>
             {desa.telepon ? <a href={`tel:${desa.telepon}`}>Hubungi kantor desa</a> : null}
-            {petaUrl ? <a href={petaUrl} target="_blank" rel="noreferrer">Lihat lokasi di peta ↗</a> : null}
+            {petaUrl ? (
+              <a href={petaUrl} target="_blank" rel="noreferrer">
+                Lihat lokasi di peta ↗
+              </a>
+            ) : null}
           </div>
         </div>
       </section>
@@ -277,7 +292,9 @@ export default async function ProfilDesaPage() {
             <Link href="/#berita">Berita</Link>
             <Link href="/masuk">Layanan Warga</Link>
           </div>
-          <small>© {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. Didukung FlexiDesa.</small>
+          <small>
+            © {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. Didukung FlexiDesa.
+          </small>
         </div>
       </footer>
     </main>
