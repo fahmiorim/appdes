@@ -67,6 +67,12 @@ jobs:
         run: |
           npx --yes playwright screenshot --browser chromium --viewport-size "390,844" --full-page http://127.0.0.1:3000/masuk artifacts/login-mobile.png
 
+      - name: Include design reference
+        if: always()
+        run: |
+          mkdir -p artifacts
+          cp "docs/account/Modern Indonesian Village Login Portal.png" artifacts/reference-login.png
+
       - name: Upload visual evidence
         if: always()
         uses: actions/upload-artifact@v4
