@@ -40,14 +40,6 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Temporary formatter inspection
-        run: |
-          npx prettier --write "src/app/(admin)/super-admin/page.tsx" "src/app/(admin)/super-admin/tenant-table.tsx"
-          echo "===== FORMATTED PAGE ====="
-          cat "src/app/(admin)/super-admin/page.tsx"
-          echo "===== FORMATTED TENANT TABLE ====="
-          cat "src/app/(admin)/super-admin/tenant-table.tsx"
-
       - name: Format check
         run: npm run format:check
 
@@ -61,6 +53,7 @@ jobs:
 
     services:
       mysql:
+        # MySQL 8 disposable; database hanya hidup selama job ini.
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: uji_ci_root
@@ -68,6 +61,7 @@ jobs:
           MYSQL_DATABASE: desa_test_ci
         ports:
           - 3306:3306
+        # GitHub menunggu health check lulus sebelum menjalankan step.
         options: >-
           --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -puji_ci_root"
           --health-interval=5s
@@ -93,6 +87,9 @@ jobs:
       - name: Install dependency
         run: npm ci
 
+      # Guard membaca TEST_DATABASE_URL + ACK dari environment di atas dan
+      # menolak host non-loopback / nama di luar desa_test*. DATABASE_URL diisi
+      # oleh src/testing/setup-integration.ts dari DSN yang sudah divalidasi.
       - name: Integration test
         run: npm run test:integration
 
