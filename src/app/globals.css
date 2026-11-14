@@ -994,10 +994,10 @@ input:focus-visible {
   margin-top: 28px;
   background-image:
     linear-gradient(180deg, transparent 72%, rgb(8 116 246 / 12%) 100%),
-    url("/images/login-reference.png");
+    url("/images/login-village-office.jpg");
   background-repeat: no-repeat;
-  background-position: left top, left 52%;
-  background-size: 100% 100%, 195% auto;
+  background-position: left top, center center;
+  background-size: 100% 100%, cover;
 }
 
 .login-form-area {
@@ -1368,8 +1368,8 @@ input:focus-visible {
   .login-hero-photo {
     height: 260px;
     margin-top: 22px;
-    background-size: 195% auto;
-    background-position: left 52%;
+    background-size: cover;
+    background-position: center 58%;
   }
 
   .login-form-area {
