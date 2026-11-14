@@ -110,7 +110,7 @@ Untuk setiap baris:
 ## G. Temuan baseline yang memengaruhi rencana
 
 - Screenshot di `docs/` tetap menjadi sumber kebenaran untuk halaman yang memiliki referensi.
-- `DESIGN-SYSTEM.md` masih Draft v0.1; nilai token visual belum boleh dinyatakan final sebelum PNG benar-benar diperiksa.
+- `DESIGN-SYSTEM.md` masih Draft v0.2; nilai token visual belum boleh dinyatakan final sebelum PNG benar-benar diperiksa.
 - Kode login saat ini memakai layout dua kolom pada desktop dan menyembunyikan panel visual pada viewport di bawah 900px. Kesesuaiannya dengan mockup belum dapat disimpulkan tanpa perbandingan visual.
 - CSS memuat import Google Fonts DM Sans dan Plus Jakarta Sans, tetapi token font aktif masih menunjuk ke Segoe UI/Arial. Ini merupakan inkonsistensi implementasi yang harus diselesaikan setelah font pada screenshot teridentifikasi.
 - Dashboard Admin dan Super Admin belum memiliki screenshot desain khusus. Keduanya harus memakai keputusan produk terdokumentasi, bukan diklaim mengikuti screenshot yang tidak tersedia.
