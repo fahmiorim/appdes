@@ -54,8 +54,7 @@ export function TenantTable({ desa }: { desa: DesaSuperAdminRow[] }) {
           </select>
         </label>
         <span className="tenant-result-count">
-          Menampilkan {angka.format(filtered.length)} dari{" "}
-          {angka.format(desa.length)} desa
+          Menampilkan {angka.format(filtered.length)} dari {angka.format(desa.length)} desa
         </span>
       </div>
 
@@ -78,9 +77,7 @@ export function TenantTable({ desa }: { desa: DesaSuperAdminRow[] }) {
                 <tr key={item.id}>
                   <td>
                     <strong>{item.name || "Tanpa nama"}</strong>
-                    <span className="tenant-secondary">
-                      Kode: {item.code || "—"}
-                    </span>
+                    <span className="tenant-secondary">Kode: {item.code || "—"}</span>
                   </td>
                   <td>
                     {item.domain || (
