@@ -1,6 +1,6 @@
 # Matriks Screenshot → Halaman → Komponen → Route → Status
 
-> Baseline repository: `main` commit `343ef35a7858303eb82afc69c8caca7848a1a8e7`.
+> Baseline repository: `main` commit `681753bba9cadbbce3938473f6343e9f9ca83f0e` (14 November 2026).
 > Matriks ini memisahkan **referensi desain**, **rute yang diusulkan**, dan **bukti implementasi aktual**.
 
 ## Definisi status
@@ -8,7 +8,9 @@
 - **Reference exists**: screenshot tersedia.
 - **Route candidate**: pola URL yang disarankan; belum berarti route telah dibuat.
 - **Backend evidence**: domain/use case/API/route handler terkait teridentifikasi.
-- **UI not found**: file halaman Next.js/komponen UI untuk halaman tersebut tidak ditemukan pada baseline yang diperiksa.
+- **UI not found**: file halaman Next.js (`page.tsx`) untuk route tersebut tidak ditemukan pada baseline yang diperiksa.
+- **Implemented — visual review pending**: route UI tersedia, tetapi belum dibandingkan dengan screenshot pada viewport desktop dan mobile.
+- **Product design — no reference**: belum ada screenshot khusus; tampilan merupakan keputusan produk sementara dan wajib didokumentasikan.
 - **Needs validation**: perlu walkthrough dan verifikasi alur/permission.
 
 Tidak ada screenshot yang diberi status “implemented” hanya karena nama modul atau backend-nya ditemukan.
@@ -43,7 +45,7 @@ Tidak ada screenshot yang diberi status “implemented” hanya karena nama modu
 
 | Screenshot | Halaman/tujuan | Komponen utama | Route kandidat | Bukti/status baseline |
 |---|---|---|---|---|
-| Modern Indonesian Village Login Portal.png | Login | Auth shell, email/username, password, validation | `/masuk` | Auth backend teridentifikasi; UI page belum ditemukan |
+| Modern Indonesian Village Login Portal.png | Login | Auth shell, username, password, validation | `/masuk` | UI tersedia (`src/app/(auth)/masuk/page.tsx`); visual review terhadap PNG belum dilakukan |
 | SID Desa Sukamaju Registration Page.png | Registrasi | Registration form, terms link | `/daftar` | Flow dan eligibility perlu validasi; UI page belum ditemukan |
 | SID Desa Sukamaju OTP Verification.png | Verifikasi OTP | OTP input, resend, expiry notice | `/verifikasi` | UI page belum ditemukan; provider/flow perlu validasi |
 | SID Desa Sukamaju_ Akun Terverifikasi.png | Konfirmasi verifikasi | Success state, next action | `/akun/terverifikasi` | UI page belum ditemukan |
@@ -71,7 +73,9 @@ Tidak ada screenshot yang diberi status “implemented” hanya karena nama modu
 
 Fitur berikut ada di peta fitur/roadmap, tetapi tidak memiliki screenshot khusus pada 39 aset yang terinventarisasi. Desain baru diperlukan setelah scope MVP dan role disepakati:
 
-- Dashboard Admin Desa dan navigasi operasional.
+- Dashboard Admin Desa dan navigasi operasional — `/beranda` dan admin shell sudah tersedia; **product design — no reference**, visual review pending.
+- Dashboard Super Admin dan tabel tenant — `/super-admin` sudah tersedia; **product design — no reference**, visual review pending.
+- Manajemen tenant (detail, provisioning, domain, kuota, status, reset akses) — belum ada UI lengkap.
 - Manajemen penduduk, keluarga, rumah tangga, mutasi, dan wilayah.
 - Inbox surat masuk/keluar, disposisi, verifikasi, dan arsip surat.
 - Form dan dashboard IDM/SDGs.
@@ -80,7 +84,20 @@ Fitur berikut ada di peta fitur/roadmap, tetapi tidak memiliki screenshot khusus
 - Bantuan sosial, kelompok, inventaris, pembangunan, KIA, kehadiran, arsip, anjungan.
 - Pengaturan modul, role/permission, audit log, backup/restore, monitoring.
 
-## E. Cara menutup matriks
+## E. Status implementasi pada baseline 14 November 2026
+
+Pemeriksaan struktur `src/app` dan komponen terkait pada `main` menemukan halaman UI aktif berikut:
+
+| Route | File utama | Status visual |
+|---|---|---|
+| `/masuk` | `src/app/(auth)/masuk/page.tsx`, `login-form.tsx` | Implemented — visual review pending terhadap `Modern Indonesian Village Login Portal.png` |
+| `/beranda` | `src/app/(admin)/beranda/page.tsx` | Implemented — product design tanpa screenshot khusus; visual review pending |
+| `/super-admin` | `src/app/(admin)/super-admin/page.tsx`, `src/features/multi-desa/presentation/tenant-table.tsx` | Implemented — product design tanpa screenshot khusus; visual review pending |
+| Admin shell | `src/app/(admin)/layout.tsx`, `src/components/shell/*` | Implemented — product design tanpa screenshot khusus; visual review pending |
+
+Folder route, route handler API, PDF, dan ekspor tidak dihitung sebagai halaman UI. Folder publik, akun warga, dan halaman pendukung masih belum memiliki `page.tsx` pada baseline ini.
+
+## F. Cara menutup matriks
 
 Untuk setiap baris:
 1. Pastikan file screenshot dapat dibuka dan identifikasi viewport/varian.
@@ -90,9 +107,13 @@ Untuk setiap baris:
 5. Lampirkan PR/commit dan bukti test/visual review.
 6. Pastikan data yang ditampilkan berasal dari tenant aktif dan izin server-side.
 
-## F. Temuan baseline yang memengaruhi rencana
+## G. Temuan baseline yang memengaruhi rencana
 
-Struktur `src/app` pada baseline memuat route handler ekspor, PDF, dan API; pemeriksaan file tidak menemukan `page.tsx`, `page.ts`, `layout.tsx`, `layout.ts`, atau komponen React `.tsx/.jsx`. Dengan demikian, dokumen ini tidak mengklaim halaman UI sudah ada. Sebelum frontend dibangun, perlu keputusan eksplisit apakah UI lama memang sengaja dihapus dan desain di `docs/` menjadi spesifikasi utama.
+- Screenshot di `docs/` tetap menjadi sumber kebenaran untuk halaman yang memiliki referensi.
+- `DESIGN-SYSTEM.md` masih Draft v0.1; nilai token visual belum boleh dinyatakan final sebelum PNG benar-benar diperiksa.
+- Kode login saat ini memakai layout dua kolom pada desktop dan menyembunyikan panel visual pada viewport di bawah 900px. Kesesuaiannya dengan mockup belum dapat disimpulkan tanpa perbandingan visual.
+- CSS memuat import Google Fonts DM Sans dan Plus Jakarta Sans, tetapi token font aktif masih menunjuk ke Segoe UI/Arial. Ini merupakan inkonsistensi implementasi yang harus diselesaikan setelah font pada screenshot teridentifikasi.
+- Dashboard Admin dan Super Admin belum memiliki screenshot desain khusus. Keduanya harus memakai keputusan produk terdokumentasi, bukan diklaim mengikuti screenshot yang tidak tersedia.
 
 ## Referensi
 
