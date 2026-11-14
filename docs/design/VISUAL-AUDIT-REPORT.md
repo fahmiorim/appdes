@@ -50,7 +50,9 @@ Token awal implementasi dipilih mendekati referensi: brand `#0B65F5`, accent `#8
 2. Hero memakai foto kantor desa yang diekstrak dari area foto screenshot login sebagai asset terpisah: `public/images/login-village-office.jpg`.
 3. Login form tetap memakai autentikasi username yang sudah didukung backend dan menambahkan toggle tampil/sembunyikan kata sandi.
 4. Token warna, font, radius, dan shadow global diselaraskan dengan baseline screenshot.
-5. Design System dinaikkan ke Draft v0.3 dan matriks implementasi diperbarui.
+5. Aset vektor baru ditambahkan: `flexidesa-mark.svg`, `login-security.svg`, serta empat ikon manfaat (`benefit-fast.svg`, `benefit-secure.svg`, `benefit-services.svg`, `benefit-devices.svg`). Login memakai aset khusus tersebut, bukan glyph dekoratif/placeholder.
+6. CSS ilustrasi lama yang tidak lagi dipakai dihapus.
+7. Design System dinaikkan ke Draft v0.3 dan matriks implementasi diperbarui.
 
 ## 5. Batasan dan status visual QA
 
@@ -65,6 +67,7 @@ Token awal implementasi dipilih mendekati referensi: brand `#0B65F5`, accent `#8
 - [x] Periksa tiga screenshot representatif pada resolusi penuh.
 - [x] Tetapkan baseline warna dan padanan font sementara.
 - [x] Revisi Login dan aset hero.
+- [x] Buat aset brand, ilustrasi keamanan, dan empat ikon manfaat dalam format SVG.
 - [x] Perbarui Design System dan matriks.
 - [ ] Jalankan contrast check WCAG AA.
 - [ ] Ambil screenshot browser desktop/mobile dan lakukan pixel/visual comparison.
