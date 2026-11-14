@@ -84,10 +84,7 @@ export async function listBerita(
     .from(berita)
     .leftJoin(
       beritaKategori,
-      and(
-        eq(berita.kategoriId, beritaKategori.id),
-        eq(beritaKategori.villageId, villageId),
-      ),
+      and(eq(berita.kategoriId, beritaKategori.id), eq(beritaKategori.villageId, villageId)),
     )
     .where(and(...kondisi))
     .orderBy(desc(berita.terbitPada), desc(berita.createdAt))
@@ -106,10 +103,7 @@ export async function countBerita(villageId: number, kategoriSlug?: string): Pro
     .from(berita)
     .leftJoin(
       beritaKategori,
-      and(
-        eq(berita.kategoriId, beritaKategori.id),
-        eq(beritaKategori.villageId, villageId),
-      ),
+      and(eq(berita.kategoriId, beritaKategori.id), eq(beritaKategori.villageId, villageId)),
     )
     .where(and(...kondisi));
 
@@ -144,10 +138,7 @@ export async function getBeritaBySlug(
     .from(berita)
     .leftJoin(
       beritaKategori,
-      and(
-        eq(berita.kategoriId, beritaKategori.id),
-        eq(beritaKategori.villageId, villageId),
-      ),
+      and(eq(berita.kategoriId, beritaKategori.id), eq(beritaKategori.villageId, villageId)),
     )
     .where(and(beritaLayakTayang(villageId), eq(berita.slug, slug)))
     .limit(1);
