@@ -98,7 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      NODE_ENV: production
+      NODE_ENV: development
       APP_URL: http://127.0.0.1:3000
       DATABASE_URL: mysql://visual:visual@127.0.0.1:3306/visual_placeholder
       BETTER_AUTH_SECRET: visual-qa-only-secret-that-is-at-least-32-characters
@@ -121,8 +121,8 @@ jobs:
 
       - name: Start Next.js
         run: |
-          npm run build > /tmp/flexidesa-build.log 2>&1
-          npm run start -- --hostname 127.0.0.1 > /tmp/flexidesa-next.log 2>&1 &
+          NODE_ENV=production npm run build > /tmp/flexidesa-build.log 2>&1
+          NODE_ENV=production npm run start -- --hostname 127.0.0.1 > /tmp/flexidesa-next.log 2>&1 &
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:3000/masuk > /dev/null; then
               exit 0
