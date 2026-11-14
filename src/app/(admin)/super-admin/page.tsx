@@ -21,16 +21,16 @@ export default async function SuperAdminPage() {
         <div>
           <span className="eyebrow">Konsol platform</span>
           <h1>Dashboard Super Admin</h1>
-          <p>
-            Pantau tenant desa dan ringkasan penggunaan platform FlexiDesa.
-          </p>
+          <p>Pantau tenant desa dan ringkasan penggunaan platform FlexiDesa.</p>
         </div>
       </div>
 
       <div className="stats-grid platform-stats-grid">
         <Card>
           <div className="stat-card-label">Total desa</div>
-          <div className="stat-card-value">{desa.length.toLocaleString("id-ID")}</div>
+          <div className="stat-card-value">
+            {desa.length.toLocaleString("id-ID")}
+          </div>
           <div className="stat-card-note">Seluruh tenant terdaftar</div>
         </Card>
         <Card>
@@ -66,9 +66,7 @@ export default async function SuperAdminPage() {
         <div className="platform-section-heading">
           <div>
             <h2>Tenant desa</h2>
-            <p>
-              {desa.length.toLocaleString("id-ID")} desa terdaftar di platform.
-            </p>
+            <p>{desa.length.toLocaleString("id-ID")} desa terdaftar di platform.</p>
           </div>
         </div>
         <TenantTable desa={desa} />
