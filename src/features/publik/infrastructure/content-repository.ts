@@ -82,7 +82,10 @@ export async function listBerita(
       headline: berita.headline,
     })
     .from(berita)
-    .leftJoin(beritaKategori, eq(berita.kategoriId, beritaKategori.id))
+    .leftJoin(
+      beritaKategori,
+      and(eq(berita.kategoriId, beritaKategori.id), eq(beritaKategori.villageId, villageId)),
+    )
     .where(and(...kondisi))
     .orderBy(desc(berita.terbitPada), desc(berita.createdAt))
     .limit(opsi.limit ?? 20);
@@ -98,7 +101,10 @@ export async function countBerita(villageId: number, kategoriSlug?: string): Pro
   const [row] = await db
     .select({ value: count() })
     .from(berita)
-    .leftJoin(beritaKategori, eq(berita.kategoriId, beritaKategori.id))
+    .leftJoin(
+      beritaKategori,
+      and(eq(berita.kategoriId, beritaKategori.id), eq(beritaKategori.villageId, villageId)),
+    )
     .where(and(...kondisi));
 
   return row?.value ?? 0;
@@ -130,7 +136,10 @@ export async function getBeritaBySlug(
       headline: berita.headline,
     })
     .from(berita)
-    .leftJoin(beritaKategori, eq(berita.kategoriId, beritaKategori.id))
+    .leftJoin(
+      beritaKategori,
+      and(eq(berita.kategoriId, beritaKategori.id), eq(beritaKategori.villageId, villageId)),
+    )
     .where(and(beritaLayakTayang(villageId), eq(berita.slug, slug)))
     .limit(1);
 
@@ -200,7 +209,13 @@ export async function listAlbumGaleri(villageId: number, cari?: string): Promise
       : await db
           .select({ albumId: galeriFoto.albumId, jumlah: count() })
           .from(galeriFoto)
-          .where(and(eq(galeriFoto.aktif, true), inArray(galeriFoto.albumId, albumIds)))
+          .where(
+            and(
+              eq(galeriFoto.villageId, villageId),
+              eq(galeriFoto.aktif, true),
+              inArray(galeriFoto.albumId, albumIds),
+            ),
+          )
           .groupBy(galeriFoto.albumId);
   const fotoByAlbum = new Map(fotoRows.map((row) => [row.albumId, Number(row.jumlah ?? 0)]));
 
@@ -237,7 +252,13 @@ export async function getAlbumBySlug(
   const [jumlah] = await db
     .select({ value: count() })
     .from(galeriFoto)
-    .where(and(eq(galeriFoto.albumId, row.id), eq(galeriFoto.aktif, true)));
+    .where(
+      and(
+        eq(galeriFoto.villageId, villageId),
+        eq(galeriFoto.albumId, row.id),
+        eq(galeriFoto.aktif, true),
+      ),
+    );
 
   return { ...row, jumlahFoto: jumlah?.value ?? 0 };
 }
@@ -366,7 +387,13 @@ export async function listPerangkatDesa(villageId: number): Promise<PerangkatRin
       periode: perangkatDesa.periode,
     })
     .from(perangkatDesa)
-    .leftJoin(jabatanPerangkat, eq(perangkatDesa.jabatanId, jabatanPerangkat.id))
+    .leftJoin(
+      jabatanPerangkat,
+      and(
+        eq(perangkatDesa.jabatanId, jabatanPerangkat.id),
+        eq(jabatanPerangkat.villageId, villageId),
+      ),
+    )
     .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.status, "aktif")))
     .orderBy(asc(perangkatDesa.urut), asc(perangkatDesa.id));
 }

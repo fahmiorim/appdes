@@ -4,8 +4,13 @@ import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
-import { dokumenPublik, villages } from "@/db/schema";
-import { cariDokumenPublik } from "@/features/publik/infrastructure/content-repository";
+import { berita, beritaKategori, dokumenPublik, villages } from "@/db/schema";
+import {
+  cariDokumenPublik,
+  countBerita,
+  getBeritaBySlug,
+  listBerita,
+} from "@/features/publik/infrastructure/content-repository";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../db/migrations", import.meta.url));
@@ -95,6 +100,41 @@ afterAll(async () => {
       await db.delete(villages).where(eq(villages.id, villageId));
     }
   }
+});
+
+describe("isolasi kategori berita publik", () => {
+  it("tidak menampilkan kategori desa lain pada berita dan filter publik", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
+    const [villageA, villageB] = fixture.villageIds;
+
+    const [kategoriLain] = await db
+      .insert(beritaKategori)
+      .values({
+        villageId: villageB!,
+        nama: `Kategori Rahasia ${RUN}`,
+        slug: `kategori-rahasia-${RUN}`,
+      })
+      .$returningId();
+
+    await db.insert(berita).values({
+      villageId: villageA!,
+      kategoriId: kategoriLain!.id,
+      judul: `Berita Tenant A ${RUN}`,
+      slug: `berita-tenant-a-${RUN}`,
+      isi: "Konten uji integrasi.",
+      status: "published",
+    });
+
+    const daftar = await listBerita(villageA!, { limit: 10 });
+    expect(daftar).toHaveLength(1);
+    expect(daftar[0]?.kategori).toBeNull();
+
+    const detail = await getBeritaBySlug(villageA!, `berita-tenant-a-${RUN}`);
+    expect(detail?.kategori).toBeNull();
+
+    expect(await listBerita(villageA!, { kategoriSlug: `kategori-rahasia-${RUN}` })).toEqual([]);
+    expect(await countBerita(villageA!, `kategori-rahasia-${RUN}`)).toBe(0);
+  });
 });
 
 describe("pencarian dokumen publik", () => {
