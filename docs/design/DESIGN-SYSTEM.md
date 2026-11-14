@@ -1,6 +1,6 @@
 # FlexiDesa Design System
 
-> Status: **Draft v0.1 — struktur dan aturan komponen ditetapkan; nilai visual final menunggu audit visual screenshot asli.**
+> Status: **Draft v0.2 — aturan dan inventaris telah diperbarui terhadap baseline 14 November 2026; nilai visual final tetap menunggu inspeksi PNG dan visual comparison.**
 > Sumber referensi: 39 screenshot di `docs/public/`, `docs/account/`, dan `docs/pendukung/`.
 
 ## 1. Tujuan dan aturan sumber kebenaran
@@ -191,13 +191,32 @@ Sebelum mengubah status dokumen menjadi stable:
 - Uji kontras dan responsive behavior.
 - Minta review desain/produk dan update tabel token dengan nilai aktual.
 
-## 10. Status
+## 10. Status dan keputusan implementasi (14 November 2026)
 
 | Area | Status |
 |---|---|
-| Inventaris screenshot | Tersedia, 39 file |
-| Prinsip dan semantik token | Draft |
-| Nilai warna/font final | Menunggu audit visual PNG |
-| Komponen bersama | Spesifikasi awal |
-| Responsive rules final | Menunggu audit dan implementasi |
-| Visual regression baseline | Belum dibuat |
+| Inventaris screenshot | 39 file terdaftar: 21 publik, 11 akun, 7 pendukung |
+| Audit struktur repository | Dilakukan pada `main` `681753b`; halaman UI aktif: `/masuk`, `/beranda`, `/super-admin` |
+| Audit visual piksel PNG | Belum selesai; aset biner tidak dapat dirender melalui koneksi repository yang tersedia pada sesi ini |
+| Prinsip dan semantik token | Draft; dapat dipakai sebagai kontrak semantik |
+| Nilai warna/font final | Belum disahkan; jangan menebak dari CSS yang ada atau nama file screenshot |
+| Komponen bersama | Spesifikasi awal; perlu visual review dan konsolidasi |
+| Admin Desa dan Super Admin | Tidak memiliki screenshot khusus; perlu keputusan produk yang dicatat terpisah dari referensi screenshot |
+| Responsive rules final | Belum diverifikasi pada viewport desktop/mobile |
+| Visual regression baseline | Belum dibuat; perlu runtime browser dan fixture sintetis |
+
+### 10.1 Temuan kode yang harus ditindaklanjuti
+
+- `src/app/globals.css` mengimpor DM Sans dan Plus Jakarta Sans, tetapi `--font-sans` dan `--font-display` masih menggunakan Segoe UI/Arial. Jangan memilih salah satunya sebagai final sebelum font referensi dibaca dari PNG.
+- Login memakai split layout pada desktop dan menyembunyikan panel visual pada breakpoint 900px. Perlu dibandingkan dengan mockup, khususnya apakah panel/brand tetap harus hadir pada mobile.
+- Dashboard Admin dan Super Admin saat ini memakai satu admin shell. Perbedaan label dan navigasi sudah ada, tetapi visual hierarchy kedua persona belum melalui design review.
+
+### 10.2 Gate sebelum status Stable
+
+1. Render dan periksa 39 PNG asli; catat ukuran, viewport, warna, tipografi, grid, radius, shadow, ikon, dan elemen berulang.
+2. Audit minimal tiga referensi representatif per kelompok serta seluruh pola unik.
+3. Revisi token hanya berdasarkan hasil inspeksi; sertakan nilai dan bukti referensi.
+4. Bandingkan `/masuk` dengan screenshot login pada ukuran viewport yang sama.
+5. Buat spesifikasi visual Admin Desa dan Super Admin sebagai keputusan produk baru karena tidak ada screenshot khusus.
+6. Jalankan aplikasi pada browser, ambil screenshot desktop dan mobile, lalu lakukan visual comparison.
+7. Perbarui matriks dengan status `implemented`, `visually reviewed`, atau `accepted` hanya jika bukti tersedia.
