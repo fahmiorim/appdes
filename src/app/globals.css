@@ -856,20 +856,11 @@ input:focus-visible {
 }
 
 .login-brand-symbol {
-  display: grid;
+  display: block;
   width: 42px;
   height: 42px;
   flex: 0 0 auto;
-  place-items: center;
-  border: 2px solid #f4c54d;
-  border-radius: 50% 50% 46% 46%;
-  background: linear-gradient(145deg, #15964d, #08743b);
-  box-shadow: inset 0 0 0 3px rgb(255 255 255 / 24%);
-  color: #fff;
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 800;
-  letter-spacing: -0.08em;
+  object-fit: contain;
 }
 
 .login-brand-copy {
@@ -1022,12 +1013,18 @@ input:focus-visible {
 }
 
 .login-illustration {
-  position: relative;
   display: grid;
-  width: 118px;
-  height: 112px;
+  width: 132px;
+  height: 120px;
   place-items: center;
   margin: 0 auto 12px;
+}
+
+.login-illustration img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .login-illustration::before {
@@ -1230,9 +1227,13 @@ input:focus-visible {
   place-items: center;
   border-radius: 12px;
   background: #eaf0ff;
-  color: #135ff1;
-  font-size: 24px;
-  font-weight: 800;
+}
+
+.login-benefit-icon img {
+  display: block;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
 }
 
 .login-benefit h3 {
