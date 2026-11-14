@@ -91,28 +91,36 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
 
         <section className="login-benefits" aria-label="Keunggulan layanan desa">
           <article className="login-benefit">
-            <span className="login-benefit-icon" aria-hidden="true"><img src="/images/benefit-fast.svg" alt="" /></span>
+            <span className="login-benefit-icon" aria-hidden="true">
+              <img src="/images/benefit-fast.svg" alt="" />
+            </span>
             <div>
               <h3>Cepat &amp; Mudah</h3>
               <p>Akses layanan desa kapan saja, di mana saja.</p>
             </div>
           </article>
           <article className="login-benefit">
-            <span className="login-benefit-icon" aria-hidden="true"><img src="/images/benefit-secure.svg" alt="" /></span>
+            <span className="login-benefit-icon" aria-hidden="true">
+              <img src="/images/benefit-secure.svg" alt="" />
+            </span>
             <div>
               <h3>Aman &amp; Terpercaya</h3>
               <p>Data Anda dilindungi dengan sistem keamanan.</p>
             </div>
           </article>
           <article className="login-benefit">
-            <span className="login-benefit-icon" aria-hidden="true"><img src="/images/benefit-services.svg" alt="" /></span>
+            <span className="login-benefit-icon" aria-hidden="true">
+              <img src="/images/benefit-services.svg" alt="" />
+            </span>
             <div>
               <h3>Layanan Lengkap</h3>
               <p>Berbagai layanan administrasi dan informasi desa.</p>
             </div>
           </article>
           <article className="login-benefit">
-            <span className="login-benefit-icon" aria-hidden="true"><img src="/images/benefit-devices.svg" alt="" /></span>
+            <span className="login-benefit-icon" aria-hidden="true">
+              <img src="/images/benefit-devices.svg" alt="" />
+            </span>
             <div>
               <h3>Multi Perangkat</h3>
               <p>Dapat diakses melalui komputer, tablet, dan ponsel.</p>
