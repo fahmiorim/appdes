@@ -21,7 +21,9 @@ export default async function SuperAdminPage() {
         <div>
           <span className="eyebrow">Konsol platform</span>
           <h1>Dashboard Super Admin</h1>
-          <p>Pantau tenant desa dan ringkasan penggunaan platform FlexiDesa.</p>
+          <p>
+            Pantau tenant desa dan ringkasan penggunaan platform FlexiDesa.
+          </p>
         </div>
       </div>
 
@@ -33,18 +35,30 @@ export default async function SuperAdminPage() {
         </Card>
         <Card>
           <div className="stat-card-label">Desa aktif</div>
-          <div className="stat-card-value">{totalAktif.toLocaleString("id-ID")}</div>
-          <div className="stat-card-note">Tenant yang dapat mengakses layanan</div>
+          <div className="stat-card-value">
+            {totalAktif.toLocaleString("id-ID")}
+          </div>
+          <div className="stat-card-note">
+            Tenant yang dapat mengakses layanan
+          </div>
         </Card>
         <Card>
           <div className="stat-card-label">Total pengguna</div>
-          <div className="stat-card-value">{totalPengguna.toLocaleString("id-ID")}</div>
-          <div className="stat-card-note">Akun yang terdaftar pada seluruh desa</div>
+          <div className="stat-card-value">
+            {totalPengguna.toLocaleString("id-ID")}
+          </div>
+          <div className="stat-card-note">
+            Akun yang terdaftar pada seluruh desa
+          </div>
         </Card>
         <Card>
           <div className="stat-card-label">Total penduduk</div>
-          <div className="stat-card-value">{totalPenduduk.toLocaleString("id-ID")}</div>
-          <div className="stat-card-note">Data penduduk seluruh tenant</div>
+          <div className="stat-card-value">
+            {totalPenduduk.toLocaleString("id-ID")}
+          </div>
+          <div className="stat-card-note">
+            Data penduduk seluruh tenant
+          </div>
         </Card>
       </div>
 
@@ -52,7 +66,9 @@ export default async function SuperAdminPage() {
         <div className="platform-section-heading">
           <div>
             <h2>Tenant desa</h2>
-            <p>{desa.length.toLocaleString("id-ID")} desa terdaftar di platform.</p>
+            <p>
+              {desa.length.toLocaleString("id-ID")} desa terdaftar di platform.
+            </p>
           </div>
         </div>
         <TenantTable desa={desa} />
