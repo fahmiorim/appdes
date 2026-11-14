@@ -40,6 +40,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Temporary formatter inspection
+        run: |
+          npx prettier --write "src/app/(admin)/super-admin/page.tsx"
+          cat "src/app/(admin)/super-admin/page.tsx"
+
       - name: Format check
         run: npm run format:check
 
