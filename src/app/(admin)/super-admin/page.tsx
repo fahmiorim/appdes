@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 
 import { Card } from "@/components/ui/card";
 import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisioning-use-cases";
-
 import { TenantTable } from "@/features/multi-desa/presentation/tenant-table";
 
 export const metadata: Metadata = {
