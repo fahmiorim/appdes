@@ -10,8 +10,8 @@ export const dynamic = "force-dynamic";
 
 function plainText(value: string) {
   return value
-    .replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script>/gi, " ")
-    .replace(/<style\\b[^>]*>[\\s\\S]*?<\\/style>/gi, " ")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]*>/g, " ")
     .replace(/&nbsp;/gi, " ")
     .replace(/&amp;/gi, "&")
@@ -19,14 +19,14 @@ function plainText(value: string) {
     .replace(/&gt;/gi, ">")
     .replace(/&quot;/gi, '"')
     .replace(/&#39;/gi, "'")
-    .replace(/\\s+/g, " ")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
 export default async function VisiMisiPage() {
   const desa = await getIdentitasFromRequest();
   const profil = await profilDesaPublik(desa.id);
-  const misi = (profil?.misi ?? "")
+  const misi = plainText(profil?.misi ?? "")
     .split(/\r?\n/)
     .map((item) => item.trim())
     .filter(Boolean);
