@@ -79,3 +79,14 @@ PR hanya dapat dinyatakan siap review visual setelah:
 - Memperbarui workflow CI ke Node.js 22.22.1 karena dependensi `lint-staged@17` mensyaratkan minimal Node 22.22.1; runner sebelumnya memakai 22.12.0.
 - Ketiga route canonical ditambahkan dan tautan silang sejarah/visi-misi diperbarui.
 - Perbaikan ini belum menggantikan screenshot comparison. Status visual semua halaman tetap pending sampai bukti desktop/mobile per halaman tersedia.
+
+
+## Kesesuaian konten terhadap referensi
+
+- Statistik publik memiliki KPI dan bar sebaran penduduk, tetapi belum memiliki tabel rinci seperti yang disebutkan dalam matriks desain.
+- APBDes kini menampilkan progress realisasi per baris anggaran; visual chart penuh tetap belum dapat dinilai tanpa screenshot comparison.
+- Halaman Wilayah belum menampilkan peta. DTO/repository wilayah yang dipakai hanya menyediakan dusun, RW, RT, dan urutan; tidak ada koordinat geografis untuk membuat peta yang benar tanpa mengarang lokasi.
+- Halaman Potensi memakai konten halaman statis tenant. Belum ada sumber kategori/kartu potensi terstruktur yang teridentifikasi, sehingga kartu kategori tidak dibuat dari data fiktif.
+- Form pengaduan pada screenshot kontak/pengaduan belum dapat diimplementasikan dengan aman sampai tersedia endpoint publik penyimpanan pengaduan dengan validasi, rate limit, dan proteksi spam.
+
+Poin-poin ini merupakan batasan fungsional yang perlu keputusan produk/backend, bukan alasan untuk mengklaim tampilan sudah sama dengan referensi.
