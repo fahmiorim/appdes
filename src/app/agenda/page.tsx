@@ -123,7 +123,6 @@ export default async function AgendaPage({ searchParams }: Props) {
     `/agenda?bulan=${value.bulan}&tahun=${value.tahun}${query ? `&q=${encodeURIComponent(query)}` : ""}`;
   const firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
   const mondayOffset = (firstWeekday + 6) % 7;
-  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const calendarDays: (number | null)[] = [
     ...Array.from({ length: mondayOffset }, () => null),
     ...Array.from({ length: daysInMonth }, (_, index) => index + 1),
