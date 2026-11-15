@@ -4,7 +4,8 @@
 - **Tanggal:** 16 November 2026.
 - **Branch:** `task/AUD-034-batch-4b-cascade-relations`.
 - **Base commit:** `6c662de58be07b7a6486ad6da9cc888f11f877db` (`origin/main`).
-- **Commit pekerjaan:** `c95674d`.
+- **Commit pekerjaan:** `c95674d` (kode + migration), `dcdbf5d` (laporan awal), `7052607` (perbaikan fixture test kontak yang ditemukan CI).
+- **Pull request:** [#67](https://github.com/fahmiorim/appdes/pull/67).
 - **Status:** siap review. Belum di-merge, belum di-deploy, dan migration belum dijalankan pada database produksi.
 
 ## 1. Kondisi awal
@@ -53,6 +54,7 @@ Preflight bersifat read-only terhadap data domain: ia menghitung `orphan` dan `c
 | `src/db/b4b-tenant-migration-guard.integration.test.ts` | Migrasi sampai `0006`, sisipkan data legacy cross-tenant + orphan dengan `FOREIGN_KEY_CHECKS=0`, lalu jalankan `0007`: migration gagal, 10 temuan tercatat, FK lama dan unique parent tidak terpasang |
 | `src/db/tenant-composite-fk.integration.test.ts` | Daftar constraint `*_tenant_fk` diperluas dengan 5 nama baru |
 | `vitest.integration.config.mts` | Dua berkas test baru didaftarkan |
+| `src/features/kontak/application/kontak-tenant-isolation.integration.test.ts` | Fixture baris legacy lintas desa disisipkan lewat koneksi dengan `FOREIGN_KEY_CHECKS=0`; assertion baca tidak berubah |
 
 ## 3. Security dan tenant
 
@@ -76,13 +78,18 @@ Dijalankan pada mesin lokal, MySQL 8.0.30 loopback. Database target `desa_test_b
 | `npx vitest run --config vitest.integration.config.mts src/db/b4b-cascade-relations-composite-fk.integration.test.ts src/db/b4b-tenant-migration-guard.integration.test.ts` | **PASS** — 2 berkas, 8 tes (5 + 3) |
 | `npx vitest run --config vitest.integration.config.mts src/db/tenant-composite-fk.integration.test.ts` | **PASS** — 10 tes |
 | `npx vitest run --config vitest.config.mts src/db/migrasi-paritas.test.ts` | **PASS** — 7 tes |
-| CI GitHub | **SKIPPED** — belum dijalankan; PR belum dibuat |
+| `npm run test:integration` (seluruh suite, database kosong) | **PASS** — 36 berkas / 214 tes |
+| CI PR #67 — run [43760473024](https://github.com/fahmiorim/appdes/actions/runs/43760473024) | **PASS** — Unit/quality, Integration (MySQL 8), dan Visual QA login |
 
-Catatan proses: unit suite sempat FAIL 1 tes (`setiap entri journal memiliki berkas snapshot`) karena snapshot `0007` belum ada. Snapshot dibuat, rename dirapikan, lalu seluruh unit suite dijalankan ulang dan PASS. Integration test pertama kali juga tidak dapat jalan karena `TEST_DATABASE_ACK`/`TEST_DATABASE_URL` tidak tersedia di shell; setelah database uji disposable disiapkan, kedua berkas dijalankan dan PASS.
+Catatan proses:
+
+1. Unit suite sempat FAIL 1 tes (`setiap entri journal memiliki berkas snapshot`) karena snapshot `0007` belum ada. Snapshot dibuat, rename dirapikan, lalu seluruh unit suite dijalankan ulang dan PASS.
+2. Integration test pertama kali tidak dapat jalan karena `TEST_DATABASE_ACK`/`TEST_DATABASE_URL` tidak tersedia di shell; setelah database uji disposable disiapkan, kedua berkas dijalankan dan PASS.
+3. **CI run pertama (`dcdbf5d`) FAIL pada Integration test.** `kontak-tenant-isolation.integration.test.ts` sengaja menyisipkan baris `anggota_grup_kontak` lintas desa untuk membuktikan repository menyaringnya; setelah `0007`, insert itu ditolak FK. Fixture diperbaiki agar memakai `FOREIGN_KEY_CHECKS=0` (pola yang sama dengan test kelompok), tanpa mengubah assertion. Perbaikan di commit `7052607`, seluruh suite integrasi lokal PASS 36/214, dan CI run berikutnya PASS.
 
 ## 5. Diff
 
-`git diff --stat` sebelum commit: 13 berkas, +19.204/−18. Baris besar berasal dari `0007_snapshot.json` (snapshot Drizzle), bukan kode.
+`git diff --stat` kode sebelum laporan: 14 berkas, +19.222/−23. Baris besar berasal dari `0007_snapshot.json` (snapshot Drizzle), bukan kode.
 
 Berkas berubah:
 
@@ -94,6 +101,7 @@ Berkas berubah:
 - `src/db/b4b-tenant-migration-guard.integration.test.ts` (baru)
 - `src/db/tenant-composite-fk.integration.test.ts`
 - `vitest.integration.config.mts`
+- `src/features/kontak/application/kontak-tenant-isolation.integration.test.ts`
 - `docs/reports/01-security/AUD-034-tenant-relation-matrix.md` (§15)
 
 ## 6. Risiko dan keterbatasan
@@ -101,7 +109,7 @@ Berkas berubah:
 1. **Migration belum dijalankan pada database nyata.** Preflight akan gagal pada data legacy yang tidak aman; jumlah baris seperti itu di produksi belum diketahui. Operator perlu menjalankan `0007` pada salinan database lebih dulu.
 2. **Migration `0005`/`0006` belum pernah dijalankan di lingkungan nyata.** Test ini membuktikan `0000`–`0007` apply berurutan pada MySQL 8.0.30 kosong, tetapi bukan pada salinan data produksi.
 3. **Drift schema lama ditemukan.** `bumindes_item_village_buku_idx` dibuat `0006` tetapi tidak dideklarasikan di schema, sehingga `drizzle-kit generate` ingin mengeluarkan `DROP INDEX`. Drop itu sengaja tidak dimasukkan ke `0007`; akibatnya snapshot `0007` tidak memuat index tersebut dan `db:generate` berikutnya akan menawarkan drop yang sama. Ini perlu task terpisah untuk merekonsiliasi schema `bumindes_item` dengan `0006`.
-4. **CI belum dijalankan.** Hasil di atas berasal dari mesin lokal; CI dapat menemukan perbedaan lingkungan (versi MySQL, paralelisme).
+4. **CI lulus pada `7052607`.** Commit laporan setelahnya hanya menyentuh Markdown; bila CI dijalankan ulang, hasil integrasi tidak berubah karena tidak ada kode yang berubah.
 5. **Sisa Matriks B2: 11 relasi** — 10 `SET NULL` (8 menunggu transaksi aplikasi) dan `users.role_id` yang tidak layak composite FK. Belum ada perubahan untuk relasi tersebut.
 
 ## 7. Kesimpulan
