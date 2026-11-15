@@ -4,6 +4,7 @@ import { getIdentitasFromRequest } from "@/features/desa/application/resolve-vil
 import { listJenisSuratPublik } from "@/features/surat/application/surat-publik-use-cases";
 
 import styles from "../../informasi-publik.module.css";
+import { PublicShell } from "../../public-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -12,25 +13,16 @@ export default async function LayananSuratPage() {
   const jenisSurat = await listJenisSuratPublik(desa.id);
 
   return (
-    <main className={styles.site}>
-      <header className={styles.header}>
-        <div className={styles.container + " " + styles.headerInner}>
-          <Link href="/" className={styles.brand}>
-            <span>
-              <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>Katalog Layanan Surat</small>
-            </span>
-          </Link>
-          <nav className={styles.nav} aria-label="Navigasi utama">
-            <Link href="/">Beranda</Link>
-            <Link href="/layanan">Semua layanan</Link>
-            <Link href="/kontak">Kontak</Link>
-          </nav>
-          <Link href="/masuk" className={styles.login}>
-            Masuk ↗
-          </Link>
-        </div>
-      </header>
+    <PublicShell
+      villageName={desa.namaDesa ?? "Pemerintah Desa"}
+      brandLabel="Katalog Layanan Surat"
+      navigation={[
+        { href: "/", label: "Beranda" },
+        { href: "/layanan", label: "Semua layanan" },
+        { href: "/kontak", label: "Kontak" },
+      ]}
+      showMark={false}
+    >
       <section className={styles.hero}>
         <div className={styles.container}>
           <div className={styles.crumb}>
@@ -73,12 +65,6 @@ export default async function LayananSuratPage() {
           )}
         </div>
       </section>
-      <footer className={styles.footer}>
-        <div className={styles.container + " " + styles.footerInner}>
-          <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-          <span>© {new Date().getFullYear()} · Didukung FlexiDesa</span>
-        </div>
-      </footer>
-    </main>
+    </PublicShell>
   );
 }

@@ -5,6 +5,7 @@ import { halamanStatisPublik } from "@/features/publik/application/konten-publik
 import { sanitasiHtml } from "@/lib/sanitize";
 
 import styles from "../informasi-publik.module.css";
+import { PublicShell } from "../public-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -14,27 +15,17 @@ export default async function PotensiPage() {
   const isiAman = halaman?.isi ? sanitasiHtml(halaman.isi) : "";
 
   return (
-    <main className={styles.site}>
-      <header className={styles.header}>
-        <div className={styles.container + " " + styles.headerInner}>
-          <Link href="/" className={styles.brand}>
-            <span>
-              <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>Potensi Desa</small>
-            </span>
-          </Link>
-          <nav className={styles.nav} aria-label="Navigasi utama">
-            <Link href="/">Beranda</Link>
-            <Link href="/profil">Profil Desa</Link>
-            <Link href="/wilayah">Wilayah</Link>
-            <Link href="/kontak">Kontak</Link>
-          </nav>
-          <Link href="/masuk" className={styles.login}>
-            Masuk ↗
-          </Link>
-        </div>
-      </header>
-
+    <PublicShell
+      villageName={desa.namaDesa ?? "Pemerintah Desa"}
+      brandLabel="Potensi Desa"
+      navigation={[
+        { href: "/", label: "Beranda" },
+        { href: "/profil", label: "Profil Desa" },
+        { href: "/wilayah", label: "Wilayah" },
+        { href: "/kontak", label: "Kontak" },
+      ]}
+      showMark={false}
+    >
       <section className={styles.hero}>
         <div className={styles.container}>
           <div className={styles.crumb}>
@@ -111,13 +102,6 @@ export default async function PotensiPage() {
           </div>
         </div>
       </section>
-
-      <footer className={styles.footer}>
-        <div className={styles.container + " " + styles.footerInner}>
-          <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-          <span>© {new Date().getFullYear()} · Didukung FlexiDesa</span>
-        </div>
-      </footer>
-    </main>
+    </PublicShell>
   );
 }
