@@ -6,6 +6,7 @@ import { getIdentitasFromRequest } from "@/features/desa/application/resolve-vil
 import { daftarFotoAlbum, detailAlbumGaleri } from "@/features/publik/application/konten-publik";
 
 import styles from "../galeri.module.css";
+import { GalleryShell } from "../gallery-shell";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
@@ -37,27 +38,7 @@ export default async function DetailGaleriPage({ params }: Props) {
   if (!album) notFound();
   const photos = await daftarFotoAlbum(desa.id, album.id);
   return (
-    <main className={styles.site}>
-      <header className={styles.header}>
-        <div className={styles.container + " " + styles.headerInner}>
-          <Link href="/" className={styles.brand}>
-            <Image src="/images/flexidesa-mark.svg" alt="" width={42} height={42} />
-            <span>
-              <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>Galeri Desa</small>
-            </span>
-          </Link>
-          <nav aria-label="Navigasi utama">
-            <Link href="/">Beranda</Link>
-            <Link href="/profil">Profil Desa</Link>
-            <Link href="/berita">Berita</Link>
-            <Link href="/agenda">Agenda</Link>
-          </nav>
-          <Link href="/masuk" className={styles.login}>
-            Masuk ↗
-          </Link>
-        </div>
-      </header>
+    <GalleryShell villageName={desa.namaDesa ?? "Pemerintah Desa"}>
       <section className={styles.hero}>
         <div className={styles.container}>
           <div className={styles.breadcrumb}>
@@ -114,12 +95,6 @@ export default async function DetailGaleriPage({ params }: Props) {
           )}
         </div>
       </section>
-      <footer className={styles.footer}>
-        <div className={styles.container}>
-          <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-          <span>© {new Date().getFullYear()} · Didukung FlexiDesa</span>
-        </div>
-      </footer>
-    </main>
+    </GalleryShell>
   );
 }
