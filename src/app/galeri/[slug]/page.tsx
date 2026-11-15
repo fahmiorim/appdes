@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { daftarFotoAlbum, detailAlbumGaleri } from "@/features/publik/application/konten-publik";
 
-import styles from="../galeri.module.css";
+import styles from "../galeri.module.css";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
