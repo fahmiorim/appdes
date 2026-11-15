@@ -118,7 +118,7 @@ export default async function PublicHomePage() {
               Beranda
             </Link>
             <a href="#profil">Profil Desa</a>
-            <a href="#berita">Berita</a>
+            <Link href="/berita">Berita</Link>
             <a href="#agenda">Agenda</a>
             <a href="#layanan">Layanan</a>
           </nav>
@@ -230,14 +230,14 @@ export default async function PublicHomePage() {
                 Kenali desa <i>→</i>
               </b>
             </a>
-            <a href="#berita" className={styles.serviceCard}>
+            <Link href="/berita" className={styles.serviceCard}>
               <span className={styles.serviceIcon}>▧</span>
               <strong>Berita & Informasi</strong>
               <span>Ikuti kabar dan informasi terbaru dari pemerintah desa.</span>
               <b>
                 Baca informasi <i>→</i>
               </b>
-            </a>
+            </Link>
             <a href="#agenda" className={styles.serviceCard}>
               <span className={styles.serviceIcon}>▦</span>
               <strong>Agenda Kegiatan</strong>
@@ -289,7 +289,7 @@ export default async function PublicHomePage() {
               </blockquote>
             ) : null}
             <a className={styles.textLink} href="#berita">
-              Lihat informasi desa <span>→</span>
+              Lihat profil desa <span>→</span>
             </a>
           </div>
         </div>
@@ -303,7 +303,9 @@ export default async function PublicHomePage() {
               <h2>Berita dari desa</h2>
               <p>Informasi dan kegiatan terbaru untuk seluruh warga.</p>
             </div>
-            <span className={styles.headingAccent}>02 / BERITA</span>
+            <Link className={styles.textLink} href="/berita">
+              Semua berita <span>→</span>
+            </Link>
           </div>
           {berita.length > 0 ? (
             <div className={styles.newsGrid}>
@@ -341,7 +343,9 @@ export default async function PublicHomePage() {
                           }).format(date)}
                         </time>
                       </div>
-                      <h3>{item.judul}</h3>
+                      <h3>
+                        <Link href={`/berita/${encodeURIComponent(item.slug)}`}>{item.judul}</Link>
+                      </h3>
                       <p>{item.ringkasan || "Baca informasi selengkapnya dari pemerintah desa."}</p>
                     </div>
                   </article>
