@@ -577,4 +577,4 @@
   }
 }
 
-@media(max-width:640px){.headerInner{flex-wrap:wrap;padding-block:10px}.nav,header nav{display:flex;order:3;width:100%;overflow-x:auto;white-space:nowrap;gap:16px;padding:0 0 10px;scrollbar-width:none}.nav::-webkit-scrollbar,header nav::-webkit-scrollbar{display:none}}
+@media(max-width:640px){.headerInner{flex-wrap:wrap;padding-block:10px}.nav,.header nav{display:flex;order:3;width:100%;overflow-x:auto;white-space:nowrap;gap:16px;padding:0 0 10px;scrollbar-width:none}.nav::-webkit-scrollbar,header nav::-webkit-scrollbar{display:none}}
