@@ -72,14 +72,9 @@ export default async function GaleriPage({ searchParams }: Props) {
 
       <section className={styles.content}>
         <div className={styles.container}>
-          <nav className={styles.galleryTabs} aria-label="Jenis dokumentasi">
-            <span aria-current="page">▧ Semua Galeri</span>
-            <a href="#album-list">▱ Album Kegiatan</a>
-          </nav>
-
           <div className={styles.galleryLayout}>
             <div className={styles.galleryMain}>
-              <section className={styles.gallerySection} id="album-list">
+              <section className={styles.gallerySection}>
                 <div className={styles.sectionHeading}>
                   <div>
                     <p className={styles.kicker}>DOKUMENTASI DESA</p>
@@ -166,24 +161,6 @@ export default async function GaleriPage({ searchParams }: Props) {
                     <span>Foto dalam hasil</span>
                   </div>
                 </div>
-              </section>
-
-              <section className={styles.asideCard}>
-                <h2>Album tersedia</h2>
-                {albums.length ? (
-                  <ul className={styles.albumLinks}>
-                    {albums.map((album) => (
-                      <li key={album.id}>
-                        <Link href={`/galeri/${encodeURIComponent(album.slug)}`}>
-                          <span>{album.nama}</span>
-                          <b>{album.jumlahFoto}</b>
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className={styles.asideMuted}>Belum ada album yang dipublikasikan.</p>
-                )}
               </section>
 
               <section className={styles.galleryCallout}>

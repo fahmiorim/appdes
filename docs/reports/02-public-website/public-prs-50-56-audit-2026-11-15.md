@@ -359,16 +359,16 @@ Bagian A–F di atas adalah catatan audit pada 15 November 2026 dan sengaja dipe
 | F-06, F-07 | **Selesai** — validasi dan proyeksi kanonik | PR #58 di-merge (`5b5b6b1`); `src/features/gis/domain/peta-cetak.ts` + `peta-cetak.test.ts` (13 test) |
 | F-08 | **Selesai** — tab "Pengumuman" aktif | `src/app/agenda/page.tsx` kini memakai `Link` ke `/pengumuman`; aturan CSS `disabledTab` yang tidak terpakai dihapus dari `agenda.module.css` |
 | F-09 | **Terbuka** — public shell disalin per halaman | Tidak ada PR yang mengangkat shell bersama; masih di luar scope PR #50–#58 |
-| F-10 | **Terbuka** — daftar album ganda dan tab anchor | Masuk apa adanya bersama #55: nav `#album-list` dan daftar album di aside masih menampilkan isi yang sama |
+| F-10 | **Selesai** — satu daftar album utama, tanpa tab anchor palsu | `src/app/galeri/page.tsx` hanya merender grid utama; tab "Semua Galeri"/"Album Kegiatan" yang hanya menunjuk anchor dan kartu sidebar duplikat dihapus. Ringkasan jumlah album/foto serta CTA tetap ada |
 | F-11 | **Selesai** — fixture dan test isolasi tenant | `src/features/publik/application/pengumuman-publik.integration.test.ts` (6 test) menguji `daftarKategoriBerita`/`daftarBerita` untuk dua desa dengan slug kategori sama, termasuk draf, jadwal terbit, kategori nonaktif, dan pencarian |
 | F-12 | **Tidak berlaku** — PR #52 ditutup | Temuan menyangkut isi dokumen pada PR yang tidak di-merge |
 | F-13 | **Selesai** — tanggal memakai zona waktu eksplisit | `src/app/pengumuman/page.tsx` memakai konstanta `ZONA_WAKTU = "Asia/Jakarta"` pada seluruh `Intl.DateTimeFormat` di halaman tersebut |
 
 ### Temuan yang layak diangkat menjadi task berikutnya
 
-F-08, F-11, dan F-13 sudah dikerjakan (lihat tabel di atas). Yang tersisa:
+F-08, F-10, F-11, dan F-13 sudah dikerjakan (lihat tabel di atas). Yang tersisa:
 
-1. **F-09** dan **F-10** bersifat struktural/visual; lebih baik dikerjakan bersama audit visual publik berikutnya, bukan sebagai patch terpisah.
+1. **F-09** — public shell masih disalin per halaman; perlu dikerjakan sebagai perubahan struktural tersendiri.
 2. Halaman lain yang memformat tanggal publik (`/agenda`, `/berita`, `/dokumen`) belum diperiksa untuk risiko TZ yang sama seperti F-13; perlu audit kecil sebelum diubah agar tidak mengubah tampilan tanpa bukti.
 
 ### Validasi tindak lanjut F-08/F-11/F-13
@@ -382,8 +382,19 @@ Dijalankan pada branch `fix/public-pengumuman-audit-followups` (basis `origin/ma
 - `TEST_DATABASE_URL=mysql://…/desa_test TEST_DATABASE_ACK=1 npx vitest run --config vitest.integration.config.mts src/features/publik/application/pengumuman-publik.integration.test.ts` — **PASS**, 6 test pada database uji disposable `desa_test`.
 - Seluruh rangkaian integration test lain tidak dijalankan lokal pada perubahan ini; cakupannya diserahkan ke CI (`Integration test (MySQL 8)`).
 
+### Tindak lanjut F-10 — 16 November 2026
+
+- **Task:** hapus daftar album duplikat dan tab anchor di `/galeri`.
+- **Branch:** `fix/public-gallery-duplicate-list`.
+- **Base:** `origin/main` pada `2a17475`.
+- **Analisis:** grid utama sudah menampilkan seluruh album; sidebar merender ulang daftar yang sama dan tab "Album Kegiatan" hanya menunjuk anchor ke grid itu. Hapus duplikasi tanpa mengubah query, pencarian, ringkasan album/foto, atau CTA.
+- **File berubah:** `src/app/galeri/page.tsx` (hapus tab anchor dan daftar album kedua), `src/app/galeri/galeri.module.css` (hapus aturan tab/daftar yang tak terpakai), laporan ini.
+- **Security/tenant:** tidak ada perubahan query atau kepemilikan tenant; grid tetap menerima hasil yang sama dari `daftarAlbumGaleri(desa.id, query)`.
+- **Validasi:** `npx prettier --check src/app/galeri/page.tsx src/app/galeri/galeri.module.css docs/reports/02-public-website/public-prs-50-56-audit-2026-11-15.md` — **PASS**; `npx eslint src/app/galeri/page.tsx` — **PASS**; `git diff --check` — **PASS**; grep memastikan `.galleryTabs`, `albumLinks`, `asideMuted`, dan `#album-list` tidak lagi dirujuk.
+- **Test:** tidak ada test perilaku khusus ditambahkan/dijalankan; perubahan hanya menghapus markup presentasi yang redundan, tanpa mengubah logika data.
+- **Risiko tersisa:** tidak ada verifikasi render browser; ringkasan dan CTA sidebar sengaja dipertahankan.
+
 ### Validasi pada perubahan dokumentasi ini
 
 - `npx prettier --check docs/reports/02-public-website/public-prs-50-56-audit-2026-11-15.md` — PASS.
-- Tidak ada perubahan kode, schema, atau konfigurasi pada PR ini.
-- Klaim status di tabel G diverifikasi dengan membaca file pada `main` (`src/app/agenda/page.tsx`, `src/app/pengumuman/page.tsx`) dan riwayat merge PR #50–#58; tidak ada test perilaku yang dijalankan untuk PR dokumentasi ini.
+- Perubahan F-10 tidak mengubah schema atau konfigurasi.
