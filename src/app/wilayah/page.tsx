@@ -1,21 +1,123 @@
 import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
+import { getPetaPublik } from "@/features/gis/application/use-cases";
+import type { AreaDTO, PolygonDTO } from "@/features/gis/domain/gis";
 import { daftarWilayahPublik } from "@/features/wilayah/application/wilayah-publik";
 
 import styles from "./wilayah.module.css";
 
 export const dynamic = "force-dynamic";
 
+type Coordinate = [number, number];
+
+type AreaShape = {
+  id: number;
+  name: string;
+  description: string | null;
+  color: string;
+  rings: Coordinate[][];
+};
+
+function isCoordinate(value: unknown): value is Coordinate {
+  return (
+    Array.isArray(value) &&
+    value.length >= 2 &&
+    typeof value[0] === "number" &&
+    Number.isFinite(value[0]) &&
+    typeof value[1] === "number" &&
+    Number.isFinite(value[1])
+  );
+}
+
+function areaRings(value: string | null): Coordinate[][] {
+  if (!value) return [];
+
+  try {
+    const parsed = JSON.parse(value) as {
+      type?: string;
+      coordinates?: unknown;
+      geometry?: { type?: string; coordinates?: unknown } | null;
+    };
+    const geometry = parsed.type === "Feature" ? parsed.geometry : parsed;
+    if (!geometry?.type || !geometry.coordinates) return [];
+
+    const coordinates = geometry.coordinates;
+    if (geometry.type === "Polygon" && Array.isArray(coordinates)) {
+      const outer = coordinates[0];
+      return Array.isArray(outer) ? [outer.filter(isCoordinate)] : [];
+    }
+    if (geometry.type === "MultiPolygon" && Array.isArray(coordinates)) {
+      return coordinates.flatMap((polygon) => {
+        if (!Array.isArray(polygon) || !Array.isArray(polygon[0])) return [];
+        return [polygon[0].filter(isCoordinate)];
+      });
+    }
+  } catch {
+    return [];
+  }
+
+  return [];
+}
+
+function buildAreaShapes(areas: AreaDTO[], polygons: PolygonDTO[]): AreaShape[] {
+  const colors = new Map(polygons.map((polygon) => [polygon.id, polygon.color]));
+  return areas
+    .map((area) => ({
+      id: area.id,
+      name: area.nama,
+      description: area.desk,
+      color: /^#[0-9a-fA-F]{6}$/.test(colors.get(area.refPolygon ?? -1) ?? "")
+        ? (colors.get(area.refPolygon ?? -1) as string)
+        : "#7c3aed",
+      rings: areaRings(area.path),
+    }))
+    .filter((area) => area.rings.some((ring) => ring.length >= 3));
+}
+
+function projectShapes(shapes: AreaShape[]) {
+  const coordinates = shapes.flatMap((shape) => shape.rings.flat());
+  if (!coordinates.length) return [];
+
+  const longitudes = coordinates.map(([longitude]) => longitude);
+  const latitudes = coordinates.map(([, latitude]) => latitude);
+  const minLongitude = Math.min(...longitudes);
+  const maxLongitude = Math.max(...longitudes);
+  const minLatitude = Math.min(...latitudes);
+  const maxLatitude = Math.max(...latitudes);
+  const longitudeRange = maxLongitude - minLongitude || 1;
+  const latitudeRange = maxLatitude - minLatitude || 1;
+  const scale = Math.min(900 / longitudeRange, 540 / latitudeRange);
+  const width = longitudeRange * scale;
+  const height = latitudeRange * scale;
+  const offsetX = (1000 - width) / 2;
+  const offsetY = (600 - height) / 2;
+
+  return shapes.map((shape) => ({
+    ...shape,
+    projectedRings: shape.rings.map((ring) =>
+      ring
+        .map(([longitude, latitude]) => {
+          const x = offsetX + (longitude - minLongitude) * scale;
+          const y = 600 - offsetY - (latitude - minLatitude) * scale;
+          return `${x.toFixed(2)},${y.toFixed(2)}`;
+        })
+        .join(" "),
+    ),
+  }));
+}
+
 export default async function WilayahPage() {
   const desa = await getIdentitasFromRequest();
-  const rows = await daftarWilayahPublik(desa.id);
+  const [rows, mapData] = await Promise.all([daftarWilayahPublik(desa.id), getPetaPublik()]);
   const dusun = [...new Set(rows.map((row) => row.dusun).filter(Boolean))];
   const rw = [...new Set(rows.filter((row) => row.rw).map((row) => `${row.dusun}::${row.rw}`))];
   const rt = [
     ...new Set(rows.filter((row) => row.rt).map((row) => `${row.dusun}::${row.rw}::${row.rt}`)),
   ];
   const grouped = dusun.map((name) => ({ name, items: rows.filter((row) => row.dusun === name) }));
+  const shapes = projectShapes(buildAreaShapes(mapData.areas, mapData.polygons));
+
   return (
     <main className={styles.site}>
       <header className={styles.header}>
@@ -38,6 +140,7 @@ export default async function WilayahPage() {
           </Link>
         </div>
       </header>
+
       <section className={styles.hero}>
         <div className={styles.container}>
           <div className={styles.breadcrumb}>
@@ -48,67 +151,177 @@ export default async function WilayahPage() {
           <p className={styles.kicker}>PEMBAGIAN WILAYAH</p>
           <h1>Wilayah {desa.namaDesa ?? "Desa"}</h1>
           <p>
-            Informasi pembagian dusun, rukun warga, dan rukun tetangga di lingkungan{" "}
+            Informasi batas wilayah, peta administrasi, dan pembagian dusun di lingkungan{" "}
             {desa.namaDesa ?? "desa"}.
           </p>
         </div>
       </section>
+
       <section className={styles.content}>
         <div className={styles.container}>
-          <div className={styles.metrics}>
-            <div>
-              <strong>{dusun.length}</strong>
-              <span>Dusun</span>
-            </div>
-            <div>
-              <strong>{rw.length}</strong>
-              <span>RW terdata</span>
-            </div>
-            <div>
-              <strong>{rt.length}</strong>
-              <span>RT terdata</span>
-            </div>
-          </div>
-          <div className={styles.sectionHead}>
-            <div>
-              <p className={styles.kicker}>STRUKTUR LINGKUNGAN</p>
-              <h2>Daftar wilayah administratif</h2>
-            </div>
-            <span>{rows.length} data wilayah</span>
-          </div>
-          {grouped.length ? (
-            <div className={styles.groups}>
-              {grouped.map((group) => (
-                <section className={styles.group} key={group.name}>
-                  <div className={styles.groupHead}>
-                    <span className={styles.pin}>⌖</span>
-                    <div>
-                      <h3>Dusun {group.name}</h3>
-                      <p>{group.items.length} data RT/RW</p>
-                    </div>
+          <nav className={styles.sectionTabs} aria-label="Informasi profil desa">
+            <Link href="/sejarah">Sejarah Desa</Link>
+            <Link href="/visi-misi">Visi &amp; Misi</Link>
+            <span aria-current="page">Wilayah Desa</span>
+            <Link href="/potensi">Potensi Desa</Link>
+          </nav>
+
+          <div className={styles.overview}>
+            <section className={styles.mapPanel}>
+              <div className={styles.panelHeading}>
+                <span aria-hidden="true">⌖</span>
+                <div>
+                  <h2>Peta Wilayah {desa.namaDesa ?? "Desa"}</h2>
+                  <p>Batas area yang telah dipublikasikan oleh pemerintah desa.</p>
+                </div>
+              </div>
+              {shapes.length ? (
+                <svg
+                  className={styles.mapCanvas}
+                  viewBox="0 0 1000 600"
+                  role="img"
+                  aria-label={`Peta batas wilayah ${desa.namaDesa ?? "desa"} berdasarkan data GIS`}
+                >
+                  <defs>
+                    <pattern id="map-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#dce7f5" strokeWidth="1" />
+                    </pattern>
+                  </defs>
+                  <rect width="1000" height="600" fill="#f1f6ff" />
+                  <rect width="1000" height="600" fill="url(#map-grid)" />
+                  {shapes.map((shape) =>
+                    shape.projectedRings.map((points, index) => (
+                      <polygon
+                        key={`${shape.id}-${index}`}
+                        points={points}
+                        fill={shape.color}
+                        fillOpacity="0.42"
+                        stroke={shape.color}
+                        strokeWidth="5"
+                        strokeLinejoin="round"
+                      />
+                    )),
+                  )}
+                </svg>
+              ) : (
+                <div className={styles.mapEmpty}>
+                  <span aria-hidden="true">⌖</span>
+                  <h3>Peta wilayah belum tersedia</h3>
+                  <p>
+                    Batas wilayah belum dipublikasikan. Peta akan tampil otomatis setelah data
+                    polygon atau area GIS desa tersedia.
+                  </p>
+                </div>
+              )}
+              {shapes.length ? (
+                <ul className={styles.mapLegend}>
+                  {shapes.map((shape) => (
+                    <li key={shape.id}>
+                      <span style={{ backgroundColor: shape.color }} />
+                      {shape.name}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </section>
+
+            <aside className={styles.infoColumn}>
+              <section className={styles.infoPanel}>
+                <div className={styles.panelHeading}>
+                  <span aria-hidden="true">ⓘ</span>
+                  <div>
+                    <h2>Informasi Wilayah</h2>
+                    <p>Data administratif yang tersedia.</p>
                   </div>
-                  <div className={styles.tags}>
-                    {group.items.map((item) => (
-                      <div className={styles.tag} key={item.id}>
-                        <strong>{item.rw ? `RW ${item.rw}` : "RW —"}</strong>
-                        <span>{item.rt ? `RT ${item.rt}` : "RT —"}</span>
+                </div>
+                <dl className={styles.infoList}>
+                  <div>
+                    <dt>Jumlah Dusun</dt>
+                    <dd>{dusun.length || "—"}</dd>
+                  </div>
+                  <div>
+                    <dt>Jumlah RW</dt>
+                    <dd>{rw.length || "—"}</dd>
+                  </div>
+                  <div>
+                    <dt>Jumlah RT</dt>
+                    <dd>{rt.length || "—"}</dd>
+                  </div>
+                  <div>
+                    <dt>Area GIS</dt>
+                    <dd>{shapes.length || "Belum tersedia"}</dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section className={styles.infoPanel}>
+                <div className={styles.panelHeading}>
+                  <span aria-hidden="true">⇄</span>
+                  <div>
+                    <h2>Data Pembagian Wilayah</h2>
+                    <p>Jumlah wilayah berdasarkan data yang tercatat.</p>
+                  </div>
+                </div>
+                <div className={styles.boundaryList}>
+                  {grouped.length ? (
+                    grouped.map((group) => (
+                      <div key={group.name}>
+                        <strong>{group.name}</strong>
+                        <span>{group.items.length} data RT/RW</span>
                       </div>
-                    ))}
-                  </div>
-                </section>
-              ))}
+                    ))
+                  ) : (
+                    <p>Belum ada data pembagian dusun, RW, dan RT.</p>
+                  )}
+                </div>
+              </section>
+            </aside>
+          </div>
+
+          <section className={styles.sectionBlock}>
+            <div className={styles.sectionHead}>
+              <div>
+                <p className={styles.kicker}>STRUKTUR LINGKUNGAN</p>
+                <h2>Pembagian Wilayah Dusun</h2>
+                <p>Daftar dusun, RW, dan RT berdasarkan data administrasi desa.</p>
+              </div>
+              <span>{rows.length} data wilayah</span>
             </div>
-          ) : (
-            <div className={styles.empty}>
-              <span>⌖</span>
-              <h3>Data wilayah belum tersedia</h3>
-              <p>
-                Pembagian wilayah akan ditampilkan setelah data dilengkapi oleh pemerintah desa.
-              </p>
-            </div>
-          )}
+            {grouped.length ? (
+              <div className={styles.groups}>
+                {grouped.map((group) => (
+                  <article className={styles.group} key={group.name}>
+                    <div className={styles.groupHead}>
+                      <span className={styles.pin}>⌖</span>
+                      <div>
+                        <h3>{group.name}</h3>
+                        <p>{group.items.length} data RT/RW</p>
+                      </div>
+                    </div>
+                    <div className={styles.tags}>
+                      {group.items.map((item) => (
+                        <div className={styles.tag} key={item.id}>
+                          <strong>{item.rw ? `RW ${item.rw}` : "RW —"}</strong>
+                          <span>{item.rt ? `RT ${item.rt}` : "RT —"}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.empty}>
+                <span>⌖</span>
+                <h3>Data wilayah belum tersedia</h3>
+                <p>
+                  Pembagian wilayah akan ditampilkan setelah data dilengkapi oleh pemerintah desa.
+                </p>
+              </div>
+            )}
+          </section>
         </div>
       </section>
+
       <footer className={styles.footer}>
         <div className={styles.container}>
           <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>

@@ -362,3 +362,243 @@
 .hero .location {
   color: #d6e5ff;
 }
+
+.sectionTabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 9px;
+  margin: -26px 0 24px;
+  position: relative;
+  z-index: 2;
+  border: 1px solid #e5eaf4;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(36 66 130 / 10%);
+}
+.sectionTabs a,
+.sectionTabs span {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 12px;
+  color: #26324e;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+.sectionTabs [aria-current="page"] {
+  background: linear-gradient(110deg, #7135e8, #4e43e8);
+  color: #fff;
+}
+.overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.9fr);
+  gap: 14px;
+  align-items: start;
+}
+.mapPanel,
+.infoPanel,
+.sectionBlock {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #e4eaf4;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(23 43 77 / 6%);
+}
+.panelHeading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.panelHeading > span {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: none;
+  place-items: center;
+  border-radius: 12px;
+  background: #f1eaff;
+  color: #7135e8;
+  font-size: 24px;
+}
+.panelHeading h2 {
+  margin: 0;
+  color: #17213b;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.panelHeading p {
+  margin: 5px 0 0;
+  color: #7c899e;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.mapCanvas,
+.mapEmpty {
+  display: block;
+  width: 100%;
+  min-height: 300px;
+  border: 1px solid #e1e8f3;
+  border-radius: 13px;
+  background: #f1f6ff;
+}
+.mapCanvas {
+  aspect-ratio: 5 / 3;
+}
+.mapEmpty {
+  display: grid;
+  min-height: 320px;
+  align-content: center;
+  justify-items: center;
+  padding: 28px;
+  text-align: center;
+}
+.mapEmpty > span {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 16px;
+  background: #e9e1ff;
+  color: #7135e8;
+  font-size: 28px;
+}
+.mapEmpty h3 {
+  margin: 15px 0 6px;
+  color: #17213b;
+  font-family: var(--font-display);
+  font-size: 17px;
+}
+.mapEmpty p {
+  max-width: 390px;
+  margin: 0;
+  color: #7c899e;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.mapLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 14px 0 0;
+  margin: 0;
+  list-style: none;
+}
+.mapLegend li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #53627b;
+  font-size: 10px;
+  font-weight: 700;
+}
+.mapLegend li span {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.infoColumn {
+  display: grid;
+  gap: 14px;
+}
+.infoList {
+  display: grid;
+  margin: 0;
+}
+.infoList > div,
+.boundaryList > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 2px;
+  border-bottom: 1px solid #edf1f7;
+}
+.infoList > div:last-child,
+.boundaryList > div:last-child {
+  border-bottom: 0;
+}
+.infoList dt,
+.boundaryList strong {
+  color: #26324e;
+  font-size: 11px;
+  font-weight: 800;
+}
+.infoList dd,
+.boundaryList span {
+  margin: 0;
+  color: #65738b;
+  font-size: 11px;
+  text-align: right;
+}
+.boundaryList p {
+  margin: 0;
+  color: #7c899e;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.sectionBlock {
+  margin-top: 16px;
+}
+.sectionHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+.sectionHead h2 {
+  margin: 8px 0 0;
+  color: #17213b;
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: -0.05em;
+}
+.sectionHead p:not(.kicker) {
+  margin: 7px 0 0;
+  color: #7c899e;
+  font-size: 11px;
+}
+.sectionHead > span {
+  color: #8491a5;
+  font-size: 10px;
+}
+@media (max-width: 900px) {
+  .overview {
+    grid-template-columns: 1fr;
+  }
+  .infoColumn {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .sectionTabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: -18px;
+  }
+  .mapPanel,
+  .infoPanel,
+  .sectionBlock {
+    padding: 15px;
+  }
+  .mapCanvas,
+  .mapEmpty {
+    min-height: 240px;
+  }
+  .infoColumn {
+    grid-template-columns: 1fr;
+  }
+  .sectionHead {
+    align-items: flex-start;
+  }
+  .sectionHead h2 {
+    font-size: 22px;
+  }
+}
