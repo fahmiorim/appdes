@@ -54,6 +54,11 @@ export const agendaFormSchema = z
 
 export type AgendaFormInput = z.infer<typeof agendaFormSchema>;
 
+export interface BulanAgenda {
+  tahun: number;
+  bulan: number;
+}
+
 const NAMA_BULAN = [
   "Januari",
   "Februari",
@@ -68,6 +73,45 @@ const NAMA_BULAN = [
   "November",
   "Desember",
 ];
+
+/** Geser satu bulan kalender, termasuk pergantian tahun. */
+export function geserBulanAgenda(bulan: BulanAgenda, delta: number): BulanAgenda {
+  const indeks = bulan.tahun * 12 + (bulan.bulan - 1) + delta;
+  const tahun = Math.floor(indeks / 12);
+  return { tahun, bulan: indeks - tahun * 12 + 1 };
+}
+
+/**
+ * Rentang tanggal setengah-terbuka `[mulai, selesai)` untuk satu bulan.
+ *
+ * `selesai` adalah tanggal 1 bulan berikutnya sehingga baris pada hari
+ * terakhir bulan tetap ikut tanpa perlu menghitung jumlah hari.
+ */
+export function rentangBulanAgenda(
+  tahun: number,
+  bulan: number,
+): { mulai: string; selesai: string } {
+  const tanggal = (nilaiTahun: number, nilaiBulan: number) =>
+    `${nilaiTahun}-${String(nilaiBulan).padStart(2, "0")}-01`;
+  const berikut = geserBulanAgenda({ tahun, bulan }, 1);
+  return { mulai: tanggal(tahun, bulan), selesai: tanggal(berikut.tahun, berikut.bulan) };
+}
+
+/** Bulan kalender valid dan berada dalam rentang tahun yang dilayani. */
+export function bulanAgendaDalamRentang(
+  bulan: BulanAgenda,
+  tahunMin: number,
+  tahunMaks: number,
+): boolean {
+  return (
+    Number.isInteger(bulan.bulan) &&
+    bulan.bulan >= 1 &&
+    bulan.bulan <= 12 &&
+    Number.isInteger(bulan.tahun) &&
+    bulan.tahun >= tahunMin &&
+    bulan.tahun <= tahunMaks
+  );
+}
 
 /** Ubah `YYYY-MM-DD` menjadi "20 November 2026" tanpa bergantung zona waktu. */
 export function agendaTanggalPanjang(tanggal: string): string {
