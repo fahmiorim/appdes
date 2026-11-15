@@ -50,6 +50,8 @@ next-env.d.ts
 .claude/
 .playwright-mcp/
 /uploads
+# hasil capture visual QA lokal (1440/390)
+/artifacts
 
 # local test/agent caches
 /.vitest/

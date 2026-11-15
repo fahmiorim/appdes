@@ -1,0 +1,28 @@
+# Basis data disposable untuk visual QA lokal (desktop 1440 dan mobile 390).
+#
+# Karakteristik yang disengaja:
+# - Data disimpan di tmpfs sehingga hilang saat container berhenti. Tidak ada
+#   volume yang perlu dibersihkan dan tidak ada data yang bertahan.
+# - Port host memakai 3307 dan hanya di-bind ke 127.0.0.1 agar tidak menabrak
+#   MySQL pengembangan (3306) dan tidak terbuka ke jaringan.
+# - Nama database `desa_visual_qa` dibatasi oleh guard (`scripts/visual-qa/guard.mjs`);
+#   database pengembangan/produksi tidak akan pernah cocok dengan pola tersebut.
+#
+# Jalankan: npm run visual:qa:db:up
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: appdes-visual-qa
+    environment:
+      MYSQL_ROOT_PASSWORD: visual_qa_root
+      MYSQL_DATABASE: desa_visual_qa
+    ports:
+      - "127.0.0.1:3307:3306"
+    tmpfs:
+      - /var/lib/mysql:size=512m
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-pvisual_qa_root"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s

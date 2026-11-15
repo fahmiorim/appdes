@@ -24,6 +24,11 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "visual:qa:db:up": "docker compose -f compose.visual-qa.yml up -d --wait",
+    "visual:qa:db:down": "docker compose -f compose.visual-qa.yml down --volumes",
+    "visual:qa:migrate": "node scripts/visual-qa/migrate.mjs",
+    "visual:qa:seed": "node scripts/visual-qa/seed.mjs",
+    "visual:qa:capture": "node scripts/visual-qa/capture.mjs",
     "prepare": "husky"
   },
   "dependencies": {
