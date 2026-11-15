@@ -535,3 +535,282 @@
 .hero .location {
   color: #d6e5ff;
 }
+
+.agendaTabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 9px;
+  margin: -26px 0 24px;
+  position: relative;
+  z-index: 2;
+  border: 1px solid #e5eaf4;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(36 66 130 / 10%);
+}
+.agendaTabs a {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border-radius: 12px;
+  color: #26324e;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+.agendaTabs a[aria-current="page"] {
+  background: linear-gradient(110deg, #7135e8, #4e43e8);
+  color: #fff;
+}
+.agendaLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(270px, .8fr);
+  gap: 18px;
+}
+.agendaMain,
+.agendaAside {
+  min-width: 0;
+}
+.calendarPanel,
+.sidebarCard {
+  padding: 22px;
+  border: 1px solid #e4eaf4;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(23 43 77 / 6%);
+}
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+.calendarHeader h2 {
+  margin: 7px 0 5px;
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+}
+.calendarHeader p:last-child {
+  margin: 0;
+  color: #77869e;
+  font-size: 11px;
+}
+.calendarIcon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 13px;
+  background: #f1eaff;
+  color: #7135e8;
+  font-size: 24px;
+}
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+.calendarWeekday,
+.calendarDay {
+  display: grid;
+  min-height: 42px;
+  place-items: center;
+  border-radius: 9px;
+  color: #63728b;
+  font-size: 11px;
+}
+.calendarWeekday {
+  min-height: 34px;
+  background: #f2f5fb;
+  color: #4f5f7a;
+  font-weight: 800;
+}
+.calendarDay {
+  position: relative;
+  border: 1px solid #edf1f7;
+  background: #fff;
+  font-weight: 700;
+}
+.calendarHasEvent {
+  border-color: #bda8ff;
+  background: #f3edff;
+  color: #6533d4;
+}
+.calendarToday {
+  outline: 2px solid #0b65f5;
+  outline-offset: -2px;
+}
+.calendarDay i {
+  position: absolute;
+  bottom: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #7c3aed;
+}
+.agendaFilter {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(120px, .8fr) minmax(100px, .6fr) auto;
+  gap: 9px;
+  padding: 14px;
+  margin: 14px 0 28px;
+  border: 1px solid #e4eaf4;
+  border-radius: 14px;
+  background: #fff;
+}
+.agendaFilter label {
+  display: grid;
+  gap: 5px;
+  color: #64738c;
+  font-size: 10px;
+  font-weight: 700;
+}
+.agendaFilter input,
+.agendaFilter select {
+  min-width: 0;
+  min-height: 39px;
+  padding: 0 11px;
+  border: 1px solid #dce4f0;
+  border-radius: 9px;
+  background: #fff;
+  color: #24334d;
+  font: inherit;
+  font-size: 11px;
+}
+.agendaFilter button {
+  align-self: end;
+  min-height: 39px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 9px;
+  background: #7135e8;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+}
+.agendaAside {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+.sidebarCard h2,
+.notifyCard h2 {
+  margin: 0 0 15px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 800;
+}
+.sidebarStats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+.sidebarStats > div {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border-radius: 11px;
+  background: #f3efff;
+}
+.sidebarStats strong {
+  color: #7135e8;
+  font-family: var(--font-display);
+  font-size: 25px;
+}
+.sidebarStats span {
+  color: #697891;
+  font-size: 10px;
+}
+.sidebarEvents {
+  display: grid;
+  gap: 12px;
+}
+.sidebarEvent {
+  display: grid;
+  grid-template-columns: 48px minmax(0,1fr);
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #edf1f7;
+}
+.sidebarEvent:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+.sidebarEvent > span {
+  display: grid;
+  place-items: center;
+  padding: 7px 4px;
+  border-radius: 9px;
+  background: #f1eaff;
+  color: #7135e8;
+}
+.sidebarEvent > span strong {
+  font-size: 18px;
+}
+.sidebarEvent > span small {
+  font-size: 9px;
+  text-transform: uppercase;
+}
+.sidebarEvent > div {
+  display: grid;
+  gap: 5px;
+}
+.sidebarEvent > div strong {
+  color: #1b2944;
+  font-size: 11px;
+}
+.sidebarEvent > div small {
+  color: #8491a5;
+  font-size: 9px;
+}
+.notifyCard {
+  padding: 22px;
+  border: 1px solid #e1d7ff;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #f3edff, #fff);
+}
+.notifyCard > span {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  margin-bottom: 13px;
+  place-items: center;
+  border-radius: 13px;
+  background: #7135e8;
+  color: #fff;
+  font-size: 22px;
+}
+.notifyCard p {
+  color: #687790;
+  font-size: 11px;
+  line-height: 1.7;
+}
+.notifyCard a {
+  display: inline-flex;
+  margin-top: 8px;
+  color: #7135e8;
+  font-size: 11px;
+  font-weight: 800;
+}
+@media (max-width: 900px) {
+  .agendaLayout { grid-template-columns: 1fr; }
+  .agendaAside { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .notifyCard { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+  .agendaTabs { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: -18px; }
+  .agendaLayout { gap: 14px; }
+  .calendarPanel, .sidebarCard, .notifyCard { padding: 16px; }
+  .calendarDay { min-height: 36px; }
+  .agendaFilter { grid-template-columns: 1fr 1fr; }
+  .agendaFilter label:first-child { grid-column: 1 / -1; }
+  .agendaFilter button { grid-column: 1 / -1; }
+  .agendaAside { grid-template-columns: 1fr; }
+  .notifyCard { grid-column: auto; }
+}
