@@ -15,7 +15,7 @@ export default async function SejarahPage() {
     <main className={styles.site}>
       <header className={styles.header}><div className={styles.container + " " + styles.headerInner}>
         <Link href="/" className={styles.brand}><Image src="/images/flexidesa-mark.svg" alt="" width={42} height={42}/><span><strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong><small>Sejarah Desa</small></span></Link>
-        <nav className={styles.nav} aria-label="Navigasi utama"><Link href="/">Beranda</Link><Link href="/profil">Profil Desa</Link><Link href="/visi-misi">Visi & Misi</Link><Link href="/berita">Berita</Link></nav>
+        <nav className={styles.nav} aria-label="Navigasi utama"><Link href="/">Beranda</Link><Link href="/profil">Profil Desa</Link><Link href="/profil/visi-misi">Visi & Misi</Link><Link href="/berita">Berita</Link></nav>
         <Link href="/masuk" className={styles.login}>Masuk ↗</Link>
       </div></header>
       <section className={styles.hero}><div className={styles.container}>
