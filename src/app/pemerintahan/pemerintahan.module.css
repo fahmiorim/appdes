@@ -341,3 +341,50 @@
 .hero .location {
   color: #d6e5ff;
 }
+
+.orgChart {
+  display: grid;
+  justify-items: center;
+}
+.orgLeader {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+.leaderCard {
+  width: min(100%, 320px);
+  border-color: #b9a3ff;
+  box-shadow: 0 14px 32px rgb(87 57 180 / 12%);
+}
+.leaderCard .position {
+  color: #7135e8;
+}
+.orgConnector {
+  width: 1px;
+  height: 34px;
+  background: linear-gradient(#8a58f5, #d9d0f7);
+}
+.orgChart .grid {
+  width: 100%;
+  position: relative;
+}
+.orgChart .grid::before {
+  position: absolute;
+  top: -17px;
+  left: 12.5%;
+  right: 12.5%;
+  height: 1px;
+  background: #d9d0f7;
+  content: "";
+}
+@media (max-width: 700px) {
+  .orgChart .grid::before {
+    display: none;
+  }
+  .orgConnector {
+    height: 24px;
+  }
+  .leaderCard {
+    width: min(100%, 300px);
+  }
+}

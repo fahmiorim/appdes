@@ -178,11 +178,18 @@ jobs:
               "INSERT INTO dokumen_publik (village_id, nama, slug, kategori, jenis, nomor, tahun, keterangan, aktif) VALUES (?, ?, ?, ?, ?, ?, ?, ?, true)",
               [id, "Peraturan Desa tentang APBDes", "perdes-apbdes-2026", "peraturan_desa", "Peraturan Desa", "01 Tahun 2026", 2026, "Dokumen contoh sintetis untuk pemeriksaan tampilan."]
             );
-            await connection.execute("INSERT INTO jabatan_perangkat (village_id, nama, slug, urut) VALUES (?, ?, ?, 1)", [id, "Kepala Desa", "kepala-desa"]);
-            const [[jabatan]] = await connection.query("SELECT id FROM jabatan_perangkat WHERE village_id = ? AND slug = ?", [id, "kepala-desa"]);
-            await connection.execute(
-              "INSERT INTO perangkat_desa (village_id, jabatan_id, nama, status, periode, urut) VALUES (?, ?, ?, 'aktif', ?, 1)",
-              [id, jabatan.id, "Budi Santoso", "2024–2030"]
+            await connection.query(
+              "INSERT INTO jabatan_perangkat (village_id, nama, slug, urut) VALUES (?, ?, ?, 1), (?, ?, ?, 2), (?, ?, ?, 3), (?, ?, ?, 4), (?, ?, ?, 5)",
+              [id, "Kepala Desa", "kepala-desa", id, "Sekretaris Desa", "sekretaris-desa", id, "Kaur Keuangan", "kaur-keuangan", id, "Kasi Pemerintahan", "kasi-pemerintahan", id, "Kasi Pelayanan", "kasi-pelayanan"]
+            );
+            const [jabatanRows] = await connection.query(
+              "SELECT id, slug FROM jabatan_perangkat WHERE village_id = ? ORDER BY urut",
+              [id]
+            );
+            const jabatanBySlug = new Map(jabatanRows.map((row) => [row.slug, row.id]));
+            await connection.query(
+              "INSERT INTO perangkat_desa (village_id, jabatan_id, nama, status, periode, urut) VALUES (?, ?, ?, 'aktif', ?, 1), (?, ?, ?, 'aktif', ?, 2), (?, ?, ?, 'aktif', ?, 3), (?, ?, ?, 'aktif', ?, 4), (?, ?, ?, 'aktif', ?, 5)",
+              [id, jabatanBySlug.get("kepala-desa"), "Budi Santoso", "2024–2030", id, jabatanBySlug.get("sekretaris-desa"), "Siti Rahmawati", "2024–2030", id, jabatanBySlug.get("kaur-keuangan"), "Ahmad Fauzi", "2024–2030", id, jabatanBySlug.get("kasi-pemerintahan"), "Rina Lestari", "2024–2030", id, jabatanBySlug.get("kasi-pelayanan"), "Dedi Saputra", "2024–2030"]
             );
             await connection.execute(
               "INSERT INTO regions (village_id, dusun, rw, rt, sort_order) VALUES (?, ?, ?, ?, 1)",
