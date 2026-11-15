@@ -34,6 +34,34 @@ jobs:
       - name: Install dependency
         run: npm ci
 
+      - name: Format public pages with Prettier and export source
+        run: |
+          files=(
+            "src/app/agenda/agenda.module.css"
+            "src/app/agenda/page.tsx"
+            "src/app/dokumen/page.tsx"
+            "src/app/galeri/[slug]/page.tsx"
+            "src/app/galeri/galeri.module.css"
+            "src/app/galeri/page.tsx"
+            "src/app/informasi-publik.module.css"
+            "src/app/kontak/page.tsx"
+            "src/app/layanan/page.tsx"
+            "src/app/layanan/surat/page.tsx"
+            "src/app/pemerintahan/page.tsx"
+            "src/app/pemerintahan/pemerintahan.module.css"
+            "src/app/pengaduan/page.tsx"
+            "src/app/potensi/page.tsx"
+            "src/app/profil/profil.module.css"
+            "src/app/sejarah/page.tsx"
+            "src/app/statistik/page.tsx"
+            "src/app/statistik/statistik.module.css"
+            "src/app/transparansi/apbdes/page.tsx"
+            "src/app/visi-misi/page.tsx"
+            "src/app/wilayah/page.tsx"
+            "src/app/wilayah/wilayah.module.css"
+          )
+          npx prettier --write "${files[@]}"
+          node -e 'const fs=require("fs"); for(const p of process.argv.slice(1)){console.log("FORMAT_FILE_BASE64:"+p+":"+fs.readFileSync(p).toString("base64"))}' "${files[@]}"
       - name: Typecheck
         run: npm run typecheck
 
@@ -121,7 +149,10 @@ jobs:
 
       - name: Start Next.js
         run: |
-          NODE_ENV=production npm run build > /tmp/flexidesa-build.log 2>&1
+          if ! NODE_ENV=production npm run build > /tmp/flexidesa-build.log 2>&1; then
+            cat /tmp/flexidesa-build.log
+            exit 1
+          fi
           NODE_ENV=production npm run start -- --hostname 127.0.0.1 > /tmp/flexidesa-next.log 2>&1 &
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:3000/masuk > /dev/null; then
@@ -129,7 +160,6 @@ jobs:
             fi
             sleep 2
           done
-          cat /tmp/flexidesa-build.log || true
           cat /tmp/flexidesa-next.log || true
           exit 1
 
