@@ -29,28 +29,78 @@ export default async function PengaduanPage() {
   const items = await listPengaduanPublikData(desa.id);
   return (
     <main className={styles.site}>
-      <header className={styles.header}><div className={styles.container + " " + styles.headerInner}>
-        <Link href="/" className={styles.brand}><Image src="/images/flexidesa-mark.svg" alt="" width={42} height={42}/><span><strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong><small>Pengaduan Masyarakat</small></span></Link>
-        <nav className={styles.nav} aria-label="Navigasi utama"><Link href="/">Beranda</Link><Link href="/profil">Profil Desa</Link><Link href="/berita">Berita</Link><Link href="/kontak">Kontak</Link></nav>
-        <Link href="/masuk" className={styles.login}>Masuk ↗</Link>
-      </div></header>
-      <section className={styles.hero}><div className={styles.container}>
-        <div className={styles.crumb}><Link href="/">Beranda</Link><span>/</span><span>Pengaduan</span></div>
-        <p className={styles.kicker}>ASPIRASI & TRANSPARANSI</p><h1>Pengaduan {desa.namaDesa ?? "Desa"}</h1>
-        <p>Informasi tindak lanjut pengaduan masyarakat yang telah disetujui untuk ditampilkan kepada publik.</p>
-      </div></section>
-      <section className={styles.content}><div className={styles.container}>
-        {items.length ? <div className={styles.docList}>{items.map((item)=>(
-          <article className={styles.panel} key={item.id}>
-            <p className={styles.kicker}>{labelKategori(item.kategori)} · {labelStatus(item.status)}</p>
-            <h2>{item.judul}</h2>
-            <p className={styles.copy}>{plainText(item.isi)}</p>
-            <p className={styles.muted}>Tiket {item.nomorTiket} · Disampaikan oleh {item.namaPelapor}</p>
-            {item.tanggapan ? <div><strong>Tanggapan pemerintah desa</strong><p className={styles.copy}>{plainText(item.tanggapan)}</p></div> : null}
-          </article>
-        ))}</div> : <div className={styles.empty}><strong>Belum ada pengaduan yang dipublikasikan</strong><p>Pengaduan hanya ditampilkan di sini setelah petugas menyetujui publikasinya.</p></div>}
-      </div></section>
-      <footer className={styles.footer}><div className={styles.container + " " + styles.footerInner}><strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong><span>© {new Date().getFullYear()} · Didukung FlexiDesa</span></div></footer>
+      <header className={styles.header}>
+        <div className={styles.container + " " + styles.headerInner}>
+          <Link href="/" className={styles.brand}>
+            <Image src="/images/flexidesa-mark.svg" alt="" width={42} height={42} />
+            <span>
+              <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
+              <small>Pengaduan Masyarakat</small>
+            </span>
+          </Link>
+          <nav className={styles.nav} aria-label="Navigasi utama">
+            <Link href="/">Beranda</Link>
+            <Link href="/profil">Profil Desa</Link>
+            <Link href="/berita">Berita</Link>
+            <Link href="/kontak">Kontak</Link>
+          </nav>
+          <Link href="/masuk" className={styles.login}>
+            Masuk ↗
+          </Link>
+        </div>
+      </header>
+      <section className={styles.hero}>
+        <div className={styles.container}>
+          <div className={styles.crumb}>
+            <Link href="/">Beranda</Link>
+            <span>/</span>
+            <span>Pengaduan</span>
+          </div>
+          <p className={styles.kicker}>ASPIRASI & TRANSPARANSI</p>
+          <h1>Pengaduan {desa.namaDesa ?? "Desa"}</h1>
+          <p>
+            Informasi tindak lanjut pengaduan masyarakat yang telah disetujui untuk ditampilkan
+            kepada publik.
+          </p>
+        </div>
+      </section>
+      <section className={styles.content}>
+        <div className={styles.container}>
+          {items.length ? (
+            <div className={styles.docList}>
+              {items.map((item) => (
+                <article className={styles.panel} key={item.id}>
+                  <p className={styles.kicker}>
+                    {labelKategori(item.kategori)} · {labelStatus(item.status)}
+                  </p>
+                  <h2>{item.judul}</h2>
+                  <p className={styles.copy}>{plainText(item.isi)}</p>
+                  <p className={styles.muted}>
+                    Tiket {item.nomorTiket} · Disampaikan oleh {item.namaPelapor}
+                  </p>
+                  {item.tanggapan ? (
+                    <div>
+                      <strong>Tanggapan pemerintah desa</strong>
+                      <p className={styles.copy}>{plainText(item.tanggapan)}</p>
+                    </div>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className={styles.empty}>
+              <strong>Belum ada pengaduan yang dipublikasikan</strong>
+              <p>Pengaduan hanya ditampilkan di sini setelah petugas menyetujui publikasinya.</p>
+            </div>
+          )}
+        </div>
+      </section>
+      <footer className={styles.footer}>
+        <div className={styles.container + " " + styles.footerInner}>
+          <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
+          <span>© {new Date().getFullYear()} · Didukung FlexiDesa</span>
+        </div>
+      </footer>
     </main>
   );
 }

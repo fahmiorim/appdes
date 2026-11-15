@@ -65,7 +65,9 @@ export default async function AgendaPage() {
       <div className={styles.topline}>
         <div className={styles.container + " " + styles.toplineInner}>
           <span>Website Resmi Pemerintah Desa</span>
-          <span className={styles.toplineLocation}>{lokasi || "Informasi resmi dan kegiatan desa"}</span>
+          <span className={styles.toplineLocation}>
+            {lokasi || "Informasi resmi dan kegiatan desa"}
+          </span>
         </div>
       </div>
 
@@ -82,20 +84,28 @@ export default async function AgendaPage() {
                 unoptimized
               />
             ) : (
-              <span className={styles.logoFallback} aria-hidden="true">D</span>
+              <span className={styles.logoFallback} aria-hidden="true">
+                D
+              </span>
             )}
             <span className={styles.brandCopy}>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>{desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}</small>
+              <small>
+                {desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}
+              </small>
             </span>
           </Link>
           <nav className={styles.nav} aria-label="Navigasi utama">
             <Link href="/">Beranda</Link>
             <Link href="/profil">Profil Desa</Link>
             <Link href="/berita">Berita</Link>
-            <Link href="/agenda" aria-current="page">Agenda</Link>
+            <Link href="/agenda" aria-current="page">
+              Agenda
+            </Link>
           </nav>
-          <Link href="/masuk" className={styles.login}>Masuk <span aria-hidden="true">↗</span></Link>
+          <Link href="/masuk" className={styles.login}>
+            Masuk <span aria-hidden="true">↗</span>
+          </Link>
         </div>
       </header>
 
@@ -109,7 +119,8 @@ export default async function AgendaPage() {
           <p className={styles.eyebrow}>INFORMASI KEGIATAN DESA</p>
           <h1>Agenda Kegiatan</h1>
           <p className={styles.heroText}>
-            Ikuti jadwal kegiatan, pertemuan, dan acara yang diselenggarakan oleh {desa.namaDesa ?? "pemerintah desa"}.
+            Ikuti jadwal kegiatan, pertemuan, dan acara yang diselenggarakan oleh{" "}
+            {desa.namaDesa ?? "pemerintah desa"}.
           </p>
           {lokasi ? <p className={styles.location}>⌖ {lokasi}</p> : null}
         </div>
@@ -133,12 +144,17 @@ export default async function AgendaPage() {
                 const deskripsi = plainText(item.deskripsi);
                 return (
                   <article className={styles.agendaCard} key={item.id}>
-                    <div className={styles.dateBlock} aria-label={agendaLabelTanggal(item.mulai, item.selesai)}>
+                    <div
+                      className={styles.dateBlock}
+                      aria-label={agendaLabelTanggal(item.mulai, item.selesai)}
+                    >
                       <strong>{date.day}</strong>
                       <span>{date.month}</span>
                     </div>
                     <div className={styles.agendaBody}>
-                      <p className={styles.dateLabel}>{date.weekday} · {agendaLabelTanggal(item.mulai, item.selesai)}</p>
+                      <p className={styles.dateLabel}>
+                        {date.weekday} · {agendaLabelTanggal(item.mulai, item.selesai)}
+                      </p>
                       <h3>{item.judul}</h3>
                       {deskripsi ? <p className={styles.description}>{deskripsi}</p> : null}
                       {item.lokasi ? (
@@ -147,17 +163,23 @@ export default async function AgendaPage() {
                         </p>
                       ) : null}
                     </div>
-                    <span className={styles.agendaMark} aria-hidden="true">↗</span>
+                    <span className={styles.agendaMark} aria-hidden="true">
+                      ↗
+                    </span>
                   </article>
                 );
               })}
             </div>
           ) : (
             <div className={styles.emptyState}>
-              <span className={styles.emptyIcon} aria-hidden="true">▦</span>
+              <span className={styles.emptyIcon} aria-hidden="true">
+                ▦
+              </span>
               <h3>Belum ada agenda kegiatan</h3>
               <p>Jadwal kegiatan yang telah dipublikasikan akan ditampilkan di halaman ini.</p>
-              <Link href="/">Kembali ke beranda <span aria-hidden="true">→</span></Link>
+              <Link href="/">
+                Kembali ke beranda <span aria-hidden="true">→</span>
+              </Link>
             </div>
           )}
         </div>
@@ -168,7 +190,10 @@ export default async function AgendaPage() {
           <div className={styles.footerMain}>
             <div>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <p>Portal informasi resmi untuk mewujudkan pelayanan publik desa yang terbuka, mudah, dan terpercaya.</p>
+              <p>
+                Portal informasi resmi untuk mewujudkan pelayanan publik desa yang terbuka, mudah,
+                dan terpercaya.
+              </p>
             </div>
             <div>
               <span>INFORMASI KANTOR</span>
@@ -184,8 +209,13 @@ export default async function AgendaPage() {
             </div>
           </div>
           <div className={styles.footerBottom}>
-            <span>© {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. Seluruh hak cipta dilindungi.</span>
-            <span>Didukung oleh <strong>FlexiDesa</strong></span>
+            <span>
+              © {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. Seluruh hak cipta
+              dilindungi.
+            </span>
+            <span>
+              Didukung oleh <strong>FlexiDesa</strong>
+            </span>
           </div>
         </div>
       </footer>
