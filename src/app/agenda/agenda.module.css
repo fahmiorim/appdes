@@ -861,3 +861,157 @@
     font-size: 10px;
   }
 }
+
+
+/* Visual audit refinement: interactive calendar matching the reference layout. */
+.calendarHeader {
+  align-items: center;
+  flex-wrap: wrap;
+}
+.calendarTitle .kicker {
+  margin: 0 0 8px;
+}
+.calendarTitle h2 {
+  margin: 0 0 6px;
+  color: #17213b;
+  font-size: 23px;
+}
+.monthSwitcher {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px;
+  border: 1px solid #dce7fb;
+  border-radius: 999px;
+  background: #f8faff;
+}
+.monthSwitcher strong {
+  min-width: 126px;
+  color: #17213b;
+  font-size: 12px;
+  text-align: center;
+}
+.monthSwitcher a {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #e1e8f5;
+  border-radius: 50%;
+  background: #fff;
+  color: #6634d9;
+  font-size: 23px;
+  line-height: 1;
+}
+.calendarContent {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(220px, 0.9fr);
+  gap: 14px;
+  align-items: stretch;
+}
+.calendarGrid {
+  gap: 5px;
+  padding: 7px;
+  border: 1px solid #e5eaf4;
+  border-radius: 14px;
+  background: #fbfcff;
+}
+.calendarWeekday {
+  min-height: 32px;
+  border-radius: 7px;
+  background: #edf2ff;
+  color: #26324e;
+}
+.calendarDay,
+.calendarDayEmpty {
+  min-height: 48px;
+}
+.calendarDay {
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.calendarDay:hover {
+  transform: translateY(-1px);
+  border-color: #9e7aff;
+  background: #f4efff;
+}
+.calendarSelected {
+  border-color: #7135e8;
+  background: linear-gradient(145deg, #813cff, #5d2be2);
+  color: #fff;
+  box-shadow: 0 5px 12px rgb(113 53 232 / 24%);
+}
+.calendarSelected i {
+  background: #fff;
+}
+.calendarDayEmpty {
+  display: block;
+}
+.selectedDayPanel {
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid #e5eaf4;
+  border-radius: 14px;
+  background: linear-gradient(160deg, #f7f4ff, #fff 62%);
+}
+.selectedDayPanel h3 {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f0eaff;
+  color: #25204a;
+  font-family: var(--font-display);
+  font-size: 13px;
+}
+.selectedDayList {
+  display: grid;
+  gap: 9px;
+}
+.selectedDayEvent {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid #e8e1ff;
+  border-radius: 11px;
+  background: #fff;
+}
+.selectedDayEvent strong {
+  color: #17213b;
+  font-size: 12px;
+}
+.selectedDayEvent span,
+.selectedDayEvent p {
+  margin: 0;
+  color: #697891;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.selectedDayPanel .muted {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.7;
+}
+@media (max-width: 760px) {
+  .calendarContent {
+    grid-template-columns: 1fr;
+  }
+  .calendarDay,
+  .calendarDayEmpty {
+    min-height: 40px;
+  }
+  .selectedDayPanel {
+    min-height: 112px;
+  }
+}
+@media (max-width: 480px) {
+  .calendarHeader {
+    align-items: flex-start;
+  }
+  .monthSwitcher {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .monthSwitcher strong {
+    flex: 1;
+  }
+}
