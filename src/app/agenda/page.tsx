@@ -78,6 +78,12 @@ export default async function AgendaPage({ searchParams }: Props) {
   const [desa, params] = await Promise.all([getIdentitasFromRequest(), searchParams]);
   const agenda = await agendaMendatang(desa.id, 100);
   const lokasi = locationLabel(desa);
+  const namaKabupaten = desa.namaKabupaten?.trim();
+  const labelKabupaten = namaKabupaten
+    ? /^(kabupaten|kota)\\s/i.test(namaKabupaten)
+      ? namaKabupaten
+      : `Kabupaten ${namaKabupaten}`
+    : "Sistem Informasi Desa";
   const now = new Date();
   const currentYear = now.getFullYear();
   const requestedMonth = Number(params.bulan);
@@ -178,7 +184,7 @@ export default async function AgendaPage({ searchParams }: Props) {
             <span className={styles.brandCopy}>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
               <small>
-                {desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}
+                {labelKabupaten}
               </small>
             </span>
           </Link>
