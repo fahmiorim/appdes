@@ -8,6 +8,21 @@ import styles from "../informasi-publik.module.css";
 
 export const dynamic = "force-dynamic";
 
+function plainText(value: string) {
+  return value
+    .replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script>/gi, " ")
+    .replace(/<style\\b[^>]*>[\\s\\S]*?<\\/style>/gi, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\\s+/g, " ")
+    .trim();
+}
+
 export default async function SejarahPage() {
   const desa = await getIdentitasFromRequest();
   const profil = await profilDesaPublik(desa.id);
@@ -56,7 +71,7 @@ export default async function SejarahPage() {
             <p className={styles.kicker}>CERITA DESA</p>
             <h2>Perjalanan dan asal-usul</h2>
             {profil?.sejarah?.trim() ? (
-              <div className={styles.copy}>{profil.sejarah}</div>
+              <div className={styles.copy}>{plainText(profil.sejarah)}</div>
             ) : (
               <p className={styles.muted}>
                 Informasi sejarah desa belum dipublikasikan oleh pemerintah desa.
