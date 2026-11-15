@@ -1,6 +1,10 @@
 name: Temporary format news pages
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - feat/public-news-pages
+    paths:
+      - .github/workflows/temp-format-news.yml
 jobs:
   format:
     runs-on: ubuntu-latest
