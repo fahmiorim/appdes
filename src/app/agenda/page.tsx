@@ -116,9 +116,13 @@ export default async function AgendaPage({ searchParams }: Props) {
     ? filteredAgenda.filter((item) => Number(item.mulai.slice(8, 10)) === selectedDay)
     : [];
   const previousMonth =
-    month === 1 ? { bulan: 12, tahun: year - 1 } : { bulan: month - 1, tahun: year };
+    month === 1
+      ? { bulan: 12, tahun: year - 1 }
+      : { bulan: month - 1, tahun: year };
   const nextMonth =
-    month === 12 ? { bulan: 1, tahun: year + 1 } : { bulan: month + 1, tahun: year };
+    month === 12
+      ? { bulan: 1, tahun: year + 1 }
+      : { bulan: month + 1, tahun: year };
   const monthHref = (value: { bulan: number; tahun: number }) => {
     const search = new URLSearchParams({
       bulan: String(value.bulan),
@@ -280,10 +284,7 @@ export default async function AgendaPage({ searchParams }: Props) {
                           {eventDays.has(day) ? <i aria-label="Ada kegiatan" /> : null}
                         </Link>
                       ) : (
-                        <span
-                          className={styles.calendarDayEmpty}
-                          key={`empty-${index}`}
-                        />
+                        <span className={styles.calendarDayEmpty} key={`empty-${index}`} />
                       );
                     })}
                   </div>
