@@ -5,7 +5,9 @@
 - **Branch:** `refactor/public-gallery-shell`.
 - **Base commit:** `36163c952f55e409463350b8b062f7d7aa177eb1` (`origin/main`).
 - **Commit implementasi:** `0bb98c2fcdb197a735c2dd449c1b092f5c0c67da`.
-- **Status:** perubahan siap untuk pemeriksaan PR; belum di-merge atau deploy.
+- **Commit laporan:** lihat riwayat branch; laporan diperbarui setelah CI PR #64.
+- **Pull request:** https://github.com/fahmiorim/appdes/pull/64.
+- **Status:** siap review; belum di-merge atau deploy.
 
 ## Kondisi awal dan analisis
 
@@ -42,7 +44,10 @@ Tidak ada perubahan akses data atau autentikasi. Kedua route tetap memanggil `ge
 | `npx prettier --check src/app/galeri/gallery-shell.tsx src/app/galeri/gallery-shell.test.ts src/app/galeri/page.tsx 'src/app/galeri/[slug]/page.tsx'` | **PASS** — semua file mengikuti format. |
 | `npm run typecheck` | **PASS** — `next typegen` dan `tsc --noEmit` selesai. |
 | `git diff --check` | **PASS** — whitespace bersih sebelum laporan dibuat. |
-| Build, unit suite penuh, browser/visual QA | **SKIPPED** — perubahan terfokus; tes render server memeriksa markup dan CSS tidak berubah. Tidak ada klaim visual runtime. |
+| CI PR #64 — unit test dan quality check | **PASS** — check GitHub selesai sukses. |
+| CI PR #64 — integration test (MySQL 8) | **PASS** — check GitHub selesai sukses. |
+| CI PR #64 — visual QA login desktop/mobile dan ringkasan CI | **PASS** — semua check GitHub selesai sukses; visual QA CI ini adalah alur login, bukan screenshot galeri. |
+| Build lokal, unit suite penuh, browser/screenshot QA khusus galeri | **SKIPPED** — perubahan terfokus; tes render server memeriksa markup dan CSS tidak berubah. Tidak ada klaim visual galeri runtime. |
 
 ## Diff
 
@@ -54,4 +59,4 @@ Kesamaan markup diuji dengan server render, tetapi kesetaraan visual runtime bel
 
 ## Kesimpulan dan langkah berikutnya
 
-Pilot terbatas F-09 selesai pada source dan pemeriksaan lokal. Tinjau branch/PR serta CI sebelum merge. Jika pilot diterima dan verifikasi visual memadai, kelompok halaman lain dapat dimigrasikan satu per satu dengan kontrak menu/brand masing-masing; pekerjaan itu tidak termasuk task ini.
+Pilot terbatas F-09 selesai pada source dan pemeriksaan lokal; semua CI PR #64 lulus. Tinjau branch/PR sebelum merge. Jika pilot diterima dan verifikasi visual galeri memadai, kelompok halaman lain dapat dimigrasikan satu per satu dengan kontrak menu/brand masing-masing; pekerjaan itu tidak termasuk task ini.
