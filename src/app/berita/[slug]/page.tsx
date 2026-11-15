@@ -3,11 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
-import {
-  catatKunjunganBerita,
-  detailBerita,
-} from "@/features/publik/application/konten-publik";
+import { catatKunjunganBerita, detailBerita } from "@/features/publik/application/konten-publik";
 import { sanitasiHtml, teksPolos } from "@/lib/sanitize";
+
 import styles from "../berita.module.css";
 
 export const dynamic = "force-dynamic";
@@ -61,13 +59,17 @@ export default async function DetailBeritaPage({ params }: Props) {
       <div className={styles.topline}>
         <div className={styles.container + " " + styles.toplineInner}>
           <span>Website Resmi Pemerintah Desa</span>
-          <span>{desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Portal Informasi Desa"}</span>
+          <span>
+            {desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Portal Informasi Desa"}
+          </span>
         </div>
       </div>
       <header className={styles.header}>
         <div className={styles.container + " " + styles.headerInner}>
           <Link href="/" className={styles.brand}>
-            <span className={styles.brandMark} aria-hidden="true">D</span>
+            <span className={styles.brandMark} aria-hidden="true">
+              D
+            </span>
             <span className={styles.brandCopy}>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
               <small>Portal informasi desa</small>
@@ -76,16 +78,24 @@ export default async function DetailBeritaPage({ params }: Props) {
           <nav className={styles.nav} aria-label="Navigasi utama">
             <Link href="/">Beranda</Link>
             <Link href="/profil">Profil Desa</Link>
-            <Link href="/berita" className={styles.active}>Berita</Link>
+            <Link href="/berita" className={styles.active}>
+              Berita
+            </Link>
           </nav>
-          <Link href="/masuk" className={styles.login}>Masuk ↗</Link>
+          <Link href="/masuk" className={styles.login}>
+            Masuk ↗
+          </Link>
         </div>
       </header>
       <section className={styles.articleWrap}>
         <div className={styles.container}>
           <div className={styles.article}>
             <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-              <Link href="/">Beranda</Link><span>/</span><Link href="/berita">Berita</Link><span>/</span><span aria-current="page">Detail</span>
+              <Link href="/">Beranda</Link>
+              <span>/</span>
+              <Link href="/berita">Berita</Link>
+              <span>/</span>
+              <span aria-current="page">Detail</span>
             </nav>
             <header className={styles.articleHead}>
               <div className={styles.articleMeta}>
@@ -98,17 +108,31 @@ export default async function DetailBeritaPage({ params }: Props) {
             </header>
             {image ? (
               <div className={styles.articleCover}>
-                <Image src={image} alt={berita.judul} fill priority sizes="(max-width: 900px) 100vw, 850px" unoptimized />
+                <Image
+                  src={image}
+                  alt={berita.judul}
+                  fill
+                  priority
+                  sizes="(max-width: 900px) 100vw, 850px"
+                  unoptimized
+                />
               </div>
             ) : null}
-            <div className={styles.articleBody} dangerouslySetInnerHTML={{ __html: sanitasiHtml(berita.isi) }} />
-            <Link className={styles.backLink} href="/berita">← Kembali ke semua berita</Link>
+            <div
+              className={styles.articleBody}
+              dangerouslySetInnerHTML={{ __html: sanitasiHtml(berita.isi) }}
+            />
+            <Link className={styles.backLink} href="/berita">
+              ← Kembali ke semua berita
+            </Link>
           </div>
         </div>
       </section>
       <footer className={styles.footer}>
         <div className={styles.container + " " + styles.footerInner}>
-          <span>© {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}</span>
+          <span>
+            © {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}
+          </span>
           <Link href="/">Kembali ke beranda</Link>
         </div>
       </footer>
