@@ -41,11 +41,12 @@ export const incomingLetterDispositions = mysqlTable(
   (table) => [
     index("incoming_letter_dispositions_village_idx").on(table.villageId),
     index("incoming_letter_dispositions_letter_idx").on(table.incomingLetterId),
+    index("ild_village_letter_idx").on(table.villageId, table.incomingLetterId),
     // Nama otomatis Drizzle melebihi batas 64 karakter MySQL, jadi dipendekkan.
     foreignKey({
-      name: "ild_incoming_letter_id_fk",
-      columns: [table.incomingLetterId],
-      foreignColumns: [incomingLetters.id],
+      name: "ild_incoming_letter_tenant_fk",
+      columns: [table.villageId, table.incomingLetterId],
+      foreignColumns: [incomingLetters.villageId, incomingLetters.id],
     }).onDelete("cascade"),
   ],
 );
@@ -74,11 +75,12 @@ export const outgoingLetterShipments = mysqlTable(
   (table) => [
     index("outgoing_letter_shipments_village_idx").on(table.villageId),
     index("outgoing_letter_shipments_letter_idx").on(table.outgoingLetterId),
+    index("ols_village_letter_idx").on(table.villageId, table.outgoingLetterId),
     // Sama seperti disposisi: nama otomatis terlalu panjang untuk MySQL.
     foreignKey({
-      name: "ols_outgoing_letter_id_fk",
-      columns: [table.outgoingLetterId],
-      foreignColumns: [outgoingLetters.id],
+      name: "ols_outgoing_letter_tenant_fk",
+      columns: [table.villageId, table.outgoingLetterId],
+      foreignColumns: [outgoingLetters.villageId, outgoingLetters.id],
     }).onDelete("cascade"),
   ],
 );
