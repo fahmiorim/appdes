@@ -4,7 +4,7 @@
 - **Tanggal:** 2026-11-15
 - **Branch:** `task/visual-qa-local-harness`
 - **Base commit:** `7b09691` (`origin/main`)
-- **Commit pekerjaan:** `e627460` (kode harness, dokumentasi, dan laporan ini dalam satu commit).
+- **Commit pekerjaan:** `7cb035d` (kode harness + dokumentasi + laporan). Perbaikan isi laporan setelah push dicatat pada commit berikutnya di branch yang sama.
 
 ## 1. Kondisi awal
 
