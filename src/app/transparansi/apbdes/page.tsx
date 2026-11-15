@@ -65,9 +65,14 @@ export default async function ApbdesPublikPage({ searchParams }: Props) {
           </div>
           <div className={styles.docList} style={{ marginTop: 22 }}>
             {laporan.baris.map((item) => (
-              <article className={styles.doc} key={item.kode}>
-                <div><h3>{item.uraian}</h3><p>Anggaran {formatRupiah(item.anggaran)} · Realisasi {formatRupiah(item.realisasi)}</p></div>
-                <strong>{item.persen.toLocaleString("id-ID", { maximumFractionDigits: 2 })}%</strong>
+              <article className={styles.budgetRow} key={item.kode}>
+                <div className={styles.budgetHeading}>
+                  <div><h3>{item.uraian}</h3><p>Anggaran {formatRupiah(item.anggaran)} · Realisasi {formatRupiah(item.realisasi)}</p></div>
+                  <strong>{item.persen.toLocaleString("id-ID", { maximumFractionDigits: 2 })}%</strong>
+                </div>
+                <div className={styles.budgetProgress} role="img" aria-label={`Realisasi ${item.persen.toLocaleString("id-ID", { maximumFractionDigits: 2 })} persen`}>
+                  <span style={{ width: `${Math.min(100, Math.max(0, item.persen))}%` }} />
+                </div>
               </article>
             ))}
           </div>
