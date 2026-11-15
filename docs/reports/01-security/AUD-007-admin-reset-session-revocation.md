@@ -68,8 +68,8 @@ Tidak ada perubahan schema, migration, API publik, atau dependency. Sesi milik u
 - Test repository memakai mock Drizzle; belum menjalankan reset terhadap MySQL nyata.
 - Alur Better Auth biasa dan pengaturan cookie cache tidak diubah. Integrasi operasional dan pencabutan sesi lintas instance tidak diuji pada database runtime dalam task ini.
 - Full unit suite dan build tidak dijalankan; pemeriksaan dibatasi pada test terkait, typecheck, lint, format, dan diff check.
-- Perubahan belum di-push; tidak ada URL GitHub/PR. SHA commit dicantumkan pada penyerahan branch lokal.
+- Saat laporan ditulis, perubahan belum di-push. Pekerjaan ini kemudian di-merge melalui PR #41 (`479ddc82ad8d688bfd37023720f75d975550d621`, 13 November 2026), bersama perbaikan reset admin dari sisi platform.
 
 ## Kesimpulan dan rekomendasi
 
-Perubahan lokal menutup celah reset Admin Desa oleh Super Admin dengan pencabutan sesi yang dibatasi ke akun sasaran dan berada dalam transaksi bersama reset password. Siap untuk review lokal setelah perubahan dan laporan diperiksa. Langkah berikutnya adalah review maintainer, lalu CI pada branch sebelum merge; tidak ada merge atau deploy yang dilakukan.
+Perubahan lokal menutup celah reset Admin Desa oleh Super Admin dengan pencabutan sesi yang dibatasi ke akun sasaran dan berada dalam transaksi bersama reset password. Pekerjaan ini di-merge ke `main` melalui PR #41 pada 13 November 2026; tidak ada deploy yang dilakukan, dan pengujian terhadap MySQL runtime serta pencabutan sesi lintas instance masih tercatat sebagai risiko tersisa.

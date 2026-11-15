@@ -54,4 +54,4 @@ lintas desa gagal sebagai error SQL 500, bukan kesalahan validasi.
 
 ## Status
 
-Siap review. Belum di-merge dan belum di-deploy.
+Di-merge ke `main` melalui PR #30 (`8f1065d8c4e48952aac7bcde385a73b248d0c3c7`) pada 13 November 2026. Tidak ada deploy.

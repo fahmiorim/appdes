@@ -5,7 +5,7 @@
 - **Branch:** `task/AUD-003-penduduk-tenant-references`
 - **Base commit:** `5a3f7502be6a71d0809600fa14b07c9f4807f1e5` (`origin/main`)
 - **Commit kode dan test:** `d65332f81694b8812c1f1ae0751f2d5269a44387` (laporan ini di-commit terpisah pada branch yang sama)
-- **Status:** selesai — siap review, belum merge/production.
+- **Status:** selesai — di-merge ke `main` melalui PR #3 (12 November 2026); belum production.
 
 ## Kondisi awal dan analisis
 
@@ -150,7 +150,7 @@ Catatan validasi:
 
 Foreign reference penduduk pada create/update, jalur riwayat kelahiran/kedatangan, daftar/count penduduk, laporan kependudukan, dan DPT telah dibatasi tenant serta dilindungi regression test dua tenant. Seluruh pemeriksaan yang diminta berstatus PASS; build dan full integration suite belum dijalankan dan dilaporkan sebagai SKIPPED.
 
-Status: **siap review**. Belum siap merge atau production tanpa persetujuan maintainer.
+Status: **di-merge** ke `main` melalui PR #3 (12 November 2026). Kesiapan production tetap menunggu persetujuan maintainer.
 
 ## Rekonsiliasi dengan AUD-002 (review integrasi)
 

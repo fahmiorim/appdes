@@ -5,7 +5,7 @@
 - **Branch:** `task/AUD-007-riwayat-tenant-isolation`
 - **Base commit:** `5a3f7502be6a71d0809600fa14b07c9f4807f1e5` (`origin/main`)
 - **Commit kode, test, dan konfigurasi:** `e03407ae53060df86687165945ab6546145c13b1` (laporan ini di-commit terpisah pada branch yang sama)
-- **Status:** selesai — siap review, belum merge/deploy.
+- **Status:** selesai — di-merge ke `main` melalui PR #5 (12 November 2026); belum deploy.
 
 ## Latar belakang dan analisis
 
@@ -131,7 +131,7 @@ npx vitest run --config vitest.integration.config.mts \
 
 Seluruh JOIN `resident_mutations -> residents` yang membaca identitas penduduk telah dibatasi tenant, pencarian/pagination/count/ekspor konsisten, dan jalur tulis mutasi tidak lagi dapat menyimpan pasangan tenant-resident yang tidak konsisten. Regression test dua tenant lulus 12/12.
 
-Status: **siap review**. Belum siap merge atau production tanpa persetujuan maintainer.
+Status: **di-merge** ke `main` melalui PR #5 (12 November 2026). Kesiapan production tetap menunggu persetujuan maintainer.
 
 ## Rekonsiliasi dengan AUD-002 (review integrasi)
 

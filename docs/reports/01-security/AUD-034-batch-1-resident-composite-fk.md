@@ -61,6 +61,6 @@ Percobaan awal menemukan dua masalah yang diperbaiki sebelum hasil final: pesan 
 - Preflight test menggunakan fixture sintetis pada MySQL 8 disposable, bukan salinan data tenant bersama/production. Data legacy nyata belum diperiksa.
 - Full integration suite CI pada SHA awal gagal pada `src/db/tenant-composite-fk.integration.test.ts`: ekspektasi daftar constraint belum memuat lima FK baru. Test tersebut diperbarui dan lulus secara terfokus; hasil CI untuk commit perbaikan menyusul.
 - Build produksi tidak dijalankan.
-- PR #36 dibuat; belum merge dan tidak ada deployment.
+- PR #36 dibuat dan **di-merge** ke `main` pada 13 November 2026 (`94534b6638bcb2fb9b3a2dfd9d0238ee882006f6`); tidak ada deployment.
 
 **Kesimpulan:** implementasi dan focused verification lulus pada database test MySQL 8. Perbaikan assertion untuk daftar FK telah dibuat; tunggu hasil CI PR #36 untuk SHA terbaru sebelum menyatakan quality gate penuh lulus. Deployment tetap memerlukan preflight data aktual yang disetujui.

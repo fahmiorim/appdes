@@ -150,4 +150,4 @@ unhandled rejection. Regression test deterministik mencakup enam skenario wajib.
 tersedia di Node 20.9, tetapi test suite tidak dapat dijalankan di versi tersebut karena batasan
 vitest 5 — dicatat sebagai SKIPPED, bukan klaim kompatibilitas penuh.
 
-**Status: siap review.** Tidak ada PR, merge, atau deploy.
+**Status: di-merge.** Tidak ada PR saat laporan ditulis; perubahan masuk `main` melalui PR #2 (`5a3f750`, 12 November 2026). Tidak ada deploy.
