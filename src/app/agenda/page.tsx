@@ -265,8 +265,8 @@ export default async function AgendaPage({ searchParams }: Props) {
                         styles.calendarDay,
                         day && eventDays.has(day) ? styles.calendarHasEvent : "",
                         day === now.getDate() &&
-                        month === now.getMonth() + 1 &&
-                        year === currentYear
+                          month === now.getMonth() + 1 &&
+                          year === currentYear
                           ? styles.calendarToday
                           : "",
                         isSelected ? styles.calendarSelected : "",
