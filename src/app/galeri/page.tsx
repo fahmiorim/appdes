@@ -63,9 +63,7 @@ export default async function GaleriPage({ searchParams }: Props) {
           </div>
           <p className={styles.kicker}>MOMEN &amp; CERITA DESA</p>
           <h1>Galeri {desa.namaDesa ?? "Desa"}</h1>
-          <p>
-            Dokumentasi kegiatan, pembangunan, dan kebersamaan warga {desa.namaDesa ?? "desa"}.
-          </p>
+          <p>Dokumentasi kegiatan, pembangunan, dan kebersamaan warga {desa.namaDesa ?? "desa"}.</p>
         </div>
       </section>
 
@@ -188,7 +186,9 @@ export default async function GaleriPage({ searchParams }: Props) {
               <section className={styles.galleryCallout}>
                 <span aria-hidden="true">▧</span>
                 <h2>Kenangan dan kegiatan desa</h2>
-                <p>Jelajahi album untuk melihat dokumentasi yang telah dibagikan kepada masyarakat.</p>
+                <p>
+                  Jelajahi album untuk melihat dokumentasi yang telah dibagikan kepada masyarakat.
+                </p>
                 <Link href="/kontak">Hubungi pemerintah desa</Link>
               </section>
             </aside>
