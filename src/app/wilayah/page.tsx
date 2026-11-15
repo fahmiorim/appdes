@@ -3,62 +3,24 @@ import Link from "next/link";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { getPetaPublik } from "@/features/gis/application/use-cases";
 import type { AreaDTO, PolygonDTO } from "@/features/gis/domain/gis";
+import {
+  parseGeoJsonRings,
+  proyeksikanKelompokRings,
+  type KoordinatPeta,
+} from "@/features/gis/domain/peta-cetak";
 import { daftarWilayahPublik } from "@/features/wilayah/application/wilayah-publik";
 
 import styles from "./wilayah.module.css";
 
 export const dynamic = "force-dynamic";
 
-type Coordinate = [number, number];
-
 type AreaShape = {
   id: number;
   name: string;
   description: string | null;
   color: string;
-  rings: Coordinate[][];
+  rings: KoordinatPeta[][];
 };
-
-function isCoordinate(value: unknown): value is Coordinate {
-  return (
-    Array.isArray(value) &&
-    value.length >= 2 &&
-    typeof value[0] === "number" &&
-    Number.isFinite(value[0]) &&
-    typeof value[1] === "number" &&
-    Number.isFinite(value[1])
-  );
-}
-
-function areaRings(value: string | null): Coordinate[][] {
-  if (!value) return [];
-
-  try {
-    const parsed = JSON.parse(value) as {
-      type?: string;
-      coordinates?: unknown;
-      geometry?: { type?: string; coordinates?: unknown } | null;
-    };
-    const geometry = parsed.type === "Feature" ? parsed.geometry : parsed;
-    if (!geometry?.type || !geometry.coordinates) return [];
-
-    const coordinates = geometry.coordinates;
-    if (geometry.type === "Polygon" && Array.isArray(coordinates)) {
-      const outer = coordinates[0];
-      return Array.isArray(outer) ? [outer.filter(isCoordinate)] : [];
-    }
-    if (geometry.type === "MultiPolygon" && Array.isArray(coordinates)) {
-      return coordinates.flatMap((polygon) => {
-        if (!Array.isArray(polygon) || !Array.isArray(polygon[0])) return [];
-        return [polygon[0].filter(isCoordinate)];
-      });
-    }
-  } catch {
-    return [];
-  }
-
-  return [];
-}
 
 function buildAreaShapes(areas: AreaDTO[], polygons: PolygonDTO[]): AreaShape[] {
   const colors = new Map(polygons.map((polygon) => [polygon.id, polygon.color]));
@@ -70,41 +32,9 @@ function buildAreaShapes(areas: AreaDTO[], polygons: PolygonDTO[]): AreaShape[] 
       color: /^#[0-9a-fA-F]{6}$/.test(colors.get(area.refPolygon ?? -1) ?? "")
         ? (colors.get(area.refPolygon ?? -1) as string)
         : "#7c3aed",
-      rings: areaRings(area.path),
+      rings: parseGeoJsonRings(area.path),
     }))
-    .filter((area) => area.rings.some((ring) => ring.length >= 3));
-}
-
-function projectShapes(shapes: AreaShape[]) {
-  const coordinates = shapes.flatMap((shape) => shape.rings.flat());
-  if (!coordinates.length) return [];
-
-  const longitudes = coordinates.map(([longitude]) => longitude);
-  const latitudes = coordinates.map(([, latitude]) => latitude);
-  const minLongitude = Math.min(...longitudes);
-  const maxLongitude = Math.max(...longitudes);
-  const minLatitude = Math.min(...latitudes);
-  const maxLatitude = Math.max(...latitudes);
-  const longitudeRange = maxLongitude - minLongitude || 1;
-  const latitudeRange = maxLatitude - minLatitude || 1;
-  const scale = Math.min(900 / longitudeRange, 540 / latitudeRange);
-  const width = longitudeRange * scale;
-  const height = latitudeRange * scale;
-  const offsetX = (1000 - width) / 2;
-  const offsetY = (600 - height) / 2;
-
-  return shapes.map((shape) => ({
-    ...shape,
-    projectedRings: shape.rings.map((ring) =>
-      ring
-        .map(([longitude, latitude]) => {
-          const x = offsetX + (longitude - minLongitude) * scale;
-          const y = 600 - offsetY - (latitude - minLatitude) * scale;
-          return `${x.toFixed(2)},${y.toFixed(2)}`;
-        })
-        .join(" "),
-    ),
-  }));
+    .filter((area) => area.rings.length > 0);
 }
 
 export default async function WilayahPage() {
@@ -116,7 +46,11 @@ export default async function WilayahPage() {
     ...new Set(rows.filter((row) => row.rt).map((row) => `${row.dusun}::${row.rw}::${row.rt}`)),
   ];
   const grouped = dusun.map((name) => ({ name, items: rows.filter((row) => row.dusun === name) }));
-  const shapes = projectShapes(buildAreaShapes(mapData.areas, mapData.polygons));
+  const shapes = buildAreaShapes(mapData.areas, mapData.polygons);
+  const projectedRings = proyeksikanKelompokRings(
+    shapes.map((shape) => shape.rings),
+    { lebar: 1000, tinggi: 600, padding: 30 },
+  );
 
   return (
     <main className={styles.site}>
@@ -189,11 +123,13 @@ export default async function WilayahPage() {
                   </defs>
                   <rect width="1000" height="600" fill="#f1f6ff" />
                   <rect width="1000" height="600" fill="url(#map-grid)" />
-                  {shapes.map((shape) =>
-                    shape.projectedRings.map((points, index) => (
+                  {shapes.map((shape, shapeIndex) =>
+                    (projectedRings[shapeIndex] ?? []).map((ring, index) => (
                       <polygon
                         key={`${shape.id}-${index}`}
-                        points={points}
+                        points={ring
+                          .map((titik) => `${titik.x.toFixed(2)},${titik.y.toFixed(2)}`)
+                          .join(" ")}
                         fill={shape.color}
                         fillOpacity="0.42"
                         stroke={shape.color}

@@ -93,6 +93,54 @@ export function parseGeoJsonKoordinat(path: string | null, tipe: TipeGeoJson): K
   }
 }
 
+/**
+ * Urai path GeoJSON poligon menjadi daftar ring luar.
+ *
+ * Menerima geometry `Polygon`/`MultiPolygon` maupun `Feature` yang
+ * membungkusnya. Seluruh koordinat wajib valid (termasuk batas bujur/lintang);
+ * satu koordinat rusak membatalkan seluruh path agar bentuk tidak menyesatkan.
+ */
+export function parseGeoJsonRings(path: string | null): KoordinatPeta[][] {
+  if (!path) return [];
+
+  try {
+    const parsed = JSON.parse(path) as {
+      type?: string;
+      coordinates?: unknown;
+      geometry?: { type?: string; coordinates?: unknown } | null;
+    };
+    const geometry = parsed.type === "Feature" ? parsed.geometry : parsed;
+    if (!geometry?.type || !Array.isArray(geometry.coordinates)) return [];
+
+    let kandidat: unknown[];
+    if (geometry.type === "Polygon") {
+      kandidat = [geometry.coordinates[0]];
+    } else if (geometry.type === "MultiPolygon") {
+      kandidat = geometry.coordinates.map((polygon) =>
+        Array.isArray(polygon) ? polygon[0] : undefined,
+      );
+    } else {
+      return [];
+    }
+
+    const rings: KoordinatPeta[][] = [];
+    for (const kandidatRing of kandidat) {
+      if (!Array.isArray(kandidatRing) || kandidatRing.length < 3) return [];
+
+      const ring: KoordinatPeta[] = [];
+      for (const titik of kandidatRing) {
+        if (!koordinatValid(titik)) return [];
+        ring.push({ lat: titik[1], lon: titik[0] });
+      }
+      rings.push(ring);
+    }
+
+    return rings;
+  } catch {
+    return [];
+  }
+}
+
 interface Batas {
   minLat: number;
   maxLat: number;
@@ -118,6 +166,22 @@ function hitungBatas(daftar: readonly KoordinatPeta[]): Batas | null {
   return { minLat, maxLat, minLon, maxLon };
 }
 
+function skalaKanvas(batas: Batas, lebar: number, tinggi: number, padding: number) {
+  const lebarIsi = Math.max(1, lebar - padding * 2);
+  const tinggiIsi = Math.max(1, tinggi - padding * 2);
+  const spanLon = Math.max(1e-9, batas.maxLon - batas.minLon);
+  const spanLat = Math.max(1e-9, batas.maxLat - batas.minLat);
+  const skala = Math.min(lebarIsi / spanLon, tinggiIsi / spanLat);
+
+  return {
+    lebarIsi,
+    tinggiIsi,
+    skala,
+    lebarKonten: spanLon * skala,
+    tinggiKonten: spanLat * skala,
+  };
+}
+
 function proyeksikan(
   koordinat: readonly KoordinatPeta[],
   batas: Batas,
@@ -125,16 +189,48 @@ function proyeksikan(
   tinggi: number,
   padding: number,
 ): TitikPeta[] {
-  const lebarIsi = Math.max(1, lebar - padding * 2);
-  const tinggiIsi = Math.max(1, tinggi - padding * 2);
-  const spanLon = Math.max(1e-9, batas.maxLon - batas.minLon);
-  const spanLat = Math.max(1e-9, batas.maxLat - batas.minLat);
-  const skala = Math.min(lebarIsi / spanLon, tinggiIsi / spanLat);
+  const { skala } = skalaKanvas(batas, lebar, tinggi, padding);
 
   return koordinat.map((titik) => ({
     x: Math.round((padding + (titik.lon - batas.minLon) * skala) * 100) / 100,
     y: Math.round((padding + (batas.maxLat - titik.lat) * skala) * 100) / 100,
   }));
+}
+
+/**
+ * Proyeksikan beberapa kelompok ring ke satu kanvas dengan skala bersama.
+ *
+ * Dipakai peta publik yang menggambar beberapa area sekaligus: semua bentuk
+ * harus memakai skala yang sama agar posisi relatifnya benar. Hasil disusun
+ * mengikuti urutan kelompok dan ring masukan.
+ */
+export function proyeksikanKelompokRings(
+  kelompok: readonly (readonly KoordinatPeta[][])[],
+  opsi: OpsiPetaCetak = {},
+): TitikPeta[][][] {
+  const lebar = opsi.lebar ?? 1000;
+  const tinggi = opsi.tinggi ?? 600;
+  const padding = opsi.padding ?? 32;
+  const batas = hitungBatas(kelompok.flat(2));
+  if (!batas) return [];
+
+  const { lebarIsi, tinggiIsi, skala, lebarKonten, tinggiKonten } = skalaKanvas(
+    batas,
+    lebar,
+    tinggi,
+    padding,
+  );
+  const offsetX = padding + (lebarIsi - lebarKonten) / 2;
+  const offsetY = padding + (tinggiIsi - tinggiKonten) / 2;
+
+  return kelompok.map((grup) =>
+    grup.map((ring) =>
+      ring.map((titik) => ({
+        x: Math.round((offsetX + (titik.lon - batas.minLon) * skala) * 100) / 100,
+        y: Math.round((offsetY + (batas.maxLat - titik.lat) * skala) * 100) / 100,
+      })),
+    ),
+  );
 }
 
 /**
