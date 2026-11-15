@@ -63,7 +63,10 @@ export default async function GaleriPage({ searchParams }: Props) {
           </div>
           <p className={styles.kicker}>MOMEN &amp; CERITA DESA</p>
           <h1>Galeri {desa.namaDesa ?? "Desa"}</h1>
-          <p>Dokumentasi kegiatan, pembangunan, dan kebersamaan warga {desa.namaDesa ?? "desa"} yang telah dipublikasikan.</p>
+          <p>
+            Dokumentasi kegiatan, pembangunan, dan kebersamaan warga {desa.namaDesa ?? "desa"} yang
+            telah dipublikasikan.
+          </p>
         </div>
       </section>
 
