@@ -237,7 +237,7 @@ export default async function PublicHomePage() {
               <b>
                 Baca informasi <i>→</i>
               </b>
-            </a>
+            </Link>
             <a href="#agenda" className={styles.serviceCard}>
               <span className={styles.serviceIcon}>▦</span>
               <strong>Agenda Kegiatan</strong>
