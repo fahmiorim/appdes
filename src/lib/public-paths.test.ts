@@ -51,6 +51,7 @@ describe("rute publik", () => {
   it("website desa dan seluruh halaman publik baru dapat diakses tanpa sesi", () => {
     const rutePublik = [
       "/agenda",
+      "/pengumuman",
       "/galeri",
       "/galeri/kegiatan-desa",
       "/berita",
