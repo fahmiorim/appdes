@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { count, eq, inArray } from "drizzle-orm";
+import mysql from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
@@ -13,6 +14,7 @@ import {
   updateKontakUseCase,
 } from "@/features/kontak/application/use-cases";
 import { listAnggotaGrupDetail } from "@/features/kontak/infrastructure/kontak-repository";
+import { validasiDatabaseUji } from "@/testing/db-test-guard";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 /**
@@ -472,11 +474,22 @@ describe("addAnggotaGrupUseCase — kontak & grup lintas desa", () => {
   it("daftar anggota tidak membaca kontak desa lain dari baris lama", async () => {
     const { desaA, grupLegacy, kontakB } = dataUji();
 
-    // Baris legacy: belum ada composite FK pada `anggota_grup_kontak`
-    // (kandidat Batch 4), sehingga kombinasi ini masih dapat tersimpan.
-    await db
-      .insert(anggotaGrupKontak)
-      .values({ villageId: desaA, grupId: grupLegacy, kontakId: kontakB, peran: "Sekretaris" });
+    // Baris legacy: sebelum Batch 4B belum ada composite FK pada
+    // `anggota_grup_kontak`, sehingga kombinasi ini dapat tersimpan. Sejak
+    // migration 0007 FK menolaknya, jadi fixture disisipkan dengan
+    // FOREIGN_KEY_CHECKS dimatikan untuk meniru data lama. Repository tetap
+    // wajib menyaringnya — itulah yang diuji di sini.
+    const koneksi = await mysql.createConnection(validasiDatabaseUji(process.env).opsiKoneksi);
+    try {
+      await koneksi.query("SET FOREIGN_KEY_CHECKS=0");
+      await koneksi.query(
+        "INSERT INTO anggota_grup_kontak (village_id, grup_id, kontak_id, peran) VALUES (?, ?, ?, ?)",
+        [desaA, grupLegacy, kontakB, "Sekretaris"],
+      );
+    } finally {
+      await koneksi.query("SET FOREIGN_KEY_CHECKS=1");
+      await koneksi.end();
+    }
 
     const rows = await listAnggotaGrupDetail(desaA, grupLegacy);
     expect(rows).toHaveLength(0);
