@@ -8,6 +8,21 @@ import styles from "../informasi-publik.module.css";
 
 export const dynamic = "force-dynamic";
 
+function plainText(value: string) {
+  return value
+    .replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script>/gi, " ")
+    .replace(/<style\\b[^>]*>[\\s\\S]*?<\\/style>/gi, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+    .replace(/\\s+/g, " ")
+    .trim();
+}
+
 export default async function VisiMisiPage() {
   const desa = await getIdentitasFromRequest();
   const profil = await profilDesaPublik(desa.id);
@@ -57,7 +72,7 @@ export default async function VisiMisiPage() {
             <p className={styles.kicker}>VISI</p>
             <h2>Cita-cita dan tujuan</h2>
             {profil?.visi?.trim() ? (
-              <div className={styles.copy}>{profil.visi}</div>
+              <div className={styles.copy}>{plainText(profil.visi)}</div>
             ) : (
               <p className={styles.muted}>Visi desa belum dipublikasikan.</p>
             )}
