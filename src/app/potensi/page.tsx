@@ -111,7 +111,9 @@ export default async function PotensiPage() {
               <section className={styles.potensiContactCard}>
                 <span aria-hidden="true">↗</span>
                 <h2>Ingin mengetahui lebih lanjut?</h2>
-                <p>Hubungi pemerintah desa untuk memperoleh informasi potensi yang lebih lengkap.</p>
+                <p>
+                  Hubungi pemerintah desa untuk memperoleh informasi potensi yang lebih lengkap.
+                </p>
                 <Link href="/kontak">Lihat kontak desa</Link>
               </section>
             </aside>
