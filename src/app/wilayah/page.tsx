@@ -67,7 +67,9 @@ function buildAreaShapes(areas: AreaDTO[], polygons: PolygonDTO[]): AreaShape[] 
       id: area.id,
       name: area.nama,
       description: area.desk,
-      color: colors.get(area.refPolygon ?? -1) ?? "#7c3aed",
+      color: /^#[0-9a-fA-F]{6}$/.test(colors.get(area.refPolygon ?? -1) ?? "")
+        ? (colors.get(area.refPolygon ?? -1) as string)
+        : "#7c3aed",
       rings: areaRings(area.path),
     }))
     .filter((area) => area.rings.some((ring) => ring.length >= 3));
