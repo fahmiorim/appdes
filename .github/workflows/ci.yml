@@ -298,9 +298,9 @@ jobs:
               cat /tmp/public-page.html
               exit 1
             fi
-            npx --yes playwright screenshot --browser chromium --viewport-size "1024,1536" --full-page "$url" "artifacts/public/$slug-reference-desktop.png"
-            npx --yes playwright screenshot --browser chromium --viewport-size "1440,1000" --full-page "$url" "artifacts/public/$slug-wide-desktop.png"
-            npx --yes playwright screenshot --browser chromium --viewport-size "390,844" --full-page "$url" "artifacts/public/$slug-mobile.png"
+            npx --yes playwright screenshot --browser chromium --viewport-size "1024,1536" --full-page "$url" "artifacts/public/$slug-reference-desktop.png" || test -s "artifacts/public/$slug-reference-desktop.png"
+            npx --yes playwright screenshot --browser chromium --viewport-size "1440,1000" --full-page "$url" "artifacts/public/$slug-wide-desktop.png" || test -s "artifacts/public/$slug-wide-desktop.png"
+            npx --yes playwright screenshot --browser chromium --viewport-size "390,844" --full-page "$url" "artifacts/public/$slug-mobile.png" || test -s "artifacts/public/$slug-mobile.png"
           done
 
       - name: Include design reference
