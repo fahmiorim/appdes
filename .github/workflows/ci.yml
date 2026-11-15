@@ -156,11 +156,20 @@ jobs:
               "INSERT INTO agenda_kegiatan (village_id, judul, mulai, selesai, lokasi, deskripsi, tayang) VALUES (?, ?, CURDATE() + INTERVAL 7 DAY, CURDATE() + INTERVAL 7 DAY, ?, ?, true)",
               [id, "Musyawarah Perencanaan Pembangunan Desa", "Balai Desa Suka Maju", "Pembahasan prioritas pembangunan desa bersama masyarakat."]
             );
+            const { mkdir, copyFile } = await import("node:fs/promises");
+            const mediaDirectory = `storage/media/${id}/galeri`;
+            const mediaPath = `${id}/galeri/visual-qa-cover.jpg`;
+            await mkdir(mediaDirectory, { recursive: true });
+            await copyFile("public/images/login-village-office.jpg", `${mediaDirectory}/visual-qa-cover.jpg`);
             await connection.execute(
-              "INSERT INTO galeri_album (village_id, nama, slug, keterangan, aktif) VALUES (?, ?, ?, ?, true)",
-              [id, "Kegiatan Desa", "kegiatan-desa", "Dokumentasi kegiatan masyarakat Desa Suka Maju."]
+              "INSERT INTO galeri_album (village_id, nama, slug, keterangan, sampul, aktif) VALUES (?, ?, ?, ?, ?, true)",
+              [id, "Kegiatan Desa", "kegiatan-desa", "Dokumentasi kegiatan masyarakat Desa Suka Maju.", mediaPath]
             );
             const [[album]] = await connection.query("SELECT id FROM galeri_album WHERE village_id = ? AND slug = ?", [id, "kegiatan-desa"]);
+            await connection.execute(
+              "INSERT INTO galeri_foto (village_id, album_id, gambar, judul, keterangan, aktif) VALUES (?, ?, ?, ?, ?, true)",
+              [id, album.id, mediaPath, "Kantor Desa Suka Maju", "Dokumentasi lingkungan kantor Desa Suka Maju."]
+            );
             await connection.execute(
               "INSERT INTO halaman_statis (village_id, judul, slug, isi, aktif) VALUES (?, ?, ?, ?, true)",
               [id, "Potensi Desa Suka Maju", "potensi", "Desa Suka Maju memiliki potensi pertanian, UMKM, dan wisata alam yang terus dikembangkan."]
