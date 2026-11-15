@@ -11,8 +11,8 @@ export default async function WilayahPage() {
   const desa=await getIdentitasFromRequest();
   const rows=await daftarWilayahPublik(desa.id);
   const dusun=[...new Set(rows.map((row)=>row.dusun).filter(Boolean))];
-  const rw=[...new Set(rows.map((row)=>row.rw).filter(Boolean))];
-  const rt=[...new Set(rows.map((row)=>row.rt).filter(Boolean))];
+  const rw=[...new Set(rows.filter((row)=>row.rw).map((row)=>`${row.dusun}::${row.rw}`))];
+  const rt=[...new Set(rows.filter((row)=>row.rt).map((row)=>`${row.dusun}::${row.rw}::${row.rt}`))];
   const grouped=dusun.map((name)=>({name,items:rows.filter((row)=>row.dusun===name)}));
   return <main className={styles.site}>
     <header className={styles.header}><div className={styles.container+" "+styles.headerInner}>
