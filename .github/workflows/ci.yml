@@ -264,10 +264,12 @@ jobs:
         run: |
           npx --yes playwright screenshot --browser chromium --viewport-size "390,844" --full-page http://127.0.0.1:3000/masuk artifacts/login-mobile.png
 
-      - name: Capture public pages (desktop and mobile)
+      - name: Capture public pages (reference desktop, wide desktop, and mobile)
         run: |
           mkdir -p artifacts/public
           routes=(
+            /
+            berita
             agenda
             galeri
             galeri/kegiatan-desa
@@ -286,16 +288,20 @@ jobs:
             profil
           )
           for route in "${routes[@]}"; do
-            slug=$(echo "$route" | tr '/' '-')
-            url="http://sukamaju.localhost:3000/$route"
-            status=$(curl --silent --output /tmp/public-page.html --write-out "%{http_code}" -H "Host: sukamaju.localhost" "http://127.0.0.1:3000/$route")
+            slug=$(echo "${route#/}" | tr '/' '-')
+            if [ -z "$slug" ]; then slug="beranda"; fi
+            path="/${route#/}"
+            url="http://sukamaju.localhost:3000$path"
+            request_url="http://127.0.0.1:3000$path"
+            status=$(curl --silent --output /tmp/public-page.html --write-out "%{http_code}" -H "Host: sukamaju.localhost" "$request_url")
             if [ "$status" -ne 200 ]; then
-              echo "Public route /$route returned HTTP $status"
+              echo "Public route $route returned HTTP $status"
               cat /tmp/public-page.html
               exit 1
             fi
-            npx --yes playwright screenshot --browser chromium --viewport-size "1440,1000" --full-page "$url" "artifacts/public/$slug-desktop.png"
-            npx --yes playwright screenshot --browser chromium --viewport-size "390,844" --full-page "$url" "artifacts/public/$slug-mobile.png"
+            npx --yes playwright screenshot --browser chromium --viewport-size "1024,1536" --full-page "$url" "artifacts/public/$slug-reference-desktop.png" || test -s "artifacts/public/$slug-reference-desktop.png"
+            npx --yes playwright screenshot --browser chromium --viewport-size "1440,1000" --full-page "$url" "artifacts/public/$slug-wide-desktop.png" || test -s "artifacts/public/$slug-wide-desktop.png"
+            npx --yes playwright screenshot --browser chromium --viewport-size "390,844" --full-page "$url" "artifacts/public/$slug-mobile.png" || test -s "artifacts/public/$slug-mobile.png"
           done
 
       - name: Include design reference
@@ -308,20 +314,7 @@ jobs:
         if: always()
         run: |
           mkdir -p artifacts/reference/public
-          cp "docs/public/Agenda Kegiatan Desa Suka Maju.png" artifacts/reference/public/agenda.png
-          cp "docs/public/Suka Maju Village Gallery Dashboard.png" artifacts/reference/public/galeri.png
-          cp "docs/public/Desa Suka Maju Photo Gallery.png" artifacts/reference/public/galeri-detail.png
-          cp "docs/public/Data Statistik Desa Suka Maju Dashboard.png" artifacts/reference/public/statistik.png
-          cp "docs/public/Pemerintahan Desa Suka Maju Dashboard.png" artifacts/reference/public/pemerintahan.png
-          cp "docs/public/Wilayah Desa Suka Maju.png" artifacts/reference/public/wilayah.png
-          cp "docs/public/Sejarah Desa Suka Maju_ Jejak Perjalanan Desa.png" artifacts/reference/public/sejarah.png
-          cp "docs/public/Visi & Misi Desa Suka Maju.png" artifacts/reference/public/visi-misi.png
-          cp "docs/public/Potensi Desa Suka Maju Dashboard.png" artifacts/reference/public/potensi.png
-          cp "docs/public/Desa Suka Maju APBDes Dashboard.png" artifacts/reference/public/apbdes.png
-          cp "docs/public/Desa Sukamaju Online Services.png" artifacts/reference/public/layanan.png
-          cp "docs/public/Suka Maju Online Letter Services Dashboard.png" artifacts/reference/public/layanan-surat.png
-          cp "docs/public/Kontak & Pengaduan Desa Suka Maju.png" artifacts/reference/public/kontak-pengaduan.png
-          cp "docs/public/Profil Desa Suka Maju_ Informasi dan Potensi Desa.png" artifacts/reference/public/profil.png
+          cp docs/public/*.png artifacts/reference/public/
 
       - name: Upload visual evidence
         if: always()
