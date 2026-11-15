@@ -70,3 +70,12 @@ PR hanya dapat dinyatakan siap review visual setelah:
 6. Status tiap halaman dicatat sebagai `implemented`, `visually reviewed`, atau `accepted` secara jujur.
 
 **Keputusan saat audit:** PR tetap terbuka dan belum di-merge. Visual acceptance masih pending.
+
+
+## Perbaikan lanjutan setelah audit awal
+
+- Menambahkan styling `.sectionHead` yang sebelumnya dipakai halaman `/layanan` tetapi belum didefinisikan di CSS module bersama.
+- Mengubah navigasi pada breakpoint mobile di shell publik agar tidak hilang seluruhnya; navigasi kini tersedia sebagai baris horizontal yang dapat digulir. Perlu tetap dibandingkan dengan screenshot referensi untuk memastikan pola ini cocok.
+- Memperbarui workflow CI ke Node.js 22.22.1 karena dependensi `lint-staged@17` mensyaratkan minimal Node 22.22.1; runner sebelumnya memakai 22.12.0.
+- Ketiga route canonical ditambahkan dan tautan silang sejarah/visi-misi diperbarui.
+- Perbaikan ini belum menggantikan screenshot comparison. Status visual semua halaman tetap pending sampai bukti desktop/mobile per halaman tersedia.
