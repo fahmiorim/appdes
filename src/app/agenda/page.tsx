@@ -10,7 +10,7 @@ import styles from "./agenda.module.css";
 export const dynamic = "force-dynamic";
 
 type Props = {
-  searchParams: Promise<{ q?: string; bulan?: string; tahun?: string }>;
+  searchParams: Promise<{ q?: string; bulan?: string; tahun?: string; hari?: string }>;
 };
 
 function mediaUrl(value: string | null | undefined, villageId: number): string | null {
@@ -78,6 +78,12 @@ export default async function AgendaPage({ searchParams }: Props) {
   const [desa, params] = await Promise.all([getIdentitasFromRequest(), searchParams]);
   const agenda = await agendaMendatang(desa.id, 100);
   const lokasi = locationLabel(desa);
+  const namaKabupaten = desa.namaKabupaten?.trim();
+  const labelKabupaten = namaKabupaten
+    ? /^(kabupaten|kota)\\s/i.test(namaKabupaten)
+      ? namaKabupaten
+      : `Kabupaten ${namaKabupaten}`
+    : "Sistem Informasi Desa";
   const now = new Date();
   const currentYear = now.getFullYear();
   const requestedMonth = Number(params.bulan);
@@ -93,6 +99,12 @@ export default async function AgendaPage({ searchParams }: Props) {
       ? requestedYear
       : currentYear;
   const query = (params.q ?? "").trim().slice(0, 100);
+  const requestedDay = Number(params.hari);
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const selectedDay =
+    Number.isInteger(requestedDay) && requestedDay >= 1 && requestedDay <= daysInMonth
+      ? requestedDay
+      : null;
   const monthKey = `${year}-${String(month).padStart(2, "0")}`;
   const filteredAgenda = agenda.filter((item) => {
     const matchesMonth = item.mulai.startsWith(monthKey);
@@ -104,9 +116,32 @@ export default async function AgendaPage({ searchParams }: Props) {
     return matchesMonth && matchesQuery;
   });
   const eventDays = new Set(filteredAgenda.map((item) => Number(item.mulai.slice(8, 10))));
+  const selectedDateAgenda = selectedDay
+    ? filteredAgenda.filter((item) => Number(item.mulai.slice(8, 10)) === selectedDay)
+    : [];
+  const previousMonth =
+    month === 1 ? { bulan: 12, tahun: year - 1 } : { bulan: month - 1, tahun: year };
+  const nextMonth =
+    month === 12 ? { bulan: 1, tahun: year + 1 } : { bulan: month + 1, tahun: year };
+  const monthHref = (value: { bulan: number; tahun: number }) => {
+    const search = new URLSearchParams({
+      bulan: String(value.bulan),
+      tahun: String(value.tahun),
+    });
+    if (query) search.set("q", query);
+    return `/agenda?${search.toString()}`;
+  };
+  const dayHref = (day: number) => {
+    const search = new URLSearchParams({
+      bulan: String(month),
+      tahun: String(year),
+      hari: String(day),
+    });
+    if (query) search.set("q", query);
+    return `/agenda?${search.toString()}`;
+  };
   const firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
   const mondayOffset = (firstWeekday + 6) % 7;
-  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const calendarDays: (number | null)[] = [
     ...Array.from({ length: mondayOffset }, () => null),
     ...Array.from({ length: daysInMonth }, (_, index) => index + 1),
@@ -148,9 +183,7 @@ export default async function AgendaPage({ searchParams }: Props) {
             )}
             <span className={styles.brandCopy}>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>
-                {desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}
-              </small>
+              <small>{labelKabupaten}</small>
             </span>
           </Link>
           <nav className={styles.nav} aria-label="Navigasi utama">
@@ -202,24 +235,31 @@ export default async function AgendaPage({ searchParams }: Props) {
             <div className={styles.agendaMain}>
               <section className={styles.calendarPanel}>
                 <div className={styles.calendarHeader}>
-                  <div>
+                  <div className={styles.calendarTitle}>
                     <p className={styles.kicker}>KALENDER KEGIATAN</p>
-                    <h2>{monthLabel}</h2>
-                    <p>Lihat jadwal kegiatan desa dalam tampilan kalender.</p>
+                    <h2>▦ Kalender Kegiatan</h2>
+                    <p>Lihat jadwal kegiatan desa dalam tampilan kalender interaktif.</p>
                   </div>
-                  <span className={styles.calendarIcon} aria-hidden="true">
-                    ▦
-                  </span>
+                  <div className={styles.monthSwitcher}>
+                    <Link href={monthHref(previousMonth)} aria-label="Bulan sebelumnya">
+                      ‹
+                    </Link>
+                    <strong>{monthLabel}</strong>
+                    <Link href={monthHref(nextMonth)} aria-label="Bulan berikutnya">
+                      ›
+                    </Link>
+                  </div>
                 </div>
-                <div className={styles.calendarGrid}>
-                  {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((day) => (
-                    <span className={styles.calendarWeekday} key={day}>
-                      {day}
-                    </span>
-                  ))}
-                  {calendarDays.map((day, index) => (
-                    <span
-                      className={[
+                <div className={styles.calendarContent}>
+                  <div className={styles.calendarGrid}>
+                    {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((day) => (
+                      <span className={styles.calendarWeekday} key={day}>
+                        {day}
+                      </span>
+                    ))}
+                    {calendarDays.map((day, index) => {
+                      const isSelected = day === selectedDay;
+                      const className = [
                         styles.calendarDay,
                         day && eventDays.has(day) ? styles.calendarHasEvent : "",
                         day === now.getDate() &&
@@ -227,15 +267,50 @@ export default async function AgendaPage({ searchParams }: Props) {
                         year === currentYear
                           ? styles.calendarToday
                           : "",
+                        isSelected ? styles.calendarSelected : "",
                       ]
                         .filter(Boolean)
-                        .join(" ")}
-                      key={`${day ?? "empty"}-${index}`}
-                    >
-                      {day ?? ""}
-                      {day && eventDays.has(day) ? <i aria-label="Ada kegiatan" /> : null}
-                    </span>
-                  ))}
+                        .join(" ");
+                      return day ? (
+                        <Link
+                          className={className}
+                          href={dayHref(day)}
+                          aria-current={isSelected ? "date" : undefined}
+                          key={`${day}-${index}`}
+                        >
+                          {day}
+                          {eventDays.has(day) ? <i aria-label="Ada kegiatan" /> : null}
+                        </Link>
+                      ) : (
+                        <span className={styles.calendarDayEmpty} key={`empty-${index}`} />
+                      );
+                    })}
+                  </div>
+                  <section className={styles.selectedDayPanel} aria-live="polite">
+                    <h3>
+                      ▦ Kegiatan pada{" "}
+                      {selectedDay ? `${selectedDay} ${namaBulan[month - 1]}` : "tanggal pilihan"}
+                    </h3>
+                    {selectedDay ? (
+                      selectedDateAgenda.length ? (
+                        <div className={styles.selectedDayList}>
+                          {selectedDateAgenda.map((item) => (
+                            <article className={styles.selectedDayEvent} key={item.id}>
+                              <strong>{item.judul}</strong>
+                              <span>{item.lokasi || "Lokasi belum ditentukan"}</span>
+                              {item.deskripsi ? <p>{plainText(item.deskripsi)}</p> : null}
+                            </article>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className={styles.muted}>Belum ada kegiatan pada tanggal ini.</p>
+                      )
+                    ) : (
+                      <p className={styles.muted}>
+                        Pilih tanggal pada kalender untuk melihat kegiatan yang dijadwalkan.
+                      </p>
+                    )}
+                  </section>
                 </div>
               </section>
 
