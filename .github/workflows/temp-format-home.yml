@@ -1,0 +1,28 @@
+name: Temporary format homepage
+on:
+  push:
+    branches:
+      - feat/public-news-pages
+    paths:
+      - .github/workflows/temp-format-home.yml
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/public-news-pages
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Format and commit
+        run: |
+          npx prettier --write src/app/page.tsx
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/app/page.tsx
+          git commit -m "style(public): format homepage"
+          git push origin HEAD:feat/public-news-pages
