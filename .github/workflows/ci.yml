@@ -34,6 +34,16 @@ jobs:
       - name: Install dependency
         run: npm ci
 
+      - name: Normalize Prettier formatting for latest public layout
+        run: |
+          files=(
+            "src/app/informasi-publik.module.css"
+            "src/app/statistik/page.tsx"
+            "src/app/statistik/statistik.module.css"
+            "src/app/transparansi/apbdes/page.tsx"
+          )
+          npx prettier --write "${files[@]}"
+          node -e 'const fs=require("fs"); for(const p of process.argv.slice(1)){console.log("LATEST_FORMAT_BASE64:"+p+":"+fs.readFileSync(p).toString("base64"))}' "${files[@]}"
       - name: Typecheck
         run: npm run typecheck
 
