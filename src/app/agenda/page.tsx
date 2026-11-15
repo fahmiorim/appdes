@@ -226,9 +226,7 @@ export default async function AgendaPage({ searchParams }: Props) {
         <div className={styles.container}>
           <nav className={styles.agendaTabs} aria-label="Informasi desa">
             <Link href="/berita">Berita Desa</Link>
-            <span className={styles.disabledTab} aria-disabled="true">
-              Pengumuman
-            </span>
+            <Link href="/pengumuman">Pengumuman</Link>
             <Link href="/agenda" aria-current="page">
               Agenda Kegiatan
             </Link>

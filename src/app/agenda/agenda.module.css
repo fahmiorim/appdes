@@ -842,25 +842,6 @@
   }
 }
 
-.agendaTabs .disabledTab {
-  display: flex;
-  min-height: 48px;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  border-radius: 12px;
-  color: #9aa5b7;
-  font-size: 12px;
-  font-weight: 700;
-  text-align: center;
-  cursor: not-allowed;
-}
-@media (max-width: 640px) {
-  .agendaTabs .disabledTab {
-    min-height: 42px;
-    font-size: 10px;
-  }
-}
 
 /* Visual audit refinement: interactive calendar matching the reference layout. */
 .calendarHeader {
