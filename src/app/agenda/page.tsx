@@ -31,7 +31,7 @@ function locationLabel(desa: {
 }
 
 function dateParts(value: string) {
-  const [year, month, day] = value.split("-").map(Number);
+  const [year = 1970, month = 1, day = 1] = value.split("-").map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
   return {
     day: new Intl.DateTimeFormat("id-ID", { day: "2-digit", timeZone: "UTC" }).format(date),
