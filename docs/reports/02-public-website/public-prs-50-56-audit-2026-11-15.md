@@ -357,19 +357,30 @@ Bagian A–F di atas adalah catatan audit pada 15 November 2026 dan sengaja dipe
 | F-03 | **Selesai** — format PR #56 | PR #56 di-merge (`cda1684`) dengan perbaikan Prettier `3020138`; check PR hijau |
 | F-04, F-05 | **Selesai** — navigasi agenda dibatasi | PR #57 di-merge (`f6ac8db`): arsip bulan dimuat dan navigasi dibatasi |
 | F-06, F-07 | **Selesai** — validasi dan proyeksi kanonik | PR #58 di-merge (`5b5b6b1`); `src/features/gis/domain/peta-cetak.ts` + `peta-cetak.test.ts` (13 test) |
-| F-08 | **Terbuka** — tab "Pengumuman" masih nonaktif | `src/app/agenda/page.tsx:230` masih memakai `aria-disabled="true"`, padahal `/pengumuman` sudah live sejak #56; sekarang cukup diganti `Link` |
+| F-08 | **Selesai** — tab "Pengumuman" aktif | `src/app/agenda/page.tsx` kini memakai `Link` ke `/pengumuman`; aturan CSS `disabledTab` yang tidak terpakai dihapus dari `agenda.module.css` |
 | F-09 | **Terbuka** — public shell disalin per halaman | Tidak ada PR yang mengangkat shell bersama; masih di luar scope PR #50–#58 |
 | F-10 | **Terbuka** — daftar album ganda dan tab anchor | Masuk apa adanya bersama #55: nav `#album-list` dan daftar album di aside masih menampilkan isi yang sama |
-| F-11 | **Terbuka** — ketergantungan kategori `pengumuman` | Belum ada fixture/data uji untuk kategori ini; belum ada test level page |
+| F-11 | **Selesai** — fixture dan test isolasi tenant | `src/features/publik/application/pengumuman-publik.integration.test.ts` (6 test) menguji `daftarKategoriBerita`/`daftarBerita` untuk dua desa dengan slug kategori sama, termasuk draf, jadwal terbit, kategori nonaktif, dan pencarian |
 | F-12 | **Tidak berlaku** — PR #52 ditutup | Temuan menyangkut isi dokumen pada PR yang tidak di-merge |
-| F-13 | **Terbuka** — format tanggal pakai timezone server | `src/app/pengumuman/page.tsx:32` masih memakai `Intl.DateTimeFormat("id-ID", …)` tanpa `timeZone` eksplisit |
+| F-13 | **Selesai** — tanggal memakai zona waktu eksplisit | `src/app/pengumuman/page.tsx` memakai konstanta `ZONA_WAKTU = "Asia/Jakarta"` pada seluruh `Intl.DateTimeFormat` di halaman tersebut |
 
 ### Temuan yang layak diangkat menjadi task berikutnya
 
-1. **F-08** paling murah dan berdampak: `/pengumuman` sudah tersedia, tetapi navigasi `/agenda` masih menampilkannya sebagai tab mati — pengguna tidak bisa menemukan halaman yang sudah ada.
-2. **F-13** kecil dan terukur: tetapkan `timeZone: "Asia/Jakarta"` pada pemformat tanggal publik agar tidak bergeser mengikuti timezone server.
-3. **F-11** menyangkut kebenaran data: tambahkan fixture dan test yang membuktikan halaman pengumuman hanya menampilkan konten tenant aktif yang berstatus terbit.
-4. **F-10** dan **F-09** bersifat struktural/visual; lebih baik dikerjakan bersama audit visual publik berikutnya, bukan sebagai patch terpisah.
+F-08, F-11, dan F-13 sudah dikerjakan (lihat tabel di atas). Yang tersisa:
+
+1. **F-09** dan **F-10** bersifat struktural/visual; lebih baik dikerjakan bersama audit visual publik berikutnya, bukan sebagai patch terpisah.
+2. Halaman lain yang memformat tanggal publik (`/agenda`, `/berita`, `/dokumen`) belum diperiksa untuk risiko TZ yang sama seperti F-13; perlu audit kecil sebelum diubah agar tidak mengubah tampilan tanpa bukti.
+
+### Validasi tindak lanjut F-08/F-11/F-13
+
+Dijalankan pada branch `fix/public-pengumuman-audit-followups` (basis `origin/main` = `5527e71`):
+
+- `npm run typecheck` — **PASS**.
+- `npx eslint src/app/agenda/page.tsx src/app/pengumuman/page.tsx src/features/publik/application/pengumuman-publik.integration.test.ts` — **PASS** tanpa warning.
+- `npx prettier --check` pada seluruh file yang berubah — **PASS**.
+- `npm test` — **PASS**, 195 file / 1751 test.
+- `TEST_DATABASE_URL=mysql://…/desa_test TEST_DATABASE_ACK=1 npx vitest run --config vitest.integration.config.mts src/features/publik/application/pengumuman-publik.integration.test.ts` — **PASS**, 6 test pada database uji disposable `desa_test`.
+- Seluruh rangkaian integration test lain tidak dijalankan lokal pada perubahan ini; cakupannya diserahkan ke CI (`Integration test (MySQL 8)`).
 
 ### Validasi pada perubahan dokumentasi ini
 
