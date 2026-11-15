@@ -42,11 +42,8 @@ export async function generateMetadata() {
 }
 
 export default async function PengumumanPage({ searchParams }: Props) {
-  const [desa, params, kategori] = await Promise.all([
-    getIdentitasFromRequest(),
-    searchParams,
-    daftarKategoriBerita((await getIdentitasFromRequest()).id),
-  ]);
+  const [desa, params] = await Promise.all([getIdentitasFromRequest(), searchParams]);
+  const kategori = await daftarKategoriBerita(desa.id);
   const q = params.q?.trim().slice(0, 100) ?? "";
   const kategoriPengumuman = kategori.find((item) => item.slug === "pengumuman");
   const pengumuman = kategoriPengumuman
@@ -127,7 +124,7 @@ export default async function PengumumanPage({ searchParams }: Props) {
               <h2>Informasi untuk masyarakat</h2>
               <p>Pengumuman yang telah diterbitkan dan dapat dibaca oleh masyarakat.</p>
             </div>
-            <form className={styles.search} action="/pengumuman" method="get}>
+            <form className={styles.search} action="/pengumuman" method="get">
               <label className={styles.srOnly} htmlFor="announcement-search">Cari pengumuman</label>
               <input id="announcement-search" type="search" name="q" defaultValue={q} placeholder="Cari pengumuman..." />
               <button type="submit">Cari</button>
