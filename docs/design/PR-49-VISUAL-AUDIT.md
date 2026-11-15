@@ -90,3 +90,18 @@ PR hanya dapat dinyatakan siap review visual setelah:
 - Form pengaduan pada screenshot kontak/pengaduan belum dapat diimplementasikan dengan aman sampai tersedia endpoint publik penyimpanan pengaduan dengan validasi, rate limit, dan proteksi spam.
 
 Poin-poin ini merupakan batasan fungsional yang perlu keputusan produk/backend, bukan alasan untuk mengklaim tampilan sudah sama dengan referensi.
+
+
+## Temuan kritis dari screenshot browser
+
+Pada visual run `43692369881`, semua 16 route publik berhasil menghasilkan HTTP final 200 dan screenshot, tetapi inspeksi gambar menunjukkan seluruh screenshot justru menampilkan halaman login. Penyebabnya bukan CSS: `src/lib/public-paths.ts` belum memasukkan route website publik baru ke allowlist proxy. Proxy mengalihkan request anonim ke `/masuk`, dan pemeriksaan HTTP awal menerima status redirect 3xx sebagai sukses.
+
+Perbaikan yang dibuat:
+- Menambahkan allowlist exact untuk halaman publik baru.
+- Menambahkan prefix publik untuk daftar/detail berita dan galeri.
+- Mempertahankan batas keamanan: `/pemerintahan/pemilihan`, `/profil/pengguna`, dan area `/layanan-mandiri/beranda` tetap bukan rute publik.
+- Menambah unit test eksplisit untuk seluruh route publik dan batas rute privat.
+- Mengubah visual QA agar hanya menerima HTTP 200; redirect 3xx sekarang dianggap gagal.
+- Menambahkan database MySQL sementara dan fixture sintetis tenant `sukamaju.localhost` untuk pengujian route.
+
+**Penting:** screenshot dari run `43692369881` tidak boleh dipakai sebagai bukti visual acceptance. Semua route akan diambil ulang setelah allowlist proxy diperbaiki.
