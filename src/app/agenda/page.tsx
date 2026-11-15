@@ -183,9 +183,7 @@ export default async function AgendaPage({ searchParams }: Props) {
             )}
             <span className={styles.brandCopy}>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>
-                {labelKabupaten}
-              </small>
+              <small>{labelKabupaten}</small>
             </span>
           </Link>
           <nav className={styles.nav} aria-label="Navigasi utama">
