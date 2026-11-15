@@ -112,8 +112,12 @@ export default async function PemerintahanPage() {
             <div className={styles.orgChart}>
               {pimpinan.length ? (
                 <>
-                  <div className={styles.orgLeader}>{pimpinan.map((item) => kartuPerangkat(item, true))}</div>
-                  {pelaksana.length ? <div className={styles.orgConnector} aria-hidden="true" /> : null}
+                  <div className={styles.orgLeader}>
+                    {pimpinan.map((item) => kartuPerangkat(item, true))}
+                  </div>
+                  {pelaksana.length ? (
+                    <div className={styles.orgConnector} aria-hidden="true" />
+                  ) : null}
                 </>
               ) : null}
               <div className={styles.grid}>
