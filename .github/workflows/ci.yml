@@ -162,10 +162,6 @@ jobs:
             );
             const [[album]] = await connection.query("SELECT id FROM galeri_album WHERE village_id = ? AND slug = ?", [id, "kegiatan-desa"]);
             await connection.execute(
-              "INSERT INTO galeri_foto (village_id, album_id, gambar, judul, keterangan, aktif) VALUES (?, ?, ?, ?, ?, true)",
-              [id, album.id, "visual-qa/foto-kegiatan.jpg", "Gotong Royong Warga", "Warga bersama-sama membersihkan lingkungan desa."]
-            );
-            await connection.execute(
               "INSERT INTO halaman_statis (village_id, judul, slug, isi, aktif) VALUES (?, ?, ?, ?, true)",
               [id, "Potensi Desa Suka Maju", "potensi", "Desa Suka Maju memiliki potensi pertanian, UMKM, dan wisata alam yang terus dikembangkan."]
             );
@@ -244,6 +240,12 @@ jobs:
           for route in "${routes[@]}"; do
             slug=$(echo "$route" | tr '/' '-')
             url="http://sukamaju.localhost:3000/$route"
+            status=$(curl --silent --output /tmp/public-page.html --write-out "%{http_code}" -H "Host: sukamaju.localhost" "http://127.0.0.1:3000/$route")
+            if [ "$status" -lt 200 ] || [ "$status" -ge 400 ]; then
+              echo "Public route /$route returned HTTP $status"
+              cat /tmp/public-page.html
+              exit 1
+            fi
             npx --yes playwright screenshot --browser chromium --viewport-size "1440,1000" --full-page "$url" "artifacts/public/$slug-desktop.png"
             npx --yes playwright screenshot --browser chromium --viewport-size "390,844" --full-page "$url" "artifacts/public/$slug-mobile.png"
           done
