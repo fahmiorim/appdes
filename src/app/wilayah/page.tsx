@@ -266,7 +266,7 @@ export default async function WilayahPage() {
                   {grouped.length ? (
                     grouped.map((group) => (
                       <div key={group.name}>
-                        <strong>Dusun {group.name}</strong>
+                        <strong>{group.name}</strong>
                         <span>{group.items.length} data RT/RW</span>
                       </div>
                     ))
@@ -294,7 +294,7 @@ export default async function WilayahPage() {
                     <div className={styles.groupHead}>
                       <span className={styles.pin}>⌖</span>
                       <div>
-                        <h3>Dusun {group.name}</h3>
+                        <h3>{group.name}</h3>
                         <p>{group.items.length} data RT/RW</p>
                       </div>
                     </div>
