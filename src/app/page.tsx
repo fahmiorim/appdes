@@ -303,7 +303,9 @@ export default async function PublicHomePage() {
               <h2>Berita dari desa</h2>
               <p>Informasi dan kegiatan terbaru untuk seluruh warga.</p>
             </div>
-            <Link className={styles.textLink} href="/berita">Semua berita <span>→</span></Link>
+            <Link className={styles.textLink} href="/berita">
+              Semua berita <span>→</span>
+            </Link>
           </div>
           {berita.length > 0 ? (
             <div className={styles.newsGrid}>
@@ -341,7 +343,9 @@ export default async function PublicHomePage() {
                           }).format(date)}
                         </time>
                       </div>
-                      <h3><Link href={`/berita/${encodeURIComponent(item.slug)}`}>{item.judul}</Link></h3>
+                      <h3>
+                        <Link href={`/berita/${encodeURIComponent(item.slug)}`}>{item.judul}</Link>
+                      </h3>
                       <p>{item.ringkasan || "Baca informasi selengkapnya dari pemerintah desa."}</p>
                     </div>
                   </article>
@@ -432,3 +436,22 @@ export default async function PublicHomePage() {
     </main>
   );
 }
+Post job cleanup.
+(node:2351) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Post job cleanup.
+[command]/usr/bin/git version
+git version 2.56.1
+Temporarily overriding HOME='/home/runner/work/_temp/93c7d884-26a1-4b7a-8e8d-3957678573d2' before making global git config changes
+Adding repository directory to the temporary git global config as a safe directory
+[command]/usr/bin/git config --global --add safe.directory /home/runner/work/appdes/appdes
+[command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+[command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+http.https://github.com/.extraheader
+[command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+[command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+[command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+[command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Cleaning up orphan processes
+##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
