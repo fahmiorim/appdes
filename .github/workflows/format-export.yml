@@ -1,0 +1,29 @@
+name: Temporary format export
+
+on:
+  push:
+    branches:
+      - fix/agenda-visual-audit
+
+permissions:
+  contents: read
+
+jobs:
+  format-export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22.22.1"
+          cache: npm
+      - run: npm ci
+      - name: Format affected files
+        run: npx prettier --write src/app/agenda/page.tsx src/app/agenda/agenda.module.css
+      - uses: actions/upload-artifact@v4
+        with:
+          name: formatted-agenda-files
+          path: |
+            src/app/agenda/page.tsx
+            src/app/agenda/agenda.module.css
+          retention-days: 1
