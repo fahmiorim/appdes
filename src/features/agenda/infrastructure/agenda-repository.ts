@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, eq, gte } from "drizzle-orm";
+import { and, asc, eq, gte, lt } from "drizzle-orm";
 
 import { db } from "@/db";
 import { agendaKegiatan } from "@/db/schema";
@@ -43,6 +43,31 @@ export async function listAgendaPublik(
     .limit(limit);
 
   return rows;
+}
+
+/**
+ * Agenda publik pada rentang `[mulai, selesai)`, termasuk bulan yang sudah lewat.
+ *
+ * Kalender publik membutuhkan arsip, sehingga fungsi ini tidak memfilter
+ * tanggal terhadap hari ini. Isolasi tenant dan status tayang tetap wajib.
+ */
+export async function listAgendaPublikRentang(
+  villageId: number,
+  mulai: string,
+  selesai: string,
+): Promise<AgendaRow[]> {
+  return db
+    .select({ ...KOLOM, tayang: agendaKegiatan.tayang })
+    .from(agendaKegiatan)
+    .where(
+      and(
+        eq(agendaKegiatan.villageId, villageId),
+        eq(agendaKegiatan.tayang, true),
+        gte(agendaKegiatan.mulai, mulai),
+        lt(agendaKegiatan.mulai, selesai),
+      ),
+    )
+    .orderBy(asc(agendaKegiatan.mulai), asc(agendaKegiatan.id));
 }
 
 /** Seluruh agenda desa untuk halaman admin, termasuk yang belum tayang. */

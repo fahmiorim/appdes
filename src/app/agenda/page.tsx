@@ -1,8 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { agendaMendatang } from "@/features/agenda/application/agenda-use-cases";
-import { agendaLabelTanggal } from "@/features/agenda/domain/agenda";
+import { agendaBulan, agendaMendatang } from "@/features/agenda/application/agenda-use-cases";
+import {
+  agendaLabelTanggal,
+  bulanAgendaDalamRentang,
+  geserBulanAgenda,
+} from "@/features/agenda/domain/agenda";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 
 import styles from "./agenda.module.css";
@@ -76,7 +80,6 @@ const namaBulan = [
 
 export default async function AgendaPage({ searchParams }: Props) {
   const [desa, params] = await Promise.all([getIdentitasFromRequest(), searchParams]);
-  const agenda = await agendaMendatang(desa.id, 100);
   const lokasi = locationLabel(desa);
   const namaKabupaten = desa.namaKabupaten?.trim();
   const labelKabupaten = namaKabupaten
@@ -86,6 +89,8 @@ export default async function AgendaPage({ searchParams }: Props) {
     : "Sistem Informasi Desa";
   const now = new Date();
   const currentYear = now.getFullYear();
+  const tahunMin = currentYear - 1;
+  const tahunMaks = currentYear + 2;
   const requestedMonth = Number(params.bulan);
   const requestedYear = Number(params.tahun);
   const month =
@@ -93,9 +98,7 @@ export default async function AgendaPage({ searchParams }: Props) {
       ? requestedMonth
       : now.getMonth() + 1;
   const year =
-    Number.isInteger(requestedYear) &&
-    requestedYear >= currentYear - 1 &&
-    requestedYear <= currentYear + 2
+    Number.isInteger(requestedYear) && requestedYear >= tahunMin && requestedYear <= tahunMaks
       ? requestedYear
       : currentYear;
   const query = (params.q ?? "").trim().slice(0, 100);
@@ -105,24 +108,25 @@ export default async function AgendaPage({ searchParams }: Props) {
     Number.isInteger(requestedDay) && requestedDay >= 1 && requestedDay <= daysInMonth
       ? requestedDay
       : null;
-  const monthKey = `${year}-${String(month).padStart(2, "0")}`;
-  const filteredAgenda = agenda.filter((item) => {
-    const matchesMonth = item.mulai.startsWith(monthKey);
-    const matchesQuery =
+  const [agenda, mendatang] = await Promise.all([
+    agendaBulan(desa.id, year, month),
+    agendaMendatang(desa.id, 3),
+  ]);
+  const filteredAgenda = agenda.filter(
+    (item) =>
       !query ||
       [item.judul, item.lokasi, item.deskripsi].some((value) =>
         plainText(value).toLocaleLowerCase("id-ID").includes(query.toLocaleLowerCase("id-ID")),
-      );
-    return matchesMonth && matchesQuery;
-  });
+      ),
+  );
   const eventDays = new Set(filteredAgenda.map((item) => Number(item.mulai.slice(8, 10))));
   const selectedDateAgenda = selectedDay
     ? filteredAgenda.filter((item) => Number(item.mulai.slice(8, 10)) === selectedDay)
     : [];
-  const previousMonth =
-    month === 1 ? { bulan: 12, tahun: year - 1 } : { bulan: month - 1, tahun: year };
-  const nextMonth =
-    month === 12 ? { bulan: 1, tahun: year + 1 } : { bulan: month + 1, tahun: year };
+  const previousMonth = geserBulanAgenda({ tahun: year, bulan: month }, -1);
+  const nextMonth = geserBulanAgenda({ tahun: year, bulan: month }, 1);
+  const bisaMundur = bulanAgendaDalamRentang(previousMonth, tahunMin, tahunMaks);
+  const bisaMaju = bulanAgendaDalamRentang(nextMonth, tahunMin, tahunMaks);
   const monthHref = (value: { bulan: number; tahun: number }) => {
     const search = new URLSearchParams({
       bulan: String(value.bulan),
@@ -146,7 +150,7 @@ export default async function AgendaPage({ searchParams }: Props) {
     ...Array.from({ length: mondayOffset }, () => null),
     ...Array.from({ length: daysInMonth }, (_, index) => index + 1),
   ];
-  const years = [currentYear - 1, currentYear, currentYear + 1, currentYear + 2];
+  const years = [tahunMin, currentYear, currentYear + 1, tahunMaks];
   const monthLabel = new Intl.DateTimeFormat("id-ID", {
     month: "long",
     year: "numeric",
@@ -241,13 +245,35 @@ export default async function AgendaPage({ searchParams }: Props) {
                     <p>Lihat jadwal kegiatan desa dalam tampilan kalender interaktif.</p>
                   </div>
                   <div className={styles.monthSwitcher}>
-                    <Link href={monthHref(previousMonth)} aria-label="Bulan sebelumnya">
-                      ‹
-                    </Link>
+                    {bisaMundur ? (
+                      <Link href={monthHref(previousMonth)} aria-label="Bulan sebelumnya">
+                        ‹
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        className={styles.monthDisabled}
+                        aria-label="Bulan sebelumnya tidak tersedia"
+                        disabled
+                      >
+                        ‹
+                      </button>
+                    )}
                     <strong>{monthLabel}</strong>
-                    <Link href={monthHref(nextMonth)} aria-label="Bulan berikutnya">
-                      ›
-                    </Link>
+                    {bisaMaju ? (
+                      <Link href={monthHref(nextMonth)} aria-label="Bulan berikutnya">
+                        ›
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        className={styles.monthDisabled}
+                        aria-label="Bulan berikutnya tidak tersedia"
+                        disabled
+                      >
+                        ›
+                      </button>
+                    )}
                   </div>
                 </div>
                 <div className={styles.calendarContent}>
@@ -410,19 +436,19 @@ export default async function AgendaPage({ searchParams }: Props) {
                 <div className={styles.sidebarStats}>
                   <div>
                     <strong>{agenda.length}</strong>
-                    <span>Total agenda mendatang</span>
+                    <span>Total agenda bulan</span>
                   </div>
                   <div>
                     <strong>{filteredAgenda.length}</strong>
-                    <span>Agenda pada periode ini</span>
+                    <span>Sesuai filter</span>
                   </div>
                 </div>
               </section>
               <section className={styles.sidebarCard}>
                 <h2>Kegiatan mendatang</h2>
-                {agenda.length ? (
+                {mendatang.length ? (
                   <div className={styles.sidebarEvents}>
-                    {agenda.slice(0, 3).map((item) => {
+                    {mendatang.map((item) => {
                       const date = dateParts(item.mulai);
                       return (
                         <div className={styles.sidebarEvent} key={item.id}>

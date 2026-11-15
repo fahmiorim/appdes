@@ -902,6 +902,21 @@
   font-size: 23px;
   line-height: 1;
 }
+.monthSwitcher .monthDisabled {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #eef2f9;
+  border-radius: 50%;
+  background: #f4f6fb;
+  color: #b3bdd0;
+  padding: 0;
+  font-family: inherit;
+  font-size: 23px;
+  line-height: 1;
+  cursor: not-allowed;
+}
 .calendarContent {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(220px, 0.9fr);

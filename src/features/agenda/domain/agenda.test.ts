@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { agendaFormSchema, agendaLabelTanggal } from "./agenda";
+import {
+  agendaFormSchema,
+  agendaLabelTanggal,
+  bulanAgendaDalamRentang,
+  geserBulanAgenda,
+  rentangBulanAgenda,
+} from "./agenda";
 
 describe("agendaFormSchema", () => {
   it("menerima agenda dengan tanggal selesai opsional", () => {
@@ -43,6 +49,35 @@ describe("agendaFormSchema", () => {
     const hasil = agendaFormSchema.safeParse({ judul: "Rapat", mulai: "2026-11-20" });
     expect(hasil.success).toBe(true);
     if (hasil.success) expect(hasil.data.tayang).toBe(false);
+  });
+});
+
+describe("kalender agenda", () => {
+  it("menggeser bulan melewati batas tahun", () => {
+    expect(geserBulanAgenda({ tahun: 2026, bulan: 1 }, -1)).toEqual({ tahun: 2025, bulan: 12 });
+    expect(geserBulanAgenda({ tahun: 2026, bulan: 12 }, 1)).toEqual({ tahun: 2027, bulan: 1 });
+  });
+
+  it("menghitung rentang setengah-terbuka satu bulan", () => {
+    expect(rentangBulanAgenda(2026, 11)).toEqual({
+      mulai: "2026-11-01",
+      selesai: "2026-12-01",
+    });
+    expect(rentangBulanAgenda(2026, 12)).toEqual({
+      mulai: "2026-12-01",
+      selesai: "2027-01-01",
+    });
+    expect(rentangBulanAgenda(2028, 2)).toEqual({
+      mulai: "2028-02-01",
+      selesai: "2028-03-01",
+    });
+  });
+
+  it("menolak navigasi di luar rentang tahun yang dilayani", () => {
+    expect(bulanAgendaDalamRentang({ tahun: 2025, bulan: 12 }, 2025, 2028)).toBe(true);
+    expect(bulanAgendaDalamRentang({ tahun: 2024, bulan: 12 }, 2025, 2028)).toBe(false);
+    expect(bulanAgendaDalamRentang({ tahun: 2029, bulan: 1 }, 2025, 2028)).toBe(false);
+    expect(bulanAgendaDalamRentang({ tahun: 2026, bulan: 13 }, 2025, 2028)).toBe(false);
   });
 });
 

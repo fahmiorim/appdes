@@ -32,6 +32,7 @@ export default defineConfig({
       "src/db/b4-cascade-relations-composite-fk.integration.test.ts",
       "src/db/b4-tenant-migration-guard.integration.test.ts",
       "src/db/tenant-composite-fk.integration.test.ts",
+      "src/features/agenda/infrastructure/agenda-repository.integration.test.ts",
       "src/features/bantuan/integrasi-warga.test.ts",
       "src/features/inventaris/infrastructure/inventaris-tenant-isolation.integration.test.ts",
       "src/features/kehadiran/infrastructure/rekap-kehadiran-tenant-isolation.integration.test.ts",
