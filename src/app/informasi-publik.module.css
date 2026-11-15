@@ -479,7 +479,7 @@
 }
 .budgetOverview {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(260px, .7fr);
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.7fr);
   gap: 16px;
 }
 .budgetMain,
@@ -502,8 +502,12 @@
   border-radius: 13px;
   background: #f2edff;
 }
-.budgetCard:nth-child(2) { background: #eaf2ff; }
-.budgetCard:nth-child(3) { background: #e9f8f0; }
+.budgetCard:nth-child(2) {
+  background: #eaf2ff;
+}
+.budgetCard:nth-child(3) {
+  background: #e9f8f0;
+}
 .budgetCard span {
   color: #596981;
   font-size: 11px;
@@ -550,11 +554,23 @@
   font-size: 24px;
 }
 @media (max-width: 800px) {
-  .budgetOverview { grid-template-columns: 1fr; }
+  .budgetOverview {
+    grid-template-columns: 1fr;
+  }
 }
 @media (max-width: 640px) {
-  .statTabs { grid-template-columns: repeat(2, minmax(0,1fr)); margin-top: -18px; }
-  .budgetMain, .budgetAside { padding: 18px; }
-  .budgetSummary { grid-template-columns: 1fr; }
-  .budgetCard strong { font-size: 18px; }
+  .statTabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: -18px;
+  }
+  .budgetMain,
+  .budgetAside {
+    padding: 18px;
+  }
+  .budgetSummary {
+    grid-template-columns: 1fr;
+  }
+  .budgetCard strong {
+    font-size: 18px;
+  }
 }

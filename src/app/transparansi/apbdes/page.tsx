@@ -23,13 +23,11 @@ export default async function ApbdesPublikPage({ searchParams }: Props) {
     listLaporanDokumenApbdesPublik(desa.id),
   ]);
   const years = laporan.tersedia.length ? laporan.tersedia : [laporan.tahun];
-  const hasData =
-    Number(laporan.total.anggaran) > 0 || Number(laporan.total.realisasi) > 0;
+  const hasData = Number(laporan.total.anggaran) > 0 || Number(laporan.total.realisasi) > 0;
   const totalAnggaran = Number(laporan.total.anggaran);
   const totalRealisasi = Number(laporan.total.realisasi);
-  const persenRealisasi = totalAnggaran > 0
-    ? Math.min(100, Math.round((totalRealisasi / totalAnggaran) * 100))
-    : 0;
+  const persenRealisasi =
+    totalAnggaran > 0 ? Math.min(100, Math.round((totalRealisasi / totalAnggaran) * 100)) : 0;
 
   return (
     <main className={styles.site}>
@@ -74,7 +72,9 @@ export default async function ApbdesPublikPage({ searchParams }: Props) {
       <section className={styles.content}>
         <div className={styles.container}>
           <nav className={styles.statTabs} aria-label="Bagian APBDes">
-            <a className={styles.activeTab} href="#apbdes">APBDes</a>
+            <a className={styles.activeTab} href="#apbdes">
+              APBDes
+            </a>
             <a href="#realisasi">Realisasi Anggaran</a>
             <a href="#laporan">Laporan Keuangan</a>
             <a href="/dokumen">Dokumen & Regulasi</a>
@@ -91,7 +91,9 @@ export default async function ApbdesPublikPage({ searchParams }: Props) {
             </select>
             <button type="submit">Tampilkan</button>
             {hasData ? (
-              <a className={styles.downloadButton} href="/dokumen">Lihat dokumen terkait ↗</a>
+              <a className={styles.downloadButton} href="/dokumen">
+                Lihat dokumen terkait ↗
+              </a>
             ) : null}
           </form>
 
@@ -122,7 +124,10 @@ export default async function ApbdesPublikPage({ searchParams }: Props) {
                 </div>
                 <aside className={styles.budgetAside}>
                   <h3>Informasi APBDes</h3>
-                  <p>Ringkasan ini bersumber dari data anggaran yang telah dicatat dan dipublikasikan pemerintah desa.</p>
+                  <p>
+                    Ringkasan ini bersumber dari data anggaran yang telah dicatat dan dipublikasikan
+                    pemerintah desa.
+                  </p>
                   <Link href="/dokumen">Dokumen dan regulasi ↗</Link>
                 </aside>
               </section>
@@ -142,10 +147,13 @@ export default async function ApbdesPublikPage({ searchParams }: Props) {
                           <div>
                             <h3>{item.uraian}</h3>
                             <p>
-                              Anggaran {formatRupiah(item.anggaran)} · Realisasi {formatRupiah(item.realisasi)}
+                              Anggaran {formatRupiah(item.anggaran)} · Realisasi{" "}
+                              {formatRupiah(item.realisasi)}
                             </p>
                           </div>
-                          <strong>{item.persen.toLocaleString("id-ID", { maximumFractionDigits: 2 })}%</strong>
+                          <strong>
+                            {item.persen.toLocaleString("id-ID", { maximumFractionDigits: 2 })}%
+                          </strong>
                         </div>
                         <div className={styles.budgetProgress}>
                           <span style={{ width: `${Math.min(100, Math.max(0, item.persen))}%` }} />

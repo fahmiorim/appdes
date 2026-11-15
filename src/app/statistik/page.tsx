@@ -67,7 +67,9 @@ export default async function StatistikPage() {
       <section className={styles.content}>
         <div className={styles.container}>
           <nav className={styles.statTabs} aria-label="Bagian statistik">
-            <a className={styles.activeTab} href="#penduduk">Statistik Penduduk</a>
+            <a className={styles.activeTab} href="#penduduk">
+              Statistik Penduduk
+            </a>
             <a href="#sosial">Statistik Sosial</a>
             <a href="#ekonomi">Statistik Ekonomi</a>
             <a href="#wilayah">Data Wilayah</a>
@@ -145,12 +147,16 @@ export default async function StatistikPage() {
                       <div>
                         <i className={styles.maleDot} />
                         <span>Laki-laki</span>
-                        <strong>{angka(data.lakiLaki)} ({lakiPersen}%)</strong>
+                        <strong>
+                          {angka(data.lakiLaki)} ({lakiPersen}%)
+                        </strong>
                       </div>
                       <div>
                         <i className={styles.femaleDot} />
                         <span>Perempuan</span>
-                        <strong>{angka(data.perempuan)} ({perempuanPersen}%)</strong>
+                        <strong>
+                          {angka(data.perempuan)} ({perempuanPersen}%)
+                        </strong>
                       </div>
                     </div>
                   </div>
@@ -175,7 +181,9 @@ export default async function StatistikPage() {
                         <div className={styles.dusun} key={item.label}>
                           <div>
                             <strong>{item.label}</strong>
-                            <span>{angka(item.total)} jiwa · {percent}%</span>
+                            <span>
+                              {angka(item.total)} jiwa · {percent}%
+                            </span>
                           </div>
                           <div className={styles.track}>
                             <i style={{ width: `${percent}%` }} />
@@ -281,7 +289,9 @@ export default async function StatistikPage() {
                 </div>
               </div>
             ) : (
-              <div className={styles.emptyState}>Data wilayah belum tersedia untuk ditampilkan.</div>
+              <div className={styles.emptyState}>
+                Data wilayah belum tersedia untuk ditampilkan.
+              </div>
             )}
           </section>
 

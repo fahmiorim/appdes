@@ -455,7 +455,7 @@
 }
 .chartGrid {
   display: grid;
-  grid-template-columns: minmax(280px, .8fr) minmax(0, 1.2fr);
+  grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
   gap: 16px;
   margin-top: 16px;
 }
@@ -519,8 +519,12 @@
   height: 10px;
   border-radius: 50%;
 }
-.maleDot { background: #2563eb; }
-.femaleDot { background: #ec4899; }
+.maleDot {
+  background: #2563eb;
+}
+.femaleDot {
+  background: #ec4899;
+}
 .regionTable {
   overflow: hidden;
   border: 1px solid #e4eaf4;
@@ -531,7 +535,7 @@
 .regionRow,
 .regionTotal {
   display: grid;
-  grid-template-columns: 1.2fr 1fr .7fr;
+  grid-template-columns: 1.2fr 1fr 0.7fr;
   gap: 12px;
   padding: 14px 18px;
   font-size: 11px;
@@ -545,7 +549,9 @@
   border-top: 1px solid #edf1f7;
   color: #63728b;
 }
-.regionRow strong { color: #17213b; }
+.regionRow strong {
+  color: #17213b;
+}
 .regionTotal {
   border-top: 1px solid #dfe6f2;
   background: #f1ecff;
@@ -582,13 +588,36 @@
   font-weight: 800;
 }
 @media (max-width: 900px) {
-  .chartGrid { grid-template-columns: 1fr; }
+  .chartGrid {
+    grid-template-columns: 1fr;
+  }
 }
 @media (max-width: 640px) {
-  .statTabs { grid-template-columns: repeat(2, minmax(0,1fr)); margin-top: -18px; }
-  .statTabs a { min-height: 42px; font-size: 10px; }
-  .genderLayout { flex-direction: column; gap: 18px; }
-  .regionHeader, .regionRow, .regionTotal { grid-template-columns: 1fr 1fr; }
-  .regionHeader span:last-child, .regionRow span:last-child, .regionTotal strong:last-child { display: none; }
-  .publicCta { align-items: flex-start; flex-direction: column; padding: 20px; }
+  .statTabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: -18px;
+  }
+  .statTabs a {
+    min-height: 42px;
+    font-size: 10px;
+  }
+  .genderLayout {
+    flex-direction: column;
+    gap: 18px;
+  }
+  .regionHeader,
+  .regionRow,
+  .regionTotal {
+    grid-template-columns: 1fr 1fr;
+  }
+  .regionHeader span:last-child,
+  .regionRow span:last-child,
+  .regionTotal strong:last-child {
+    display: none;
+  }
+  .publicCta {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 20px;
+  }
 }
