@@ -94,7 +94,7 @@ export default async function AgendaPage({ searchParams }: Props) {
       : currentYear;
   const query = (params.q ?? "").trim().slice(0, 100);
   const requestedDay = Number(params.hari);
-
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const selectedDay =
     Number.isInteger(requestedDay) &&
     requestedDay >= 1 &&
@@ -115,8 +115,10 @@ export default async function AgendaPage({ searchParams }: Props) {
   const selectedDateAgenda = selectedDay
     ? filteredAgenda.filter((item) => Number(item.mulai.slice(8, 10)) === selectedDay)
     : [];
-  const previousMonth = month === 1 ? { bulan: 12, tahun: year - 1 } : { bulan: month - 1, tahun: year };
-  const nextMonth = month === 12 ? { bulan: 1, tahun: year + 1 } : { bulan: month + 1, tahun: year };
+  const previousMonth =
+    month === 1 ? { bulan: 12, tahun: year - 1 } : { bulan: month - 1, tahun: year };
+  const nextMonth =
+    month === 12 ? { bulan: 1, tahun: year + 1 } : { bulan: month + 1, tahun: year };
   const monthHref = (value: { bulan: number; tahun: number }) =>
     `/agenda?bulan=${value.bulan}&tahun=${value.tahun}${query ? `&q=${encodeURIComponent(query)}` : ""}`;
   const firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
