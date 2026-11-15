@@ -6,6 +6,7 @@ import { getLaporanApbdesPublik } from "@/features/keuangan/application/laporan-
 import { formatRupiah } from "@/features/keuangan/domain/keuangan";
 
 import styles from "../../informasi-publik.module.css";
+import { PublicShell } from "../../public-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -30,27 +31,17 @@ export default async function ApbdesPublikPage({ searchParams }: Props) {
     totalAnggaran > 0 ? Math.min(100, Math.round((totalRealisasi / totalAnggaran) * 100)) : 0;
 
   return (
-    <main className={styles.site}>
-      <header className={styles.header}>
-        <div className={styles.container + " " + styles.headerInner}>
-          <Link href="/" className={styles.brand}>
-            <span>
-              <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>Transparansi Anggaran</small>
-            </span>
-          </Link>
-          <nav className={styles.nav} aria-label="Navigasi utama">
-            <Link href="/">Beranda</Link>
-            <Link href="/profil">Profil Desa</Link>
-            <Link href="/dokumen">Dokumen</Link>
-            <Link href="/kontak">Kontak</Link>
-          </nav>
-          <Link href="/masuk" className={styles.login}>
-            Masuk ↗
-          </Link>
-        </div>
-      </header>
-
+    <PublicShell
+      villageName={desa.namaDesa ?? "Pemerintah Desa"}
+      brandLabel="Transparansi Anggaran"
+      navigation={[
+        { href: "/", label: "Beranda" },
+        { href: "/profil", label: "Profil Desa" },
+        { href: "/dokumen", label: "Dokumen" },
+        { href: "/kontak", label: "Kontak" },
+      ]}
+      showMark={false}
+    >
       <section className={styles.hero}>
         <div className={styles.container}>
           <div className={styles.crumb}>
@@ -202,13 +193,6 @@ export default async function ApbdesPublikPage({ searchParams }: Props) {
           </section>
         </div>
       </section>
-
-      <footer className={styles.footer}>
-        <div className={styles.container + " " + styles.footerInner}>
-          <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-          <span>© {new Date().getFullYear()} · Didukung FlexiDesa</span>
-        </div>
-      </footer>
-    </main>
+    </PublicShell>
   );
 }

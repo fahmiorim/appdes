@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
@@ -10,6 +9,7 @@ import {
 } from "@/features/publik/domain/dokumen";
 
 import styles from "../informasi-publik.module.css";
+import { PublicShell } from "../public-shell";
 
 export const dynamic = "force-dynamic";
 type Props = { searchParams: Promise<{ q?: string; kategori?: string; page?: string }> };
@@ -46,27 +46,16 @@ export default async function DokumenPage({ searchParams }: Props) {
     return `/dokumen?${values.toString()}`;
   };
   return (
-    <main className={styles.site}>
-      <header className={styles.header}>
-        <div className={styles.container + " " + styles.headerInner}>
-          <Link href="/" className={styles.brand}>
-            <Image src="/images/flexidesa-mark.svg" alt="" width={42} height={42} />
-            <span>
-              <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>Dokumen & Informasi Publik</small>
-            </span>
-          </Link>
-          <nav className={styles.nav} aria-label="Navigasi utama">
-            <Link href="/">Beranda</Link>
-            <Link href="/profil">Profil Desa</Link>
-            <Link href="/berita">Berita</Link>
-            <Link href="/kontak">Kontak</Link>
-          </nav>
-          <Link href="/masuk" className={styles.login}>
-            Masuk ↗
-          </Link>
-        </div>
-      </header>
+    <PublicShell
+      villageName={desa.namaDesa ?? "Pemerintah Desa"}
+      brandLabel="Dokumen & Informasi Publik"
+      navigation={[
+        { href: "/", label: "Beranda" },
+        { href: "/profil", label: "Profil Desa" },
+        { href: "/berita", label: "Berita" },
+        { href: "/kontak", label: "Kontak" },
+      ]}
+    >
       <section className={styles.hero}>
         <div className={styles.container}>
           <div className={styles.crumb}>
@@ -148,12 +137,6 @@ export default async function DokumenPage({ searchParams }: Props) {
           </div>
         </div>
       </section>
-      <footer className={styles.footer}>
-        <div className={styles.container + " " + styles.footerInner}>
-          <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-          <span>© {new Date().getFullYear()} · Didukung FlexiDesa</span>
-        </div>
-      </footer>
-    </main>
+    </PublicShell>
   );
 }

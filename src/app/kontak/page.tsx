@@ -1,9 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 
 import styles from "../informasi-publik.module.css";
+import { PublicShell } from "../public-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -16,27 +16,16 @@ export default async function KontakPage() {
   const email = desa.emailDesa?.trim();
   const website = desa.website?.trim();
   return (
-    <main className={styles.site}>
-      <header className={styles.header}>
-        <div className={styles.container + " " + styles.headerInner}>
-          <Link href="/" className={styles.brand}>
-            <Image src="/images/flexidesa-mark.svg" alt="" width={42} height={42} />
-            <span>
-              <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>Kontak & Informasi</small>
-            </span>
-          </Link>
-          <nav className={styles.nav} aria-label="Navigasi utama">
-            <Link href="/">Beranda</Link>
-            <Link href="/profil">Profil Desa</Link>
-            <Link href="/berita">Berita</Link>
-            <Link href="/agenda">Agenda</Link>
-          </nav>
-          <Link href="/masuk" className={styles.login}>
-            Masuk ↗
-          </Link>
-        </div>
-      </header>
+    <PublicShell
+      villageName={desa.namaDesa ?? "Pemerintah Desa"}
+      brandLabel="Kontak & Informasi"
+      navigation={[
+        { href: "/", label: "Beranda" },
+        { href: "/profil", label: "Profil Desa" },
+        { href: "/berita", label: "Berita" },
+        { href: "/agenda", label: "Agenda" },
+      ]}
+    >
       <section className={styles.hero}>
         <div className={styles.container}>
           <div className={styles.crumb}>
@@ -99,12 +88,6 @@ export default async function KontakPage() {
           </p>
         </div>
       </section>
-      <footer className={styles.footer}>
-        <div className={styles.container + " " + styles.footerInner}>
-          <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-          <span>© {new Date().getFullYear()} · Didukung FlexiDesa</span>
-        </div>
-      </footer>
-    </main>
+    </PublicShell>
   );
 }
