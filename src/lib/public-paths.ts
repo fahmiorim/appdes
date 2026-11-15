@@ -31,6 +31,7 @@ export const PUBLIC_PATHS = [
  */
 export const PUBLIC_EXACT_PATHS = [
   "/agenda",
+  "/pengumuman",
   "/profil",
   "/profil/sejarah",
   "/profil/visi-misi",
