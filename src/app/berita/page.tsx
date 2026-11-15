@@ -2,10 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
-import {
-  daftarBerita,
-  daftarKategoriBerita,
-} from "@/features/publik/application/konten-publik";
+import { daftarBerita, daftarKategoriBerita } from "@/features/publik/application/konten-publik";
+
 import styles from "./berita.module.css";
 
 export const dynamic = "force-dynamic";
@@ -50,13 +48,17 @@ export default async function BeritaPage({ searchParams }: Props) {
       <div className={styles.topline}>
         <div className={styles.container + " " + styles.toplineInner}>
           <span>Website Resmi Pemerintah Desa</span>
-          <span>{desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Portal Informasi Desa"}</span>
+          <span>
+            {desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Portal Informasi Desa"}
+          </span>
         </div>
       </div>
       <header className={styles.header}>
         <div className={styles.container + " " + styles.headerInner}>
           <Link href="/" className={styles.brand}>
-            <span className={styles.brandMark} aria-hidden="true">D</span>
+            <span className={styles.brandMark} aria-hidden="true">
+              D
+            </span>
             <span className={styles.brandCopy}>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
               <small>Portal informasi desa</small>
@@ -65,9 +67,13 @@ export default async function BeritaPage({ searchParams }: Props) {
           <nav className={styles.nav} aria-label="Navigasi utama">
             <Link href="/">Beranda</Link>
             <Link href="/profil">Profil Desa</Link>
-            <Link href="/berita" className={styles.active} aria-current="page">Berita</Link>
+            <Link href="/berita" className={styles.active} aria-current="page">
+              Berita
+            </Link>
           </nav>
-          <Link href="/masuk" className={styles.login}>Masuk ↗</Link>
+          <Link href="/masuk" className={styles.login}>
+            Masuk ↗
+          </Link>
         </div>
       </header>
       <section className={styles.hero}>
@@ -81,12 +87,21 @@ export default async function BeritaPage({ searchParams }: Props) {
         <div className={styles.container}>
           <div className={styles.toolbar}>
             <div className={styles.filters}>
-              <Link href="/berita" className={kategori ? styles.filter : `${styles.filter} ${styles.filterActive}`}>Semua</Link>
+              <Link
+                href="/berita"
+                className={kategori ? styles.filter : `${styles.filter} ${styles.filterActive}`}
+              >
+                Semua
+              </Link>
               {kategoriBerita.map((item) => (
                 <Link
                   key={item.id}
                   href={`/berita?kategori=${encodeURIComponent(item.slug)}`}
-                  className={kategori === item.slug ? `${styles.filter} ${styles.filterActive}` : styles.filter}
+                  className={
+                    kategori === item.slug
+                      ? `${styles.filter} ${styles.filterActive}`
+                      : styles.filter
+                  }
                 >
                   {item.nama}
                 </Link>
@@ -94,7 +109,13 @@ export default async function BeritaPage({ searchParams }: Props) {
             </div>
             <form className={styles.search} action="/berita" method="get">
               {kategori ? <input type="hidden" name="kategori" value={kategori} /> : null}
-              <input type="search" name="q" defaultValue={q} placeholder="Cari berita..." aria-label="Cari berita" />
+              <input
+                type="search"
+                name="q"
+                defaultValue={q}
+                placeholder="Cari berita..."
+                aria-label="Cari berita"
+              />
               <button type="submit">Cari</button>
             </form>
           </div>
@@ -105,17 +126,40 @@ export default async function BeritaPage({ searchParams }: Props) {
                 const date = item.terbitPada ?? item.createdAt;
                 return (
                   <article className={styles.card} key={item.id}>
-                    <Link className={styles.cover} href={`/berita/${encodeURIComponent(item.slug)}`} aria-label={`Baca ${item.judul}`}>
-                      {image ? <Image src={image} alt="" fill sizes="(max-width: 620px) 116px, (max-width: 850px) 50vw, 33vw" unoptimized /> : <span className={styles.coverFallback}>INFO DESA</span>}
+                    <Link
+                      className={styles.cover}
+                      href={`/berita/${encodeURIComponent(item.slug)}`}
+                      aria-label={`Baca ${item.judul}`}
+                    >
+                      {image ? (
+                        <Image
+                          src={image}
+                          alt=""
+                          fill
+                          sizes="(max-width: 620px) 116px, (max-width: 850px) 50vw, 33vw"
+                          unoptimized
+                        />
+                      ) : (
+                        <span className={styles.coverFallback}>INFO DESA</span>
+                      )}
                     </Link>
                     <div className={styles.cardBody}>
                       <div className={styles.meta}>
                         <span className={styles.category}>{item.kategori ?? "Informasi"}</span>
                         <time dateTime={date.toISOString()}>{tanggal(date)}</time>
                       </div>
-                      <h2><Link href={`/berita/${encodeURIComponent(item.slug)}`}>{item.judul}</Link></h2>
-                      <p className={styles.excerpt}>{item.ringkasan || "Baca informasi selengkapnya dari pemerintah desa."}</p>
-                      <Link className={styles.readMore} href={`/berita/${encodeURIComponent(item.slug)}`}>Baca selengkapnya →</Link>
+                      <h2>
+                        <Link href={`/berita/${encodeURIComponent(item.slug)}`}>{item.judul}</Link>
+                      </h2>
+                      <p className={styles.excerpt}>
+                        {item.ringkasan || "Baca informasi selengkapnya dari pemerintah desa."}
+                      </p>
+                      <Link
+                        className={styles.readMore}
+                        href={`/berita/${encodeURIComponent(item.slug)}`}
+                      >
+                        Baca selengkapnya →
+                      </Link>
                     </div>
                   </article>
                 );
@@ -123,15 +167,23 @@ export default async function BeritaPage({ searchParams }: Props) {
             </div>
           ) : (
             <div className={styles.empty}>
-              <strong>{q || kategori ? "Berita tidak ditemukan" : "Belum ada berita yang diterbitkan"}</strong>
-              <p>{q || kategori ? "Coba ubah kata kunci atau pilih kategori lain." : "Informasi terbaru desa akan tampil di halaman ini."}</p>
+              <strong>
+                {q || kategori ? "Berita tidak ditemukan" : "Belum ada berita yang diterbitkan"}
+              </strong>
+              <p>
+                {q || kategori
+                  ? "Coba ubah kata kunci atau pilih kategori lain."
+                  : "Informasi terbaru desa akan tampil di halaman ini."}
+              </p>
             </div>
           )}
         </div>
       </section>
       <footer className={styles.footer}>
         <div className={styles.container + " " + styles.footerInner}>
-          <span>© {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}</span>
+          <span>
+            © {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}
+          </span>
           <Link href="/">Kembali ke beranda</Link>
         </div>
       </footer>
