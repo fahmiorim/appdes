@@ -41,7 +41,7 @@ Workflow saat ini mengambil 16 URL, tetapi belum mengambil:
 - Detail berita `/berita/[slug]`
 - Alias statistik `/statistik`
 
-Lima referensi publik juga belum memiliki pasangan route/screenshot pada workflow saat ini: pengumuman, profil perangkat, informasi keuangan, halaman informasi desa, dan satu referensi berita/varian konten yang belum dipetakan secara eksplisit. Route yang belum dibuat atau belum memiliki data tidak boleh dianggap lulus.
+Tujuh referensi publik belum memiliki pasangan screenshot pada workflow saat ini: daftar berita, detail berita, pengumuman, profil perangkat, informasi keuangan, halaman informasi desa, dan satu referensi halaman informasi/konten publik yang belum dipetakan ke route final. Route yang belum dibuat atau belum memiliki data tidak boleh dianggap lulus. Route yang belum dibuat atau belum memiliki data tidak boleh dianggap lulus.
 
 ## Temuan lintas halaman
 
