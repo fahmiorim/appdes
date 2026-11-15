@@ -96,11 +96,26 @@ jobs:
   visual-login:
     name: Visual QA login (desktop/mobile)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: visual_qa_root
+          MYSQL_DATABASE: flexidesa_visual
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pvisual_qa_root"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+          --health-start-period=15s
     env:
       NODE_ENV: development
       APP_URL: http://127.0.0.1:3000
-      DATABASE_URL: mysql://visual:visual@127.0.0.1:3306/visual_placeholder
+      DATABASE_URL: mysql://root:visual_qa_root@127.0.0.1:3306/flexidesa_visual
+      DESA_BASE_DOMAIN: localhost
       BETTER_AUTH_SECRET: visual-qa-only-secret-that-is-at-least-32-characters
       BETTER_AUTH_URL: http://127.0.0.1:3000
     steps:
@@ -115,6 +130,67 @@ jobs:
 
       - name: Install dependency
         run: npm ci
+
+      - name: Migrate visual database
+        run: npm run db:migrate
+
+      - name: Seed synthetic public tenant
+        run: |
+          node --input-type=module <<'NODE'
+          import mysql from "mysql2/promise";
+
+          const connection = await mysql.createConnection(process.env.DATABASE_URL);
+          try {
+            await connection.execute(
+              "INSERT INTO villages (name, code, slug, domain, active, district, regency, province, office_address, email, phone, website) VALUES (?, ?, ?, ?, true, ?, ?, ?, ?, ?, ?, ?)",
+              ["Desa Suka Maju", "1207012001", "sukamaju", "sukamaju.localhost", "Kecamatan Suka Maju", "Kabupaten Batu Bara", "Sumatera Utara", "Jl. Merdeka No. 1", "info@sukamaju.test", "021000000", "https://sukamaju.test"]
+            );
+            const [[village]] = await connection.query("SELECT id FROM villages WHERE slug = 'sukamaju'");
+            const id = village.id;
+            await connection.execute("INSERT INTO village_domains (village_id, domain, is_primary) VALUES (?, ?, true)", [id, "sukamaju.localhost"]);
+            await connection.execute(
+              "INSERT INTO profil_desa (village_id, visi, misi, sejarah, sambutan, koordinat) VALUES (?, ?, ?, ?, ?, ?)",
+              [id, "Terwujudnya desa yang maju, mandiri, dan sejahtera.", "Meningkatkan pelayanan publik\nMengembangkan ekonomi lokal\nMemperkuat gotong royong", "Desa Suka Maju tumbuh dari semangat kebersamaan warga. Seiring waktu, desa berkembang melalui pertanian, pendidikan, dan pelayanan masyarakat.", "Selamat datang di website resmi Desa Suka Maju. Kami berkomitmen menghadirkan informasi yang terbuka dan pelayanan yang mudah diakses.", "3.1234,99.4567"]
+            );
+            await connection.execute(
+              "INSERT INTO agenda_kegiatan (village_id, judul, mulai, selesai, lokasi, deskripsi, tayang) VALUES (?, ?, CURDATE() + INTERVAL 7 DAY, CURDATE() + INTERVAL 7 DAY, ?, ?, true)",
+              [id, "Musyawarah Perencanaan Pembangunan Desa", "Balai Desa Suka Maju", "Pembahasan prioritas pembangunan desa bersama masyarakat."]
+            );
+            await connection.execute(
+              "INSERT INTO galeri_album (village_id, nama, slug, keterangan, aktif) VALUES (?, ?, ?, ?, true)",
+              [id, "Kegiatan Desa", "kegiatan-desa", "Dokumentasi kegiatan masyarakat Desa Suka Maju."]
+            );
+            const [[album]] = await connection.query("SELECT id FROM galeri_album WHERE village_id = ? AND slug = ?", [id, "kegiatan-desa"]);
+            await connection.execute(
+              "INSERT INTO galeri_foto (village_id, album_id, gambar, judul, keterangan, aktif) VALUES (?, ?, ?, ?, ?, true)",
+              [id, album.id, "visual-qa/foto-kegiatan.jpg", "Gotong Royong Warga", "Warga bersama-sama membersihkan lingkungan desa."]
+            );
+            await connection.execute(
+              "INSERT INTO halaman_statis (village_id, judul, slug, isi, aktif) VALUES (?, ?, ?, ?, true)",
+              [id, "Potensi Desa Suka Maju", "potensi", "Desa Suka Maju memiliki potensi pertanian, UMKM, dan wisata alam yang terus dikembangkan."]
+            );
+            await connection.execute(
+              "INSERT INTO dokumen_publik (village_id, nama, slug, kategori, jenis, nomor, tahun, keterangan, aktif) VALUES (?, ?, ?, ?, ?, ?, ?, ?, true)",
+              [id, "Peraturan Desa tentang APBDes", "perdes-apbdes-2026", "peraturan_desa", "Peraturan Desa", "01 Tahun 2026", 2026, "Dokumen contoh sintetis untuk pemeriksaan tampilan."]
+            );
+            await connection.execute("INSERT INTO jabatan_perangkat (village_id, nama, slug, urut) VALUES (?, ?, ?, 1)", [id, "Kepala Desa", "kepala-desa"]);
+            const [[jabatan]] = await connection.query("SELECT id FROM jabatan_perangkat WHERE village_id = ? AND slug = ?", [id, "kepala-desa"]);
+            await connection.execute(
+              "INSERT INTO perangkat_desa (village_id, jabatan_id, nama, status, periode, urut) VALUES (?, ?, ?, 'aktif', ?, 1)",
+              [id, jabatan.id, "Budi Santoso", "2024–2030"]
+            );
+            await connection.execute(
+              "INSERT INTO residents (village_id, name, gender) VALUES (?, ?, ?), (?, ?, ?)",
+              [id, "Warga Contoh Satu", "male", id, "Warga Contoh Dua", "female"]
+            );
+            await connection.execute(
+              "INSERT INTO pengaduan (village_id, nomor_tiket, kategori, judul, isi, nama_pelapor, status, publik) VALUES (?, ?, ?, ?, ?, ?, ?, true)",
+              [id, "VISUAL-001", "infrastruktur", "Perbaikan jalan lingkungan", "Mohon perbaikan jalan di lingkungan dusun.", "Warga Contoh", "ditindaklanjuti"]
+            );
+          } finally {
+            await connection.end();
+          }
+          NODE
 
       - name: Install Chromium
         run: npx --yes playwright install --with-deps chromium
@@ -144,6 +220,34 @@ jobs:
         run: |
           npx --yes playwright screenshot --browser chromium --viewport-size "390,844" --full-page http://127.0.0.1:3000/masuk artifacts/login-mobile.png
 
+      - name: Capture public pages (desktop and mobile)
+        run: |
+          mkdir -p artifacts/public
+          routes=(
+            agenda
+            galeri
+            galeri/kegiatan-desa
+            data/statistik
+            pemerintahan
+            wilayah
+            profil/sejarah
+            profil/visi-misi
+            dokumen
+            potensi
+            kontak
+            pengaduan
+            transparansi/apbdes
+            layanan
+            layanan/surat
+            profil
+          )
+          for route in "${routes[@]}"; do
+            slug=$(echo "$route" | tr '/' '-')
+            url="http://sukamaju.localhost:3000/$route"
+            npx --yes playwright screenshot --browser chromium --viewport-size "1440,1000" --full-page "$url" "artifacts/public/$slug-desktop.png"
+            npx --yes playwright screenshot --browser chromium --viewport-size "390,844" --full-page "$url" "artifacts/public/$slug-mobile.png"
+          done
+
       - name: Include design reference
         if: always()
         run: |
@@ -154,8 +258,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: flexidesa-login-visual-qa
-          path: artifacts/*.png
+          name: flexidesa-public-visual-qa
+          path: artifacts/**/*.png
           if-no-files-found: warn
           retention-days: 7
 
