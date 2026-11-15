@@ -176,8 +176,28 @@ jobs:
               [id, jabatan.id, "Budi Santoso", "2024–2030"]
             );
             await connection.execute(
-              "INSERT INTO residents (village_id, name, gender) VALUES (?, ?, ?), (?, ?, ?)",
-              [id, "Warga Contoh Satu", "male", id, "Warga Contoh Dua", "female"]
+              "INSERT INTO regions (village_id, dusun, rw, rt, sort_order) VALUES (?, ?, ?, ?, 1)",
+              [id, "Dusun Mawar", "001", "001"]
+            );
+            const [[region]] = await connection.query(
+              "SELECT id FROM regions WHERE village_id = ? AND dusun = ? AND rw = ? AND rt = ?",
+              [id, "Dusun Mawar", "001", "001"]
+            );
+            await connection.execute(
+              "INSERT INTO families (village_id, number, address, region_id) VALUES (?, ?, ?, ?)",
+              [id, "1207012001000001", "Dusun Mawar, RW 001, RT 001", region.id]
+            );
+            const [[family]] = await connection.query(
+              "SELECT id FROM families WHERE village_id = ? AND number = ?",
+              [id, "1207012001000001"]
+            );
+            await connection.execute(
+              "INSERT INTO residents (village_id, name, gender, family_id, region_id) VALUES (?, ?, ?, ?, ?), (?, ?, ?, ?, ?)",
+              [id, "Warga Contoh Satu", "male", family.id, region.id, id, "Warga Contoh Dua", "female", family.id, region.id]
+            );
+            await connection.execute(
+              "INSERT INTO letter_types (village_id, code, name, template_body, requires_resident, is_active, sort_order) VALUES (?, ?, ?, ?, true, true, 1), (?, ?, ?, ?, true, true, 2)",
+              [id, "SKD", "Surat Keterangan Domisili", "<p>Surat keterangan domisili untuk warga.</p>", id, "SKTM", "Surat Keterangan Tidak Mampu", "<p>Surat keterangan tidak mampu untuk warga.</p>"]
             );
             await connection.execute(
               "INSERT INTO pengaduan (village_id, nomor_tiket, kategori, judul, isi, nama_pelapor, status, publik) VALUES (?, ?, ?, ?, ?, ?, ?, true)",
