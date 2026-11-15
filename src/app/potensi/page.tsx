@@ -70,9 +70,7 @@ export default async function PotensiPage() {
                 <div>
                   <p className={styles.kicker}>GAMBARAN POTENSI DESA</p>
                   <h2>Potensi dan keunggulan lokal</h2>
-                  <p>
-                    Informasi resmi yang disampaikan pemerintah {desa.namaDesa ?? "desa"}.
-                  </p>
+                  <p>Informasi resmi yang disampaikan pemerintah {desa.namaDesa ?? "desa"}.</p>
                 </div>
               </div>
               {isiAman ? (
@@ -97,9 +95,9 @@ export default async function PotensiPage() {
                 <span aria-hidden="true">ⓘ</span>
                 <h2>Informasi publik</h2>
                 <p>
-                  Halaman ini memuat keterangan potensi yang telah diterbitkan oleh pemerintah
-                  desa. Data kategori, luas, hasil produksi, dan jumlah pelaku usaha hanya
-                  ditampilkan apabila tersedia dalam sumber data resmi.
+                  Halaman ini memuat keterangan potensi yang telah diterbitkan oleh pemerintah desa.
+                  Data kategori, luas, hasil produksi, dan jumlah pelaku usaha hanya ditampilkan
+                  apabila tersedia dalam sumber data resmi.
                 </p>
                 {ringkasan ? (
                   <div className={styles.potensiSummary}>
