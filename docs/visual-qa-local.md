@@ -64,13 +64,14 @@ export DESA_BASE_DOMAIN=localhost
 export APP_URL=http://127.0.0.1:3000
 export BETTER_AUTH_URL=http://127.0.0.1:3000
 export BETTER_AUTH_SECRET="visual-qa-only-secret-that-is-at-least-32-characters"
-export NODE_ENV=production
 
 npm run build
-npm run start -- --hostname 127.0.0.1
+NODE_ENV=production npm run start -- --hostname 127.0.0.1
 ```
 
 Variabel yang di-export menimpa nilai `.env` lokal (Next.js tidak menimpa `process.env` yang sudah terisi), sehingga aplikasi tidak menyentuh database pengembangan. Jangan memakai secret nyata di sini.
+
+`NODE_ENV=production` sengaja hanya diberikan ke proses `start`, bukan di-export: guard visual QA menolak `NODE_ENV=production` agar skrip tidak pernah dijalankan sebagai bagian dari pipeline produksi.
 
 ## 4. Ambil screenshot
 
