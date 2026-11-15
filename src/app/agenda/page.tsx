@@ -96,9 +96,7 @@ export default async function AgendaPage({ searchParams }: Props) {
   const requestedDay = Number(params.hari);
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
   const selectedDay =
-    Number.isInteger(requestedDay) &&
-    requestedDay >= 1 &&
-    requestedDay <= daysInMonth
+    Number.isInteger(requestedDay) && requestedDay >= 1 && requestedDay <= daysInMonth
       ? requestedDay
       : null;
   const monthKey = `${year}-${String(month).padStart(2, "0")}`;
@@ -116,13 +114,9 @@ export default async function AgendaPage({ searchParams }: Props) {
     ? filteredAgenda.filter((item) => Number(item.mulai.slice(8, 10)) === selectedDay)
     : [];
   const previousMonth =
-    month === 1
-      ? { bulan: 12, tahun: year - 1 }
-      : { bulan: month - 1, tahun: year };
+    month === 1 ? { bulan: 12, tahun: year - 1 } : { bulan: month - 1, tahun: year };
   const nextMonth =
-    month === 12
-      ? { bulan: 1, tahun: year + 1 }
-      : { bulan: month + 1, tahun: year };
+    month === 12 ? { bulan: 1, tahun: year + 1 } : { bulan: month + 1, tahun: year };
   const monthHref = (value: { bulan: number; tahun: number }) => {
     const search = new URLSearchParams({
       bulan: String(value.bulan),
@@ -265,8 +259,8 @@ export default async function AgendaPage({ searchParams }: Props) {
                         styles.calendarDay,
                         day && eventDays.has(day) ? styles.calendarHasEvent : "",
                         day === now.getDate() &&
-                          month === now.getMonth() + 1 &&
-                          year === currentYear
+                        month === now.getMonth() + 1 &&
+                        year === currentYear
                           ? styles.calendarToday
                           : "",
                         isSelected ? styles.calendarSelected : "",
@@ -291,9 +285,7 @@ export default async function AgendaPage({ searchParams }: Props) {
                   <section className={styles.selectedDayPanel} aria-live="polite">
                     <h3>
                       ▦ Kegiatan pada{" "}
-                      {selectedDay
-                        ? `${selectedDay} ${namaBulan[month - 1]}`
-                        : "tanggal pilihan"}
+                      {selectedDay ? `${selectedDay} ${namaBulan[month - 1]}` : "tanggal pilihan"}
                     </h3>
                     {selectedDay ? (
                       selectedDateAgenda.length ? (
@@ -307,9 +299,7 @@ export default async function AgendaPage({ searchParams }: Props) {
                           ))}
                         </div>
                       ) : (
-                        <p className={styles.muted}>
-                          Belum ada kegiatan pada tanggal ini.
-                        </p>
+                        <p className={styles.muted}>Belum ada kegiatan pada tanggal ini.</p>
                       )
                     ) : (
                       <p className={styles.muted}>
