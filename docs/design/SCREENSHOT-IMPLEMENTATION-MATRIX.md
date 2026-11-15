@@ -19,8 +19,8 @@ Tidak ada screenshot yang diberi status “implemented” hanya karena nama modu
 
 | Screenshot | Halaman/tujuan | Komponen utama | Route kandidat | Bukti/status baseline |
 |---|---|---|---|---|
-| Sistem Informasi Desa Suka Maju.png | Beranda desa | Public shell, hero, berita terbaru, ringkasan, agenda, footer | `/` | Referensi ada; UI page belum ditemukan |
-| Profil Desa Suka Maju_ Informasi dan Potensi Desa.png | Profil desa | Breadcrumb, profile header, content section, media | `/profil` | Referensi ada; UI page belum ditemukan |
+| Sistem Informasi Desa Suka Maju.png | Beranda desa | Public shell, hero, berita terbaru, ringkasan, agenda, footer | `/` | UI diimplementasikan pada PR #46; visual review pending |
+| Profil Desa Suka Maju_ Informasi dan Potensi Desa.png | Profil desa | Breadcrumb, identitas desa, sejarah, visi/misi, perangkat, informasi wilayah | `/profil` | Implemented pada PR ini; visual review desktop/mobile pending |
 | Sejarah Desa Suka Maju_ Jejak Perjalanan Desa.png | Sejarah | Timeline/content, media | `/profil/sejarah` | Referensi ada; UI page belum ditemukan |
 | Visi & Misi Desa Suka Maju.png | Visi dan misi | Page header, content cards | `/profil/visi-misi` | Referensi ada; UI page belum ditemukan |
 | Pemerintahan Desa Suka Maju Dashboard.png | Struktur pemerintahan | Organization chart/list, official card | `/pemerintahan` | Referensi ada; UI page belum ditemukan |
@@ -90,6 +90,8 @@ Pemeriksaan struktur `src/app` dan komponen terkait pada `main` menemukan halama
 
 | Route | File utama | Status visual |
 |---|---|---|
+| `/` | `src/app/page.tsx` | Implemented pada PR #46 — visual review pending terhadap `Sistem Informasi Desa Suka Maju.png` |
+| `/profil` | `src/app/profil/page.tsx` | Implemented pada PR ini — visual review pending terhadap `Profil Desa Suka Maju_ Informasi dan Potensi Desa.png` |
 | `/masuk` | `src/app/(auth)/masuk/page.tsx`, `login-form.tsx` | Implemented — visual review pending terhadap `Modern Indonesian Village Login Portal.png` |
 | `/beranda` | `src/app/(admin)/beranda/page.tsx` | Implemented — product design tanpa screenshot khusus; visual review pending |
 | `/super-admin` | `src/app/(admin)/super-admin/page.tsx`, `src/features/multi-desa/presentation/tenant-table.tsx` | Implemented — product design tanpa screenshot khusus; visual review pending |
