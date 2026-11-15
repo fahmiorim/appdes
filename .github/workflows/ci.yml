@@ -290,8 +290,9 @@ jobs:
           for route in "${routes[@]}"; do
             slug=$(echo "${route#/}" | tr '/' '-')
             if [ -z "$slug" ]; then slug="beranda"; fi
-            url="http://sukamaju.localhost:3000$route"
-            request_url="http://127.0.0.1:3000$route"
+            path="/${route#/}"
+            url="http://sukamaju.localhost:3000$path"
+            request_url="http://127.0.0.1:3000$path"
             status=$(curl --silent --output /tmp/public-page.html --write-out "%{http_code}" -H "Host: sukamaju.localhost" "$request_url")
             if [ "$status" -ne 200 ]; then
               echo "Public route $route returned HTTP $status"
