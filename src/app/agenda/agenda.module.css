@@ -567,7 +567,7 @@
 }
 .agendaLayout {
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(270px, .8fr);
+  grid-template-columns: minmax(0, 1.7fr) minmax(270px, 0.8fr);
   gap: 18px;
 }
 .agendaMain,
@@ -655,7 +655,7 @@
 }
 .agendaFilter {
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(120px, .8fr) minmax(100px, .6fr) auto;
+  grid-template-columns: minmax(0, 1.4fr) minmax(120px, 0.8fr) minmax(100px, 0.6fr) auto;
   gap: 9px;
   padding: 14px;
   margin: 14px 0 28px;
@@ -732,7 +732,7 @@
 }
 .sidebarEvent {
   display: grid;
-  grid-template-columns: 48px minmax(0,1fr);
+  grid-template-columns: 48px minmax(0, 1fr);
   align-items: center;
   gap: 10px;
   padding-bottom: 12px;
@@ -799,20 +799,47 @@
   font-weight: 800;
 }
 @media (max-width: 900px) {
-  .agendaLayout { grid-template-columns: 1fr; }
-  .agendaAside { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .notifyCard { grid-column: 1 / -1; }
+  .agendaLayout {
+    grid-template-columns: 1fr;
+  }
+  .agendaAside {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .notifyCard {
+    grid-column: 1 / -1;
+  }
 }
 @media (max-width: 640px) {
-  .agendaTabs { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: -18px; }
-  .agendaLayout { gap: 14px; }
-  .calendarPanel, .sidebarCard, .notifyCard { padding: 16px; }
-  .calendarDay { min-height: 36px; }
-  .agendaFilter { grid-template-columns: 1fr 1fr; }
-  .agendaFilter label:first-child { grid-column: 1 / -1; }
-  .agendaFilter button { grid-column: 1 / -1; }
-  .agendaAside { grid-template-columns: 1fr; }
-  .notifyCard { grid-column: auto; }
+  .agendaTabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: -18px;
+  }
+  .agendaLayout {
+    gap: 14px;
+  }
+  .calendarPanel,
+  .sidebarCard,
+  .notifyCard {
+    padding: 16px;
+  }
+  .calendarDay {
+    min-height: 36px;
+  }
+  .agendaFilter {
+    grid-template-columns: 1fr 1fr;
+  }
+  .agendaFilter label:first-child {
+    grid-column: 1 / -1;
+  }
+  .agendaFilter button {
+    grid-column: 1 / -1;
+  }
+  .agendaAside {
+    grid-template-columns: 1fr;
+  }
+  .notifyCard {
+    grid-column: auto;
+  }
 }
 
 .agendaTabs .disabledTab {

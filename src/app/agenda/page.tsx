@@ -60,8 +60,18 @@ function plainText(value: string | null): string {
 }
 
 const namaBulan = [
-  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-  "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
 ];
 
 export default async function AgendaPage({ searchParams }: Props) {
@@ -72,18 +82,25 @@ export default async function AgendaPage({ searchParams }: Props) {
   const currentYear = now.getFullYear();
   const requestedMonth = Number(params.bulan);
   const requestedYear = Number(params.tahun);
-  const month = Number.isInteger(requestedMonth) && requestedMonth >= 1 && requestedMonth <= 12
-    ? requestedMonth
-    : now.getMonth() + 1;
-  const year = Number.isInteger(requestedYear) && requestedYear >= currentYear - 1 && requestedYear <= currentYear + 2
-    ? requestedYear
-    : currentYear;
+  const month =
+    Number.isInteger(requestedMonth) && requestedMonth >= 1 && requestedMonth <= 12
+      ? requestedMonth
+      : now.getMonth() + 1;
+  const year =
+    Number.isInteger(requestedYear) &&
+    requestedYear >= currentYear - 1 &&
+    requestedYear <= currentYear + 2
+      ? requestedYear
+      : currentYear;
   const query = (params.q ?? "").trim().slice(0, 100);
   const monthKey = `${year}-${String(month).padStart(2, "0")}`;
   const filteredAgenda = agenda.filter((item) => {
     const matchesMonth = item.mulai.startsWith(monthKey);
-    const matchesQuery = !query || [item.judul, item.lokasi, item.deskripsi]
-      .some((value) => plainText(value).toLocaleLowerCase("id-ID").includes(query.toLocaleLowerCase("id-ID")));
+    const matchesQuery =
+      !query ||
+      [item.judul, item.lokasi, item.deskripsi].some((value) =>
+        plainText(value).toLocaleLowerCase("id-ID").includes(query.toLocaleLowerCase("id-ID")),
+      );
     return matchesMonth && matchesQuery;
   });
   const eventDays = new Set(filteredAgenda.map((item) => Number(item.mulai.slice(8, 10))));
@@ -125,27 +142,39 @@ export default async function AgendaPage({ searchParams }: Props) {
                 unoptimized
               />
             ) : (
-              <span className={styles.logoFallback} aria-hidden="true">D</span>
+              <span className={styles.logoFallback} aria-hidden="true">
+                D
+              </span>
             )}
             <span className={styles.brandCopy}>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>{desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}</small>
+              <small>
+                {desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}
+              </small>
             </span>
           </Link>
           <nav className={styles.nav} aria-label="Navigasi utama">
             <Link href="/">Beranda</Link>
             <Link href="/profil">Profil Desa</Link>
             <Link href="/berita">Berita</Link>
-            <Link href="/agenda" aria-current="page">Agenda</Link>
+            <Link href="/agenda" aria-current="page">
+              Agenda
+            </Link>
           </nav>
-          <Link href="/masuk" className={styles.login}>Masuk <span aria-hidden="true">↗</span></Link>
+          <Link href="/masuk" className={styles.login}>
+            Masuk <span aria-hidden="true">↗</span>
+          </Link>
         </div>
       </header>
 
       <section className={styles.hero}>
         <div className={styles.container}>
           <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-            <Link href="/">Beranda</Link><span>/</span><span>Informasi</span><span>/</span><span>Agenda Kegiatan</span>
+            <Link href="/">Beranda</Link>
+            <span>/</span>
+            <span>Informasi</span>
+            <span>/</span>
+            <span>Agenda Kegiatan</span>
           </nav>
           <p className={styles.eyebrow}>INFORMASI KEGIATAN DESA</p>
           <h1>Agenda Kegiatan Desa</h1>
@@ -160,8 +189,12 @@ export default async function AgendaPage({ searchParams }: Props) {
         <div className={styles.container}>
           <nav className={styles.agendaTabs} aria-label="Informasi desa">
             <Link href="/berita">Berita Desa</Link>
-            <span className={styles.disabledTab} aria-disabled="true">Pengumuman</span>
-            <Link href="/agenda" aria-current="page">Agenda Kegiatan</Link>
+            <span className={styles.disabledTab} aria-disabled="true">
+              Pengumuman
+            </span>
+            <Link href="/agenda" aria-current="page">
+              Agenda Kegiatan
+            </Link>
             <Link href="/dokumen">Dokumen Desa</Link>
           </nav>
 
@@ -174,19 +207,29 @@ export default async function AgendaPage({ searchParams }: Props) {
                     <h2>{monthLabel}</h2>
                     <p>Lihat jadwal kegiatan desa dalam tampilan kalender.</p>
                   </div>
-                  <span className={styles.calendarIcon} aria-hidden="true">▦</span>
+                  <span className={styles.calendarIcon} aria-hidden="true">
+                    ▦
+                  </span>
                 </div>
                 <div className={styles.calendarGrid}>
                   {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((day) => (
-                    <span className={styles.calendarWeekday} key={day}>{day}</span>
+                    <span className={styles.calendarWeekday} key={day}>
+                      {day}
+                    </span>
                   ))}
                   {calendarDays.map((day, index) => (
                     <span
                       className={[
                         styles.calendarDay,
                         day && eventDays.has(day) ? styles.calendarHasEvent : "",
-                        day === now.getDate() && month === now.getMonth() + 1 && year === currentYear ? styles.calendarToday : "",
-                      ].filter(Boolean).join(" ")}
+                        day === now.getDate() &&
+                        month === now.getMonth() + 1 &&
+                        year === currentYear
+                          ? styles.calendarToday
+                          : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
                       key={`${day ?? "empty"}-${index}`}
                     >
                       {day ?? ""}
@@ -199,18 +242,31 @@ export default async function AgendaPage({ searchParams }: Props) {
               <form className={styles.agendaFilter} action="/agenda" method="get">
                 <label>
                   <span>Filter kegiatan</span>
-                  <input type="search" name="q" placeholder="Cari agenda kegiatan..." defaultValue={query} />
+                  <input
+                    type="search"
+                    name="q"
+                    placeholder="Cari agenda kegiatan..."
+                    defaultValue={query}
+                  />
                 </label>
                 <label>
                   <span>Bulan</span>
                   <select name="bulan" defaultValue={String(month)}>
-                    {namaBulan.map((name, index) => <option value={index + 1} key={name}>{name}</option>)}
+                    {namaBulan.map((name, index) => (
+                      <option value={index + 1} key={name}>
+                        {name}
+                      </option>
+                    ))}
                   </select>
                 </label>
                 <label>
                   <span>Tahun</span>
                   <select name="tahun" defaultValue={String(year)}>
-                    {years.map((value) => <option value={value} key={value}>{value}</option>)}
+                    {years.map((value) => (
+                      <option value={value} key={value}>
+                        {value}
+                      </option>
+                    ))}
                   </select>
                 </label>
                 <button type="submit">Terapkan filter</button>
@@ -232,26 +288,43 @@ export default async function AgendaPage({ searchParams }: Props) {
                     const deskripsi = plainText(item.deskripsi);
                     return (
                       <article className={styles.agendaCard} key={item.id}>
-                        <div className={styles.dateBlock} aria-label={agendaLabelTanggal(item.mulai, item.selesai)}>
-                          <strong>{date.day}</strong><span>{date.month}</span><small>{year}</small>
+                        <div
+                          className={styles.dateBlock}
+                          aria-label={agendaLabelTanggal(item.mulai, item.selesai)}
+                        >
+                          <strong>{date.day}</strong>
+                          <span>{date.month}</span>
+                          <small>{year}</small>
                         </div>
                         <div className={styles.agendaBody}>
-                          <p className={styles.dateLabel}>{date.weekday} · {agendaLabelTanggal(item.mulai, item.selesai)}</p>
+                          <p className={styles.dateLabel}>
+                            {date.weekday} · {agendaLabelTanggal(item.mulai, item.selesai)}
+                          </p>
                           <h3>{item.judul}</h3>
                           {deskripsi ? <p className={styles.description}>{deskripsi}</p> : null}
-                          {item.lokasi ? <p className={styles.place}><span aria-hidden="true">⌖</span> {item.lokasi}</p> : null}
+                          {item.lokasi ? (
+                            <p className={styles.place}>
+                              <span aria-hidden="true">⌖</span> {item.lokasi}
+                            </p>
+                          ) : null}
                         </div>
-                        <span className={styles.agendaMark} aria-hidden="true">↗</span>
+                        <span className={styles.agendaMark} aria-hidden="true">
+                          ↗
+                        </span>
                       </article>
                     );
                   })}
                 </div>
               ) : (
                 <div className={styles.emptyState}>
-                  <span className={styles.emptyIcon} aria-hidden="true">▦</span>
+                  <span className={styles.emptyIcon} aria-hidden="true">
+                    ▦
+                  </span>
                   <h3>{query ? "Agenda tidak ditemukan" : "Belum ada agenda pada periode ini"}</h3>
                   <p>Ubah filter bulan, tahun, atau kata kunci untuk melihat agenda lainnya.</p>
-                  <Link href="/agenda">Reset filter <span aria-hidden="true">→</span></Link>
+                  <Link href="/agenda">
+                    Reset filter <span aria-hidden="true">→</span>
+                  </Link>
                 </div>
               )}
             </div>
@@ -260,8 +333,14 @@ export default async function AgendaPage({ searchParams }: Props) {
               <section className={styles.sidebarCard}>
                 <h2>Statistik kegiatan</h2>
                 <div className={styles.sidebarStats}>
-                  <div><strong>{agenda.length}</strong><span>Total agenda mendatang</span></div>
-                  <div><strong>{filteredAgenda.length}</strong><span>Agenda pada periode ini</span></div>
+                  <div>
+                    <strong>{agenda.length}</strong>
+                    <span>Total agenda mendatang</span>
+                  </div>
+                  <div>
+                    <strong>{filteredAgenda.length}</strong>
+                    <span>Agenda pada periode ini</span>
+                  </div>
                 </div>
               </section>
               <section className={styles.sidebarCard}>
@@ -272,8 +351,14 @@ export default async function AgendaPage({ searchParams }: Props) {
                       const date = dateParts(item.mulai);
                       return (
                         <div className={styles.sidebarEvent} key={item.id}>
-                          <span><strong>{date.day}</strong><small>{date.month}</small></span>
-                          <div><strong>{item.judul}</strong><small>{item.lokasi || "Lokasi belum ditentukan"}</small></div>
+                          <span>
+                            <strong>{date.day}</strong>
+                            <small>{date.month}</small>
+                          </span>
+                          <div>
+                            <strong>{item.judul}</strong>
+                            <small>{item.lokasi || "Lokasi belum ditentukan"}</small>
+                          </div>
                         </div>
                       );
                     })}
@@ -298,7 +383,10 @@ export default async function AgendaPage({ searchParams }: Props) {
           <div className={styles.footerMain}>
             <div>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <p>Portal informasi resmi untuk mewujudkan pelayanan publik desa yang terbuka, mudah, dan terpercaya.</p>
+              <p>
+                Portal informasi resmi untuk mewujudkan pelayanan publik desa yang terbuka, mudah,
+                dan terpercaya.
+              </p>
             </div>
             <div>
               <span>INFORMASI KANTOR</span>
@@ -307,12 +395,20 @@ export default async function AgendaPage({ searchParams }: Props) {
             </div>
             <div>
               <span>TAUTAN CEPAT</span>
-              <Link href="/">Beranda</Link><Link href="/profil">Profil Desa</Link><Link href="/berita">Berita</Link><Link href="/masuk">Layanan Warga</Link>
+              <Link href="/">Beranda</Link>
+              <Link href="/profil">Profil Desa</Link>
+              <Link href="/berita">Berita</Link>
+              <Link href="/masuk">Layanan Warga</Link>
             </div>
           </div>
           <div className={styles.footerBottom}>
-            <span>© {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. Seluruh hak cipta dilindungi.</span>
-            <span>Didukung oleh <strong>FlexiDesa</strong></span>
+            <span>
+              © {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. Seluruh hak cipta
+              dilindungi.
+            </span>
+            <span>
+              Didukung oleh <strong>FlexiDesa</strong>
+            </span>
           </div>
         </div>
       </footer>
