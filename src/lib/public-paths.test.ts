@@ -48,8 +48,44 @@ describe("rute publik", () => {
     expect(tidakPublik).toEqual([]);
   });
 
-  it("area admin tetap terlindungi", () => {
-    for (const rute of ["/penduduk", "/pengaturan/desa", "/pemerintahan/pemilihan"]) {
+  it("website desa dan seluruh halaman publik baru dapat diakses tanpa sesi", () => {
+    const rutePublik = [
+      "/agenda",
+      "/galeri",
+      "/galeri/kegiatan-desa",
+      "/berita",
+      "/berita/contoh-berita",
+      "/profil",
+      "/profil/sejarah",
+      "/profil/visi-misi",
+      "/sejarah",
+      "/visi-misi",
+      "/statistik",
+      "/data/statistik",
+      "/pemerintahan",
+      "/wilayah",
+      "/dokumen",
+      "/potensi",
+      "/kontak",
+      "/pengaduan",
+      "/transparansi/apbdes",
+      "/layanan",
+      "/layanan/surat",
+    ];
+
+    for (const rute of rutePublik) {
+      expect(isPublicPath(rute), rute).toBe(true);
+    }
+  });
+
+  it("rute privat yang berbagi prefix dengan halaman publik tetap terlindungi", () => {
+    for (const rute of [
+      "/penduduk",
+      "/pengaturan/desa",
+      "/pemerintahan/pemilihan",
+      "/profil/pengguna",
+      "/layanan-mandiri/beranda",
+    ]) {
       expect(isPublicPath(rute), rute).toBe(false);
     }
   });
