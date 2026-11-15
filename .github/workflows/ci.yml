@@ -183,6 +183,18 @@ jobs:
               "INSERT INTO pengaduan (village_id, nomor_tiket, kategori, judul, isi, nama_pelapor, status, publik) VALUES (?, ?, ?, ?, ?, ?, ?, true)",
               [id, "VISUAL-001", "infrastruktur", "Perbaikan jalan lingkungan", "Mohon perbaikan jalan di lingkungan dusun.", "Warga Contoh", "ditindaklanjuti"]
             );
+            await connection.query(
+              "INSERT IGNORE INTO keuangan_template (uuid, parent_uuid, uraian) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?), (?, ?, ?), (?, ?, ?), (?, ?, ?)",
+              ["4", null, "PENDAPATAN", "5", null, "BELANJA", "6", null, "PEMBIAYAAN", "5.1", "5", "Penyelenggaraan Pemerintahan Desa", "5.2", "5", "Pelaksanaan Pembangunan Desa", "5.3", "5", "Pembinaan Kemasyarakatan"]
+            );
+            await connection.query(
+              "INSERT INTO keuangan (village_id, template_uuid, tahun, anggaran, realisasi) VALUES (?, ?, 2026, ?, ?), (?, ?, 2026, ?, ?), (?, ?, 2026, ?, ?), (?, ?, 2026, ?, ?), (?, ?, 2026, ?, ?), (?, ?, 2026, ?, ?)",
+              [id, "4", "100000000.00", "80000000.00", id, "5", "90000000.00", "70000000.00", id, "6", "10000000.00", "5000000.00", id, "5.1", "30000000.00", "25000000.00", id, "5.2", "40000000.00", "30000000.00", id, "5.3", "20000000.00", "15000000.00"]
+            );
+            await connection.query(
+              "INSERT INTO keuangan_triwulan (village_id, template_uuid, tahun, tw1, tw2, tw3, tw4) VALUES (?, ?, 2026, ?, ?, ?, ?), (?, ?, 2026, ?, ?, ?, ?), (?, ?, 2026, ?, ?, ?, ?)",
+              [id, "5.1", "5000000.00", "6000000.00", "7000000.00", "7000000.00", id, "5.2", "8000000.00", "7000000.00", "8000000.00", "7000000.00", id, "5.3", "4000000.00", "3000000.00", "4000000.00", "4000000.00"]
+            );
           } finally {
             await connection.end();
           }
