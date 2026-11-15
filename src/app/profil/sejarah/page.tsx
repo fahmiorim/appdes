@@ -1,1 +1,5 @@
-export { dynamic, default } from "../../sejarah/page";
+import SejarahPage from "../../sejarah/page";
+
+export const dynamic = "force-dynamic";
+
+export default SejarahPage;
