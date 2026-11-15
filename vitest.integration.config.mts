@@ -49,6 +49,7 @@ export default defineConfig({
       "src/features/penduduk/infrastructure/penduduk-tenant-references.integration.test.ts",
       "src/features/penduduk/infrastructure/riwayat-penduduk-tenant-isolation.integration.test.ts",
       "src/features/penduduk/infrastructure/suplemen-tenant-isolation.integration.test.ts",
+      "src/features/publik/application/pengumuman-publik.integration.test.ts",
       "src/features/pesan-warga/integrasi-pesan-warga.test.ts",
       "src/features/rumah-tangga/infrastructure/rumah-tangga-tenant-isolation.integration.test.ts",
       "src/features/statistik/infrastructure/statistik-tenant-isolation.integration.test.ts",

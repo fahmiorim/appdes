@@ -8,6 +8,13 @@ import styles from "./pengumuman.module.css";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Tanggal publik selalu diformat dalam zona waktu Indonesia Barat.
+ * Tanpa `timeZone` eksplisit, hasil bergantung pada TZ server (UTC di CI),
+ * sehingga pengumuman yang terbit dini hari bisa tampil dengan tanggal mundur.
+ */
+const ZONA_WAKTU = "Asia/Jakarta";
+
 type Props = {
   searchParams: Promise<{ q?: string }>;
 };
@@ -33,6 +40,7 @@ function tanggal(value: Date): string {
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone: ZONA_WAKTU,
   }).format(value);
 }
 
@@ -225,12 +233,14 @@ export default async function PengumumanPage({ searchParams }: Props) {
                         <strong>
                           {new Intl.DateTimeFormat("id-ID", {
                             day: "2-digit",
+                            timeZone: ZONA_WAKTU,
                           }).format(date)}
                         </strong>
                         <span>
                           {new Intl.DateTimeFormat("id-ID", {
                             month: "short",
                             year: "numeric",
+                            timeZone: ZONA_WAKTU,
                           }).format(date)}
                         </span>
                       </div>
