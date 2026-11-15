@@ -4,7 +4,7 @@
 - **Tanggal:** 2026-11-16.
 - **Branch:** `docs/audit-public-shell-boundary`.
 - **Base commit:** `36163c952f55e409463350b8b062f7d7aa177eb1` (`origin/main` saat branch dibuat).
-- **Commit hasil:** lihat commit laporan pada branch ini; perubahan hanya dokumentasi.
+- **Commit laporan awal:** `807bb8838bd9f3f18ecc8f637135883b2f4ee97d`; perubahan hanya dokumentasi.
 - **Mode:** audit statis read-only; tidak mengubah source, schema, konfigurasi, atau database.
 
 ## Tujuan dan kondisi awal
