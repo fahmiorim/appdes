@@ -22,6 +22,7 @@ export default async function StatistikPage() {
     Number(data.keuangan.pendapatan) > 0 ||
     Number(data.keuangan.belanja) > 0 ||
     Number(data.keuangan.realisasiBelanja) > 0;
+  const hasPeriode = data.periode.some((item) => Number(item.realisasi) > 0);
 
   return (
     <main className={styles.site}>
@@ -247,7 +248,7 @@ export default async function StatistikPage() {
             ) : (
               <p className={styles.muted}>Data anggaran untuk tahun ini belum dipublikasikan.</p>
             )}
-            {data.periode.length ? (
+            {hasPeriode ? (
               <div className={styles.periodList}>
                 {data.periode.map((item) => (
                   <div key={item.triwulan}>
