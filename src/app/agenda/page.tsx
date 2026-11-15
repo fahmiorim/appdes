@@ -119,8 +119,23 @@ export default async function AgendaPage({ searchParams }: Props) {
     month === 1 ? { bulan: 12, tahun: year - 1 } : { bulan: month - 1, tahun: year };
   const nextMonth =
     month === 12 ? { bulan: 1, tahun: year + 1 } : { bulan: month + 1, tahun: year };
-  const monthHref = (value: { bulan: number; tahun: number }) =>
-    `/agenda?bulan=${value.bulan}&tahun=${value.tahun}${query ? `&q=${encodeURIComponent(query)}` : ""}`;
+  const monthHref = (value: { bulan: number; tahun: number }) => {
+    const search = new URLSearchParams({
+      bulan: String(value.bulan),
+      tahun: String(value.tahun),
+    });
+    if (query) search.set("q", query);
+    return `/agenda?${search.toString()}`;
+  };
+  const dayHref = (day: number) => {
+    const search = new URLSearchParams({
+      bulan: String(month),
+      tahun: String(year),
+      hari: String(day),
+    });
+    if (query) search.set("q", query);
+    return `/agenda?${search.toString()}`;
+  };
   const firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
   const mondayOffset = (firstWeekday + 6) % 7;
   const calendarDays: (number | null)[] = [
@@ -257,7 +272,7 @@ export default async function AgendaPage({ searchParams }: Props) {
                       return day ? (
                         <Link
                           className={className}
-                          href={`/agenda?bulan=${month}&tahun=${year}&hari=${day}${query ? `&q=${encodeURIComponent(query)}` : ""}`}
+                          href={dayHref(day)}
                           aria-current={isSelected ? "date" : undefined}
                           key={`${day}-${index}`}
                         >
@@ -281,15 +296,15 @@ export default async function AgendaPage({ searchParams }: Props) {
                     </h3>
                     {selectedDay ? (
                       selectedDateAgenda.length ? (
-                      <div className={styles.selectedDayList}>
-                        {selectedDateAgenda.map((item) => (
-                          <article className={styles.selectedDayEvent} key={item.id}>
-                            <strong>{item.judul}</strong>
-                            <span>{item.lokasi || "Lokasi belum ditentukan"}</span>
-                            {item.deskripsi ? <p>{plainText(item.deskripsi)}</p> : null}
-                          </article>
-                        ))}
-                      </div>
+                        <div className={styles.selectedDayList}>
+                          {selectedDateAgenda.map((item) => (
+                            <article className={styles.selectedDayEvent} key={item.id}>
+                              <strong>{item.judul}</strong>
+                              <span>{item.lokasi || "Lokasi belum ditentukan"}</span>
+                              {item.deskripsi ? <p>{plainText(item.deskripsi)}</p> : null}
+                            </article>
+                          ))}
+                        </div>
                       ) : (
                         <p className={styles.muted}>
                           Belum ada kegiatan pada tanggal ini.
