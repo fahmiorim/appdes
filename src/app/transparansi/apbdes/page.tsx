@@ -23,6 +23,13 @@ export default async function ApbdesPublikPage({ searchParams }: Props) {
     listLaporanDokumenApbdesPublik(desa.id),
   ]);
   const years = laporan.tersedia.length ? laporan.tersedia : [laporan.tahun];
+  const hasData =
+    Number(laporan.total.anggaran) > 0 || Number(laporan.total.realisasi) > 0;
+  const totalAnggaran = Number(laporan.total.anggaran);
+  const totalRealisasi = Number(laporan.total.realisasi);
+  const persenRealisasi = totalAnggaran > 0
+    ? Math.min(100, Math.round((totalRealisasi / totalAnggaran) * 100))
+    : 0;
 
   return (
     <main className={styles.site}>
@@ -45,25 +52,34 @@ export default async function ApbdesPublikPage({ searchParams }: Props) {
           </Link>
         </div>
       </header>
+
       <section className={styles.hero}>
         <div className={styles.container}>
           <div className={styles.crumb}>
             <Link href="/">Beranda</Link>
             <span>/</span>
-            <span>Transparansi</span>
+            <span>Informasi</span>
             <span>/</span>
-            <span>APBDes</span>
+            <span>APBDes & Transparansi Anggaran</span>
           </div>
           <p className={styles.kicker}>KETERBUKAAN INFORMASI PUBLIK</p>
-          <h1>Transparansi APBDes</h1>
+          <h1>APBDes & Transparansi Anggaran</h1>
           <p>
-            Ringkasan anggaran pendapatan, belanja, pembiayaan, dan realisasi{" "}
-            {desa.namaDesa ?? "desa"} berdasarkan data yang tersedia.
+            Informasi rencana, realisasi, dan laporan keuangan {desa.namaDesa ?? "desa"} secara
+            terbuka dan akuntabel.
           </p>
         </div>
       </section>
+
       <section className={styles.content}>
         <div className={styles.container}>
+          <nav className={styles.statTabs} aria-label="Bagian APBDes">
+            <a className={styles.activeTab} href="#apbdes">APBDes</a>
+            <a href="#realisasi">Realisasi Anggaran</a>
+            <a href="#laporan">Laporan Keuangan</a>
+            <a href="/dokumen">Dokumen & Regulasi</a>
+          </nav>
+
           <form className={styles.filter} action="/transparansi/apbdes" method="get">
             <label htmlFor="tahun-apbdes">Tahun anggaran</label>
             <select id="tahun-apbdes" name="tahun" defaultValue={String(laporan.tahun)}>
@@ -74,54 +90,85 @@ export default async function ApbdesPublikPage({ searchParams }: Props) {
               ))}
             </select>
             <button type="submit">Tampilkan</button>
+            {hasData ? (
+              <a className={styles.downloadButton} href="/dokumen">Lihat dokumen terkait ↗</a>
+            ) : null}
           </form>
-          <div className={styles.grid}>
-            {laporan.total.anggaran !== "0.00" || laporan.total.realisasi !== "0.00" ? (
-              <>
-                <article className={styles.contactItem}>
-                  <span>TOTAL ANGGARAN</span>
-                  <strong>{formatRupiah(laporan.total.anggaran)}</strong>
-                  <p className={styles.muted}>Akumulasi pendapatan, belanja, dan pembiayaan</p>
-                </article>
-                <article className={styles.contactItem}>
-                  <span>TOTAL REALISASI</span>
-                  <strong>{formatRupiah(laporan.total.realisasi)}</strong>
-                  <p className={styles.muted}>Realisasi yang tercatat pada tahun anggaran</p>
-                </article>
-              </>
-            ) : (
-              <div className={styles.empty}>
-                <strong>Data APBDes belum tersedia</strong>
-                <p>Ringkasan anggaran akan tampil setelah data tahun anggaran dipublikasikan.</p>
-              </div>
-            )}
-          </div>
-          <div className={styles.docList} style={{ marginTop: 22 }}>
-            {laporan.baris.map((item) => (
-              <article className={styles.budgetRow} key={item.kode}>
-                <div className={styles.budgetHeading}>
-                  <div>
-                    <h3>{item.uraian}</h3>
-                    <p>
-                      Anggaran {formatRupiah(item.anggaran)} · Realisasi{" "}
-                      {formatRupiah(item.realisasi)}
-                    </p>
+
+          {hasData ? (
+            <>
+              <section id="apbdes" className={styles.budgetOverview}>
+                <div className={styles.budgetMain}>
+                  <div className={styles.sectionHead}>
+                    <div>
+                      <p className={styles.kicker}>RINGKASAN APBDES TAHUN {laporan.tahun}</p>
+                      <h2>Rencana anggaran {desa.namaDesa ?? "desa"}</h2>
+                    </div>
                   </div>
-                  <strong>
-                    {item.persen.toLocaleString("id-ID", { maximumFractionDigits: 2 })}%
-                  </strong>
+                  <div className={styles.budgetSummary}>
+                    <article className={styles.budgetCard}>
+                      <span>Pendapatan desa</span>
+                      <strong>{formatRupiah(laporan.total.anggaran)}</strong>
+                    </article>
+                    <article className={styles.budgetCard}>
+                      <span>Belanja dan pembiayaan</span>
+                      <strong>{formatRupiah(laporan.total.realisasi)}</strong>
+                    </article>
+                    <article className={styles.budgetCard}>
+                      <span>Realisasi anggaran</span>
+                      <strong>{persenRealisasi}%</strong>
+                    </article>
+                  </div>
                 </div>
-                <div
-                  className={styles.budgetProgress}
-                  role="img"
-                  aria-label={`Realisasi ${item.persen.toLocaleString("id-ID", { maximumFractionDigits: 2 })} persen`}
-                >
-                  <span style={{ width: `${Math.min(100, Math.max(0, item.persen))}%` }} />
+                <aside className={styles.budgetAside}>
+                  <h3>Informasi APBDes</h3>
+                  <p>Ringkasan ini bersumber dari data anggaran yang telah dicatat dan dipublikasikan pemerintah desa.</p>
+                  <Link href="/dokumen">Dokumen dan regulasi ↗</Link>
+                </aside>
+              </section>
+
+              <section id="realisasi" className={styles.budgetRows}>
+                <div className={styles.sectionHead}>
+                  <div>
+                    <p className={styles.kicker}>KOMPOSISI DAN REALISASI</p>
+                    <h2>Rincian anggaran desa</h2>
+                  </div>
                 </div>
-              </article>
-            ))}
-          </div>
-          <section style={{ marginTop: 42 }}>
+                {(laporan.bidang ?? []).length ? (
+                  <div className={styles.docList}>
+                    {laporan.bidang.map((item) => (
+                      <article className={styles.budgetRow} key={item.kode}>
+                        <div className={styles.budgetHeading}>
+                          <div>
+                            <h3>{item.uraian}</h3>
+                            <p>
+                              Anggaran {formatRupiah(item.anggaran)} · Realisasi {formatRupiah(item.realisasi)}
+                            </p>
+                          </div>
+                          <strong>{item.persen.toLocaleString("id-ID", { maximumFractionDigits: 2 })}%</strong>
+                        </div>
+                        <div className={styles.budgetProgress}>
+                          <span style={{ width: `${Math.min(100, Math.max(0, item.persen))}%` }} />
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.empty}>
+                    <strong>Rincian anggaran belum tersedia</strong>
+                    <p>Rincian bidang akan tampil setelah data APBDes dipublikasikan.</p>
+                  </div>
+                )}
+              </section>
+            </>
+          ) : (
+            <div id="apbdes" className={styles.empty + " " + styles.budgetEmpty}>
+              <strong>Data APBDes belum tersedia</strong>
+              <p>Ringkasan anggaran akan tampil setelah data tahun anggaran dipublikasikan.</p>
+            </div>
+          )}
+
+          <section id="laporan" className={styles.documentSection}>
             <p className={styles.kicker}>DOKUMEN RESMI</p>
             <h2>Dokumen laporan APBDes</h2>
             {dokumen.length ? (
@@ -139,13 +186,15 @@ export default async function ApbdesPublikPage({ searchParams }: Props) {
                 ))}
               </div>
             ) : (
-              <p className={styles.muted}>
-                Belum ada dokumen APBDes yang diserahkan untuk dipublikasikan.
-              </p>
+              <div className={styles.empty}>
+                <strong>Belum ada dokumen laporan APBDes</strong>
+                <p>Dokumen yang sudah diserahkan dan dipublikasikan akan tersedia di sini.</p>
+              </div>
             )}
           </section>
         </div>
       </section>
+
       <footer className={styles.footer}>
         <div className={styles.container + " " + styles.footerInner}>
           <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>

@@ -413,3 +413,182 @@
 .hero .location {
   color: #d6e5ff;
 }
+
+.statTabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 9px;
+  margin: -26px 0 34px;
+  position: relative;
+  z-index: 2;
+  border: 1px solid #e5eaf4;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(36 66 130 / 10%);
+}
+.statTabs a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 48px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  color: #26324e;
+  font-size: 12px;
+  font-weight: 800;
+  text-align: center;
+}
+.statTabs a:hover,
+.statTabs .activeTab {
+  color: #fff;
+  background: linear-gradient(110deg, #7135e8, #4e43e8);
+}
+.section {
+  scroll-margin-top: 24px;
+  margin-top: 24px;
+}
+.sectionDescription {
+  margin: 8px 0 0;
+  color: #71819b;
+  font-size: 12px;
+}
+.chartGrid {
+  display: grid;
+  grid-template-columns: minmax(280px, .8fr) minmax(0, 1.2fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+.genderLayout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  min-height: 220px;
+}
+.genderChart {
+  display: grid;
+  width: 172px;
+  height: 172px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  position: relative;
+}
+.genderChart::before {
+  position: absolute;
+  inset: 18px;
+  border-radius: 50%;
+  background: #fff;
+  content: "";
+}
+.genderChart > div {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  text-align: center;
+}
+.genderChart strong {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 800;
+}
+.genderChart span {
+  color: #77859b;
+  font-size: 11px;
+}
+.genderLegend {
+  display: grid;
+  gap: 18px;
+}
+.genderLegend > div {
+  display: grid;
+  grid-template-columns: 12px auto;
+  gap: 3px 9px;
+  align-items: center;
+  color: #65738c;
+  font-size: 11px;
+}
+.genderLegend strong {
+  grid-column: 2;
+  color: #17213b;
+  font-size: 12px;
+}
+.genderLegend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.maleDot { background: #2563eb; }
+.femaleDot { background: #ec4899; }
+.regionTable {
+  overflow: hidden;
+  border: 1px solid #e4eaf4;
+  border-radius: 14px;
+  background: #fff;
+}
+.regionHeader,
+.regionRow,
+.regionTotal {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr .7fr;
+  gap: 12px;
+  padding: 14px 18px;
+  font-size: 11px;
+}
+.regionHeader {
+  background: #f1f5fc;
+  color: #64738d;
+  font-weight: 800;
+}
+.regionRow {
+  border-top: 1px solid #edf1f7;
+  color: #63728b;
+}
+.regionRow strong { color: #17213b; }
+.regionTotal {
+  border-top: 1px solid #dfe6f2;
+  background: #f1ecff;
+  color: #31245e;
+}
+.publicCta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px 28px;
+  margin-top: 24px;
+  border: 1px solid #e0d7ff;
+  border-radius: 18px;
+  background: linear-gradient(110deg, #f2ecff, #f7f8ff);
+}
+.publicCta strong {
+  color: #211a49;
+  font-family: var(--font-display);
+  font-size: 20px;
+}
+.publicCta p {
+  margin: 6px 0 0;
+  color: #65738c;
+  font-size: 12px;
+}
+.publicCta a {
+  flex: none;
+  padding: 12px 18px;
+  border: 1px solid #8a58f5;
+  border-radius: 999px;
+  color: #7135e8;
+  font-size: 11px;
+  font-weight: 800;
+}
+@media (max-width: 900px) {
+  .chartGrid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .statTabs { grid-template-columns: repeat(2, minmax(0,1fr)); margin-top: -18px; }
+  .statTabs a { min-height: 42px; font-size: 10px; }
+  .genderLayout { flex-direction: column; gap: 18px; }
+  .regionHeader, .regionRow, .regionTotal { grid-template-columns: 1fr 1fr; }
+  .regionHeader span:last-child, .regionRow span:last-child, .regionTotal strong:last-child { display: none; }
+  .publicCta { align-items: flex-start; flex-direction: column; padding: 20px; }
+}

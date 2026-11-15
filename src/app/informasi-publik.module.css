@@ -435,3 +435,126 @@
 .hero .location {
   color: #d6e5ff;
 }
+
+.statTabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding: 9px;
+  margin: -26px 0 28px;
+  position: relative;
+  z-index: 2;
+  border: 1px solid #e5eaf4;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 12px 30px rgb(36 66 130 / 10%);
+}
+.statTabs a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 46px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: #26324e;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+.statTabs a:hover,
+.statTabs .activeTab {
+  color: #fff;
+  background: linear-gradient(110deg, #7135e8, #4e43e8);
+}
+.downloadButton {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid #8a58f5;
+  border-radius: 999px;
+  color: #7135e8;
+  font-size: 11px;
+  font-weight: 800;
+}
+.budgetOverview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(260px, .7fr);
+  gap: 16px;
+}
+.budgetMain,
+.budgetAside {
+  padding: 24px;
+  border: 1px solid #e5ebf4;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px #172b4d07;
+}
+.budgetSummary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.budgetCard {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 13px;
+  background: #f2edff;
+}
+.budgetCard:nth-child(2) { background: #eaf2ff; }
+.budgetCard:nth-child(3) { background: #e9f8f0; }
+.budgetCard span {
+  color: #596981;
+  font-size: 11px;
+  font-weight: 700;
+}
+.budgetCard strong {
+  color: #18223d;
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.budgetAside {
+  background: linear-gradient(150deg, #f5f0ff, #fff);
+}
+.budgetAside h3 {
+  margin: 0 0 12px;
+  font-size: 17px;
+}
+.budgetAside p {
+  color: #65738c;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.budgetAside a {
+  display: inline-flex;
+  margin-top: 8px;
+  color: #7135e8;
+  font-size: 11px;
+  font-weight: 800;
+}
+.budgetRows {
+  margin-top: 26px;
+}
+.budgetEmpty {
+  margin-bottom: 30px;
+}
+.documentSection {
+  margin-top: 38px;
+}
+.documentSection h2 {
+  margin: 8px 0 18px;
+  font-family: var(--font-display);
+  font-size: 24px;
+}
+@media (max-width: 800px) {
+  .budgetOverview { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .statTabs { grid-template-columns: repeat(2, minmax(0,1fr)); margin-top: -18px; }
+  .budgetMain, .budgetAside { padding: 18px; }
+  .budgetSummary { grid-template-columns: 1fr; }
+  .budgetCard strong { font-size: 18px; }
+}
