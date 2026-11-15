@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { halamanStatisPublik } from "@/features/publik/application/konten-publik";
-import { sanitasiHtml, teksPolos } from "@/lib/sanitize";
+import { sanitasiHtml } from "@/lib/sanitize";
 
 import styles from "../informasi-publik.module.css";
 
@@ -12,7 +12,6 @@ export default async function PotensiPage() {
   const desa = await getIdentitasFromRequest();
   const halaman = await halamanStatisPublik(desa.id, "potensi");
   const isiAman = halaman?.isi ? sanitasiHtml(halaman.isi) : "";
-  const ringkasan = halaman?.isi ? teksPolos(halaman.isi) : "";
 
   return (
     <main className={styles.site}>
@@ -99,12 +98,6 @@ export default async function PotensiPage() {
                   Data kategori, luas, hasil produksi, dan jumlah pelaku usaha hanya ditampilkan
                   apabila tersedia dalam sumber data resmi.
                 </p>
-                {ringkasan ? (
-                  <div className={styles.potensiSummary}>
-                    <strong>Ringkasan</strong>
-                    <p>{ringkasan}</p>
-                  </div>
-                ) : null}
               </section>
               <section className={styles.potensiContactCard}>
                 <span aria-hidden="true">↗</span>
