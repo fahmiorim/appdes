@@ -34,11 +34,6 @@ jobs:
       - name: Install dependency
         run: npm ci
 
-      - name: Normalize agenda page formatting
-        run: |
-          files=("src/app/agenda/page.tsx" "src/app/agenda/agenda.module.css")
-          npx prettier --write "${files[@]}"
-          node -e 'const fs=require("fs"); for(const p of process.argv.slice(1)){console.log("AGENDA_FORMAT_BASE64:"+p+":"+fs.readFileSync(p).toString("base64"))}' "${files[@]}"
       - name: Typecheck
         run: npm run typecheck
 
