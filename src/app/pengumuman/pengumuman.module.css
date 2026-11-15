@@ -16,7 +16,9 @@
   font-size: 11px;
 }
 
-.toplineInner, .headerInner, .footerInner {
+.toplineInner,
+.headerInner,
+.footerInner {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -40,7 +42,8 @@
   text-decoration: none;
 }
 
-.logo, .logoFallback {
+.logo,
+.logoFallback {
   width: 46px;
   height: 46px;
   border-radius: 13px;
@@ -76,14 +79,16 @@
   gap: 23px;
 }
 
-.nav a, .login {
+.nav a,
+.login {
   color: #53647a;
   text-decoration: none;
   font-size: 12px;
   font-weight: 700;
 }
 
-.nav a:hover, .nav a[aria-current=page] {
+.nav a:hover,
+.nav a[aria-current="page"] {
   color: #1767e8;
 }
 
@@ -98,7 +103,9 @@
   position: relative;
   overflow: hidden;
   padding: 34px 0 62px;
-  background: radial-gradient(circle at 85% 18%, #ffffff29, transparent 26%), linear-gradient(112deg, #0755c9, #176be8 54%, #7135e8);
+  background:
+    radial-gradient(circle at 85% 18%, #ffffff29, transparent 26%),
+    linear-gradient(112deg, #0755c9, #176be8 54%, #7135e8);
   color: #fff;
 }
 
@@ -111,10 +118,12 @@
   border: 1px solid #ffffff2c;
   border-radius: 50%;
   content: "";
-  box-shadow: 0 0 0 48px #ffffff0b, 0 0 0 96px #ffffff08;
+  box-shadow:
+    0 0 0 48px #ffffff0b,
+    0 0 0 96px #ffffff08;
 }
 
-.hero>.container {
+.hero > .container {
   position: relative;
   z-index: 1;
 }
@@ -136,7 +145,8 @@
   max-width: 720px;
 }
 
-.eyebrow, .kicker {
+.eyebrow,
+.kicker {
   display: block;
   color: #d9d0ff;
   font-size: 10px;
@@ -151,7 +161,7 @@
   letter-spacing: -1.8px;
 }
 
-.heroCopy>p {
+.heroCopy > p {
   max-width: 650px;
   margin: 0;
   color: #e6edff;
@@ -183,7 +193,8 @@
   color: #fff;
 }
 
-.heroStamp span, .heroStamp i {
+.heroStamp span,
+.heroStamp i {
   font-size: 10px;
   font-style: normal;
   font-weight: 800;
@@ -199,7 +210,8 @@
   padding: 48px 0 76px;
 }
 
-.sectionIntro, .listHeading {
+.sectionIntro,
+.listHeading {
   display: flex;
   align-items: end;
   justify-content: space-between;
@@ -211,11 +223,12 @@
   color: #6e58d9;
 }
 
-.sectionIntro h2, .listHeading h2 {
+.sectionIntro h2,
+.listHeading h2 {
   margin: 8px 0;
   color: #172b49;
   font-size: 25px;
-  letter-spacing: -.6px;
+  letter-spacing: -0.6px;
 }
 
 .sectionIntro p {
@@ -254,7 +267,7 @@
 
 .featured {
   display: grid;
-  grid-template-columns: 1.05fr .95fr;
+  grid-template-columns: 1.05fr 0.95fr;
   overflow: hidden;
   border: 1px solid #e3eaf4;
   border-radius: 18px;
@@ -300,10 +313,10 @@
   color: #172b49;
   font-size: clamp(23px, 3vw, 32px);
   line-height: 1.22;
-  letter-spacing: -.8px;
+  letter-spacing: -0.8px;
 }
 
-.featuredCopy>p {
+.featuredCopy > p {
   margin: 0;
   color: #697990;
   font-size: 13px;
@@ -341,7 +354,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 25% 20%, #fff9, transparent 30%), linear-gradient(135deg, #dceaff, #e9e1ff);
+  background:
+    radial-gradient(circle at 25% 20%, #fff9, transparent 30%),
+    linear-gradient(135deg, #dceaff, #e9e1ff);
   color: #5376bb;
 }
 
@@ -369,7 +384,7 @@
   margin-bottom: 0;
 }
 
-.listHeading>span {
+.listHeading > span {
   color: #7c8ba1;
   font-size: 11px;
 }
@@ -490,7 +505,7 @@
   line-height: 1.8;
 }
 
-.empty>a {
+.empty > a {
   display: inline-block;
   margin-top: 15px;
   color: #1265e9;
@@ -519,7 +534,7 @@
   font-size: 11px;
 }
 
-.footerInner>div {
+.footerInner > div {
   display: grid;
   gap: 4px;
 }
@@ -546,12 +561,12 @@
   border: 0;
 }
 
-@media (max-width:800px) {
+@media (max-width: 800px) {
   .heroStamp {
     right: 3%;
     width: 118px;
     height: 118px;
-    opacity: .8;
+    opacity: 0.8;
   }
 
   .heroStamp strong {
@@ -584,10 +599,9 @@
     flex: 1;
     width: 100%;
   }
-
 }
 
-@media (max-width:620px) {
+@media (max-width: 620px) {
   .container {
     width: calc(100% - 28px);
   }
@@ -634,7 +648,7 @@
     font-size: 37px;
   }
 
-  .heroCopy>p {
+  .heroCopy > p {
     max-width: calc(100% - 22px);
     font-size: 13px;
   }
@@ -644,14 +658,15 @@
     right: -20px;
     width: 90px;
     height: 90px;
-    opacity: .45;
+    opacity: 0.45;
   }
 
   .heroStamp strong {
     font-size: 17px;
   }
 
-  .heroStamp span, .heroStamp i {
+  .heroStamp span,
+  .heroStamp i {
     font-size: 7px;
   }
 
@@ -659,7 +674,8 @@
     padding: 34px 0 54px;
   }
 
-  .sectionIntro h2, .listHeading h2 {
+  .sectionIntro h2,
+  .listHeading h2 {
     font-size: 21px;
   }
 
@@ -671,7 +687,8 @@
     padding: 23px;
   }
 
-  .featuredMedia, .mediaFallback {
+  .featuredMedia,
+  .mediaFallback {
     min-height: 190px;
   }
 
@@ -715,5 +732,4 @@
     flex-direction: column;
     gap: 10px;
   }
-
 }

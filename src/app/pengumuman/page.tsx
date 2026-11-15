@@ -2,10 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
-import {
-  daftarBerita,
-  daftarKategoriBerita,
-} from "@/features/publik/application/konten-publik";
+import { daftarBerita, daftarKategoriBerita } from "@/features/publik/application/konten-publik";
 
 import styles from "./pengumuman.module.css";
 
@@ -21,18 +18,12 @@ function mediaUrl(value: string | null, villageId: number): string | null {
   const segments = value.split(/[\\/]/).filter(Boolean);
   if (
     segments.length === 0 ||
-    segments.some(
-      (segment) =>
-        segment === "." || segment === ".." || segment.includes(".."),
-    )
+    segments.some((segment) => segment === "." || segment === ".." || segment.includes(".."))
   ) {
     return null;
   }
 
-  const path =
-    segments[0] === String(villageId)
-      ? segments
-      : [String(villageId), ...segments];
+  const path = segments[0] === String(villageId) ? segments : [String(villageId), ...segments];
 
   return `/api/publik/media/${path.map(encodeURIComponent).join("/")}`;
 }
@@ -55,15 +46,10 @@ export async function generateMetadata() {
 }
 
 export default async function PengumumanPage({ searchParams }: Props) {
-  const [desa, params] = await Promise.all([
-    getIdentitasFromRequest(),
-    searchParams,
-  ]);
+  const [desa, params] = await Promise.all([getIdentitasFromRequest(), searchParams]);
   const kategori = await daftarKategoriBerita(desa.id);
   const q = params.q?.trim().slice(0, 100) ?? "";
-  const kategoriPengumuman = kategori.find(
-    (item) => item.slug === "pengumuman",
-  );
+  const kategoriPengumuman = kategori.find((item) => item.slug === "pengumuman");
   const pengumuman = kategoriPengumuman
     ? await daftarBerita(desa.id, {
         limit: 60,
@@ -73,11 +59,7 @@ export default async function PengumumanPage({ searchParams }: Props) {
     : [];
 
   const [utama, ...lainnya] = pengumuman;
-  const lokasi = [
-    desa.namaKecamatan,
-    desa.namaKabupaten,
-    desa.namaPropinsi,
-  ]
+  const lokasi = [desa.namaKecamatan, desa.namaKabupaten, desa.namaPropinsi]
     .filter(Boolean)
     .join(", ");
 
@@ -92,16 +74,10 @@ export default async function PengumumanPage({ searchParams }: Props) {
 
       <header className={styles.header}>
         <div className={`${styles.container} ${styles.headerInner}`}>
-          <Link
-            href="/"
-            className={styles.brand}
-            aria-label={`Beranda ${desa.namaDesa ?? "desa"}`}
-          >
+          <Link href="/" className={styles.brand} aria-label={`Beranda ${desa.namaDesa ?? "desa"}`}>
             {desa.logo ? (
               <Image
-                src={
-                  mediaUrl(desa.logo, desa.id) ?? "/images/flexidesa-mark.svg"
-                }
+                src={mediaUrl(desa.logo, desa.id) ?? "/images/flexidesa-mark.svg"}
                 alt=""
                 width={46}
                 height={46}
@@ -116,9 +92,7 @@ export default async function PengumumanPage({ searchParams }: Props) {
             <span className={styles.brandCopy}>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
               <small>
-                {desa.namaKabupaten
-                  ? `Kabupaten ${desa.namaKabupaten}`
-                  : "Sistem Informasi Desa"}
+                {desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}
               </small>
             </span>
           </Link>
@@ -152,12 +126,10 @@ export default async function PengumumanPage({ searchParams }: Props) {
             <span className={styles.eyebrow}>PUSAT INFORMASI RESMI</span>
             <h1>Pengumuman Desa</h1>
             <p>
-              Informasi penting, pemberitahuan, dan agenda resmi yang
-              disampaikan oleh Pemerintah {desa.namaDesa ?? "Desa"}.
+              Informasi penting, pemberitahuan, dan agenda resmi yang disampaikan oleh Pemerintah{" "}
+              {desa.namaDesa ?? "Desa"}.
             </p>
-            {lokasi ? (
-              <span className={styles.location}>⌖ {lokasi}</span>
-            ) : null}
+            {lokasi ? <span className={styles.location}>⌖ {lokasi}</span> : null}
           </div>
 
           <div className={styles.heroStamp} aria-hidden="true">
@@ -174,17 +146,10 @@ export default async function PengumumanPage({ searchParams }: Props) {
             <div>
               <span className={styles.kicker}>PENGUMUMAN TERBARU</span>
               <h2>Informasi untuk masyarakat</h2>
-              <p>
-                Pengumuman yang telah diterbitkan dan dapat dibaca oleh
-                masyarakat.
-              </p>
+              <p>Pengumuman yang telah diterbitkan dan dapat dibaca oleh masyarakat.</p>
             </div>
 
-            <form
-              className={styles.search}
-              action="/pengumuman"
-              method="get"
-            >
+            <form className={styles.search} action="/pengumuman" method="get">
               <label className={styles.srOnly} htmlFor="announcement-search">
                 Cari pengumuman
               </label>
@@ -205,9 +170,7 @@ export default async function PengumumanPage({ searchParams }: Props) {
                 <span className={styles.noticeLabel}>
                   <i /> Pengumuman terbaru
                 </span>
-                <time
-                  dateTime={(utama.terbitPada ?? utama.createdAt).toISOString()}
-                >
+                <time dateTime={(utama.terbitPada ?? utama.createdAt).toISOString()}>
                   {tanggal(utama.terbitPada ?? utama.createdAt)}
                 </time>
                 <h2>{utama.judul}</h2>
@@ -273,19 +236,14 @@ export default async function PengumumanPage({ searchParams }: Props) {
                       </div>
 
                       <div className={styles.itemCopy}>
-                        <time dateTime={date.toISOString()}>
-                          {tanggal(date)}
-                        </time>
+                        <time dateTime={date.toISOString()}>{tanggal(date)}</time>
                         <h3>
-                          <Link
-                            href={`/berita/${encodeURIComponent(item.slug)}`}
-                          >
+                          <Link href={`/berita/${encodeURIComponent(item.slug)}`}>
                             {item.judul}
                           </Link>
                         </h3>
                         <p>
-                          {item.ringkasan ||
-                            "Baca informasi selengkapnya pada halaman pengumuman."}
+                          {item.ringkasan || "Baca informasi selengkapnya pada halaman pengumuman."}
                         </p>
                       </div>
 
@@ -306,9 +264,7 @@ export default async function PengumumanPage({ searchParams }: Props) {
               <span className={styles.emptyIcon} aria-hidden="true">
                 i
               </span>
-              <h2>
-                {q ? "Pengumuman tidak ditemukan" : "Belum ada pengumuman"}
-              </h2>
+              <h2>{q ? "Pengumuman tidak ditemukan" : "Belum ada pengumuman"}</h2>
               <p>
                 {q
                   ? "Coba gunakan kata kunci lain."
