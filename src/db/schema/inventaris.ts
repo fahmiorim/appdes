@@ -59,7 +59,10 @@ export const inventarisKategori = mysqlTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [index("inv_kat_village_kode").on(table.villageId, table.kode)],
+  (table) => [
+    uniqueIndex("inventaris_kategori_village_id_uq").on(table.villageId, table.id),
+    index("inv_kat_village_kode").on(table.villageId, table.kode),
+  ],
 );
 
 export const inventaris = mysqlTable(
@@ -69,9 +72,7 @@ export const inventaris = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    kategoriId: int("kategori_id").references(() => inventarisKategori.id, {
-      onDelete: "set null",
-    }),
+    kategoriId: int("kategori_id"),
     nomorInventaris: varchar("nomor_inventaris", { length: 50 }),
     namaBarang: varchar("nama_barang", { length: 200 }).notNull(),
     kodeBarang: varchar("kode_barang", { length: 50 }),
@@ -100,6 +101,11 @@ export const inventaris = mysqlTable(
   (table) => [
     uniqueIndex("inventaris_village_id_uq").on(table.villageId, table.id),
     index("inv_village_kategori").on(table.villageId, table.kategoriId),
+    foreignKey({
+      name: "inventaris_kategori_tenant_fk",
+      columns: [table.villageId, table.kategoriId],
+      foreignColumns: [inventarisKategori.villageId, inventarisKategori.id],
+    }).onDelete("restrict"),
     index("inv_village_no").on(table.villageId, table.nomorInventaris),
   ],
 );

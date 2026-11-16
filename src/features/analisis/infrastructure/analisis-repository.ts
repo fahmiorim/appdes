@@ -27,10 +27,20 @@ export async function updateAnalisisKategori(
     .where(and(eq(analisisKategori.id, id), eq(analisisKategori.villageId, villageId)));
 }
 
+/**
+ * Composite RESTRICT mencegah referensi lintas desa; lepaskan indikator
+ * sewilayah secara atomik sebelum kategori dihapus.
+ */
 export async function deleteAnalisisKategori(id: number, villageId: number) {
-  await db
-    .delete(analisisKategori)
-    .where(and(eq(analisisKategori.id, id), eq(analisisKategori.villageId, villageId)));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(analisisIndikator)
+      .set({ kategoriId: null })
+      .where(and(eq(analisisIndikator.villageId, villageId), eq(analisisIndikator.kategoriId, id)));
+    await tx
+      .delete(analisisKategori)
+      .where(and(eq(analisisKategori.id, id), eq(analisisKategori.villageId, villageId)));
+  });
 }
 
 export async function listAnalisisIndikator(villageId: number, kategoriId?: number) {

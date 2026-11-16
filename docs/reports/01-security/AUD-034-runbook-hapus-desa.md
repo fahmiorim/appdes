@@ -1,7 +1,7 @@
 # AUD-034 — Runbook hapus desa setelah composite FK RESTRICT
 
 - **Status:** prosedur manual untuk DBA/operator. Belum pernah dijalankan pada data produksi.
-- **Berlaku sejak:** migration `0008_b4c1_restrict_relations_composite_fk.sql` (Batch 4C-1); diperluas untuk `0009` (Batch 4C-2a) bila PR terkait sudah merged.
+- **Berlaku sejak:** migration `0008_b4c1_restrict_relations_composite_fk.sql` (Batch 4C-1); diperluas untuk `0009` (Batch 4C-2a) dan `0010` (Batch 4C-2b) bila PR terkait sudah merged.
 - **Prasyarat:** backup terverifikasi, salinan data untuk rehearsal, dan persetujuan tertulis pemilik data.
 - **Bukan jalur aplikasi:** tidak ada use case hapus desa di aplikasi. Runbook ini hanya untuk pembersihan manual/DBA (mis. desa uji, pembatalan provisioning, atau penghapusan data sesuai kebijakan).
 
@@ -39,6 +39,17 @@ Baru setelah itu `berita_kategori` dan `jabatan_perangkat` boleh ikut ter-cascad
 4. `outgoing_letters`
 
 Aplikasi melakukan ini lewat `deleteKlasifikasi` per klasifikasi. Untuk hapus desa, keempat tabel dapat dihapus per `village_id` sebelum `villages`.
+
+### 2.3 Tambahan bila Batch 4C-2b (`0010`) sudah merged
+
+Empat kategori master juga dilindungi `RESTRICT`: `analisis_kategori`, `polygon`, `inventaris_kategori`, dan `kelompok_master`. Lepas/hapus child lebih dulu:
+
+1. `analisis_indikator` — baris desa tersebut (atau set `kategori_id = NULL`).
+2. `area` — baris desa tersebut (atau set `ref_polygon = NULL`).
+3. `inventaris` — baris desa tersebut (atau set `kategori_id = NULL`).
+4. `kelompok` — baris desa tersebut (atau set `category_id = NULL`).
+
+Aplikasi melakukan ini lewat `deleteAnalisisKategori`, `deletePolygon`, `deleteInventarisKategori`, dan `deleteKategori`, yang melepas referensi dalam satu transaksi per parent. Untuk hapus desa, keempat tabel child dapat dihapus/di-`NULL`-kan per `village_id` sebelum `villages`.
 
 ## 3. Constraint RESTRICT lain
 
@@ -89,7 +100,7 @@ SELECT 'jabatan_perangkat', COUNT(*)
 FROM jabatan_perangkat WHERE village_id = :village_id;
 ```
 
-Untuk 4C-2a, tambahkan `incoming_letters`, `letter_dinas`, `letter_types`, `outgoing_letters`, dan `letter_classifications`.
+Untuk 4C-2a, tambahkan `incoming_letters`, `letter_dinas`, `letter_types`, `outgoing_letters`, dan `letter_classifications`. Untuk 4C-2b, tambahkan `analisis_indikator`, `area`, `inventaris`, `kelompok`, beserta parent `analisis_kategori`, `polygon`, `inventaris_kategori`, dan `kelompok_master`.
 
 ### 4.3 Urutan hapus
 
@@ -108,6 +119,12 @@ DELETE FROM letter_dinas WHERE village_id = :village_id;
 DELETE FROM letter_types WHERE village_id = :village_id;
 DELETE FROM outgoing_letters WHERE village_id = :village_id;
 
+-- 4C-2b (bila 0010 sudah merged):
+DELETE FROM analisis_indikator WHERE village_id = :village_id;
+DELETE FROM area WHERE village_id = :village_id;
+DELETE FROM inventaris WHERE village_id = :village_id;
+DELETE FROM kelompok WHERE village_id = :village_id;
+
 -- Parent RESTRICT ikut ter-cascade bersama desa.
 DELETE FROM villages WHERE id = :village_id;
 ```
@@ -117,6 +134,10 @@ Alternatif yang mempertahankan riwayat: ubah referensi menjadi `NULL` alih-alih 
 ```sql
 UPDATE berita SET kategori_id = NULL WHERE village_id = :village_id;
 UPDATE perangkat_desa SET jabatan_id = NULL WHERE village_id = :village_id;
+UPDATE analisis_indikator SET kategori_id = NULL WHERE village_id = :village_id;
+UPDATE area SET ref_polygon = NULL WHERE village_id = :village_id;
+UPDATE inventaris SET kategori_id = NULL WHERE village_id = :village_id;
+UPDATE kelompok SET category_id = NULL WHERE village_id = :village_id;
 ```
 
 Pilihan hapus vs `NULL` adalah keputusan bisnis pemilik data, bukan teknis. `NULL` mempertahankan surat/berita tetapi menghilangkan klasifikasinya; hapus baris membuang arsip.
@@ -141,7 +162,7 @@ Bila salah satu gagal atau jumlahnya tidak sesuai, `ROLLBACK`. Jangan memperbaik
 
 ## 5. Larangan
 
-- Jangan menjalankan `DELETE FROM villages` tanpa membersihkan referensi 4C-1/4C-2a lebih dulu; kegagalan 1451 dapat meninggalkan pekerjaan separuh jalan bila autocommit aktif.
+- Jangan menjalankan `DELETE FROM villages` tanpa membersihkan referensi 4C-1/4C-2a/4C-2b lebih dulu; kegagalan 1451 dapat meninggalkan pekerjaan separuh jalan bila autocommit aktif.
 - Jangan menonaktifkan `FOREIGN_KEY_CHECKS` untuk melewati `RESTRICT` pada data produksi. Itu membuat referensi yatim dan melanggar invariant tenant.
 - Jangan menjalankan prosedur ini pada database test bersama tanpa memastikan tidak ada suite lain yang berjalan.
 - Jangan menyalin data desa ke lingkungan lain tanpa dasar bisnis dan persetujuan; data kependudukan bukan fixture.
@@ -152,5 +173,6 @@ Fixture integration test yang membuat klasifikasi/jabatan/kategori lalu menghapu
 
 - `src/features/surat/infrastructure/penomoran-archive.integration.test.ts` (Batch 4C-2a)
 - `src/db/b4c1-restrict-relations-composite-fk.integration.test.ts` (Batch 4C-1)
+- `src/db/b4c2b-remaining-relations-composite-fk.integration.test.ts` (Batch 4C-2b)
 
 Pola aman: hapus child terdalam → parent → `villages`, atau gunakan `FOREIGN_KEY_CHECKS=0` **hanya** pada database test disposable untuk menyiapkan/membersihkan data legacy, bukan untuk melewati constraint pada data nyata.

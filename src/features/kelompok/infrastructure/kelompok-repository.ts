@@ -724,10 +724,17 @@ export async function updateKategori(
     .where(and(eq(kelompokMaster.villageId, villageId), eq(kelompokMaster.id, id)));
 }
 
+/** Lepaskan kelompok sewilayah secara atomik sebelum kategori dihapus (FK RESTRICT). */
 export async function deleteKategori(villageId: number, id: number): Promise<void> {
-  await db
-    .delete(kelompokMaster)
-    .where(and(eq(kelompokMaster.villageId, villageId), eq(kelompokMaster.id, id)));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(kelompok)
+      .set({ categoryId: null })
+      .where(and(eq(kelompok.villageId, villageId), eq(kelompok.categoryId, id)));
+    await tx
+      .delete(kelompokMaster)
+      .where(and(eq(kelompokMaster.villageId, villageId), eq(kelompokMaster.id, id)));
+  });
 }
 
 /**

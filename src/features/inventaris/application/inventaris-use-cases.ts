@@ -170,12 +170,10 @@ export async function saveInventaris(input: InventarisInput, id?: number) {
   const user = await requirePermission(INVENTARIS_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
 
-  // `kategoriId` berasal dari formulir. FK kategori masih single-column dengan
-  // ON DELETE SET NULL (lihat AUD-034 Batch 3), jadi database hanya memeriksa
-  // keberadaan kategori — bukan desanya. Validasi di sini mencegah aset desa
-  // aktif ditautkan ke kategori desa lain. Pesannya sama untuk kategori yang
-  // tidak ada dan milik desa lain agar keberadaan baris tenant lain tidak
-  // dapat disimpulkan.
+  // `kategoriId` berasal dari formulir. Composite FK juga menegakkan tenant
+  // pada database; validasi di sini menjaga pesan domain konsisten. Pesan untuk
+  // kategori yang tidak ada dan milik desa lain sama agar keberadaan baris
+  // tenant lain tidak dapat disimpulkan.
   const kategoriId = typeof input.kategoriId === "number" ? input.kategoriId : null;
   if (kategoriId !== null && !(await getInventarisKategori(villageId, kategoriId))) {
     throw validationError("Kategori inventaris tidak ditemukan.");

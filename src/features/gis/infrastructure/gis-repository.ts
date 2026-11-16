@@ -114,8 +114,15 @@ export async function updatePolygon(
     .where(and(eq(polygons.id, id), eq(polygons.villageId, villageId)));
 }
 
+/** Lepaskan area sewilayah secara atomik sebelum polygon dihapus (FK RESTRICT). */
 export async function deletePolygon(villageId: number, id: number): Promise<void> {
-  await db.delete(polygons).where(and(eq(polygons.id, id), eq(polygons.villageId, villageId)));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(areas)
+      .set({ refPolygon: null })
+      .where(and(eq(areas.villageId, villageId), eq(areas.refPolygon, id)));
+    await tx.delete(polygons).where(and(eq(polygons.id, id), eq(polygons.villageId, villageId)));
+  });
 }
 
 export async function findPolygonById(villageId: number, id: number): Promise<PolygonDTO | null> {
