@@ -259,3 +259,24 @@ Keputusan lanjutan yang ditetapkan pada batch ini: delapan relasi `SET NULL` yan
 Implementasi dan hasil test tercatat pada `docs/reports/01-security/AUD-034-batch-4c1-restrict-composite-fk.md`.
 
 **Sisa Matriks B2:** 9 relasi — 8 relasi `SET NULL` yang menunggu transaksi aplikasi (4C-2a/4C-2b) dan `users.role_id`. Migration `0008` belum dijalankan pada database produksi mana pun dan bergantung pada `0007` yang belum merged.
+
+## 17. Status setelah Batch 4C-2a (migration 0009)
+
+Batch 4C-2a menutup empat relasi `ON DELETE SET NULL` yang menunjuk `letter_classifications`:
+
+| Child | Parent | Constraint |
+| --- | --- | --- |
+| `incoming_letters.classification_id` | `letter_classifications` | `incoming_letters_classification_tenant_fk` |
+| `letter_dinas.classification_id` | `letter_classifications` | `letter_dinas_classification_tenant_fk` |
+| `letter_types.classification_id` | `letter_classifications` | `letter_types_classification_tenant_fk` |
+| `outgoing_letters.classification_id` | `letter_classifications` | `outgoing_letters_classification_tenant_fk` |
+
+`letter_classifications` memperoleh `UNIQUE (village_id, id)` (`letter_classifications_village_id_uq`); keempat child memperoleh index `(village_id, classification_id)` dan composite FK `ON DELETE RESTRICT`. Preflight `0009` menghitung orphan dan cross-tenant untuk empat relasi dan gagal-closed tanpa backfill.
+
+Berbeda dari 4C-1, parent ini **memiliki** jalur hapus di aplikasi: `deleteKlasifikasi` (`src/features/surat/infrastructure/master-repository.ts`). Fungsi itu kini menjalankan satu transaksi yang mengosongkan `classification_id` pada keempat tabel child (dibatasi `village_id`) sebelum menghapus klasifikasi, sehingga perilaku bisnis lama (`SET NULL`) tetap sama untuk jalur aplikasi. `DELETE` langsung ke database tetap ditolak `RESTRICT` selama masih dirujuk.
+
+Konsekuensi operasional: `DELETE FROM villages` untuk desa yang memiliki klasifikasi ber-referensi kini gagal (1451) karena urutan cascade InnoDB tidak dijamin; anak dan klasifikasi harus dibersihkan lebih dulu. Aplikasi tidak memiliki use case hapus desa, sehingga tidak ada jalur produksi yang berubah. Fixture integration test `penomoran-archive` disesuaikan agar membersihkan surat/jenis/klasifikasi sebelum desa.
+
+Implementasi dan hasil test tercatat pada `AUD-034-batch-4c2a-letter-classification-restrict.md`.
+
+**Sisa Matriks B2:** 5 relasi — `analisis_indikator.kategori_id`, `area.ref_polygon`, `inventaris.kategori_id`, `kelompok.category_id` (Batch 4C-2b), dan `users.role_id` yang tetap app-enforced. Migration `0009` belum dijalankan pada database produksi mana pun dan bergantung pada `0008`/`0007` yang belum merged.
