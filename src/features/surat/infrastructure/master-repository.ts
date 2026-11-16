@@ -3,7 +3,15 @@ import "server-only";
 import { and, asc, count, eq, ne } from "drizzle-orm";
 
 import { db } from "@/db";
-import { letterClassifications, letterRequirements, letters, letterTypes } from "@/db/schema";
+import {
+  incomingLetters,
+  letterClassifications,
+  letterDinas,
+  letterRequirements,
+  letters,
+  letterTypes,
+  outgoingLetters,
+} from "@/db/schema";
 import { parseSyaratIds, type SyaratSuratDTO } from "@/features/surat/domain/isian";
 import type { BarisKlasifikasiImpor } from "@/features/surat/domain/klasifikasi-berkas";
 import type {
@@ -133,10 +141,43 @@ export async function importKlasifikasi(
   return { ditambahkan, diperbarui };
 }
 
+/**
+ * Hapus klasifikasi surat.
+ *
+ * Empat FK yang menunjuk klasifikasi memakai composite `RESTRICT`
+ * (AUD-034 Batch 4C-2a) karena composite `SET NULL` akan ikut mengosongkan
+ * `village_id NOT NULL`. Referensi pada surat masuk, surat dinas, jenis surat,
+ * dan surat keluar dilepas dalam transaksi yang sama sebelum parent dihapus,
+ * sehingga perilaku bisnis "klasifikasi dihapus, referensi menjadi NULL" tetap
+ * terjaga dan tidak ada referensi yatim. Filter `villageId` memastikan hanya
+ * baris desa ini yang disentuh.
+ */
 export async function deleteKlasifikasi(villageId: number, id: number): Promise<void> {
-  await db
-    .delete(letterClassifications)
-    .where(and(eq(letterClassifications.villageId, villageId), eq(letterClassifications.id, id)));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(incomingLetters)
+      .set({ classificationId: null })
+      .where(
+        and(eq(incomingLetters.villageId, villageId), eq(incomingLetters.classificationId, id)),
+      );
+    await tx
+      .update(letterDinas)
+      .set({ classificationId: null })
+      .where(and(eq(letterDinas.villageId, villageId), eq(letterDinas.classificationId, id)));
+    await tx
+      .update(letterTypes)
+      .set({ classificationId: null })
+      .where(and(eq(letterTypes.villageId, villageId), eq(letterTypes.classificationId, id)));
+    await tx
+      .update(outgoingLetters)
+      .set({ classificationId: null })
+      .where(
+        and(eq(outgoingLetters.villageId, villageId), eq(outgoingLetters.classificationId, id)),
+      );
+    await tx
+      .delete(letterClassifications)
+      .where(and(eq(letterClassifications.villageId, villageId), eq(letterClassifications.id, id)));
+  });
 }
 
 /** Berapa jenis surat yang memakai klasifikasi ini (menghalangi penghapusan). */

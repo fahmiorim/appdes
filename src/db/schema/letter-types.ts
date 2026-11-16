@@ -1,5 +1,7 @@
 import {
   boolean,
+  foreignKey,
+  index,
   int,
   mysqlTable,
   text,
@@ -29,9 +31,7 @@ export const letterTypes = mysqlTable(
 
     code: varchar("code", { length: 20 }).notNull(),
     name: varchar("name", { length: 150 }).notNull(),
-    classificationId: int("classification_id").references(() => letterClassifications.id, {
-      onDelete: "set null",
-    }),
+    classificationId: int("classification_id"),
 
     /** Badan surat bertemplat, memakai placeholder `[nama_desa]`, dst. */
     templateBody: text("template_body").notNull(),
@@ -83,6 +83,13 @@ export const letterTypes = mysqlTable(
   (table) => [
     uniqueIndex("letter_types_village_code_unique").on(table.villageId, table.code),
     uniqueIndex("letter_types_village_id_uq").on(table.villageId, table.id),
+    index("letter_types_village_classification_idx").on(table.villageId, table.classificationId),
+    // Composite `RESTRICT`: referensi dilepas transaksi aplikasi sebelum hapus.
+    foreignKey({
+      name: "letter_types_classification_tenant_fk",
+      columns: [table.villageId, table.classificationId],
+      foreignColumns: [letterClassifications.villageId, letterClassifications.id],
+    }).onDelete("restrict"),
   ],
 );
 

@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { eq } from "drizzle-orm";
+import mysql, { type ResultSetHeader } from "mysql2/promise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
@@ -11,6 +12,7 @@ import {
   getBeritaBySlug,
   listBerita,
 } from "@/features/publik/infrastructure/content-repository";
+import { validasiDatabaseUji } from "@/testing/db-test-guard";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../db/migrations", import.meta.url));
@@ -20,6 +22,34 @@ let fixture: { villageIds: number[] } | null = null;
 function pastiId(row: { id: number | undefined } | undefined, label: string): number {
   if (row?.id === undefined) throw new Error(`Seed uji gagal: ${label}`);
   return row.id;
+}
+
+/**
+ * Sisipkan berita legacy yang menunjuk kategori desa lain.
+ *
+ * Batch 4C-1 memasang composite FK `(village_id, kategori_id)`, sehingga jalur
+ * normal sudah menolak pasangan ini. Baris dibuat lewat koneksi terpisah dengan
+ * pengecekan FK dimatikan untuk mereproduksi data sebelum constraint terpasang;
+ * pengecualian selalu dikembalikan di blok `finally`.
+ */
+async function sisipkanBeritaLintasDesaLegacy(params: {
+  villageId: number;
+  kategoriId: number;
+  judul: string;
+  slug: string;
+}): Promise<number> {
+  const koneksi = await mysql.createConnection(validasiDatabaseUji(process.env).opsiKoneksi);
+  try {
+    await koneksi.query("SET FOREIGN_KEY_CHECKS = 0");
+    const [hasil] = await koneksi.query<ResultSetHeader>(
+      "INSERT INTO berita (village_id, kategori_id, judul, slug, isi, status) VALUES (?, ?, ?, ?, ?, 'published')",
+      [params.villageId, params.kategoriId, params.judul, params.slug, "Konten uji integrasi."],
+    );
+    return hasil.insertId;
+  } finally {
+    await koneksi.query("SET FOREIGN_KEY_CHECKS = 1");
+    await koneksi.end();
+  }
 }
 
 beforeAll(async () => {
@@ -96,6 +126,9 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (fixture) {
+    // Composite FK RESTRICT: berita dan kategori dibersihkan sebelum desa.
+    await db.delete(berita).where(eq(berita.villageId, fixture.villageIds[0]!));
+    await db.delete(beritaKategori).where(eq(beritaKategori.villageId, fixture.villageIds[1]!));
     for (const villageId of fixture.villageIds) {
       await db.delete(villages).where(eq(villages.id, villageId));
     }
@@ -116,13 +149,11 @@ describe("isolasi kategori berita publik", () => {
       })
       .$returningId();
 
-    await db.insert(berita).values({
+    await sisipkanBeritaLintasDesaLegacy({
       villageId: villageA!,
       kategoriId: kategoriLain!.id,
       judul: `Berita Tenant A ${RUN}`,
       slug: `berita-tenant-a-${RUN}`,
-      isi: "Konten uji integrasi.",
-      status: "published",
     });
 
     const daftar = await listBerita(villageA!, { limit: 10 });

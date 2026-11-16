@@ -119,6 +119,17 @@ function namaIndexMigrasi(): Set<string> {
   return hasil;
 }
 
+/** Nama index yang dideklarasikan eksplisit di schema Drizzle. */
+function namaIndexSkema(): Set<string> {
+  const hasil = new Set<string>();
+  for (const berkas of fs.readdirSync(SCHEMA_DIR)) {
+    if (!berkas.endsWith(".ts") || berkas.endsWith(".test.ts") || berkas === "index.ts") continue;
+    const isi = fs.readFileSync(SCHEMA_DIR + berkas, "utf8");
+    for (const cocok of isi.matchAll(/(?:unique)?index\(\s*"([^"]+)"/gi)) hasil.add(cocok[1]!);
+  }
+  return hasil;
+}
+
 function tagJournal(): string[] {
   const journal = JSON.parse(fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8")) as {
     entries: Array<{ idx: number; tag: string }>;
@@ -215,6 +226,22 @@ describe("paritas skema vs migrasi", () => {
     }
 
     expect(hilang.sort()).toEqual([]);
+  });
+
+  it("nama index di schema sama dengan snapshot terakhir", () => {
+    const skema = namaIndexSkema();
+    const snapshot = new Set<string>();
+
+    for (const isi of Object.values(snapshotTerakhir().tables)) {
+      for (const nama of Object.keys(isi.indexes)) snapshot.add(nama);
+    }
+
+    // Selisih dua arah menandakan drift: index yang dibuat migrasi tetapi tidak
+    // dideklarasikan schema (kasus `bumindes_item_village_buku_idx`), atau index
+    // schema yang belum masuk snapshot/DDL.
+    expect([...skema].filter((nama) => !snapshot.has(nama)).sort()).toEqual([]);
+    expect([...snapshot].filter((nama) => !skema.has(nama)).sort()).toEqual([]);
+    expect(skema.size).toBeGreaterThan(0);
   });
 
   it("setiap entri journal memiliki berkas snapshot", () => {

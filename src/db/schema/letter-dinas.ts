@@ -1,4 +1,12 @@
-import { index, int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  foreignKey,
+  index,
+  int,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { letterClassifications } from "./letter-classifications";
 import { villages } from "./village";
@@ -35,9 +43,7 @@ export const letterDinas = mysqlTable(
     /** Isi surat (opsional; ringkas). */
     content: text("content"),
 
-    classificationId: int("classification_id").references(() => letterClassifications.id, {
-      onDelete: "set null",
-    }),
+    classificationId: int("classification_id"),
 
     /** Lampiran berkas softcopy (jalur media relatif, kategori umum). */
     archiveFile: varchar("archive_file", { length: 255 }),
@@ -50,7 +56,16 @@ export const letterDinas = mysqlTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [index("letter_dinas_village_date_idx").on(table.villageId, table.letterDate)],
+  (table) => [
+    index("letter_dinas_village_date_idx").on(table.villageId, table.letterDate),
+    index("letter_dinas_village_classification_idx").on(table.villageId, table.classificationId),
+    // Composite `RESTRICT`: referensi dilepas transaksi aplikasi sebelum hapus.
+    foreignKey({
+      name: "letter_dinas_classification_tenant_fk",
+      columns: [table.villageId, table.classificationId],
+      foreignColumns: [letterClassifications.villageId, letterClassifications.id],
+    }).onDelete("restrict"),
+  ],
 );
 
 export type LetterDinas = typeof letterDinas.$inferSelect;

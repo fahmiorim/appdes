@@ -29,5 +29,7 @@ export const letterClassifications = mysqlTable(
   },
   (table) => [
     uniqueIndex("letter_classifications_village_code_unique").on(table.villageId, table.code),
+    // Parent key untuk empat composite tenant FK di modul surat.
+    uniqueIndex("letter_classifications_village_id_uq").on(table.villageId, table.id),
   ],
 );
