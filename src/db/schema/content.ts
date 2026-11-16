@@ -70,7 +70,11 @@ export const jabatanPerangkat = mysqlTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [uniqueIndex("jabatan_perangkat_village_slug_unique").on(table.villageId, table.slug)],
+  (table) => [
+    uniqueIndex("jabatan_perangkat_village_slug_unique").on(table.villageId, table.slug),
+    // Parent key untuk composite tenant FK `perangkat_desa_jabatan_tenant_fk`.
+    uniqueIndex("jabatan_perangkat_village_id_uq").on(table.villageId, table.id),
+  ],
 );
 
 /** `perangkat_desa` — aparatur desa beserta jabatannya (SOTK). */
@@ -81,9 +85,7 @@ export const perangkatDesa = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    jabatanId: int("jabatan_id").references(() => jabatanPerangkat.id, {
-      onDelete: "set null",
-    }),
+    jabatanId: int("jabatan_id"),
 
     nama: varchar("nama", { length: 100 }).notNull(),
     gelarDepan: varchar("gelar_depan", { length: 100 }),
@@ -116,6 +118,12 @@ export const perangkatDesa = mysqlTable(
   (table) => [
     index("perangkat_desa_village_idx").on(table.villageId),
     index("perangkat_desa_jabatan_idx").on(table.jabatanId),
+    index("perangkat_desa_village_jabatan_idx").on(table.villageId, table.jabatanId),
+    foreignKey({
+      name: "perangkat_desa_jabatan_tenant_fk",
+      columns: [table.villageId, table.jabatanId],
+      foreignColumns: [jabatanPerangkat.villageId, jabatanPerangkat.id],
+    }).onDelete("restrict"),
   ],
 );
 
@@ -140,7 +148,11 @@ export const beritaKategori = mysqlTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [uniqueIndex("berita_kategori_village_slug_unique").on(table.villageId, table.slug)],
+  (table) => [
+    uniqueIndex("berita_kategori_village_slug_unique").on(table.villageId, table.slug),
+    // Parent key untuk composite tenant FK `berita_kategori_tenant_fk`.
+    uniqueIndex("berita_kategori_village_id_uq").on(table.villageId, table.id),
+  ],
 );
 
 /**
@@ -156,9 +168,7 @@ export const berita = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    kategoriId: int("kategori_id").references(() => beritaKategori.id, {
-      onDelete: "set null",
-    }),
+    kategoriId: int("kategori_id"),
     penulisId: varchar("penulis_id", { length: 36 }).references(() => users.id, {
       onDelete: "set null",
     }),
@@ -192,6 +202,12 @@ export const berita = mysqlTable(
     uniqueIndex("berita_village_slug_unique").on(table.villageId, table.slug),
     index("berita_village_status_idx").on(table.villageId, table.status, table.terbitPada),
     index("berita_kategori_idx").on(table.kategoriId),
+    index("berita_village_kategori_idx").on(table.villageId, table.kategoriId),
+    foreignKey({
+      name: "berita_kategori_tenant_fk",
+      columns: [table.villageId, table.kategoriId],
+      foreignColumns: [beritaKategori.villageId, beritaKategori.id],
+    }).onDelete("restrict"),
   ],
 );
 

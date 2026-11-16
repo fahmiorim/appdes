@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
@@ -129,6 +129,12 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (!fixture) return;
+  // Composite FK RESTRICT `berita_kategori_tenant_fk`: berita dan kategori
+  // dibersihkan lebih dulu agar hapus desa tidak bergantung urutan cascade.
+  await db.delete(berita).where(inArray(berita.villageId, [fixture.desaA, fixture.desaB]));
+  await db
+    .delete(beritaKategori)
+    .where(inArray(beritaKategori.villageId, [fixture.desaA, fixture.desaB]));
   await db.delete(villages).where(eq(villages.id, fixture.desaA));
   await db.delete(villages).where(eq(villages.id, fixture.desaB));
 });
