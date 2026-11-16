@@ -1,12 +1,23 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  deteksiTipeIsi,
   isKategoriMediaPublik,
   JENIS_MEDIA,
   namaBerkasAman,
   validasiBerkasSyarat,
+  validasiIsiMedia,
   validasiMedia,
 } from "./media";
+
+const jpeg = () => new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46]);
+const png = () => new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]);
+const pdf = () => new TextEncoder().encode("%PDF-1.7\n1 0 obj\n");
+const webp = () =>
+  new Uint8Array([0x52, 0x49, 0x46, 0x46, 0x24, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50]);
+const gif = () => new TextEncoder().encode("GIF89a\x01\x00");
+const svg = () =>
+  new TextEncoder().encode('<?xml version="1.0"?>\n<svg xmlns="http://www.w3.org/2000/svg"/>');
 
 describe("validasiMedia", () => {
   it("menerima JPEG dan menandai ekstensi kanonik", () => {
@@ -64,6 +75,46 @@ describe("validasiBerkasSyarat", () => {
     const maks = JENIS_MEDIA["image/png"]?.maksByte ?? 0;
     expect(validasiBerkasSyarat("image/png", 0).ok).toBe(false);
     expect(validasiBerkasSyarat("image/png", maks + 1).ok).toBe(false);
+  });
+});
+
+describe("deteksiTipeIsi", () => {
+  it("mengenali signature JPEG, PNG, GIF, WEBP, PDF, dan SVG", () => {
+    expect(deteksiTipeIsi(jpeg())).toBe("image/jpeg");
+    expect(deteksiTipeIsi(png())).toBe("image/png");
+    expect(deteksiTipeIsi(gif())).toBe("image/gif");
+    expect(deteksiTipeIsi(webp())).toBe("image/webp");
+    expect(deteksiTipeIsi(pdf())).toBe("application/pdf");
+    expect(deteksiTipeIsi(svg())).toBe("image/svg+xml");
+  });
+
+  it("mengembalikan null untuk isi yang tidak dikenali", () => {
+    expect(deteksiTipeIsi(new Uint8Array())).toBeNull();
+    expect(deteksiTipeIsi(new TextEncoder().encode("<?php echo 1; ?>"))).toBeNull();
+    expect(deteksiTipeIsi(new TextEncoder().encode("<html></html>"))).toBeNull();
+  });
+});
+
+describe("validasiIsiMedia", () => {
+  it("menerima isi yang cocok dengan MIME yang diklaim", () => {
+    expect(validasiIsiMedia("image/png", png()).ok).toBe(true);
+    expect(validasiIsiMedia("IMAGE/JPEG", jpeg()).ok).toBe(true);
+    expect(validasiIsiMedia("application/pdf", pdf()).ok).toBe(true);
+  });
+
+  it("menolak berkas yang menyamar sebagai tipe lain", () => {
+    const hasil = validasiIsiMedia("image/png", new TextEncoder().encode("<?php echo 1; ?>"));
+    expect(hasil.ok).toBe(false);
+    if (!hasil.ok) expect(hasil.pesan).toContain("tidak dikenali");
+
+    const tertukar = validasiIsiMedia("image/png", jpeg());
+    expect(tertukar.ok).toBe(false);
+    if (!tertukar.ok) expect(tertukar.pesan).toContain("tidak sesuai");
+  });
+
+  it("menolak isi kosong dan MIME tanpa nilai", () => {
+    expect(validasiIsiMedia("image/png", new Uint8Array()).ok).toBe(false);
+    expect(validasiIsiMedia(null, png()).ok).toBe(false);
   });
 });
 
