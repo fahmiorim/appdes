@@ -4,8 +4,9 @@
 - **Tanggal:** 16 November 2026.
 - **Branch:** `task/AUD-034-b4c2b-remaining-four`.
 - **Base commit `origin/main`:** `e8d761cbf7b41fe09e5b7e02a4ea9dddda30c77f`.
-- **Commit pekerjaan:** satu commit di ujung branch ini (schema, migration `0010`, test, repository, laporan); SHA dicatat pada penyerahan/PR agar tidak berubah saat amend.
-- **Status:** siap review. Migration belum dijalankan pada database mana pun, belum di-merge, belum di-deploy.
+- **Commit pekerjaan:** `9a79c81` (implementasi) dan `406c07d` (perbaikan fixture legacy).
+- **Pull request:** [#78](https://github.com/fahmiorim/appdes/pull/78) — **merged** ke `main` sebagai squash commit `8f62c6ce40dee7d3ecb7286bfda4bf33e794ea1c` setelah ketiga job CI lulus.
+- **Status:** merged. Migration `0010` sudah ada di `main`, tetapi **belum dijalankan pada database staging/produksi mana pun**; rehearsal lokal dan integration CI sudah lulus.
 
 ## 1. Kondisi awal
 
@@ -85,7 +86,7 @@ Snapshot `0010_snapshot.json` dihasilkan `npx drizzle-kit generate`. Generate aw
 
 ## 4. Validasi
 
-Dijalankan lokal pada Windows (bash), tanpa database. Tidak ada database test disposable yang dikonfigurasi pada environment ini, sehingga integration test tidak dijalankan.
+Dijalankan lokal pada Windows (bash). Integration test tidak dapat dijalankan lokal karena tidak ada `TEST_DATABASE_URL`/`TEST_DATABASE_ACK`; buktinya berasal dari CI MySQL 8 pada PR #78.
 
 | Perintah | Hasil |
 | --- | --- |
@@ -94,12 +95,16 @@ Dijalankan lokal pada Windows (bash), tanpa database. Tidak ada database test di
 | `npx prettier --check <berkas berubah>` | **FAIL** awal pada `b4c2b-remaining-relations-composite-fk.integration.test.ts` → `prettier --write` → **PASS** |
 | `npx vitest run --config vitest.config.mts src/db/migrasi-paritas.test.ts` | **PASS** — 8 tes |
 | `npx vitest run --config vitest.config.mts src/features/analisis src/features/gis src/features/inventaris src/features/kelompok` | **PASS** — 13 berkas, 177 tes |
-| `npm run test:integration -- src/db/b4c2b-*` | **SKIPPED** — `TEST_DATABASE_URL` dan `TEST_DATABASE_ACK` tidak tersedia; guard database disposable tidak dapat dipenuhi |
+| `npm run test:integration -- src/db/b4c2b-*` (lokal) | **SKIPPED** — `TEST_DATABASE_URL` dan `TEST_DATABASE_ACK` tidak tersedia; guard database disposable tidak dapat dipenuhi |
+| CI PR #78 — `Unit test dan quality check` | **PASS** pada `9a79c81` dan `406c07d` |
+| CI PR #78 — `Integration test (MySQL 8)` | **PASS** setelah perbaikan fixture: 42 berkas, termasuk `b4c2b-remaining-relations-composite-fk` (5 tes) dan `b4c2b-tenant-migration-guard` (3 tes) |
+| CI PR #78 — `Visual QA login (desktop/mobile)` | **PASS** |
 
 Catatan proses:
 
-1. `npm run test:unit` penuh tidak dijalankan; unit test yang dijalankan dibatasi pada modul yang berubah dan penjaga paritas migrasi.
-2. Integration test (guard migration dan composite FK) **belum terbukti berjalan**. Assertion-nya belum pernah dieksekusi; jangan menganggapnya lulus sampai dijalankan pada database disposable.
+1. `npm run test:unit` penuh tidak dijalankan lokal; unit test yang dijalankan dibatasi pada modul yang berubah dan penjaga paritas migrasi.
+2. Run integration pertama pada `9a79c81` **FAIL 2 suite**: `inventaris-tenant-isolation` dan `kelompok-tenant-isolation` menyisipkan relasi lintas desa secara sengaja untuk menguji penyaringan baca, dan kini ditolak `1452`. Fixture dipindah ke blok `FOREIGN_KEY_CHECKS=0` (pola yang sudah dipakai fixture legacy lain); tidak ada assertion yang diubah. Run kedua **PASS**.
+3. Rehearsal migration pada MySQL lokal dijalankan setelah merge — lihat §8.
 
 ## 5. Diff
 
@@ -122,13 +127,15 @@ Berkas berubah:
 - `src/features/inventaris/infrastructure/inventaris-repository.ts`
 - `src/features/inventaris/application/inventaris-use-cases.ts` (komentar)
 - `src/features/kelompok/infrastructure/kelompok-repository.ts`
+- `src/features/inventaris/infrastructure/inventaris-tenant-isolation.integration.test.ts` (fixture legacy)
+- `src/features/kelompok/infrastructure/kelompok-tenant-isolation.integration.test.ts` (fixture legacy)
 - `docs/reports/01-security/AUD-034-runbook-hapus-desa.md`
 - `docs/reports/01-security/AUD-034-tenant-relation-matrix.md`
 - `docs/reports/01-security/AUD-034-batch-4c2b-remaining-restrict.md` (laporan ini)
 
 ## 6. Risiko dan keterbatasan
 
-1. **Integration test belum dijalankan.** Bukti utama constraint baru (1451/1452, efek transaksi, preflight) belum diverifikasi pada MySQL nyata. Ini keterbatasan terbesar laporan ini.
+1. **Verifikasi database terbatas pada database disposable.** Integration test lulus di CI MySQL 8 dan rehearsal lokal lulus pada data legacy valid, tetapi keduanya bukan data staging/produksi. Perilaku pada data nyata masih harus dibuktikan saat rehearsal staging.
 2. **Urutan hapus desa menjadi tanggung jawab pemanggil.** Setelah `0010`, `DELETE FROM villages` untuk desa yang masih memiliki `analisis_indikator`, `area`, `inventaris`, atau `kelompok` ber-referensi dapat gagal `1451` karena urutan cascade InnoDB tidak dijamin. Runbook hapus desa diperbarui; aplikasi tidak memiliki use case hapus desa, jadi tidak ada jalur produksi yang berubah.
 3. **Migration belum dijalankan pada data nyata.** Preflight akan gagal-closed bila produksi memuat baris lintas desa/orphan pada keempat relasi; jumlahnya belum diketahui. Operator perlu mencoba `0010` pada salinan database lebih dulu.
 4. **`deleteAnalisisKategori` belum dipakai use case.** Perilaku hapus kategori analisis belum tercakup test aplikasi; hanya diuji lewat integration test repository.
@@ -137,6 +144,28 @@ Berkas berubah:
 
 ## 7. Kesimpulan
 
-Empat relasi `SET NULL` terakhir dengan parent ber-jalur-hapus aplikasi kini dienforce database lewat composite FK `RESTRICT`, dengan preflight fail-closed dan transaksi tenant-scoped yang mempertahankan efek bisnis `SET NULL`. Validasi statis lulus; integration test belum dapat dijalankan dan harus diselesaikan reviewer/CI sebelum merge.
+Empat relasi `SET NULL` terakhir dengan parent ber-jalur-hapus aplikasi kini dienforce database lewat composite FK `RESTRICT`, dengan preflight fail-closed dan transaksi tenant-scoped yang mempertahankan efek bisnis `SET NULL`. Validasi statis, integration test CI, dan rehearsal migration lokal lulus; PR #78 sudah merged ke `main`.
 
-Langkah berikutnya: jalankan `npm run test:integration` pada database disposable (MySQL 8), lalu review diff bersama runbook hapus desa yang diperbarui.
+Langkah berikutnya: rehearsal `0010` pada salinan staging dengan volume data nyata, lalu deploy terjadwal setelah hasil preflight bersih.
+
+## 8. Rehearsal migration pasca-merge (MySQL lokal)
+
+Dijalankan pada MySQL 8 lokal (Laragon) memakai database disposable `desa_test_b4c2b_rehearsal_<run>` yang dibuat dan di-drop oleh skrip. Database pengembangan `desa_dev` tidak disentuh; skrip menolak berjalan bila nama target sama dengan database host.
+
+Skenario: migrasi sampai `0009`, isi data legacy **valid** untuk keempat relasi (referensi sewilayah, plus baris `NULL`), lalu jalankan `0010`. Ini menutup celah yang belum diuji: preflight **lolos** dan constraint benar-benar tertukar tanpa kehilangan referensi.
+
+| Pemeriksaan | Hasil |
+| --- | --- |
+| Migrasi `0000`–`0009` diterapkan | **PASS** |
+| Data legacy valid tersisip | **PASS** |
+| `0010` lolos preflight dan diterapkan | **PASS** |
+| Empat FK `*_tenant_fk` ada dengan `DELETE_RULE = RESTRICT` | **PASS** |
+| Empat FK single-column lama sudah dilepas | **PASS** |
+| Empat `UNIQUE (village_id, id)` parent terpasang | **PASS** |
+| Referensi lama utuh (`kategori_id`, `ref_polygon`, `category_id`, baris `NULL`) | **PASS** |
+| Insert lintas desa ditolak `1452` | **PASS** |
+| Hapus parent yang masih dirujuk ditolak `1451` | **PASS** |
+| Pola transaksi aplikasi (lepas referensi lalu hapus parent) berhasil | **PASS** |
+| Database disposable di-drop setelah run | **PASS** |
+
+Ringkasan: **16/16 PASS**. Skrip rehearsal bersifat sementara dan tidak di-commit. Bukti ini bukan pengganti rehearsal staging: volume dan data nyata belum diuji, dan rollback `0010` belum diuji pada database berisi data.

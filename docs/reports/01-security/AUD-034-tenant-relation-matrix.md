@@ -302,4 +302,4 @@ Konsekuensi operasional: `DELETE FROM villages` kini juga dapat gagal (1451) sel
 
 Implementasi dan hasil validasi tercatat pada `AUD-034-batch-4c2b-remaining-restrict.md`.
 
-**Sisa Matriks B2:** 1 relasi — `users.role_id`, yang tetap app-enforced karena role platform sah memiliki `village_id IS NULL`. Migration `0010` belum dijalankan pada database produksi mana pun dan belum merged.
+**Sisa Matriks B2:** 1 relasi — `users.role_id`, yang tetap app-enforced karena role platform sah memiliki `village_id IS NULL`. Migration `0010` sudah merged ke `main` (PR #78, commit `8f62c6ce`) dengan integration test CI dan rehearsal lokal 16/16 PASS, tetapi belum dijalankan pada database staging/produksi mana pun.
