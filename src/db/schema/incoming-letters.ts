@@ -1,4 +1,12 @@
-import { index, int, mysqlTable, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import {
+  foreignKey,
+  index,
+  int,
+  mysqlTable,
+  timestamp,
+  uniqueIndex,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { letterClassifications } from "./letter-classifications";
 import { villages } from "./village";
@@ -23,9 +31,7 @@ export const incomingLetters = mysqlTable(
     letterNumber: varchar("letter_number", { length: 50 }).notNull(),
     letterDate: varchar("letter_date", { length: 10 }),
     sender: varchar("sender", { length: 150 }),
-    classificationId: int("classification_id").references(() => letterClassifications.id, {
-      onDelete: "set null",
-    }),
+    classificationId: int("classification_id"),
     summary: varchar("summary", { length: 255 }),
     disposition: varchar("disposition", { length: 255 }),
     archiveLocation: varchar("archive_location", { length: 150 }),
@@ -40,6 +46,17 @@ export const incomingLetters = mysqlTable(
     // Parent key untuk composite tenant FK `incoming_letter_dispositions`.
     uniqueIndex("incoming_letters_village_id_uq").on(table.villageId, table.id),
     index("incoming_letters_village_received_idx").on(table.villageId, table.receivedDate),
+    index("incoming_letters_village_classification_idx").on(
+      table.villageId,
+      table.classificationId,
+    ),
+    // Composite `RESTRICT`: hapus klasifikasi harus lewat transaksi aplikasi yang
+    // melepas referensi lebih dulu (lihat `deleteKlasifikasi`).
+    foreignKey({
+      name: "incoming_letters_classification_tenant_fk",
+      columns: [table.villageId, table.classificationId],
+      foreignColumns: [letterClassifications.villageId, letterClassifications.id],
+    }).onDelete("restrict"),
   ],
 );
 

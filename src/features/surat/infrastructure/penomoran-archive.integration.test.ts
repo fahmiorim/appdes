@@ -76,7 +76,14 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  if (fixture) await db.delete(villages).where(eq(villages.id, fixture.villageId));
+  if (!fixture) return;
+  const { villageId } = fixture;
+  // Composite FK RESTRICT (AUD-034 4C-2a): urutan cascade antar-anak desa tidak
+  // dijamin MySQL, jadi surat/jenis/klasifikasi dibersihkan eksplisit.
+  await db.delete(letters).where(eq(letters.villageId, villageId));
+  await db.delete(letterTypes).where(eq(letterTypes.villageId, villageId));
+  await db.delete(letterClassifications).where(eq(letterClassifications.villageId, villageId));
+  await db.delete(villages).where(eq(villages.id, villageId));
 });
 
 describe("arsip nomor surat", () => {

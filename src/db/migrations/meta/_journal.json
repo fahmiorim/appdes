@@ -64,6 +64,13 @@
       "when": 1794801896354,
       "tag": "0008_b4c1_restrict_relations_composite_fk",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1794803756269,
+      "tag": "0009_b4c2a_letter_classification_restrict",
+      "breakpoints": true
     }
   ]
 }
