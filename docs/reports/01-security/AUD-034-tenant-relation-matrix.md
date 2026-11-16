@@ -222,4 +222,23 @@ Setiap parent memperoleh `UNIQUE (village_id, id)`; child memperoleh composite i
 
 Implementasi dan integration test tercatat pada `AUD-034-batch-4a-cascade-composite-fk.md`. CI PR #40 lulus (192 file unit / 1.720 tes dan 32 file integrasi / 195 tes MySQL 8). Batch ini **di-merge** ke `main` melalui PR #40 (`ec38340575f90c13c561a3b9d5cfd96a815648ef`) pada 13 November 2026. Status "awaiting review and merge" di atas hanya berlaku saat laporan ditulis; migration belum dijalankan ke database mana pun.
 
-**Sisa Matriks B2:** 16 relasi (di luar relasi `SET NULL`, user/platform, dan tabel anak tanpa `village_id`). Issue #34 ditutup pada 14 November 2026; penutupan issue bukan bukti bahwa sisa relasi tersebut sudah enforced.
+
+**Sisa Matriks B2:** 16 relasi (di luar relasi `SET NULL`, user/platform, dan tabel anak tanpa `village_id`). Issue #34 ditutup pada 14 November 2026; penutupan issue bukan bukti bahwa sisa relasi tersebut sudah enforced. Angka terkini setelah Batch 4B ada di bagian 15.
+
+## 15. Status setelah Batch 4B (migration 0007)
+
+Batch 4B menutup lima relasi `ON DELETE CASCADE` yang kolom child-nya `NOT NULL`:
+
+| Child | Parent | Constraint |
+| --- | --- | --- |
+| `anggota_grup_kontak.kontak_id` | `kontak` | `anggota_grup_kontak_kontak_tenant_fk` |
+| `anggota_grup_kontak.grup_id` | `kontak_grup` | `anggota_grup_kontak_grup_tenant_fk` |
+| `incoming_letter_dispositions.incoming_letter_id` | `incoming_letters` | `ild_incoming_letter_tenant_fk` |
+| `outgoing_letter_shipments.outgoing_letter_id` | `outgoing_letters` | `ols_outgoing_letter_tenant_fk` |
+| `kelompok_anggota.kelompok_id` | `kelompok` | `kelompok_anggota_kelompok_tenant_fk` |
+
+`kontak`, `kontak_grup`, `incoming_letters`, dan `outgoing_letters` memperoleh `UNIQUE (village_id, id)`; `kelompok` sudah memilikinya sejak `0003`. FK lama dihapus dan diganti composite `ON DELETE CASCADE`, sehingga perilaku hapus parent tidak berubah. Preflight migration memeriksa orphan dan cross-tenant untuk kelima relasi, tidak ada backfill, dan migration gagal-closed bila data legacy tidak aman.
+
+Implementasi dan hasil test tercatat pada `docs/reports/01-security/AUD-034-batch-4b-cascade-composite-fk.md`.
+
+**Sisa Matriks B2:** 11 relasi — 10 relasi `SET NULL` (8 di antaranya menunggu transaksi aplikasi) dan `users.role_id` yang tidak layak dijadikan composite FK. Pemetaan per relasi ada pada `AUD-034-sisa-16-relasi-b2-2026-11-16.md`. Migration `0007` belum dijalankan pada database produksi mana pun.

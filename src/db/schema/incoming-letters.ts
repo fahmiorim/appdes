@@ -1,4 +1,4 @@
-import { index, int, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { index, int, mysqlTable, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
 import { letterClassifications } from "./letter-classifications";
 import { villages } from "./village";
@@ -37,6 +37,8 @@ export const incomingLetters = mysqlTable(
       .$onUpdate(() => new Date()),
   },
   (table) => [
+    // Parent key untuk composite tenant FK `incoming_letter_dispositions`.
+    uniqueIndex("incoming_letters_village_id_uq").on(table.villageId, table.id),
     index("incoming_letters_village_received_idx").on(table.villageId, table.receivedDate),
   ],
 );

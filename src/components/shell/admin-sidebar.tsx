@@ -4,16 +4,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+import type { MenuNode } from "@/features/navigation/application/build-menu";
+import { pathMenu, ratakanMenu } from "@/features/navigation/domain/menu-tampil";
+
 export function AdminSidebar({
+  menu,
   canReadDashboard,
   isPlatformAdmin = false,
 }: {
+  menu: readonly MenuNode[];
   canReadDashboard: boolean;
   isPlatformAdmin?: boolean;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const homeHref = isPlatformAdmin ? "/super-admin" : "/beranda";
+
+  // Beranda sudah dirender sebagai tautan utama; jangan tampilkan dua kali.
+  const baris = ratakanMenu(menu).filter((row) => pathMenu(row.url) !== homeHref);
 
   return (
     <>
@@ -54,11 +62,51 @@ export function AdminSidebar({
               <span>{isPlatformAdmin ? "Dashboard platform" : "Beranda"}</span>
             </Link>
           ) : null}
+
+          {baris.map((row, index) => {
+            const key = `${row.kind}-${row.label}-${index}`;
+
+            if (row.kind === "grup") {
+              return (
+                <div className="admin-nav-label" key={key}>
+                  {row.label}
+                </div>
+              );
+            }
+
+            if (row.tersedia && row.url) {
+              const aktif = pathMenu(row.url) === pathname;
+              return (
+                <Link
+                  className="admin-nav-link"
+                  href={row.url}
+                  key={key}
+                  aria-current={aktif ? "page" : undefined}
+                  onClick={() => setOpen(false)}
+                >
+                  <span className="admin-nav-icon" aria-hidden="true">
+                    ·
+                  </span>
+                  <span>{row.label}</span>
+                </Link>
+              );
+            }
+
+            return (
+              <span className="admin-nav-link admin-nav-pending" key={key} aria-disabled="true">
+                <span className="admin-nav-icon" aria-hidden="true">
+                  ·
+                </span>
+                <span>{row.label}</span>
+                <span className="admin-nav-badge">Segera</span>
+              </span>
+            );
+          })}
         </nav>
         <div className="admin-nav-note">
           {isPlatformAdmin
             ? "Pantau tenant desa dan ringkasan operasional platform."
-            : "Menu operasional desa akan ditampilkan sesuai modul dan hak akses."}
+            : "Menu mengikuti hak akses akun. Modul bertanda Segera belum memiliki halaman."}
         </div>
         <div className="admin-sidebar-footer">
           Sistem Informasi Desa
