@@ -37,6 +37,7 @@ export const polygons = mysqlTable(
     sortOrder: int("sort_order").notNull().default(0),
   },
   (t) => [
+    uniqueIndex("polygon_village_id_uq").on(t.villageId, t.id),
     index("polygon_village_sort_idx").on(t.villageId, t.sortOrder),
     index("polygon_village_parrent_idx").on(t.villageId, t.parrent),
   ],
@@ -48,7 +49,8 @@ export type NewPolygon = typeof polygons.$inferInsert;
 /**
  * `area` — area/wilayah peta (merujuk ke polygon).
  *
- * `path` berisi GeoJSON Polygon (batas area) sebagai teks JSON.
+ * `path` berisi GeoJSON Polygon (batas area) sebagai teks JSON. Referensi polygon
+ * dibatasi tenant dan dilepas oleh repository dalam transaksi saat polygon dihapus.
  */
 export const areas = mysqlTable(
   "area",
@@ -59,7 +61,7 @@ export const areas = mysqlTable(
       .references(() => villages.id, { onDelete: "cascade" }),
     nama: varchar("nama", { length: 50 }).notNull(),
     path: text("path"),
-    refPolygon: int("ref_polygon").references(() => polygons.id, { onDelete: "set null" }),
+    refPolygon: int("ref_polygon"),
     foto: varchar("foto", { length: 100 }),
     desk: text("desk"),
     enabled: int("enabled").notNull().default(1),
@@ -68,6 +70,11 @@ export const areas = mysqlTable(
   (t) => [
     index("area_village_sort_idx").on(t.villageId, t.sortOrder),
     index("area_village_polygon_idx").on(t.villageId, t.refPolygon),
+    foreignKey({
+      name: "area_polygon_tenant_fk",
+      columns: [t.villageId, t.refPolygon],
+      foreignColumns: [polygons.villageId, polygons.id],
+    }).onDelete("restrict"),
   ],
 );
 

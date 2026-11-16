@@ -71,6 +71,13 @@
       "when": 1794803756269,
       "tag": "0009_b4c2a_letter_classification_restrict",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1794819225677,
+      "tag": "0010_b4c2b_remaining_relations_restrict",
+      "breakpoints": true
     }
   ]
 }

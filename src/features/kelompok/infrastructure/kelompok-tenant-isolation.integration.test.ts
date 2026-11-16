@@ -71,6 +71,8 @@ async function seedFixture(): Promise<Fixture> {
     .values({ villageId: villageB, name: `Kategori Rahasia B ${RUN}`, type: "kelompok" })
     .$returningId();
 
+  // Grup dibuat tanpa kategori karena kategori desa B ditolak composite FK;
+  // tautan lintas desa dipasang setelahnya bersama baris legacy lain.
   const [groupRow] = await db
     .insert(kelompok)
     .values({
@@ -78,7 +80,7 @@ async function seedFixture(): Promise<Fixture> {
       name: `Kelompok A ${RUN}`,
       slug: `kelompok-a-${RUN}`,
       type: "kelompok",
-      categoryId: pastiId(categoryBRow, "foreign category"),
+      categoryId: null,
     })
     .$returningId();
 
@@ -99,13 +101,17 @@ async function seedFixture(): Promise<Fixture> {
     .insert(kelompokAnggota)
     .values({ villageId: villageA, kelompokId: groupA, residentId: residentA, position: 90 });
 
-  // Baris legacy lintas tenant: child menyatakan desa A tetapi menunjuk penduduk B.
-  // Composite FK (village_id, resident_id) menolak pasangan seperti ini, jadi
-  // fixture disisipkan dengan FOREIGN_KEY_CHECKS dimatikan untuk meniru data
-  // lama. Repository tetap wajib menyaringnya — itulah yang diuji di bawah.
+  // Baris legacy lintas tenant: child menyatakan desa A tetapi menunjuk penduduk
+  // atau kategori desa B. Composite FK menolak pasangan seperti ini, jadi fixture
+  // disisipkan dengan FOREIGN_KEY_CHECKS dimatikan untuk meniru data lama.
+  // Repository tetap wajib menyaringnya — itulah yang diuji di bawah.
   const koneksi = await mysql.createConnection(validasiDatabaseUji(process.env).opsiKoneksi);
   try {
     await koneksi.query("SET FOREIGN_KEY_CHECKS=0");
+    await koneksi.query("UPDATE kelompok SET category_id = ? WHERE id = ?", [
+      pastiId(categoryBRow, "foreign category"),
+      groupA,
+    ]);
     await koneksi.query(
       "INSERT INTO kelompok_anggota (village_id, kelompok_id, resident_id, position) VALUES (?, ?, ?, ?)",
       [villageA, groupA, residentB, 1],

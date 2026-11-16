@@ -282,3 +282,24 @@ Konsekuensi operasional: `DELETE FROM villages` untuk desa yang memiliki klasifi
 Implementasi dan hasil test tercatat pada `AUD-034-batch-4c2a-letter-classification-restrict.md`.
 
 **Sisa Matriks B2:** 5 relasi — `analisis_indikator.kategori_id`, `area.ref_polygon`, `inventaris.kategori_id`, `kelompok.category_id` (Batch 4C-2b), dan `users.role_id` yang tetap app-enforced. Migration `0009` belum dijalankan pada database produksi mana pun dan bergantung pada `0008`/`0007`; `0007` sudah di-merge ke `main` dan `0008` menyusul melalui PR ini.
+
+## 18. Status setelah Batch 4C-2b (migration 0010)
+
+Batch 4C-2b menutup empat relasi `ON DELETE SET NULL` terakhir yang parent-nya punya jalur hapus aplikasi:
+
+| Child | Parent | Constraint |
+| --- | --- | --- |
+| `analisis_indikator.kategori_id` | `analisis_kategori` | `analisis_indikator_kategori_tenant_fk` |
+| `area.ref_polygon` | `polygon` | `area_polygon_tenant_fk` |
+| `inventaris.kategori_id` | `inventaris_kategori` | `inventaris_kategori_tenant_fk` |
+| `kelompok.category_id` | `kelompok_master` | `kelompok_category_tenant_fk` |
+
+Keempat parent memperoleh `UNIQUE (village_id, id)` (`analisis_kategori_village_id_uq`, `polygon_village_id_uq`, `inventaris_kategori_village_id_uq`, `kelompok_master_village_id_uq`). Child memakai composite FK `ON DELETE RESTRICT`; `analisis_indikator` dan `kelompok` memperoleh index `(village_id, kolom relasi)` baru, sedangkan `area` dan `inventaris` sudah memilikinya. Preflight `0010` menghitung orphan dan cross-tenant untuk empat relasi dan gagal-closed tanpa backfill.
+
+Perilaku bisnis `SET NULL` dipertahankan lewat transaksi aplikasi: `deleteAnalisisKategori`, `deletePolygon`, `deleteInventarisKategori`, dan `deleteKategori` melepas referensi `(village_id, kolom relasi)` lebih dulu, lalu menghapus parent. Guard use case yang sudah ada tidak dilonggarkan: kategori inventaris dan kategori kelompok tetap ditolak dihapus bila masih dipakai.
+
+Konsekuensi operasional: `DELETE FROM villages` kini juga dapat gagal (1451) selama `analisis_indikator`, `area`, `inventaris`, atau `kelompok` desa tersebut masih menunjuk parent-nya. Runbook hapus desa diperbarui. Aplikasi tidak memiliki use case hapus desa, sehingga tidak ada jalur produksi yang berubah.
+
+Implementasi dan hasil validasi tercatat pada `AUD-034-batch-4c2b-remaining-restrict.md`.
+
+**Sisa Matriks B2:** 1 relasi — `users.role_id`, yang tetap app-enforced karena role platform sah memiliki `village_id IS NULL`. Migration `0010` belum dijalankan pada database produksi mana pun dan belum merged.

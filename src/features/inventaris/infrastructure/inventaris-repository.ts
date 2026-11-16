@@ -95,11 +95,21 @@ export async function updateInventarisKategori(
     .where(and(eq(inventarisKategori.villageId, villageId), eq(inventarisKategori.id, id)));
 }
 
+/**
+ * Lepaskan semua referensi (termasuk barang soft-deleted) dalam transaksi;
+ * use-case memvalidasi kategori tidak sedang dipakai barang aktif.
+ */
 export async function deleteInventarisKategori(villageId: number, id: number) {
-  const [result] = await db
-    .delete(inventarisKategori)
-    .where(and(eq(inventarisKategori.villageId, villageId), eq(inventarisKategori.id, id)));
-  if (result.affectedRows === 0) throw notFound("Kategori inventaris tidak ditemukan.");
+  await db.transaction(async (tx) => {
+    await tx
+      .update(inventaris)
+      .set({ kategoriId: null })
+      .where(and(eq(inventaris.villageId, villageId), eq(inventaris.kategoriId, id)));
+    const [kategori] = await tx
+      .delete(inventarisKategori)
+      .where(and(eq(inventarisKategori.villageId, villageId), eq(inventarisKategori.id, id)));
+    if (kategori.affectedRows === 0) throw notFound("Kategori inventaris tidak ditemukan.");
+  });
 }
 
 export async function listInventaris(

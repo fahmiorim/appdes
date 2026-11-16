@@ -17,7 +17,7 @@ import { villages } from "./village";
  *
  * Master kategori (mis. PKK, Karang Taruna, LPM) beserta tipenya. Dipakai
  * `kelompok.category_id`; menghapus kategori tidak menghapus kelompok —
- * kategorinya saja yang dilepas (`ON DELETE SET NULL`).
+ * kategorinya saja yang dilepas oleh repository dalam transaksi (`RESTRICT` di DB).
  */
 export const kelompokMaster = mysqlTable(
   "kelompok_master",
@@ -38,7 +38,10 @@ export const kelompokMaster = mysqlTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (t) => [uniqueIndex("kelompok_master_village_name_uq").on(t.villageId, t.name, t.type)],
+  (t) => [
+    uniqueIndex("kelompok_master_village_name_uq").on(t.villageId, t.name, t.type),
+    uniqueIndex("kelompok_master_village_id_uq").on(t.villageId, t.id),
+  ],
 );
 
 /**
@@ -64,7 +67,7 @@ export const kelompok = mysqlTable(
     /** Tipe: "kelompok" (kelompok masyarakat) atau "lembaga" (lembaga desa). */
     type: varchar("type", { length: 20 }).notNull(),
 
-    categoryId: int("category_id").references(() => kelompokMaster.id, { onDelete: "set null" }),
+    categoryId: int("category_id"),
 
     /** Kode kelompok (bila ada), unik per desa bila diisi. */
     code: varchar("code", { length: 50 }),
@@ -86,6 +89,12 @@ export const kelompok = mysqlTable(
     uniqueIndex("kelompok_village_id_uq").on(t.villageId, t.id),
     index("kelompok_village_type_idx").on(t.villageId, t.type),
     index("kelompok_category_idx").on(t.categoryId),
+    index("kelompok_village_category_idx").on(t.villageId, t.categoryId),
+    foreignKey({
+      name: "kelompok_category_tenant_fk",
+      columns: [t.villageId, t.categoryId],
+      foreignColumns: [kelompokMaster.villageId, kelompokMaster.id],
+    }).onDelete("restrict"),
   ],
 );
 
