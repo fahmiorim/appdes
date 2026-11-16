@@ -4,8 +4,8 @@
 - **Tanggal:** 16 November 2026
 - **Branch:** `task/ci-visual-qa-path-filter`
 - **Base commit:** `30b81de4be06a39298ec23d2b319cb14740840a8` (`main` setelah PR #80)
-- **Commit:** diisi setelah commit.
-- **PR:** diisi setelah PR dibuat.
+- **Commit perubahan workflow:** `001e248799933c6246d63b5da1829b908ee3a39c`
+- **PR:** dicatat setelah PR dibuat.
 
 ## Kondisi awal dan analisis
 
