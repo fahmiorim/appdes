@@ -5,7 +5,8 @@
 - **Branch:** `task/ci-visual-qa-path-filter`
 - **Base commit:** `30b81de4be06a39298ec23d2b319cb14740840a8` (`main` setelah PR #80)
 - **Commit perubahan workflow:** `001e248799933c6246d63b5da1829b908ee3a39c`
-- **PR:** dicatat setelah PR dibuat.
+- **Commit laporan:** `f0fc34d78b20fdef32d7fb1a655ea13f20d57ed2`
+- **PR:** [#83](https://github.com/fahmiorim/appdes/pull/83) — belum di-merge per 16 November 2026.
 
 ## Kondisi awal dan analisis
 
