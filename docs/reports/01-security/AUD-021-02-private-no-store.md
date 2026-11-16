@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented on branch `task/AUD-021-02-private-no-store`. Draft PR #21; CI passed after the final route reconciliation.
+Implemented on branch `task/AUD-021-02-private-no-store`. Draft PR #21 was merged on 12 November 2026; CI passed after the final route reconciliation. Helper `src/lib/response-headers.ts` yang dipakai laporan ini sudah ada di `main`.
 
 ## Finding
 

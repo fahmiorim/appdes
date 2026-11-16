@@ -62,4 +62,4 @@ Instance MySQL 8.0.30 disposable di `127.0.0.1:3309`, database
 
 ## Status
 
-Siap review. Belum di-merge dan belum di-deploy.
+Di-merge ke `main` melalui PR #29 (`7dfe882725394fc98a300d1bf6795c7a7eeb8459`) pada 13 November 2026. Tidak ada deploy.

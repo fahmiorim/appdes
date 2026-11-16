@@ -53,7 +53,7 @@ Tidak ada perubahan schema, migration, database, konfigurasi deployment, depende
 
 - Keberhasilan test otomatis harus dikonfirmasi melalui GitHub Actions setelah commit branch.
 - Test menguji shared serializer, bukan menjalankan Next.js Route Handler end-to-end.
-- Perubahan ini hanya menutup AUD-021-01. Temuan cache header dan rate limit tetap terbuka dan dikerjakan sebagai task terpisah.
+- Perubahan ini hanya menutup AUD-021-01. Temuan cache header dan rate limit dikerjakan sebagai task terpisah dan kemudian di-merge melalui PR #21 (AUD-021-02) dan PR #22 (AUD-021-03).
 
 ## Kesimpulan
 

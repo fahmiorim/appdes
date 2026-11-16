@@ -69,7 +69,7 @@ PR hanya dapat dinyatakan siap review visual setelah:
 5. Temuan visual diperbaiki dan bukti screenshot terbaru dilampirkan.
 6. Status tiap halaman dicatat sebagai `implemented`, `visually reviewed`, atau `accepted` secara jujur.
 
-**Keputusan saat audit:** PR tetap terbuka dan belum di-merge. Visual acceptance masih pending.
+**Keputusan saat audit:** PR tetap terbuka dan belum di-merge saat audit. PR #49 kemudian di-merge ke `main` pada 15 November 2026 (`7b09691c853a968ffddd8eb3a715f9443a1c3683`). Merge itu tidak memberikan visual acceptance; status visual tetap pending sampai audit per halaman berikutnya.
 
 
 ## Perbaikan lanjutan setelah audit awal

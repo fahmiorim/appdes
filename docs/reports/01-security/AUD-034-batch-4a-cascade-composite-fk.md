@@ -6,7 +6,7 @@
 | Base | `main` pada `3338364a45e4c8e0c4d6f1cf78c4b5286f3321a4` |
 | Migration | `0006_b4_cascade_relations_composite_fk.sql` |
 | Cakupan | 6 relasi tenant-bound dengan perilaku `ON DELETE CASCADE` |
-| Status | CI lulus; siap review, belum merge |
+| Status | Di-merge ke `main` melalui PR #40 (`ec38340575f90c13c561a3b9d5cfd96a815648ef`, 13 November 2026); belum ada migration yang dijalankan di lingkungan mana pun |
 | Operasional | Tidak ada migration dijalankan pada development/production; tidak ada backfill atau perubahan data |
 
 ## 1. Relasi yang diperkuat

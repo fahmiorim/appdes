@@ -6,7 +6,7 @@
 - **Base commit:** `3338364a45e4c8e0c4d6f1cf78c4b5286f3321a4` (merge-base dengan `origin/main`)
 - **Tip sebelum perbaikan:** `3fb1827` — `style(ui): align admin layout with prettier config`
 - **Commit perbaikan:** `713c926` — `fix(auth): tutup open redirect pada parameter next setelah login`
-- **Status:** siap review (belum merge/deploy)
+- **Status:** perbaikan sudah ada di `main` dan diverifikasi 16 November 2026 (`src/lib/safe-next-path.ts` dipakai `src/app/(auth)/masuk/page.tsx`); branch asal tidak di-merge apa adanya.
 
 ## Tujuan
 
@@ -133,7 +133,7 @@ memvalidasi batas server/klien), dan integration test MySQL (tidak ada perubahan
    - `globals.css` mengimpor Google Fonts (DM Sans, Plus Jakarta Sans) tetapi `--font-sans` /
      `--font-display` memakai "Segoe UI", sehingga font eksternal tidak terpakai.
    - `AdminTopbar.handleSignOut` tidak menangani kegagalan `signOut` selain mereset state.
-3. Branch belum di-merge dan belum di-deploy.
+3. Branch asal tidak di-merge apa adanya; perbaikan `safeNextPath` kini ada di `main`. Tidak ada deploy yang tercatat.
 
 ## Kesimpulan
 

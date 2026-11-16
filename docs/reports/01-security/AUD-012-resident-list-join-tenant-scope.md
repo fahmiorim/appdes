@@ -1,7 +1,7 @@
 # AUD-012 — Resident List Join Tenant Scope
 
-**Status:** Implementasi selesai; validasi runtime menunggu.  
-**Base:** branch `task/AUD-003-penduduk-tenant-references` (membawa perbaikan AUD-003 yang belum di-merge).
+**Status:** Implementasi selesai; validasi runtime menunggu. Perubahan sudah ada di `main` dan diverifikasi ulang pada 16 November 2026 (`src/features/penduduk/infrastructure/penduduk-repository.ts` membatasi `families.villageId` pada join); PR penggabungnya tidak dicatat di laporan ini.
+**Base:** branch `task/AUD-003-penduduk-tenant-references` (perbaikan AUD-003 kemudian di-merge melalui PR #3).
 
 ## Perubahan
 File: `src/features/penduduk/infrastructure/penduduk-repository.ts`

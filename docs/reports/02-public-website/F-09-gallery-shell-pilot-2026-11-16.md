@@ -7,7 +7,7 @@
 - **Commit implementasi:** `0bb98c2fcdb197a735c2dd449c1b092f5c0c67da`.
 - **Commit laporan:** lihat riwayat branch; laporan diperbarui setelah CI PR #64.
 - **Pull request:** https://github.com/fahmiorim/appdes/pull/64.
-- **Status:** siap review; belum di-merge atau deploy.
+- **Status:** di-merge ke `main` melalui PR #64 (`942ed0f70de3f84c8f94a445562735eb279d1651`, 15 November 2026); tidak ada deploy.
 
 ## Kondisi awal dan analisis
 
@@ -59,4 +59,4 @@ Kesamaan markup diuji dengan server render, tetapi kesetaraan visual runtime bel
 
 ## Kesimpulan dan langkah berikutnya
 
-Pilot terbatas F-09 selesai pada source dan pemeriksaan lokal; semua CI PR #64 lulus. Tinjau branch/PR sebelum merge. Jika pilot diterima dan verifikasi visual galeri memadai, kelompok halaman lain dapat dimigrasikan satu per satu dengan kontrak menu/brand masing-masing; pekerjaan itu tidak termasuk task ini.
+Pilot terbatas F-09 selesai pada source dan pemeriksaan lokal; semua CI PR #64 lulus. PR #64 sudah di-merge ke `main`; verifikasi visual galeri tetap belum dilakukan. Jika pilot diterima dan verifikasi visual galeri memadai, kelompok halaman lain dapat dimigrasikan satu per satu dengan kontrak menu/brand masing-masing; pekerjaan itu tidak termasuk task ini.

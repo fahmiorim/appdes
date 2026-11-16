@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented on branch `task/AUD-021-03-public-contact-rate-limit`. Draft PR and CI validation pending.
+Implemented on branch `task/AUD-021-03-public-contact-rate-limit`. PR #22 merged on 12 November 2026; rate limiting `batasiPermintaan` terverifikasi ada pada kedua route di `main` per 16 November 2026.
 
 ## Finding
 

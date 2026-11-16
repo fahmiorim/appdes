@@ -2,7 +2,7 @@
 
 ## Status
 
-C-1, C-2, dan C-3 telah diimplementasikan dan divalidasi lokal pada branch `task/AUD-019-020-tte-close-review-conditions`. Seluruh quality gate lokal **PASS**. Belum siap merge atau deploy; menunggu review maintainer. Pengujian ke BSrE asli dan eksekusi workflow GitHub Actions belum dilakukan.
+C-1, C-2, dan C-3 telah diimplementasikan dan divalidasi lokal pada branch `task/AUD-019-020-tte-close-review-conditions`. Seluruh quality gate lokal **PASS**. Perubahan kemudian di-merge ke `main` melalui PR #2 (`5a3f750`, 12 November 2026); tidak ada deploy. Pengujian ke BSrE asli tetap belum dilakukan.
 
 ## Keputusan maintainer
 

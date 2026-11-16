@@ -360,9 +360,9 @@ Commit `884d649`: 25 file, +19.927 / -69 baris. Sebagian besar penambahan berasa
 6. **Modul lain masih dapat menahan delete penduduk.** Composite FK ini tidak
    mengubah guard modul seperti KIA, DTKS, atau bantuan; kegagalan delete dari
    constraint lain harus ditangani terpisah.
-7. **PR #3 dan #5 belum merge.** File `penduduk-repository.ts`,
+7. **PR #3 dan #5 sudah merged** (12 November 2026). File `penduduk-repository.ts`,
    `wilayah-repository.ts`, dan area mutasi beririsan dengan AUD-003/AUD-007;
-   konflik merge mungkin terjadi dan harus diselesaikan manual.
+   konflik integrasinya diselesaikan pada PR #9.
 8. **Preflight production belum dijalankan.** Hasil 0 hanya berlaku untuk
    `desa_dev` dan database disposable.
 
@@ -371,9 +371,11 @@ Commit `884d649`: 25 file, +19.927 / -69 baris. Sebagian besar penambahan berasa
 Implementasi menegakkan tenant ownership di database untuk graph inti penduduk,
 keluarga, RTM, wilayah, surat, dan kesehatan. Migration, preflight, test
 negatif, cleanup delete, dan rollback transaksi telah dijalankan pada database
-disposable. Perubahan siap direview, tetapi belum siap merge atau production
-sampai reviewer menyetujui migration plan, preflight production, backup, dan
-pengujian rollback.
+disposable. Perubahan di-merge ke `main` melalui PR #7
+(`e9b44d1fa2c49fcf05533e5b23d06da68e46813f`, 12 November 2026) bersama PR #9.
+Kesiapan production tetap menunggu migration plan, preflight pada data
+production, backup, dan pengujian rollback; PR #8 (inverse migration/runbook)
+ditutup tanpa merge.
 
 ## Rekomendasi langkah berikutnya
 
@@ -381,4 +383,4 @@ pengujian rollback.
 2. Jalankan preflight pada salinan production dan catat jumlah/jenis temuan.
 3. Buat serta uji inverse migration pada clone sebelum deployment.
 4. Ukur lock duration pada salinan data berukuran production.
-5. Setelah PR #3 dan #5 merge, selesaikan konflik dan ulangi full validation.
+5. PR #3 dan #5 sudah merged dan konfliknya diselesaikan pada PR #9; ulangi full validation pada `main` sebelum deployment.

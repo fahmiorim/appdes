@@ -5,7 +5,7 @@
 - **Branch:** `refactor/public-information-shell`.
 - **Base commit:** `36163c952f55e409463350b8b062f7d7aa177eb1` (`origin/main`).
 - **Commit implementasi:** `9e772981ea946d6a6169bc38101ea6bc3d4d8ac1`.
-- **Status:** siap review; belum di-merge atau deploy.
+- **Status:** di-merge ke `main` melalui PR #65 (`6c662de58be07b7a6486ad6da9cc888f11f877db`, 15 November 2026); tidak ada deploy.
 
 ## Kondisi awal dan analisis
 
@@ -73,4 +73,4 @@ Kesetaraan tampilan belum diverifikasi lewat browser/screenshot; validasi saat i
 
 ## Kesimpulan dan langkah berikutnya
 
-Sembilan route pemakai `informasi-publik.module.css` kini berbagi satu shell tanpa perubahan navigasi, label brand, brand mark, atau CSS. Tinjau branch/PR dan CI sebelum merge. Langkah berikutnya yang terpisah: verifikasi visual desktop/mobile, lalu evaluasi pemisahan aturan shell dari aturan konten di stylesheet tersebut.
+Sembilan route pemakai `informasi-publik.module.css` kini berbagi satu shell tanpa perubahan navigasi, label brand, brand mark, atau CSS. Pekerjaan ini di-merge ke `main` melalui PR #65; verifikasi visual desktop/mobile belum dilakukan. Langkah berikutnya yang terpisah: verifikasi visual desktop/mobile, lalu evaluasi pemisahan aturan shell dari aturan konten di stylesheet tersebut.

@@ -7,6 +7,7 @@
 | Base commit | `343ef35a7858303eb82afc69c8caca7848a1a8e7` (baseline) → `de1bf1be98abf664b01d01f00308b67f404c6997` (revisi Batch 3) |
 | Tanggal | 14 November 2026 |
 | Sifat | Baseline read-only; revisi Batch 3 memperbarui status setelah PR #36, #37, dan migration `0005` |
+| Status per 16 November 2026 | Seluruh batch yang dirujuk laporan ini sudah merged di `main`; angka relasi masih terikat snapshot di bawah (lihat bagian 14) |
 | Migration terakhir tercakup | `0006_b4_cascade_relations_composite_fk.sql` |
 
 ## 1. Ringkasan
@@ -219,9 +220,10 @@ Batch 4A menambahkan composite FK dengan `ON DELETE CASCADE` pada enam relasi di
 
 Setiap parent memperoleh `UNIQUE (village_id, id)`; child memperoleh composite index dan composite FK. `galeri_foto.album_id` tetap nullable sehingga foto mandiri tidak berubah perilakunya. Preflight migration memeriksa orphan dan cross-tenant sebelum mengganti constraint; tidak ada backfill atau mutasi data.
 
-Implementasi dan integration test tercatat pada `AUD-034-batch-4a-cascade-composite-fk.md`. CI PR #40 lulus (192 file unit / 1.720 tes dan 32 file integrasi / 195 tes MySQL 8). Status batch ini **verified in CI / awaiting review and merge**; belum merged dan belum production-ready.
+Implementasi dan integration test tercatat pada `AUD-034-batch-4a-cascade-composite-fk.md`. CI PR #40 lulus (192 file unit / 1.720 tes dan 32 file integrasi / 195 tes MySQL 8). Batch ini **di-merge** ke `main` melalui PR #40 (`ec38340575f90c13c561a3b9d5cfd96a815648ef`) pada 13 November 2026. Status "awaiting review and merge" di atas hanya berlaku saat laporan ditulis; migration belum dijalankan ke database mana pun.
 
-**Sisa Matriks B2:** 16 relasi (di luar relasi `SET NULL`, user/platform, dan tabel anak tanpa `village_id`). Issue #34 tetap terbuka.
+
+**Sisa Matriks B2:** 16 relasi (di luar relasi `SET NULL`, user/platform, dan tabel anak tanpa `village_id`). Issue #34 ditutup pada 14 November 2026; penutupan issue bukan bukti bahwa sisa relasi tersebut sudah enforced. Angka terkini setelah Batch 4B ada di bagian 15.
 
 ## 15. Status setelah Batch 4B (migration 0007)
 
@@ -258,7 +260,7 @@ Keputusan lanjutan yang ditetapkan pada batch ini: delapan relasi `SET NULL` yan
 
 Implementasi dan hasil test tercatat pada `docs/reports/01-security/AUD-034-batch-4c1-restrict-composite-fk.md`.
 
-**Sisa Matriks B2:** 9 relasi — 8 relasi `SET NULL` yang menunggu transaksi aplikasi (4C-2a/4C-2b) dan `users.role_id`. Migration `0008` belum dijalankan pada database produksi mana pun dan bergantung pada `0007` yang belum merged.
+**Sisa Matriks B2:** 9 relasi — 8 relasi `SET NULL` yang menunggu transaksi aplikasi (4C-2a/4C-2b) dan `users.role_id`. Migration `0008` belum dijalankan pada database produksi mana pun dan bergantung pada `0007` yang sudah di-merge ke `main`.
 
 ## 17. Status setelah Batch 4C-2a (migration 0009)
 
@@ -279,4 +281,4 @@ Konsekuensi operasional: `DELETE FROM villages` untuk desa yang memiliki klasifi
 
 Implementasi dan hasil test tercatat pada `AUD-034-batch-4c2a-letter-classification-restrict.md`.
 
-**Sisa Matriks B2:** 5 relasi — `analisis_indikator.kategori_id`, `area.ref_polygon`, `inventaris.kategori_id`, `kelompok.category_id` (Batch 4C-2b), dan `users.role_id` yang tetap app-enforced. Migration `0009` belum dijalankan pada database produksi mana pun dan bergantung pada `0008`/`0007` yang belum merged.
+**Sisa Matriks B2:** 5 relasi — `analisis_indikator.kategori_id`, `area.ref_polygon`, `inventaris.kategori_id`, `kelompok.category_id` (Batch 4C-2b), dan `users.role_id` yang tetap app-enforced. Migration `0009` belum dijalankan pada database produksi mana pun dan bergantung pada `0008`/`0007`; `0007` sudah di-merge ke `main` dan `0008` menyusul melalui PR ini.

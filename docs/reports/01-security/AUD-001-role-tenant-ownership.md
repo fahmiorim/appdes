@@ -60,4 +60,4 @@ Tidak ada perubahan pada kode produksi.
 
 ## Status
 
-Siap review. Belum di-merge dan belum di-deploy.
+Di-merge ke `main` melalui PR #33 (`a80be9ff2aed2740663a11db9d2f097d23f50094`) pada 13 November 2026. Catatan "siap review" di atas hanya berlaku saat laporan ditulis; tidak ada deploy.
