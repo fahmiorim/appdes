@@ -2992,7 +2992,16 @@
           "default": "(now())"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "bumindes_item_village_buku_idx": {
+          "name": "bumindes_item_village_buku_idx",
+          "columns": [
+            "village_id",
+            "buku_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "bumindes_item_village_id_villages_id_fk": {
           "name": "bumindes_item_village_id_villages_id_fk",

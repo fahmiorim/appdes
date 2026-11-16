@@ -1,6 +1,7 @@
 import {
   date,
   foreignKey,
+  index,
   int,
   mysqlTable,
   text,
@@ -45,6 +46,9 @@ export const bumindesItem = mysqlTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [
+    // Dibuat migration `0006` bersama composite FK; dideklarasikan di sini agar
+    // schema, snapshot, dan database tidak drift (AUD-034).
+    index("bumindes_item_village_buku_idx").on(t.villageId, t.bukuId),
     foreignKey({
       columns: [t.villageId, t.bukuId],
       foreignColumns: [bumindesBuku.villageId, bumindesBuku.id],
