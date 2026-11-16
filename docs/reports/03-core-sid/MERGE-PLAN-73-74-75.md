@@ -167,4 +167,33 @@ Jangan memakai `git checkout --ours/--theirs` pada file ini: keduanya membuang s
 
 ## 10. Kesimpulan
 
-Ketiga PR layak di-merge. Urutan yang disarankan: **#75 → #74 → #73**, dengan #73 mengambil `main` terbaru dan menyelesaikan satu konflik aditif di `globals.css`. Tidak ada konflik lain, dan hasil gabungan sudah lulus seluruh pemeriksaan lokal. Merge tetap menunggu keputusan reviewer; laporan ini tidak melakukan merge, deploy, atau perubahan branch protection.
+Ketiga PR layak di-merge. Urutan yang disarankan: **#75 → #74 → #73**, dengan #73 mengambil `main` terbaru dan menyelesaikan satu konflik aditif di `globals.css`. Tidak ada konflik lain, dan hasil gabungan sudah lulus seluruh pemeriksaan lokal.
+
+## 11. Eksekusi merge
+
+Bagian 1–10 di atas ditulis sebelum merge. Bagian ini mencatat eksekusi yang dilakukan setelah maintainer memerintahkan urutan tersebut. Metode: **squash merge** agar riwayat `main` tetap linear seperti commit `(#67)` sebelumnya.
+
+| Langkah | PR                                                     | Squash commit di `main` | Hasil                                                 |
+| ------- | ------------------------------------------------------ | ----------------------- | ----------------------------------------------------- |
+| 1       | [#75](https://github.com/fahmiorim/appdes/pull/75)      | `db4c211`               | merged; run `main` dibatalkan oleh `concurrency`      |
+| 2       | [#74](https://github.com/fahmiorim/appdes/pull/74)      | `47bf709`               | merged; run `main` success (`43826763821`)            |
+| 3       | [#73](https://github.com/fahmiorim/appdes/pull/73)      | `33fcf27`               | merged setelah branch diperbarui dan konflik CSS selesai |
+
+### Persiapan branch warga
+
+- `git merge origin/main` pada `task/warga-layanan-mandiri` → satu konflik di `src/app/globals.css`, diselesaikan sesuai bagian 5 (kedua blok dipertahankan, urutan warga lalu admin).
+- Merge commit `802a3b5` di-push; PR menampilkan `mergeable_state=clean` dengan base `47bf709`.
+- Sebelum merge: `format:check` PASS, `typecheck` PASS, `lint` PASS (0 error, 7 warning lama), `test:unit` PASS (199 file / 1.766 test), `build` PASS.
+- Check PR untuk `802a3b5` (run `43827143962`) sukses pada keempat job. Hanya **satu** run untuk commit tersebut, jadi deduplikasi PR #75 terbukti bekerja.
+
+### Verifikasi `main` setelah merge
+
+- `git diff 802a3b5 origin/main` kosong: isi `main` sama dengan tree yang diuji lokal.
+- `src/app/globals.css` di `main` memuat kedua blok dan tidak memuat penanda konflik.
+- Run `push` untuk `47bf709` sukses. Run `push` untuk `db4c211` berstatus `cancelled` karena run `47bf709` masuk beruntun dan `concurrency` membatalkan yang lebih lama; ini perilaku yang diharapkan dari desain dedup, bukan kegagalan.
+- Run `push` untuk `33fcf27` (`43827726106`) gagal pada percobaan pertama: hook `beforeAll` di `src/db/b2-migration-guard-rollback.integration.test.ts:422` melewati `hookTimeout` 120 detik. Rerun job yang gagal (`attempt 2`) sukses pada keempat job, sehingga penyebabnya flake lingkungan, bukan regresi dari ketiga PR.
+
+### Temuan lanjutan dari eksekusi
+
+- `hookTimeout` 120 detik pada `b2-migration-guard-rollback.integration.test.ts` terlalu ketat untuk runner dingin; disarankan menaikkan timeout hook atau memecah `beforeAll` yang menyiapkan beberapa database.
+- Karena `concurrency` memakai `github.ref` untuk event `push` ke `main`, dua merge beruntun membatalkan verifikasi commit pertama di `main`. Bila setiap commit `main` wajib diverifikasi, pertimbangkan memasukkan `github.sha` ke grup untuk event `push`.
