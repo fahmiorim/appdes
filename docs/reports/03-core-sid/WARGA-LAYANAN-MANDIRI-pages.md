@@ -4,7 +4,7 @@
 - **Tanggal:** 16 November 2026
 - **Branch:** `task/warga-layanan-mandiri`
 - **Base commit:** `6c662de` (`main`)
-- **Commit pekerjaan:** `95afa93`
+- **Commit pekerjaan:** `95afa93` (halaman), `2359a4d` (edge case PIN), laporan ini
 
 ## Kondisi awal
 
@@ -50,6 +50,17 @@ Selain itu tidak ada halaman yang menampilkan profil, permohonan, dan dokumen wa
 - Logika PIN diletakkan di `features/warga/application` karena test batas lapisan menolak route yang mengimpor infrastructure secara langsung. Versi pertama yang mengimpor repository dari `actions.ts` memang gagal pada `lapisan-publik.test.ts`.
 - Beranda ditandai `robots: noindex, nofollow` karena memuat data pribadi warga.
 
+### Perbaikan edge case PIN (commit `2359a4d`)
+
+Penggantian PIN dan pembersihan `mustChangePin` berada di dua operasi tulis terpisah: hash password dikelola better-auth, penanda berada di tabel `users`. Bila langkah kedua gagal (gangguan koneksi, lock, dsb.), PIN sudah berganti tetapi warga tetap ditandai "PIN sementara", sehingga percobaan ulang selalu ditolak dengan "PIN lama tidak sesuai" — pesan yang menyesatkan dan membuat warga tidak bisa keluar dari halaman ubah PIN.
+
+Perbaikan:
+
+- Pembersihan penanda dicoba ulang hingga 3 kali dengan jeda 50 ms dan 100 ms; setiap kegagalan sementara dicatat sebagai `logger.warn` dengan `userId` dan nomor percobaan.
+- Bila ketiga percobaan gagal, `logger.error` mencatat penyebab asli dan use case melempar `AppError("INTERNAL")` dengan pesan khusus (`PESAN_PIN_BERGANTI_STATUS_GAGAL`) yang menyatakan PIN baru **sudah tersimpan** dan mengarahkan warga memakai PIN baru sebagai "PIN lama" pada percobaan berikutnya. Pesan ini sampai ke form melalui `toErrorState`.
+- Urutan tidak dibalik (membersihkan penanda lebih dulu) karena kegagalan penggantian PIN setelah penanda dibersihkan akan membiarkan PIN sementara tetap berlaku untuk layanan.
+- `ubah-pin-use-case.test.ts` menambahkan 4 test: jalur sukses (termasuk `revokeOtherSessions`), penolakan PIN lama salah tanpa menyentuh penanda, kegagalan sementara yang pulih pada percobaan kedua, dan kegagalan tetap yang menghasilkan pesan khusus serta satu `logger.error`.
+
 ## Security dan tenant
 
 - `residentId` dan `villageId` selalu berasal dari sesi terverifikasi (`requireWarga` + `resolveVillageId`), tidak pernah dari body, query, atau parameter URL. Tidak ada endpoint baru yang menerima ID penduduk dari klien.
@@ -65,18 +76,20 @@ Selain itu tidak ada halaman yang menampilkan profil, permohonan, dan dokumen wa
 | `npm run format:check` | **PASS** |
 | `npm run typecheck` | **PASS** (exit 0) |
 | `npm run lint` | **PASS** — 0 error, 7 warning lama `@next/next/no-img-element` di `src/app/(auth)/masuk/page.tsx` |
-| `npm run test:unit` | **PASS** — 197 file, 1.754 test |
-| `npm run test:integration` | **SKIPPED** — memerlukan database MySQL disposable; tidak dijalankan pada sesi ini |
-| `npm run build` / visual QA | **SKIPPED** — memerlukan database dan Chromium |
+| `npm run test:unit` | **PASS** — 198 file, 1.758 test (termasuk 4 test ubah PIN) |
+| `npm run test:integration` | **PASS** — 34 file, 206 test, terhadap MySQL 8.0.30 disposable `desa_test` @ `127.0.0.1:3307` |
+| `npm run build` | **PASS** — `next build` selesai, seluruh rute baru berstatus dynamic (`ƒ`) |
+| Visual QA / render di browser | **SKIPPED** — memerlukan Chromium dan seed visual; tidak diminta |
 | Verifikasi di browser | **SKIPPED** — tidak diminta dan tidak ada database siap |
 
 ## Risiko dan keterbatasan
 
-1. **Batas PIN sementara.** Jika `clearMustChangePin` gagal setelah PIN berhasil diubah, warga tetap ditandai `mustChangePin` dan percobaan ulang akan gagal karena PIN lama sudah tidak berlaku. Perlu penanganan khusus bila kasus ini muncul di produksi.
+1. **Dua operasi tulis tetap tidak atomik.** Retry dan pesan khusus membuat kegagalan bisa dipulihkan, tetapi bila database menolak penulisan secara permanen, warga masih harus mengulang ubah PIN secara manual (dengan PIN baru sebagai "PIN lama"). Perbaikan penuh memerlukan penulisan penanda di dalam alur better-auth yang sama.
 2. **Rate limit ubah PIN** bergantung pada konfigurasi better-auth; belum diuji pada sesi ini.
-3. Tampilan hanya diverifikasi lewat typecheck dan lint, belum dirender dengan data nyata.
-4. Format NIK pada beranda hanya menampilkan nilai apa adanya; belum ada masking.
+3. Integration test berjalan pada MySQL disposable yang dibuat manual untuk sesi ini, bukan pada pipeline CI.
+4. Tampilan hanya diverifikasi lewat build dan typecheck, belum dirender dengan data nyata.
+5. Format NIK pada beranda hanya menampilkan nilai apa adanya; belum ada masking.
 
 ## Kesimpulan
 
-Ketiga rute yang sebelumnya 404 kini tersedia, memakai use case dan sesi yang sudah ada tanpa jalur otorisasi baru. Perubahan siap direview; integrasi database dan pemeriksaan visual masih perlu dijalankan di lingkungan yang mendukung.
+Ketiga rute yang sebelumnya 404 kini tersedia, memakai use case dan sesi yang sudah ada tanpa jalur otorisasi baru. Integration suite, unit test, typecheck, lint, dan build produksi lulus; pemeriksaan visual di browser masih perlu dijalankan di lingkungan yang mendukung.
