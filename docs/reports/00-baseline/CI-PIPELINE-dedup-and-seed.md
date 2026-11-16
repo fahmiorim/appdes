@@ -55,8 +55,8 @@ Statistik: `24` baris ditambah, `108` baris dihapus (workflow turun menjadi 270 
 | `npm run format:check` (repo penuh) | **PASS** pada branch ini |
 | `npm run test:integration` | **PASS** — 34 file, 206 test, terhadap MySQL 8.0.30 disposable `desa_test` @ `127.0.0.1:3307` |
 | `npm run build` | **PASS** — `next build` selesai |
-| Menjalankan workflow di GitHub Actions | **SKIPPED** — hanya bisa diverifikasi setelah push/PR |
-| Job visual lokal (Playwright) | **SKIPPED** — memerlukan Chromium dan seed visual |
+| GitHub Actions — PR #75 | **PASS** — [run 43821837590](https://github.com/fahmiorim/appdes/actions/runs/43821837590): job *Unit test dan quality check*, *Integration test (MySQL 8)*, *Visual QA login (desktop/mobile)*, dan *Ringkasan CI* semuanya `success` |
+| Job visual dengan seed baru | **PASS** — job visual memakai workflow versi PR ini (bukan `main`) dan berhasil, sehingga `npm run visual:qa:seed` beserta guard-nya terbukti jalan di CI |
 
 Integration test dan build dijalankan pada MySQL 8.0.30 lokal dengan data directory sementara di direktori temp (port 3307, database `desa_test`), bukan pada Docker: daemon Docker Desktop tidak aktif di mesin ini dan WSL belum diaktifkan. Database pengembangan tidak dipakai.
 
@@ -66,7 +66,7 @@ Integration test dan build dijalankan pada MySQL 8.0.30 lokal dengan data direct
 2. **Tidak ada CI pada push branch kerja.** Regresi baru terlihat saat PR dibuka. Ini konsekuensi langsung dari deduplikasi.
 3. **Fixture visual berubah** (data lebih lengkap, termasuk layer GIS). Run pertama bisa memunculkan perbedaan gambar yang sebelumnya tidak terlihat; itu bukan regresi tampilan.
 4. **Seed menolak jalan bila tenant `sukamaju` sudah ada.** Di CI database selalu baru, tetapi bila job dijalankan ulang pada container yang sama, langkah seed akan gagal dengan pesan reset — perilaku ini disengaja.
-5. Workflow belum pernah dieksekusi; kesalahan semantik YAML (mis. nama context) hanya akan terlihat saat run pertama.
+5. **Duplikasi masih terlihat untuk branch yang dibuat sebelum PR ini merge.** Saat ketiga branch di-push, `main` masih memakai workflow lama sehingga push branch memicu run tambahan: branch warga dan menu masing-masing mendapat dua run (push + pull_request), sedangkan branch CI hanya satu karena workflow versi barunya sudah membatasi push ke `main`. Ini bukti langsung masalah yang diperbaiki; duplikasi berhenti setelah PR ini merge.
 6. Integration test membuktikan aplikasi berjalan pada database bersih, tetapi belum membuktikan langkah seed maupun tangkapan layar di dalam workflow.
 
 ## Kesimpulan
