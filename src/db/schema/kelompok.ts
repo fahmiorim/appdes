@@ -103,9 +103,7 @@ export const kelompokAnggota = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    kelompokId: int("kelompok_id")
-      .notNull()
-      .references(() => kelompok.id, { onDelete: "cascade" }),
+    kelompokId: int("kelompok_id").notNull(),
     residentId: int("resident_id").notNull(),
 
     /** Jabatan dalam kelompok; lihat `JABATAN_KELOMPOK`. */
@@ -135,6 +133,12 @@ export const kelompokAnggota = mysqlTable(
     index("kelompok_anggota_kelompok_idx").on(t.kelompokId),
     index("kelompok_anggota_resident_idx").on(t.residentId),
     index("kelompok_anggota_village_resident_idx").on(t.villageId, t.residentId),
+    index("kelompok_anggota_village_kelompok_idx").on(t.villageId, t.kelompokId),
+    foreignKey({
+      name: "kelompok_anggota_kelompok_tenant_fk",
+      columns: [t.villageId, t.kelompokId],
+      foreignColumns: [kelompok.villageId, kelompok.id],
+    }).onDelete("cascade"),
     foreignKey({
       name: "kelompok_anggota_resident_tenant_fk",
       columns: [t.villageId, t.residentId],
