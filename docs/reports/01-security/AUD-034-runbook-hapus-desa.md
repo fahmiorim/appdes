@@ -1,7 +1,7 @@
 # AUD-034 — Runbook hapus desa setelah composite FK RESTRICT
 
 - **Status:** prosedur manual untuk DBA/operator. Belum pernah dijalankan pada data produksi.
-- **Berlaku sejak:** migration `0008_b4c1_restrict_relations_composite_fk.sql` (Batch 4C-1); diperluas untuk `0009` (Batch 4C-2a) dan `0010` (Batch 4C-2b) bila PR terkait sudah merged.
+- **Berlaku sejak:** migration `0008_b4c1_restrict_relations_composite_fk.sql` (Batch 4C-1), diperluas `0009` (Batch 4C-2a) dan `0010` (Batch 4C-2b); ketiganya sudah merged ke `main`, belum dijalankan pada database staging/produksi.
 - **Prasyarat:** backup terverifikasi, salinan data untuk rehearsal, dan persetujuan tertulis pemilik data.
 - **Bukan jalur aplikasi:** tidak ada use case hapus desa di aplikasi. Runbook ini hanya untuk pembersihan manual/DBA (mis. desa uji, pembatalan provisioning, atau penghapusan data sesuai kebijakan).
 
