@@ -4,8 +4,9 @@
 - **Tanggal:** 16 November 2026.
 - **Branch:** `task/AUD-034-batch-4c1-restrict-relations`, ditumpuk di atas `task/AUD-034-batch-4b-cascade-relations` (`7419766`) karena migration `0007` belum merged.
 - **Base commit `origin/main`:** `6c662de58be07b7a6486ad6da9cc888f11f877db`. Base branch pekerjaan: `7419766cd489c0915ad95cc13cb60949920b946b`.
-- **Commit pekerjaan:** `e5c67df` (schema, migration `0008`, test, penyesuaian fixture).
-- **Status:** siap review. Belum di-merge, belum di-deploy, dan migration belum dijalankan pada database produksi.
+- **Commit pekerjaan:** `e5c67df` (schema, migration `0008`, test, penyesuaian fixture), `408143f` (laporan dan matriks).
+- **Pull request:** [#69](https://github.com/fahmiorim/appdes/pull/69), base `task/AUD-034-batch-4b-cascade-relations` (stacked di atas #67).
+- **Status:** siap review, CI lulus. Belum di-merge, belum di-deploy, dan migration belum dijalankan pada database produksi.
 
 ## 1. Kondisi awal
 
@@ -96,6 +97,7 @@ Dijalankan lokal, MySQL 8.0.30 loopback. Database target `desa_test_b4c1` (allow
 | `npx vitest run --config vitest.config.mts src/db/migrasi-paritas.test.ts` | **PASS** — 7 tes |
 | `npx vitest run --config vitest.integration.config.mts src/db/b4c1-restrict-relations-composite-fk.integration.test.ts src/db/b4c1-tenant-migration-guard.integration.test.ts src/db/tenant-composite-fk.integration.test.ts` | **PASS** — 3 berkas, 19 tes (6 + 3 + 10) |
 | `npm run test:integration` (seluruh suite) | **PASS** — 38 berkas, 223 tes |
+| CI PR #69 — run [43802829797](https://github.com/fahmiorim/appdes/actions/runs/43802829797) pada `408143f` | **PASS** — Unit/quality, Integration (MySQL 8), Visual QA login |
 
 Catatan proses:
 
