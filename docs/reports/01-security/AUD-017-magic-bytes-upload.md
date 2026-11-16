@@ -3,6 +3,8 @@
 - **Tanggal:** 16 November 2026
 - **Branch:** `task/AUD-017-media-magic-bytes`
 - **Base commit:** `30b81de4be06a39298ec23d2b319cb14740840a8` (`main` setelah PR #80)
+- **Commit implementasi:** `17a12a2a120a1805b66aa7725103132aba796587`
+- **PR:** [#81](https://github.com/fahmiorim/appdes/pull/81) — terbuka untuk review
 - **Tujuan:** menutup celah AUD-017 (`docs/TECHNICAL_AUDIT.md`) — unggahan hanya divalidasi dari MIME kiriman klien, tanpa memeriksa isi berkas.
 
 ## 1. Kondisi awal
@@ -54,7 +56,10 @@ Pesan error memakai bahasa Indonesia dan tidak membocorkan isi berkas.
 | `npm run typecheck` | **PASS** |
 | `npx eslint` pada 4 berkas berubah | **PASS** (tanpa temuan) |
 | `npx prettier --check` pada 4 berkas berubah | **PASS** |
-| Integration test MySQL | **SKIPPED** — tidak ada `TEST_DATABASE_URL`/`TEST_DATABASE_ACK` lokal; perubahan tidak menyentuh schema/query, bukti integrasi akan datang dari CI |
+| Integration test MySQL lokal | **SKIPPED** — tidak ada `TEST_DATABASE_URL`/`TEST_DATABASE_ACK`; perubahan tidak menyentuh schema/query |
+| CI PR #81 — Unit test dan quality check | **PASS** |
+| CI PR #81 — Integration test (MySQL 8) | **PASS** |
+| CI PR #81 — Visual QA login (desktop/mobile) | **PASS** |
 
 ## 5. Risiko dan batasan
 
@@ -62,9 +67,15 @@ Pesan error memakai bahasa Indonesia dan tidak membocorkan isi berkas.
 - Deteksi PDF memakai pencarian `%PDF-` dalam 1024 byte pertama, sehingga berkas polyglot yang mengawali dengan header PDF tetap lolos pemeriksaan ini (tidak berbahaya karena disajikan sebagai `application/pdf`).
 - SVG belum disanitasi; hanya diverifikasi sebagai teks SVG dan disajikan dengan CSP sandbox.
 - Decode ulang gambar (re-encode) untuk membuang payload tersembunyi belum dilakukan; butuh dependency pengolah gambar dan keputusan produk.
-- CI integration test menyentuh jalur unggah di beberapa suite; hasilnya menunggu pipeline pada PR ini.
+- Pemeriksaan integrasi lokal dilewati karena tidak ada konfigurasi database test; job Integration test (MySQL 8) CI PR #81 berhasil.
 
-## 6. Rekomendasi berikutnya
+## 6. Penyerahan
+
+- **Commit:** `17a12a2a120a1805b66aa7725103132aba796587`
+- **Pull request:** https://github.com/fahmiorim/appdes/pull/81
+- **Status:** branch sudah di-push, seluruh job CI selesai PASS; menunggu review/merge.
+
+## 7. Rekomendasi berikutnya
 
 1. Sanitasi atau tolak SVG untuk kategori media publik (`AUD-017` lanjutan).
 2. Pertimbangkan `sharp` untuk decode/re-encode gambar bila polyglot menjadi risiko nyata.
