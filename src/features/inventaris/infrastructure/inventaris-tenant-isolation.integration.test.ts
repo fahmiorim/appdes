@@ -31,9 +31,10 @@ import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
  *    sehingga baris legacy dapat menampilkan nama/kode kategori atau nama
  *    barang milik desa lain pada route aktif (ekspor admin, ekspor publik,
  *    API publik).
- * 2. `saveInventaris` meneruskan `kategoriId` dari input apa adanya. Database
- *    hanya memeriksa keberadaan kategori (`ON DELETE SET NULL`, single-column
- *    FK), sehingga kategori desa lain dapat ditautkan.
+ * 2. `saveInventaris` meneruskan `kategoriId` dari input apa adanya, sehingga
+ *    kategori desa lain dapat ditautkan bila validasi application layer hilang.
+ *    Sejak Batch 4C-2b database juga menolak pasangan ini lewat composite FK;
+ *    baris legacy untuk pengujian baca disisipkan dengan pengecekan FK mati.
  *
  * Izin tidak sedang diuji di sini; `requirePermission` dimock agar desa aktif
  * berasal dari sesi seperti pada production.
@@ -108,6 +109,32 @@ async function sisipMutasiLegacy(params: {
   }
 }
 
+/**
+ * Sisipkan aset legacy desa A yang menunjuk kategori desa B.
+ *
+ * Composite FK Batch 4C-2b menolak pasangan ini pada jalur normal. Baris dibuat
+ * dengan pengecekan FK dimatikan untuk mereproduksi data yang dibuat sebelum
+ * constraint terpasang; pengecualian selalu dikembalikan di blok `finally`.
+ */
+async function sisipAsetLegacy(params: {
+  villageId: number;
+  kategoriId: number;
+  namaBarang: string;
+}): Promise<number> {
+  const koneksi = await mysql.createConnection(validasiDatabaseUji(process.env).opsiKoneksi);
+  try {
+    await koneksi.query("SET FOREIGN_KEY_CHECKS = 0");
+    const [hasil] = await koneksi.query<ResultSetHeader>(
+      "INSERT INTO inventaris (village_id, kategori_id, nama_barang, jumlah) VALUES (?, ?, ?, '1.00')",
+      [params.villageId, params.kategoriId, params.namaBarang],
+    );
+    return hasil.insertId;
+  } finally {
+    await koneksi.query("SET FOREIGN_KEY_CHECKS = 1");
+    await koneksi.end();
+  }
+}
+
 function inputInventaris(
   overrides: Partial<InventarisInput> & { namaBarang: string },
 ): InventarisInput {
@@ -167,17 +194,13 @@ beforeAll(async () => {
       jumlah: "1.00",
     })
     .$returningId();
-  // Legacy: aset desa A menunjuk kategori desa B. FK single-column tetap
-  // menerima pasangan ini, jadi tidak perlu mematikan pengecekan FK.
-  const [asetLegacyARow] = await db
-    .insert(inventaris)
-    .values({
-      villageId: desaA,
-      kategoriId: kategoriB,
-      namaBarang: `Aset Legacy A ${RUN}`,
-      jumlah: "1.00",
-    })
-    .$returningId();
+  // Legacy: aset desa A menunjuk kategori desa B. Pasangan ini ditolak
+  // composite FK, jadi disisipkan sebagai data lama dengan FK dimatikan.
+  const asetLegacyA = await sisipAsetLegacy({
+    villageId: desaA,
+    kategoriId: kategoriB,
+    namaBarang: `Aset Legacy A ${RUN}`,
+  });
   const [asetTanpaKategoriARow] = await db
     .insert(inventaris)
     .values({
@@ -225,7 +248,7 @@ beforeAll(async () => {
     kategoriA,
     kategoriB,
     asetValidA,
-    asetLegacyA: idDari(asetLegacyARow, "aset legacy A"),
+    asetLegacyA,
     asetTanpaKategoriA: idDari(asetTanpaKategoriARow, "aset tanpa kategori A"),
     asetUbahA: idDari(asetUbahARow, "aset ubah A"),
     asetB,
