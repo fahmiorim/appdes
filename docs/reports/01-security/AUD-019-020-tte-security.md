@@ -5,7 +5,7 @@
 - **Branch:** `task/AUD-019-020-tte-security`
 - **Base commit:** `d6f2a615d6a471b427ad35393250ba87f2aa3e05`
 - **Commit implementasi:** `5db38556362a8fcc0fc5e7710a30d6760cf842ce`
-- **Status:** Siap review — belum di-merge, belum di-deploy. Risiko tersisa dicatat di bawah.
+- **Status:** Di-merge ke `main` melalui PR #2 (`5a3f7502be6a71d0809600fa14b07c9f4807f1e5`, 12 November 2026); belum di-deploy. Risiko tersisa dicatat di bawah dan masih berlaku.
 
 ## Kondisi awal
 

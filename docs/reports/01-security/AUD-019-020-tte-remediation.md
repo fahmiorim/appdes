@@ -197,4 +197,4 @@ dinilai tidak memerlukan perubahan. Kontrol keamanan sebelumnya (DNS pinning, SN
 TLS, redirect ditolak, Authorization same-origin, batas ukuran, validasi IPv4/IPv6) tidak berubah
 dan tetap diuji.
 
-**Status: siap review.** Tidak ada PR, merge, atau deploy.
+**Status: di-merge.** Tidak ada PR saat laporan ditulis; perubahan masuk `main` melalui PR #2 (`5a3f750`, 12 November 2026). Tidak ada deploy, dan pengujian ke BSrE nyata masih belum dilakukan.

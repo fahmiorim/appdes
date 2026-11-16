@@ -6,7 +6,7 @@
 - **Branch:** `task/B2-DTKS-SUPLEMEN-COMPOSITE-FK`
 - **Base:** `main` — `615712b87a76798cb85a9f5cc26b7b03483cecf1`
 - **Commit implementasi:** `ed63681` (lihat `git log` untuk SHA lengkap)
-- **Status:** siap review. Tidak ada merge, deploy, atau perubahan `main`.
+- **Status:** di-merge ke `main` melalui PR #12 (12 November 2026), bersama PR #11 untuk query B2. Tidak ada deploy; status "siap review" di bawah berlaku saat laporan ditulis.
 
 ## 1. Kondisi awal dan analisis
 
@@ -222,7 +222,7 @@ Langkah berikutnya untuk reviewer:
 3. Setujui urutan deploy: aplikasi (yang sudah set-null eksplisit) lebih dulu,
    lalu migration, dengan jendela maintenance dan backup teruji.
 4. Putuskan kelanjutan PR #11 (B2 query) dan PR B2 composite ini secara
-   terpisah; keduanya belum di-merge.
+   terpisah. Keduanya sudah merged pada 12 November 2026 (PR #11 dan #12).
 
 ## 10. Revisi 13 November 2026 — tindak lanjut review
 

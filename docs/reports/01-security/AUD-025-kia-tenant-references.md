@@ -64,4 +64,4 @@ data desa lain), sehingga `main` yang sudah tenant-scoped dipertahankan.
 
 ## Status
 
-Siap review. Belum di-merge dan belum di-deploy.
+Di-merge ke `main` melalui PR #32 (`b56eb8306692fc8ae1ad4e7e7a0bd4c2a68e37a9`) pada 13 November 2026. Tidak ada deploy.

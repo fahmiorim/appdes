@@ -159,7 +159,7 @@ Selama verifikasi ditemukan satu kegagalan tidak terkait perubahan produksi: `dt
 3. **Write path inventaris belum punya route.** Perbaikan T3/T4 menjaga use case dan repository, tetapi belum ada UI/route yang menguji alur end-to-end; integration test memanggil use case langsung dengan sesi dimock.
 4. **`recordAuditEvent`** menerima aktor nyata pada test (dibuat di tabel `users`) agar FK audit terpenuhi; di production aktor berasal dari sesi.
 5. **Preflight hanya memeriksa referensi langsung** `inventaris_mutasi.inventaris_id`. Relasi kategori tidak diperiksa karena tidak diubah.
-6. **Batas scope**: 22 relasi Matriks B2, 7 relasi `SET NULL`, dan tabel anak survey/pembangunan masih terbuka; Issue #34 **belum** selesai.
+6. **Batas scope**: 22 relasi Matriks B2, 7 relasi `SET NULL`, dan tabel anak survey/pembangunan masih terbuka. Issue #34 masih terbuka saat laporan ditulis; issue itu ditutup pada 14 November 2026 setelah PR #40 merged.
 
 ## 10. Rekomendasi Batch 4
 
@@ -171,4 +171,6 @@ Selama verifikasi ditemukan satu kegagalan tidak terkait perubahan produksi: `dt
 
 ## 11. Kesimpulan
 
-Batch 3 menutup empat celah isolasi tenant pada modul inventaris dengan perubahan minimal: dua JOIN menjadi tenant-scoped, satu validasi application layer, dan satu composite FK dengan preflight fail-closed. Tidak ada migrasi yang dijalankan pada database development/production, tidak ada backfill, dan tidak ada pekerjaan Batch 1/Batch 2 yang diubah. Issue #34 tetap terbuka.
+Batch 3 menutup empat celah isolasi tenant pada modul inventaris dengan perubahan minimal: dua JOIN menjadi tenant-scoped, satu validasi application layer, dan satu composite FK dengan preflight fail-closed. Tidak ada migrasi yang dijalankan pada database development/production, tidak ada backfill, dan tidak ada pekerjaan Batch 1/Batch 2 yang diubah.
+
+**Status per 16 November 2026:** pekerjaan ini di-merge ke `main` melalui PR #38 (`3338364a45e4c8e0c4d6f1cf78c4b5286f3321a4`, 13 November 2026). Issue #34 ditutup 14 November 2026; penutupan itu tidak berarti 22 relasi Matriks B2 dan relasi `SET NULL` sudah enforced.

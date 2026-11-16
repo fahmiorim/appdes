@@ -1,7 +1,7 @@
 # AUD-011 — Family Join and Aggregate Tenant Scope
 
-**Status:** Implementasi selesai; validasi runtime menunggu.  
-**Base:** branch `task/AUD-004-keluarga-region-ownership` (membawa perbaikan AUD-004 yang belum di-merge).
+**Status:** Implementasi selesai; validasi runtime menunggu. Perubahan sudah ada di `main` dan diverifikasi ulang pada 16 November 2026 (`src/features/keluarga/infrastructure/keluarga-repository.ts` membatasi `head.villageId`); PR penggabungnya tidak dicatat di laporan ini.
+**Base:** branch `task/AUD-004-keluarga-region-ownership` (perbaikan AUD-004 kemudian di-merge melalui PR #29).
 
 ## Perubahan
 File: `src/features/keluarga/infrastructure/keluarga-repository.ts`
