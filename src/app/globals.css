@@ -614,6 +614,25 @@ input:focus-visible {
   }
 }
 
+/* Halaman layanan mandiri warga */
+.warga-page {
+  padding-block: 44px 64px;
+}
+
+.warga-page .dashboard-section {
+  margin-top: 18px;
+}
+
+.warga-page .dashboard-section ul {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  color: var(--color-text-muted);
+}
+
+.warga-page .dashboard-section li + li {
+  margin-top: 6px;
+}
+
 .admin-nav-pending {
   cursor: not-allowed;
   opacity: 0.72;
