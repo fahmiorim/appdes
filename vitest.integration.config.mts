@@ -31,6 +31,8 @@ export default defineConfig({
       "src/db/b3-inventaris-migration-guard.integration.test.ts",
       "src/db/b4-cascade-relations-composite-fk.integration.test.ts",
       "src/db/b4-tenant-migration-guard.integration.test.ts",
+      "src/db/b4b-cascade-relations-composite-fk.integration.test.ts",
+      "src/db/b4b-tenant-migration-guard.integration.test.ts",
       "src/db/tenant-composite-fk.integration.test.ts",
       "src/features/agenda/infrastructure/agenda-repository.integration.test.ts",
       "src/features/bantuan/integrasi-warga.test.ts",

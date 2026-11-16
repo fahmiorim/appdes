@@ -354,6 +354,8 @@ describe("AUD-002 composite tenant foreign keys", () => {
 
     const nama = hasil[0].map((baris) => baris.nama);
     expect(nama).toEqual([
+      "anggota_grup_kontak_grup_tenant_fk",
+      "anggota_grup_kontak_kontak_tenant_fk",
       "bantuan_peserta_family_tenant_fk",
       "bantuan_peserta_kelompok_tenant_fk",
       "bantuan_peserta_program_tenant_fk",
@@ -375,14 +377,17 @@ describe("AUD-002 composite tenant foreign keys", () => {
       "galeri_foto_album_tenant_fk",
       "ibu_hamil_kia_tenant_fk",
       "ibu_hamil_posyandu_tenant_fk",
+      "ild_incoming_letter_tenant_fk",
       "inventaris_mutasi_inventaris_tenant_fk",
       "kehadiran_izin_resident_tenant_fk",
+      "kelompok_anggota_kelompok_tenant_fk",
       "kelompok_anggota_resident_tenant_fk",
       "kia_anak_tenant_fk",
       "kia_ibu_tenant_fk",
       "lapak_produk_lapak_tenant_fk",
       "letters_resident_tenant_fk",
       "letters_type_tenant_fk",
+      "ols_outgoing_letter_tenant_fk",
       "pemilihan_kandidat_parent_tenant_fk",
       "permohonan_surat_letter_tenant_fk",
       "permohonan_surat_resident_tenant_fk",
