@@ -57,8 +57,8 @@ Menautkan seluruh modul juga tidak aman: RBAC menyimpan modul yang boleh dibaca,
 | `npm run typecheck` | **PASS** (exit 0) |
 | `npm run lint` | **PASS** — 0 error, 7 warning lama `@next/next/no-img-element` di `src/app/(auth)/masuk/page.tsx` |
 | `npm run test:unit` | **PASS** — 198 file, 1.762 test (termasuk 8 test baru `menu-tampil.test.ts`) |
-| `npm run test:integration` | **SKIPPED** — memerlukan database MySQL disposable |
-| `npm run build` / visual QA | **SKIPPED** — memerlukan database dan Chromium |
+| `npm run test:integration` | **PASS** — 34 file, 206 test, terhadap MySQL 8.0.30 disposable `desa_test` @ `127.0.0.1:3307` |
+| `npm run build` | **PASS** — `next build` selesai, seluruh rute terkompilasi |
 | Verifikasi di browser | **SKIPPED** — tidak diminta |
 
 ## Risiko dan keterbatasan
@@ -66,7 +66,7 @@ Menautkan seluruh modul juga tidak aman: RBAC menyimpan modul yang boleh dibaca,
 1. **Daftar rute manual.** Setiap halaman admin baru harus ditambahkan ke `RUTE_ADMIN_TERSEDIA`; bila lupa, modulnya tetap berlabel "Segera" meski halamannya sudah ada. Ini disengaja agar tidak ada 404, tetapi menimbulkan pekerjaan perawatan.
 2. **Daftar "Segera" bisa panjang** untuk role dengan banyak izin, sehingga sidebar terasa penuh. Bila mengganggu, alternatifnya menyembunyikan modul yang belum siap.
 3. **Satu query tambahan** (`listModules`) pada setiap render layout admin. Belum diukur dampaknya; `listModules` sudah ada dan tidak menambah pola akses baru.
-4. Belum ada test yang merender komponen sidebar (butuh DOM testing yang belum dipakai proyek); logika yang diuji adalah fungsi murni, bukan output React.
+4. Belum ada test yang merender komponen sidebar (butuh DOM testing yang belum dipakai proyek); logika yang diuji adalah fungsi murni, bukan output React. Integration suite lulus tetapi tidak menyentuh sidebar karena komponen tidak dirender di sana.
 
 ## Kesimpulan
 
