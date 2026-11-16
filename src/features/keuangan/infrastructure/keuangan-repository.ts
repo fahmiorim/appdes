@@ -3,6 +3,7 @@ import "server-only";
 import { and, asc, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db";
+import { denganKunciMysql } from "@/db/kunci-mysql";
 import { keuangan, keuanganTemplate, keuanganTriwulan } from "@/db/schema";
 import {
   formatMoney,
@@ -97,6 +98,13 @@ export interface KeuanganBarisUpsert {
  * Nilai induk dihitung dari penjumlahan anak langsungnya; perhitungan dilakukan
  * di aplikasi (bukan trigger) agar idempoten dan mudah diuji. Penulisan memakai
  * UPSERT keyed pada (village, tahun, template).
+ *
+ * Baca-ubah-tulis ini tidak aman bila dua penyimpanan berjalan bersamaan:
+ * keduanya membaca agregasi lama lalu saling menimpa, sehingga induk bisa
+ * tertinggal dari jumlah anaknya. Karena baris tahun anggaran belum tentu ada,
+ * `SELECT ... FOR UPDATE` tidak cukup; seluruh blok diserialkan dengan kunci
+ * MySQL per (desa, tahun), dan penulisan tetap dalam satu transaksi agar
+ * pembaca lain melihat hasil lengkap atau tidak sama sekali.
  */
 export async function saveKeuanganNilai(
   villageId: number,
@@ -107,85 +115,89 @@ export async function saveKeuanganNilai(
   const template = await listTemplate();
   if (template.length === 0) return;
 
-  // Nilai eksisting tahun ini, lalu ditimpa oleh input.
-  const existing = await db
-    .select({
-      templateUuid: keuangan.templateUuid,
-      anggaran: keuangan.anggaran,
-      realisasi: keuangan.realisasi,
-    })
-    .from(keuangan)
-    .where(and(eq(keuangan.villageId, villageId), eq(keuangan.tahun, tahun)));
+  await denganKunciMysql(`keuangan:${villageId}:${tahun}`, () =>
+    db.transaction(async (tx) => {
+      // Nilai eksisting tahun ini, lalu ditimpa oleh input.
+      const existing = await tx
+        .select({
+          templateUuid: keuangan.templateUuid,
+          anggaran: keuangan.anggaran,
+          realisasi: keuangan.realisasi,
+        })
+        .from(keuangan)
+        .where(and(eq(keuangan.villageId, villageId), eq(keuangan.tahun, tahun)));
 
-  const agg = new Map<string, { anggaran: bigint; realisasi: bigint }>();
-  for (const row of existing) {
-    agg.set(row.templateUuid, {
-      anggaran: toMinor(row.anggaran),
-      realisasi: toMinor(row.realisasi),
-    });
-  }
-  for (const row of input) {
-    agg.set(row.templateUuid, {
-      anggaran: toMinor(row.anggaran),
-      realisasi: toMinor(row.realisasi),
-    });
-  }
-
-  // Hitung ulang induk dari level terdalam ke akar.
-  const childrenByParent = new Map<string, string[]>();
-  for (const item of template) {
-    if (!item.parentUuid) continue;
-    const list = childrenByParent.get(item.parentUuid) ?? [];
-    list.push(item.uuid);
-    childrenByParent.set(item.parentUuid, list);
-  }
-
-  const byDepthDesc = [...template].sort(
-    (a, b) => b.uuid.split(".").length - a.uuid.split(".").length,
-  );
-
-  for (const item of byDepthDesc) {
-    const children = childrenByParent.get(item.uuid) ?? [];
-    if (children.length === 0) continue;
-
-    let sumA = 0n;
-    let sumR = 0n;
-    for (const child of children) {
-      const value = agg.get(child);
-      if (value) {
-        sumA += value.anggaran;
-        sumR += value.realisasi;
+      const agg = new Map<string, { anggaran: bigint; realisasi: bigint }>();
+      for (const row of existing) {
+        agg.set(row.templateUuid, {
+          anggaran: toMinor(row.anggaran),
+          realisasi: toMinor(row.realisasi),
+        });
       }
-    }
+      for (const row of input) {
+        agg.set(row.templateUuid, {
+          anggaran: toMinor(row.anggaran),
+          realisasi: toMinor(row.realisasi),
+        });
+      }
 
-    // Baris yang boleh diisi langsung (akun/bidang/kegiatan) menyimpan nilai
-    // eksplisit. Jangan timpa dengan nol saat seluruh anaknya masih kosong —
-    // mis. pengguna baru mengisi pagu di tingkat kegiatan.
-    if (sumA === 0n && sumR === 0n && agg.has(item.uuid)) continue;
+      // Hitung ulang induk dari level terdalam ke akar.
+      const childrenByParent = new Map<string, string[]>();
+      for (const item of template) {
+        if (!item.parentUuid) continue;
+        const list = childrenByParent.get(item.parentUuid) ?? [];
+        list.push(item.uuid);
+        childrenByParent.set(item.parentUuid, list);
+      }
 
-    agg.set(item.uuid, { anggaran: sumA, realisasi: sumR });
-  }
+      const byDepthDesc = [...template].sort(
+        (a, b) => b.uuid.split(".").length - a.uuid.split(".").length,
+      );
 
-  const toWrite = [...agg.entries()].map(([templateUuid, value]) => ({
-    villageId,
-    tahun,
-    templateUuid,
-    anggaran: formatMoney(value.anggaran),
-    realisasi: formatMoney(value.realisasi),
-    createdBy,
-  }));
+      for (const item of byDepthDesc) {
+        const children = childrenByParent.get(item.uuid) ?? [];
+        if (children.length === 0) continue;
 
-  if (toWrite.length === 0) return;
+        let sumA = 0n;
+        let sumR = 0n;
+        for (const child of children) {
+          const value = agg.get(child);
+          if (value) {
+            sumA += value.anggaran;
+            sumR += value.realisasi;
+          }
+        }
 
-  await db
-    .insert(keuangan)
-    .values(toWrite)
-    .onDuplicateKeyUpdate({
-      set: {
-        anggaran: sql`VALUES(${sql.raw("anggaran")})`,
-        realisasi: sql`VALUES(${sql.raw("realisasi")})`,
-      },
-    });
+        // Baris yang boleh diisi langsung (akun/bidang/kegiatan) menyimpan
+        // nilai eksplisit. Jangan timpa dengan nol saat seluruh anaknya masih
+        // kosong — mis. pengguna baru mengisi pagu di tingkat kegiatan.
+        if (sumA === 0n && sumR === 0n && agg.has(item.uuid)) continue;
+
+        agg.set(item.uuid, { anggaran: sumA, realisasi: sumR });
+      }
+
+      const toWrite = [...agg.entries()].map(([templateUuid, value]) => ({
+        villageId,
+        tahun,
+        templateUuid,
+        anggaran: formatMoney(value.anggaran),
+        realisasi: formatMoney(value.realisasi),
+        createdBy,
+      }));
+
+      if (toWrite.length === 0) return;
+
+      await tx
+        .insert(keuangan)
+        .values(toWrite)
+        .onDuplicateKeyUpdate({
+          set: {
+            anggaran: sql`VALUES(${sql.raw("anggaran")})`,
+            realisasi: sql`VALUES(${sql.raw("realisasi")})`,
+          },
+        });
+    }),
+  );
 }
 
 // --- Realisasi per triwulan ------------------------------------------------

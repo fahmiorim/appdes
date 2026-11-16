@@ -322,12 +322,25 @@ export async function prosesPermohonan(
     throw conflict("Perubahan status permohonan tidak sesuai alur.");
   }
 
+  // Kunci optimistik: update hanya berlaku bila status masih sama dengan yang
+  // dibaca di atas. Dua operator yang memproses bersamaan tidak dapat saling
+  // menimpa; yang kalah mendapat konflik dan harus memuat ulang data.
   const [result] = await db
     .update(permohonanSurat)
     .set({ status: nextStatus, alasan: alasan || null })
-    .where(and(eq(permohonanSurat.villageId, villageId), eq(permohonanSurat.id, id)));
+    .where(
+      and(
+        eq(permohonanSurat.villageId, villageId),
+        eq(permohonanSurat.id, id),
+        eq(permohonanSurat.status, current.status),
+      ),
+    );
 
-  if (result.affectedRows === 0) throw conflict("Permohonan tidak ditemukan.");
+  if (result.affectedRows === 0) {
+    throw conflict(
+      "Permohonan sudah diproses pengguna lain. Muat ulang data sebelum mencoba lagi.",
+    );
+  }
 }
 
 export async function kembalikanPermohonan(villageId: number, id: number, alasan: string) {
