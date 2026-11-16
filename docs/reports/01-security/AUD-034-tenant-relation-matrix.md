@@ -240,3 +240,22 @@ Batch 4B menutup lima relasi `ON DELETE CASCADE` yang kolom child-nya `NOT NULL`
 Implementasi dan hasil test tercatat pada `docs/reports/01-security/AUD-034-batch-4b-cascade-composite-fk.md`.
 
 **Sisa Matriks B2:** 11 relasi — 10 relasi `SET NULL` (8 di antaranya menunggu transaksi aplikasi) dan `users.role_id` yang tidak layak dijadikan composite FK. Pemetaan per relasi ada pada `AUD-034-sisa-16-relasi-b2-2026-11-16.md`. Migration `0007` belum dijalankan pada database produksi mana pun.
+
+## 16. Status setelah Batch 4C-1 (migration 0008)
+
+Batch 4C-1 menutup dua relasi `ON DELETE SET NULL` yang parent-nya tidak memiliki jalur hapus aplikasi:
+
+| Child | Parent | Constraint |
+| --- | --- | --- |
+| `berita.kategori_id` | `berita_kategori` | `berita_kategori_tenant_fk` |
+| `perangkat_desa.jabatan_id` | `jabatan_perangkat` | `perangkat_desa_jabatan_tenant_fk` |
+
+`berita_kategori` dan `jabatan_perangkat` memperoleh `UNIQUE (village_id, id)`. Composite `SET NULL` tidak mungkin dipakai karena `village_id` child `NOT NULL`, sehingga FK baru memakai `ON DELETE RESTRICT`: parent tidak dapat dihapus selama masih dirujuk, dan referensi tidak lagi menjadi yatim secara diam-diam. Preflight `0008` menghitung orphan dan cross-tenant untuk kedua relasi dan gagal-closed tanpa backfill.
+
+Konsekuensi operasional: `DELETE FROM villages` hanya berhasil bila `berita`, `berita_kategori`, `perangkat_desa`, dan `jabatan_perangkat` desa tersebut sudah dibersihkan lebih dulu, karena urutan cascade InnoDB tidak dijamin. Aplikasi tidak memiliki use case hapus desa, sehingga tidak ada jalur produksi yang berubah.
+
+Keputusan lanjutan yang ditetapkan pada batch ini: delapan relasi `SET NULL` yang parent-nya punya jalur hapus aplikasi memakai kebijakan **`RESTRICT` + transaksi aplikasi**, dikerjakan bertahap sebagai 4C-2a (`letter_classifications`, 4 relasi) dan 4C-2b (`analisis_kategori`, `polygon`, `inventaris_kategori`, `kelompok_master`). `users.role_id` tetap app-enforced karena role platform sah memiliki `village_id IS NULL`.
+
+Implementasi dan hasil test tercatat pada `docs/reports/01-security/AUD-034-batch-4c1-restrict-composite-fk.md`.
+
+**Sisa Matriks B2:** 9 relasi — 8 relasi `SET NULL` yang menunggu transaksi aplikasi (4C-2a/4C-2b) dan `users.role_id`. Migration `0008` belum dijalankan pada database produksi mana pun dan bergantung pada `0007` yang belum merged.
