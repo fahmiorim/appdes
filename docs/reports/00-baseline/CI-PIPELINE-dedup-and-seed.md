@@ -53,8 +53,12 @@ Statistik: `24` baris ditambah, `108` baris dihapus (workflow turun menjadi 270 
 | `git ls-tree -r main --name-only scripts/visual-qa` | **PASS** — `seed.mjs` dan `guard.mjs` ada di base |
 | `grep "visual:qa:seed" package.json` | **PASS** — skrip menunjuk `node scripts/visual-qa/seed.mjs` |
 | `npm run format:check` (repo penuh) | **PASS** pada branch ini |
+| `npm run test:integration` | **PASS** — 34 file, 206 test, terhadap MySQL 8.0.30 disposable `desa_test` @ `127.0.0.1:3307` |
+| `npm run build` | **PASS** — `next build` selesai |
 | Menjalankan workflow di GitHub Actions | **SKIPPED** — hanya bisa diverifikasi setelah push/PR |
-| `npm run build` dan job visual lokal | **SKIPPED** — memerlukan MySQL dan Chromium |
+| Job visual lokal (Playwright) | **SKIPPED** — memerlukan Chromium dan seed visual |
+
+Integration test dan build dijalankan pada MySQL 8.0.30 lokal dengan data directory sementara di direktori temp (port 3307, database `desa_test`), bukan pada Docker: daemon Docker Desktop tidak aktif di mesin ini dan WSL belum diaktifkan. Database pengembangan tidak dipakai.
 
 ## Risiko dan keterbatasan
 
@@ -63,6 +67,7 @@ Statistik: `24` baris ditambah, `108` baris dihapus (workflow turun menjadi 270 
 3. **Fixture visual berubah** (data lebih lengkap, termasuk layer GIS). Run pertama bisa memunculkan perbedaan gambar yang sebelumnya tidak terlihat; itu bukan regresi tampilan.
 4. **Seed menolak jalan bila tenant `sukamaju` sudah ada.** Di CI database selalu baru, tetapi bila job dijalankan ulang pada container yang sama, langkah seed akan gagal dengan pesan reset — perilaku ini disengaja.
 5. Workflow belum pernah dieksekusi; kesalahan semantik YAML (mis. nama context) hanya akan terlihat saat run pertama.
+6. Integration test membuktikan aplikasi berjalan pada database bersih, tetapi belum membuktikan langkah seed maupun tangkapan layar di dalam workflow.
 
 ## Kesimpulan
 
