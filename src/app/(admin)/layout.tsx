@@ -5,6 +5,7 @@ import { AdminSidebar } from "@/components/shell/admin-sidebar";
 import { AdminTopbar } from "@/components/shell/admin-topbar";
 import { getNamaDesaUseCase } from "@/features/desa/application/use-cases";
 import { isSuperAdminUser } from "@/features/multi-desa/application/provisioning-use-cases";
+import { getMenuForUser } from "@/features/navigation/application/get-menu";
 import { DEFAULT_RESOURCE, hasPermission } from "@/features/rbac/application/authorization";
 import { verifySession } from "@/lib/dal";
 
@@ -25,11 +26,18 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
     redirect("/masuk");
   }
 
-  const villageName = user.villageId === null ? null : await getNamaDesaUseCase(user.villageId);
+  const [villageName, menu] = await Promise.all([
+    user.villageId === null ? Promise.resolve(null) : getNamaDesaUseCase(user.villageId),
+    getMenuForUser(user),
+  ]);
 
   return (
     <div className="admin-frame">
-      <AdminSidebar canReadDashboard={canReadDashboard} isPlatformAdmin={isPlatformAdmin} />
+      <AdminSidebar
+        menu={menu}
+        canReadDashboard={canReadDashboard}
+        isPlatformAdmin={isPlatformAdmin}
+      />
       <div className="admin-main">
         <AdminTopbar
           name={user.name}
