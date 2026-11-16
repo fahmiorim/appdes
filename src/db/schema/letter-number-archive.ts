@@ -1,4 +1,12 @@
-import { index, int, mysqlTable, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import {
+  foreignKey,
+  index,
+  int,
+  mysqlTable,
+  timestamp,
+  uniqueIndex,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { letters } from "./letters";
 import { villages } from "./village";
@@ -11,7 +19,7 @@ export const letterNumberArchive = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    letterId: int("letter_id").references(() => letters.id, { onDelete: "set null" }),
+    letterId: int("letter_id"),
     number: varchar("number", { length: 50 }).notNull(),
     sequence: int("sequence").notNull(),
     year: int("year").notNull(),
@@ -30,6 +38,14 @@ export const letterNumberArchive = mysqlTable(
       table.year,
     ),
     index("letter_number_archive_year_idx").on(table.villageId, table.year),
+    index("letter_number_archive_village_letter_idx").on(table.villageId, table.letterId),
+    // Composite `RESTRICT`: `village_id` child NOT NULL, sehingga composite
+    // `SET NULL` tidak mungkin. `deleteSurat` melepas `letter_id` lebih dulu.
+    foreignKey({
+      name: "letter_number_archive_letter_tenant_fk",
+      columns: [table.villageId, table.letterId],
+      foreignColumns: [letters.villageId, letters.id],
+    }).onDelete("restrict"),
   ],
 );
 

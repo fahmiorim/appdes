@@ -39,6 +39,8 @@ export default defineConfig({
       "src/db/b4c2a-tenant-migration-guard.integration.test.ts",
       "src/db/b4c2b-remaining-relations-composite-fk.integration.test.ts",
       "src/db/b4c2b-tenant-migration-guard.integration.test.ts",
+      "src/db/b5-set-null-relations-composite-fk.integration.test.ts",
+      "src/db/b5-tenant-migration-guard.integration.test.ts",
       "src/db/tenant-composite-fk.integration.test.ts",
       "src/features/agenda/infrastructure/agenda-repository.integration.test.ts",
       "src/features/bantuan/integrasi-warga.test.ts",

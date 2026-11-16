@@ -78,6 +78,13 @@
       "when": 1794819225677,
       "tag": "0010_b4c2b_remaining_relations_restrict",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1794824249004,
+      "tag": "0011_b1_set_null_relations_composite_fk",
+      "breakpoints": true
     }
   ]
 }

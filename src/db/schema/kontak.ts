@@ -20,7 +20,7 @@ export const kontak = mysqlTable(
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
     /** Opsional: tautkan kontak ke penduduk desa (NIK). Bisa null untuk kontak eksternal. */
-    residentId: int("resident_id").references(() => residents.id, { onDelete: "set null" }),
+    residentId: int("resident_id"),
     nama: varchar("nama", { length: 100 }).notNull(),
     telepon: varchar("telepon", { length: 20 }),
     email: varchar("email", { length: 100 }),
@@ -41,6 +41,13 @@ export const kontak = mysqlTable(
     uniqueIndex("kontak_village_email_uq").on(t.villageId, t.email),
     index("kontak_village_idx").on(t.villageId),
     index("kontak_village_resident_idx").on(t.villageId, t.residentId),
+    // Composite `RESTRICT`: `village_id` child NOT NULL, sehingga composite
+    // `SET NULL` tidak mungkin. Repository melepas `resident_id` lebih dulu.
+    foreignKey({
+      name: "kontak_resident_tenant_fk",
+      columns: [t.villageId, t.residentId],
+      foreignColumns: [residents.villageId, residents.id],
+    }).onDelete("restrict"),
   ],
 );
 

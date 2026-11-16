@@ -210,6 +210,14 @@ export async function deleteSurat(villageId: number, id: number): Promise<void> 
       .update(permohonanSurat)
       .set({ letterId: null })
       .where(and(eq(permohonanSurat.villageId, villageId), eq(permohonanSurat.letterId, id)));
+    // Arsip nomor surat memakai composite FK `RESTRICT` sejak migration 0011,
+    // sehingga referensinya dilepas eksplisit sebelum surat dihapus.
+    await tx
+      .update(letterNumberArchive)
+      .set({ letterId: null })
+      .where(
+        and(eq(letterNumberArchive.villageId, villageId), eq(letterNumberArchive.letterId, id)),
+      );
     await tx.delete(letters).where(and(eq(letters.villageId, villageId), eq(letters.id, id)));
   });
 }

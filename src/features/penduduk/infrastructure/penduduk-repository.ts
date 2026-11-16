@@ -9,15 +9,21 @@ import {
   citizenships,
   educations,
   families,
+  familyMemberLogs,
   familyRelations,
+  kontak,
+  lapak,
   letters,
   maritalStatuses,
+  notifikasiTerkirim,
   occupations,
+  pendapat,
   regions,
   religions,
   residentMutations,
   residents,
   suplemenTerdata,
+  users,
 } from "@/db/schema";
 import {
   HEAD_OF_FAMILY_RELATION_ID,
@@ -580,6 +586,12 @@ export async function updatePenduduk(
  * `suplemen_terdata` memakai FK `RESTRICT` pada composite key, jadi pelepasan
  * harus eksplisit di sini. Sebaliknya `dtks_anggota` sengaja tetap `RESTRICT`:
  * penduduk yang tercatat sebagai anggota DTKS harus dikeluarkan dari DTKS dulu.
+ *
+ * Sejak migration `0011`, `kontak`, `lapak`, `notifikasi_terkirim`, `pendapat`,
+ * `family_member_logs`, dan `users` memakai composite FK `RESTRICT`
+ * `(village_id, resident_id)`. Composite `SET NULL` tidak mungkin karena
+ * `village_id` child `NOT NULL`, sehingga efek bisnis `SET NULL` dipertahankan
+ * dengan mengosongkan `resident_id` lebih dulu di transaksi yang sama.
  */
 export async function deletePenduduk(villageId: number, id: number): Promise<void> {
   await db.transaction(async (tx) => {
@@ -595,6 +607,32 @@ export async function deletePenduduk(villageId: number, id: number): Promise<voi
       .update(suplemenTerdata)
       .set({ pendudukId: null })
       .where(and(eq(suplemenTerdata.villageId, villageId), eq(suplemenTerdata.pendudukId, id)));
+    await tx
+      .update(kontak)
+      .set({ residentId: null })
+      .where(and(eq(kontak.villageId, villageId), eq(kontak.residentId, id)));
+    await tx
+      .update(lapak)
+      .set({ residentId: null })
+      .where(and(eq(lapak.villageId, villageId), eq(lapak.residentId, id)));
+    await tx
+      .update(notifikasiTerkirim)
+      .set({ residentId: null })
+      .where(
+        and(eq(notifikasiTerkirim.villageId, villageId), eq(notifikasiTerkirim.residentId, id)),
+      );
+    await tx
+      .update(pendapat)
+      .set({ residentId: null })
+      .where(and(eq(pendapat.villageId, villageId), eq(pendapat.residentId, id)));
+    await tx
+      .update(familyMemberLogs)
+      .set({ residentId: null })
+      .where(and(eq(familyMemberLogs.villageId, villageId), eq(familyMemberLogs.residentId, id)));
+    // Dibuat tanpa filter desa: akun platform memiliki `village_id NULL` dan
+    // tidak diperiksa composite FK, jadi pelepasan harus mencakup baris itu
+    // agar tidak menyisakan `resident_id` yatim.
+    await tx.update(users).set({ residentId: null }).where(eq(users.residentId, id));
     await tx.delete(residents).where(and(eq(residents.villageId, villageId), eq(residents.id, id)));
   });
 }

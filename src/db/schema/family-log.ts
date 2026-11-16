@@ -1,4 +1,4 @@
-import { index, int, mysqlEnum, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { foreignKey, index, int, mysqlEnum, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 import { users } from "./auth";
 import { families } from "./family";
@@ -14,8 +14,10 @@ import { villages } from "./village";
  * dikeluarkan, atau berubah hubungan) beserta nama penduduk saat kejadian agar
  * riwayat tetap terbaca walau penduduknya kemudian dihapus.
  *
- * `familyId` dibuat `set null` (bukan cascade) supaya menghapus KK tidak
- * menghapus riwayat anggotanya.
+ * `familyId` dan `residentId` dilepas (bukan cascade) supaya menghapus KK atau
+ * penduduk tidak menghapus riwayat anggotanya. Composite FK memakai `RESTRICT`
+ * karena `village_id` child NOT NULL; repository (bukan database) yang
+ * mengosongkan referensi dalam transaksi sebelum parent dihapus.
  */
 export const AKSI_LOG_ANGGOTA_KK = ["added", "removed", "role_changed"] as const;
 
@@ -26,8 +28,8 @@ export const familyMemberLogs = mysqlTable(
     villageId: int("village_id")
       .notNull()
       .references(() => villages.id, { onDelete: "cascade" }),
-    familyId: int("family_id").references(() => families.id, { onDelete: "set null" }),
-    residentId: int("resident_id").references(() => residents.id, { onDelete: "set null" }),
+    familyId: int("family_id"),
+    residentId: int("resident_id"),
     /** Nama penduduk pada saat perubahan dicatat. */
     residentName: varchar("resident_name", { length: 100 }).notNull(),
     aksi: mysqlEnum("aksi", AKSI_LOG_ANGGOTA_KK).notNull(),
@@ -43,6 +45,18 @@ export const familyMemberLogs = mysqlTable(
     index("family_member_logs_family_idx").on(t.familyId, t.createdAt),
     index("family_member_logs_village_idx").on(t.villageId),
     index("family_member_logs_resident_idx").on(t.residentId),
+    index("family_member_logs_village_family_idx").on(t.villageId, t.familyId),
+    index("family_member_logs_village_resident_idx").on(t.villageId, t.residentId),
+    foreignKey({
+      name: "family_member_logs_family_tenant_fk",
+      columns: [t.villageId, t.familyId],
+      foreignColumns: [families.villageId, families.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "family_member_logs_resident_tenant_fk",
+      columns: [t.villageId, t.residentId],
+      foreignColumns: [residents.villageId, residents.id],
+    }).onDelete("restrict"),
   ],
 );
 

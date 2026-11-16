@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   boolean,
+  foreignKey,
   index,
   int,
   mysqlTable,
@@ -41,7 +42,7 @@ export const users = mysqlTable(
     lastLoginAt: timestamp("last_login_at"),
     mustChangePin: boolean("must_change_pin").notNull().default(true),
     otpLoginAktif: boolean("otp_login_aktif").notNull().default(false),
-    residentId: int("resident_id").references(() => residents.id, { onDelete: "set null" }),
+    residentId: int("resident_id"),
 
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
@@ -56,6 +57,15 @@ export const users = mysqlTable(
     // Satu akun warga per penduduk. MySQL mengizinkan banyak NULL, sehingga
     // akun staf (tanpa residentId) tetap aman.
     uniqueIndex("users_resident_uq").on(t.residentId),
+    index("users_village_resident_idx").on(t.villageId, t.residentId),
+    // Composite `RESTRICT` untuk akun warga. Pengguna platform punya
+    // `village_id IS NULL`, dan MySQL melewati pemeriksaan FK bila salah satu
+    // kolom NULL, sehingga akun platform tidak terikat aturan ini.
+    foreignKey({
+      name: "users_resident_tenant_fk",
+      columns: [t.villageId, t.residentId],
+      foreignColumns: [residents.villageId, residents.id],
+    }).onDelete("restrict"),
   ],
 );
 
