@@ -5,8 +5,8 @@
 - **Status:** Diterima
 - **Branch:** `task/AUD-034-users-role-id-app-enforced`
 - **Base commit:** `30b81de4be06a39298ec23d2b319cb14740840a8` (`main` setelah PR #80)
-- **Commit hasil:** akan diisi setelah commit.
-- **PR:** akan diisi setelah PR dibuat.
+- **Commit keputusan:** `200179fc8ea09c37602455b0c232665836236058`
+- **PR:** [#82](https://github.com/fahmiorim/appdes/pull/82) — terbuka untuk review.
 
 ## Konteks
 
