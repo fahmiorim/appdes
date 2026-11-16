@@ -59,7 +59,8 @@ Menautkan seluruh modul juga tidak aman: RBAC menyimpan modul yang boleh dibaca,
 | `npm run test:unit` | **PASS** — 198 file, 1.762 test (termasuk 8 test baru `menu-tampil.test.ts`) |
 | `npm run test:integration` | **PASS** — 34 file, 206 test, terhadap MySQL 8.0.30 disposable `desa_test` @ `127.0.0.1:3307` |
 | `npm run build` | **PASS** — `next build` selesai, seluruh rute terkompilasi |
-| Verifikasi di browser | **SKIPPED** — tidak diminta |
+| GitHub Actions — PR #74 | **PASS** — [run 43821834426](https://github.com/fahmiorim/appdes/actions/runs/43821834426): quality check, integration MySQL 8, visual QA login, dan ringkasan semuanya `success` |
+| Verifikasi di browser | **SKIPPED** — tidak diminta; job visual CI hanya menangkap halaman masuk, bukan sidebar admin |
 
 ## Risiko dan keterbatasan
 
