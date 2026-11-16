@@ -79,14 +79,15 @@ Perbaikan:
 | `npm run test:unit` | **PASS** — 198 file, 1.758 test (termasuk 4 test ubah PIN) |
 | `npm run test:integration` | **PASS** — 34 file, 206 test, terhadap MySQL 8.0.30 disposable `desa_test` @ `127.0.0.1:3307` |
 | `npm run build` | **PASS** — `next build` selesai, seluruh rute baru berstatus dynamic (`ƒ`) |
-| Visual QA / render di browser | **SKIPPED** — memerlukan Chromium dan seed visual; tidak diminta |
+| GitHub Actions — PR #73 | **PASS** — [run 43821832097](https://github.com/fahmiorim/appdes/actions/runs/43821832097): quality check, integration MySQL 8, visual QA login, dan ringkasan semuanya `success` |
+| Verifikasi tampilan halaman warga di browser | **SKIPPED** — job visual CI hanya menangkap halaman masuk; halaman baru belum pernah dirender dengan data nyata |
 | Verifikasi di browser | **SKIPPED** — tidak diminta dan tidak ada database siap |
 
 ## Risiko dan keterbatasan
 
 1. **Dua operasi tulis tetap tidak atomik.** Retry dan pesan khusus membuat kegagalan bisa dipulihkan, tetapi bila database menolak penulisan secara permanen, warga masih harus mengulang ubah PIN secara manual (dengan PIN baru sebagai "PIN lama"). Perbaikan penuh memerlukan penulisan penanda di dalam alur better-auth yang sama.
 2. **Rate limit ubah PIN** bergantung pada konfigurasi better-auth; belum diuji pada sesi ini.
-3. Integration test berjalan pada MySQL disposable yang dibuat manual untuk sesi ini, bukan pada pipeline CI.
+3. Integration test lulus baik pada MySQL disposable lokal (8.0.30) maupun pada job CI.
 4. Tampilan hanya diverifikasi lewat build dan typecheck, belum dirender dengan data nyata.
 5. Format NIK pada beranda hanya menampilkan nilai apa adanya; belum ada masking.
 
