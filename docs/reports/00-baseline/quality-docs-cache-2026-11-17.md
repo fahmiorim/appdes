@@ -4,7 +4,7 @@
 - **Tanggal:** 17 November 2026
 - **Branch:** `task/quality-docs-cache-2026-11-17`
 - **Base commit:** `e65485e3dad391046c976aa668fba15ce9891e3c` (`main`)
-- **Status:** siap review; commit dan hasil CI dicatat setelah PR
+- **Status:** siap review; PR #99 sudah merged, verifikasi PR dokumentasi murni menyusul
 
 ## 1. Kondisi awal
 
@@ -80,8 +80,9 @@ yang diubah. Tidak ada test yang dihapus atau dilemahkan.
 | Klasifikasi kode | file `infrastructure` | **PASS**: `code=true`, integration/build `true` |
 | Integration lokal | tidak dijalankan | **SKIPPED**: hanya workflow; butuh MySQL disposable |
 | Build lokal | tidak dijalankan | **SKIPPED**: tidak ada perubahan source |
-| CI PR | GitHub Actions | **PENDING** — diverifikasi setelah PR |
-| Warm cache | workflow_dispatch setelah merge | **PENDING** — perlu dijalankan sekali |
+| CI PR #99 | GitHub Actions | **PASS**: quality, integration (skip), build (skip), ringkasan sukses |
+| Warm cache | workflow_dispatch `44108993475` | **PASS**: job 62 detik, cache `main` 153 MB |
+| Quality PR dokumentasi murni | PR verifikasi setelah merge | **PENDING** — diukur pada PR ini |
 
 ## 6. Risiko dan batasan
 
