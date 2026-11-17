@@ -1,6 +1,5 @@
 import "server-only";
 
-import { randomInt } from "node:crypto";
 import { hashPassword } from "better-auth/crypto";
 import { z } from "zod";
 
@@ -12,6 +11,7 @@ import {
   kuotaMediaSchema,
   statusDesaSchema,
 } from "@/features/multi-desa/domain/kelola-desa";
+import { buatSandiSementara } from "@/features/multi-desa/domain/sandi-sementara";
 import {
   findAdminDesa,
   getDesaKelola,
@@ -173,17 +173,6 @@ export async function jadikanDomainUtamaDesa(input: unknown): Promise<void> {
     resourceId: String(parsed.domainId),
     details: { nama: desa.name, aksi: "utama" },
   });
-}
-
-/** Karakter sandi sementara: hindari huruf/angka yang mudah tertukar. */
-const HURUF_SANDI = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
-
-function buatSandiSementara(panjang = 12): string {
-  let sandi = "";
-  for (let i = 0; i < panjang; i += 1) {
-    sandi += HURUF_SANDI[randomInt(0, HURUF_SANDI.length)];
-  }
-  return sandi;
 }
 
 export interface HasilResetAdmin {

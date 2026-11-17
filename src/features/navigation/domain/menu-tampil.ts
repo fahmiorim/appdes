@@ -15,7 +15,16 @@
  * Tambahkan path di sini ketika halaman barunya dibuat. Ini sengaja berupa
  * daftar eksplisit: menebak dari `modules.url` akan menghasilkan tautan mati.
  */
-export const RUTE_ADMIN_TERSEDIA: readonly string[] = ["/beranda", "/super-admin"];
+export const RUTE_ADMIN_TERSEDIA: readonly string[] = [
+  "/beranda",
+  "/super-admin",
+  "/super-admin/tenant",
+  "/super-admin/domain",
+  "/super-admin/pengguna",
+  "/super-admin/audit",
+  "/super-admin/template",
+  "/super-admin/pengaturan",
+];
 
 export interface MenuNodeLike {
   label: string;

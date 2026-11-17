@@ -66,15 +66,15 @@ Bagian ini mencatat fitur yang lazim dimiliki konsol Super Admin pada produk Saa
 
 | Menu | Isi umum | Status di `main` |
 |---|---|---|
-| Ringkasan / Dashboard | KPI jumlah tenant, tenant aktif, pengguna, penduduk agregat, aktivitas terbaru | Ada — KPI dan tabel tenant pada `/super-admin` |
-| Tenant / Desa | Daftar tenant, cari dan filter, provisioning, detail, aktif/nonaktif, kuota media, reset akses admin, ekspor, purge | Ada — seluruh aksi berada pada satu halaman `/super-admin` |
-| Domain | Domain utama dan alias per tenant, status verifikasi DNS, status sertifikat | Sebagian — kelola alias per tenant; verifikasi DNS/SSL belum ada |
-| Pengguna platform | Akun super admin dan staf platform, role, MFA, sesi aktif, undangan anggota tim | Belum — hanya akun platform hasil bootstrap |
+| Ringkasan / Dashboard | KPI jumlah tenant, tenant aktif, pengguna, penduduk agregat, aktivitas terbaru | Ada — KPI, tenant terbaru, feed audit terbaru, dan daftar "perlu perhatian" pada `/super-admin` |
+| Tenant / Desa | Daftar tenant, cari dan filter, provisioning, detail, aktif/nonaktif, kuota media, reset akses admin, ekspor, purge | Ada — seluruh aksi pada `/super-admin/tenant` |
+| Domain | Domain utama dan alias per tenant, status verifikasi DNS, status sertifikat | Sebagian — daftar lintas desa di `/super-admin/domain` dan kelola alias di panel tenant; verifikasi DNS/SSL belum ada |
+| Pengguna platform | Akun super admin dan staf platform, role, MFA, sesi aktif, undangan anggota tim | Ada — `/super-admin/pengguna` menampilkan daftar, membuat akun platform, aktif/nonaktif, reset sandi sementara, dan cabut sesi; MFA dan undangan email belum ada |
 | Langganan / paket | Paket, kuota, masa aktif, tagihan, invoice, riwayat pembayaran | Belum — belum ada model komersial |
-| Audit trail | Log aksi sensitif lintas tenant: aktor, waktu, IP, perubahan | Sebagian — event sudah ditulis, belum ada UI pembacaan lintas tenant |
+| Audit trail | Log aksi sensitif lintas tenant: aktor, waktu, IP, perubahan | Ada — `/super-admin/audit` dengan pencarian, filter desa/peristiwa, paginasi, detail perubahan, dan ekspor CSV hingga 5.000 baris |
 | Monitor dan kesehatan | Status basis data dan penyimpanan, antrean job, backup terakhir, error rate | Belum |
-| Template dan konten | Template tenant baru (role, modul, tema, menu publik), tema, katalog surat | Sebagian — template platform ada di kode dan CLI, belum ada UI |
-| Pengaturan platform | Identitas platform, SMTP, kuota default, kebijakan retensi | Belum |
+| Template dan konten | Template tenant baru (role, modul, tema, menu publik), tema, katalog surat | Sebagian — `/super-admin/template` menampilkan isi template baca-saja; editor template belum ada |
+| Pengaturan platform | Identitas platform, SMTP, kuota default, kebijakan retensi | Sebagian — `/super-admin/pengaturan` menampilkan konfigurasi aktif baca-saja (tanpa rahasia); pengubahan tetap lewat environment |
 | Dukungan | Tiket, impersonasi dengan audit, catatan kontak tenant | Belum — impersonasi memerlukan keputusan keamanan tersendiri |
 
 #### Menu lanjutan
@@ -94,7 +94,7 @@ Muncul ketika produk dan jumlah tenant bertambah; bukan prasyarat Fase 2.
 #### Pola tata letak
 
 1. Sidebar tetap dengan grup: **Platform** (Ringkasan), **Tenant** (Desa, Domain, Langganan), **Operasional** (Audit, Monitor, Backup), **Pengaturan**.
-2. Ringkasan tidak memuat semua hal: halaman depan berisi KPI, tabel tenant terbaru, dan tautan ke halaman lain. Aksi berat pindah ke halaman atau detail tersendiri.
+2. Ringkasan tidak memuat semua hal: halaman depan berisi KPI, tabel tenant terbaru, dan tautan ke halaman lain. Aksi berat pindah ke halaman atau detail tersendiri. Navigasi antarhalaman cukup lewat sidebar platform; menu tidak diulang sebagai sub-navigasi di dalam halaman agar tidak menduplikasi pilihan yang sama.
 3. Halaman detail per tenant memuat tab: Profil, Domain, Pengguna, Kuota, Ekspor/Retensi, Audit.
 4. Aksi destruktif dipisah ke panel *danger zone* dengan konfirmasi mengetik nama atau slug tenant.
 5. Setiap aksi platform tercatat di audit trail dan dapat dibaca kembali dari konsol, bukan hanya disimpan.
@@ -108,12 +108,14 @@ Muncul ketika produk dan jumlah tenant bertambah; bukan prasyarat Fase 2.
 
 #### Catatan implementasi menu
 
-Menu admin dibangun dari tabel `modules` yang dibatasi tenant, sedangkan akun platform memakai `villageId === null`. Instalasi baru tidak memiliki baris modul platform, sehingga sidebar Super Admin saat ini hanya menampilkan satu tautan **Dashboard platform** yang ditulis tetap di `AdminSidebar`. Menambah menu platform berarti menambah rute halaman, entri menu platform, dan memperbarui daftar rute admin yang dianggap tersedia — bukan sekadar mengubah label.
+Menu admin desa dibangun dari tabel `modules` yang dibatasi tenant, sedangkan akun platform memakai `villageId === null` dan tidak memiliki baris modul. Karena itu menu platform ditulis eksplisit di `src/features/navigation/domain/menu-platform.ts` dan dirender oleh `AdminSidebar` bila pengguna adalah pengelola platform. Menu tersebut tidak diulang di dalam halaman agar tidak ada dua navigasi yang menampilkan pilihan sama. Rute yang sudah ada dicatat pada `RUTE_ADMIN_TERSEDIA` agar menu berbasis modul tidak pernah menautkan halaman yang belum dibuat.
 
 ## 4. Batasan saat ini
 
-- Admin sidebar saat ini baru menampilkan Beranda; kelompok menu di atas adalah target, bukan fitur yang sudah diimplementasikan.
-- Dashboard Super Admin sudah memuat konsol tenant lengkap (provisioning, status, kuota, domain, reset akses, ekspor, purge) tetapi masih pada satu halaman tanpa menu platform terpisah; Audit Trail platform belum memiliki UI.
+- Admin sidebar desa saat ini baru menampilkan Beranda; kelompok menu desa di §2 adalah target, bukan fitur yang sudah diimplementasikan.
+- Konsol Super Admin sudah memiliki tujuh halaman (Ringkasan, Tenant, Domain, Pengguna platform, Audit trail, Template, Pengaturan) dengan menu sidebar dan kerangka visual yang sama. Halaman Template dan Pengaturan masih baca-saja karena sumbernya artefak kode dan environment; MFA, undangan anggota tim, monitor, backup, feature flag per tenant, dan langganan belum ada.
+- Audit trail platform dapat dicari, difilter per desa dan jenis peristiwa, menampilkan detail perubahan, serta diekspor ke CSV (maksimal 5.000 baris per unduhan). Retensi dan arsip audit terpusat belum ada.
+- Pengelolaan pengguna platform hanya menjangkau akun `village_id IS NULL`; akun administrator desa tetap dikelola dari konsol tenant masing-masing.
 - Tidak ada screenshot desain yang menjadi sumber visual langsung untuk dua dashboard ini. Setiap penyimpangan/keputusan produk harus direview dan dicatat sebelum acceptance.
 
 ## 5. Acceptance criteria

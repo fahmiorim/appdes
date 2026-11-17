@@ -22,7 +22,7 @@ Status di bawah menunjukkan keberadaan struktur/kode yang teridentifikasi pada r
 
 | Area | Folder/fitur | Fungsi utama | Status bukti | Prioritas | Catatan lanjutan |
 |---|---|---|---|---|---|
-| Platform multi-desa | `multi-desa`, `desa`, `pelanggan` | Provisioning, domain, status, kuota, akun admin, retensi dan purge | Bootstrap CLI, template platform, konsol `/super-admin`, pengelolaan domain alias, ekspor tenant, purge, dan cleanup ekspor tersedia di `main` | Core platform | Walkthrough konsol dan bootstrap di staging; tinjau template bawaan minimal; pasang dan verifikasi timer cleanup. |
+| Platform multi-desa | `multi-desa`, `desa`, `pelanggan` | Provisioning, domain, status, kuota, akun admin, retensi dan purge | Bootstrap CLI, template platform, konsol platform tujuh halaman (`/super-admin`, tenant, domain, pengguna, audit, template, pengaturan), pengelolaan domain alias, ekspor tenant, purge, cleanup ekspor, pengelolaan akun platform, serta filter dan ekspor audit tersedia di `main` | Core platform | Walkthrough konsol dan bootstrap di staging; halaman template/pengaturan masih baca-saja; MFA dan undangan anggota tim belum ada; tinjau template bawaan minimal; pasang dan verifikasi timer cleanup. |
 | Auth & RBAC | `auth`, `rbac` | Login, sesi, role, permission | Struktur dan use case tersedia | Core | Validasi role ownership dan invalidasi sesi. |
 | Website desa | `publik`, `konten`, `navigation` | Profil, konten, menu, tema, media | Implementasi luas teridentifikasi | Core | Backup media, signature validation, SEO/editor regression. |
 | Profil & wilayah | `wilayah`, `desa`, `gis` | Identitas desa, wilayah, peta | Struktur fitur teridentifikasi | Core | Validasi relasi wilayah pada tenant yang sama. |

@@ -6,6 +6,8 @@ const state = vi.hoisted(() => ({
   requireSuperAdmin: vi.fn(),
   daftarDesaSuperAdmin: vi.fn(),
   daftarSemuaDomain: vi.fn(),
+  daftarPenggunaPlatform: vi.fn(),
+  ambilAuditPlatform: vi.fn(),
   redirect: vi.fn((tujuan: string) => {
     throw Object.assign(new Error("NEXT_REDIRECT"), {
       digest: `NEXT_REDIRECT;replace;${tujuan};307;`,
@@ -21,6 +23,7 @@ const state = vi.hoisted(() => ({
 vi.mock("next/navigation", () => ({
   redirect: state.redirect,
   forbidden: state.forbidden,
+  usePathname: () => "/super-admin",
 }));
 
 vi.mock("@/features/multi-desa/application/provisioning-use-cases", () => ({
@@ -28,10 +31,18 @@ vi.mock("@/features/multi-desa/application/provisioning-use-cases", () => ({
   daftarDesaSuperAdmin: state.daftarDesaSuperAdmin,
 }));
 
-// Halaman memuat domain lewat use case terpisah; tanpa mock ini test akan
-// menyentuh database sungguhan.
+// Halaman memuat domain dan pengguna platform lewat use case terpisah; tanpa
+// mock ini test akan menyentuh database sungguhan.
 vi.mock("@/features/multi-desa/application/kelola-desa-use-cases", () => ({
   daftarSemuaDomain: state.daftarSemuaDomain,
+}));
+
+vi.mock("@/features/multi-desa/application/pengguna-platform-use-cases", () => ({
+  daftarPenggunaPlatform: state.daftarPenggunaPlatform,
+}));
+
+vi.mock("@/features/multi-desa/application/audit-platform-use-cases", () => ({
+  ambilAuditPlatform: state.ambilAuditPlatform,
 }));
 
 vi.mock("@/components/ui/card", () => ({
@@ -42,7 +53,8 @@ const desa = [
   {
     id: 1,
     name: "Desa Sukamaju",
-    code: "SKM",
+    slug: "sukamaju",
+    code: "1207012001",
     domain: "sukamaju.localhost",
     active: true,
     kuotaMediaMb: 100,
@@ -51,6 +63,9 @@ const desa = [
     penduduk: 120,
     jenisSurat: 3,
     createdAt: new Date("2026-01-01"),
+    nonaktifSejak: null,
+    purgedAt: null,
+    adaEksporBerlaku: false,
   },
 ];
 
@@ -81,10 +96,18 @@ describe("SuperAdminPage", () => {
     expect(state.daftarDesaSuperAdmin).not.toHaveBeenCalled();
   });
 
-  it("memuat data tenant setelah guard super admin lolos", async () => {
+  it("memuat ringkasan tenant, domain, dan pengguna platform setelah guard lolos", async () => {
     state.requireSuperAdmin.mockResolvedValue({ id: "platform-1", villageId: null });
     state.daftarDesaSuperAdmin.mockResolvedValue(desa);
     state.daftarSemuaDomain.mockResolvedValue([]);
+    state.daftarPenggunaPlatform.mockResolvedValue([]);
+    state.ambilAuditPlatform.mockResolvedValue({
+      rows: [],
+      total: 0,
+      page: 1,
+      pageSize: 25,
+      pageCount: 1,
+    });
     const { default: SuperAdminPage } = await import("./page");
 
     await expect(SuperAdminPage()).resolves.toBeDefined();
@@ -92,5 +115,7 @@ describe("SuperAdminPage", () => {
     expect(state.redirect).not.toHaveBeenCalled();
     expect(state.daftarDesaSuperAdmin).toHaveBeenCalledOnce();
     expect(state.daftarSemuaDomain).toHaveBeenCalledOnce();
+    expect(state.daftarPenggunaPlatform).toHaveBeenCalledOnce();
+    expect(state.ambilAuditPlatform).toHaveBeenCalledOnce();
   });
 });
