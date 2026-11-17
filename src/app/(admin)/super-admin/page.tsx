@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { forbidden, redirect } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
 import {
@@ -15,16 +15,16 @@ export const metadata: Metadata = {
 };
 
 /**
- * Gerbang halaman: alihkan pengguna yang tidak berhak alih-alih membiarkan
- * `AppError` jatuh ke error boundary. Guard tetap dijalankan di level halaman,
- * bukan hanya di use case data.
+ * Gerbang halaman: tampilkan halaman 403 berisi penjelasan untuk pengguna yang
+ * sudah login tetapi tidak berhak, dan arahkan pengguna tanpa sesi ke masuk.
+ * Guard tetap dijalankan di level halaman, bukan hanya di use case data.
  */
 async function pastikanSuperAdmin(): Promise<void> {
   try {
     await requireSuperAdmin();
   } catch (error) {
     if (isAppError(error) && error.code === "FORBIDDEN") {
-      redirect("/beranda");
+      forbidden();
     }
 
     if (isAppError(error) && error.code === "UNAUTHENTICATED") {

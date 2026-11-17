@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { forbidden, unauthenticated } from "@/lib/errors";
+import { forbidden as buatKesalahanForbidden, unauthenticated } from "@/lib/errors";
 
 const state = vi.hoisted(() => ({
   requireSuperAdmin: vi.fn(),
@@ -10,9 +10,17 @@ const state = vi.hoisted(() => ({
       digest: `NEXT_REDIRECT;replace;${tujuan};307;`,
     });
   }),
+  forbidden: vi.fn(() => {
+    throw Object.assign(new Error("NEXT_HTTP_ERROR_FALLBACK;403"), {
+      digest: "NEXT_HTTP_ERROR_FALLBACK;403",
+    });
+  }),
 }));
 
-vi.mock("next/navigation", () => ({ redirect: state.redirect }));
+vi.mock("next/navigation", () => ({
+  redirect: state.redirect,
+  forbidden: state.forbidden,
+}));
 
 vi.mock("@/features/multi-desa/application/provisioning-use-cases", () => ({
   requireSuperAdmin: state.requireSuperAdmin,
@@ -48,14 +56,15 @@ describe("SuperAdminPage", () => {
     vi.clearAllMocks();
   });
 
-  it("mengalihkan Admin Desa ke beranda tanpa memuat data tenant", async () => {
+  it("menampilkan halaman 403 tanpa memuat data tenant untuk Admin Desa", async () => {
     state.requireSuperAdmin.mockRejectedValue(
-      forbidden("Hanya super admin yang boleh mengelola desa."),
+      buatKesalahanForbidden("Hanya super admin yang boleh mengelola desa."),
     );
     const { default: SuperAdminPage } = await import("./page");
 
-    await expect(SuperAdminPage()).rejects.toThrow("NEXT_REDIRECT");
-    expect(state.redirect).toHaveBeenCalledWith("/beranda");
+    await expect(SuperAdminPage()).rejects.toThrow("NEXT_HTTP_ERROR_FALLBACK;403");
+    expect(state.forbidden).toHaveBeenCalledOnce();
+    expect(state.redirect).not.toHaveBeenCalled();
     expect(state.daftarDesaSuperAdmin).not.toHaveBeenCalled();
   });
 
@@ -65,6 +74,7 @@ describe("SuperAdminPage", () => {
 
     await expect(SuperAdminPage()).rejects.toThrow("NEXT_REDIRECT");
     expect(state.redirect).toHaveBeenCalledWith("/masuk");
+    expect(state.forbidden).not.toHaveBeenCalled();
     expect(state.daftarDesaSuperAdmin).not.toHaveBeenCalled();
   });
 
@@ -74,6 +84,7 @@ describe("SuperAdminPage", () => {
     const { default: SuperAdminPage } = await import("./page");
 
     await expect(SuperAdminPage()).resolves.toBeDefined();
+    expect(state.forbidden).not.toHaveBeenCalled();
     expect(state.redirect).not.toHaveBeenCalled();
     expect(state.daftarDesaSuperAdmin).toHaveBeenCalledOnce();
   });
