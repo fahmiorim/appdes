@@ -1,4 +1,13 @@
-import { boolean, foreignKey, index, int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  boolean,
+  foreignKey,
+  index,
+  int,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { residents } from "./resident";
 import { villages } from "./village";

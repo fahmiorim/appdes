@@ -1,4 +1,12 @@
-import { foreignKey, index, int, mysqlEnum, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  foreignKey,
+  index,
+  int,
+  mysqlEnum,
+  mysqlTable,
+  timestamp,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { users } from "./auth";
 import { families } from "./family";

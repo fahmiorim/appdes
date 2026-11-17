@@ -1,4 +1,12 @@
-import { foreignKey, index, int, mysqlTable, text, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import {
+  foreignKey,
+  index,
+  int,
+  mysqlTable,
+  text,
+  uniqueIndex,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { residents } from "./resident";
 import { villages } from "./village";
