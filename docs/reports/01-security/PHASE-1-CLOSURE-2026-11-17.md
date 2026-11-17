@@ -16,11 +16,19 @@ test integration mengharapkan **68 constraint `%_tenant_fk`**, dan peta
 integration test mencatat **47 test pada 20 modul** beserta **21 test lintas
 modul**.
 
+Pada 17 November 2026, migration tersebut juga dijalankan pada **MySQL 8.0.30
+disposable dari Laragon**. Hasilnya: **12 migration tercatat, 148 tabel, 68
+constraint `%_tenant_fk`**, seluruh **47 suite / 253 integration test lulus**,
+build production lulus, dan smoke test lokal merespons HTTP 200. Bukti ini
+menutup pertanyaan “apakah migration dapat berjalan dari nol”, tetapi **belum
+menutup blocker staging/production** karena tidak memakai data legacy
+representatif, reverse proxy, domain, atau provider eksternal.
+
 Namun Fase 1 **belum dapat ditutup** karena tiga hal:
 
 1. Migration `0001`–`0011` belum memiliki bukti dijalankan pada staging atau
    production. Preflight data nyata, backup, pengukuran lock, dan smoke test
-   dua tenant belum tercatat.
+   dua tenant pada deployment nyata belum tercatat.
 2. Integrasi eksternal TTE dan webhook email baru terbukti pada level kode dan
    regression test. Provider nyata, egress, reverse proxy, dan konfigurasi
    staging belum diverifikasi.
@@ -45,10 +53,15 @@ Pemeriksaan dilakukan dengan:
    `src/db/tenant-composite-fk.integration.test.ts`.
 6. Menjalankan validator peta integration test.
 7. Memeriksa riwayat PR dan status merge pada repository/API.
+8. Membuat database disposable `desa_test_phase1_20261117` dan database staging
+   lokal `sid_staging_local` pada MySQL 8.0.30 Laragon.
+9. Menerapkan seluruh migration pada kedua database dan memeriksa journal,
+   jumlah tabel, serta constraint `%_tenant_fk`.
+10. Menjalankan integration suite, build production, dan smoke test HTTP lokal.
 
-Tidak ada database yang dijalankan, tidak ada migration yang diterapkan, dan
-tidak ada test integration yang dijalankan pada task ini. Semua kesimpulan
-tentang database production/staging adalah **tidak dapat diverifikasi dari
+Tidak ada database production atau staging eksternal yang disentuh. Database
+pengembangan `desa_dev` juga tidak digunakan. Kesimpulan tentang database
+production/staging eksternal tetap **tidak dapat diverifikasi dari
 repository** dan dicatat sebagai blocker, bukan sebagai PASS.
 
 ## 3. Status per item Fase 1
@@ -57,12 +70,12 @@ repository** dan dicatat sebagai blocker, bukan sebagai PASS.
 | --- | --- | --- |
 | Validasi `role.villageId` terhadap `users.villageId`; pengecualian platform Super Admin eksplisit | **Selesai di kode** | AUD-001 dan PR #33. `ensureRoleExists` menolak role desa lain/role platform; RBAC memakai konteks tenant. Keputusan `users.role_id` didokumentasikan di `docs/decisions/ADR-002-users-role-id-app-enforced.md`. |
 | Audit foreign reference penduduk, keluarga, RTM, KIA, surat, kelompok, bantuan, inventaris | **Selesai di kode untuk modul prioritas** | AUD-003, AUD-004, AUD-005, AUD-006, AUD-025, Bantuan, DTKS/Suplemen, dan Inventaris sudah merged. Validasi application layer dan composite FK menjadi lapisan berlapis. |
-| Composite unique dan composite FK untuk relasi tenant-scoped | **Selesai di schema; belum diverifikasi di database target** | Migration `0001`–`0011` tersedia. Test mengharapkan 68 `%_tenant_fk`. Batch B1 (delapan relasi `SET NULL`) masuk melalui PR #84. |
+| Composite unique dan composite FK untuk relasi tenant-scoped | **Selesai di schema; terverifikasi di MySQL lokal; belum di database target** | Migration `0001`–`0011` tersedia dan berhasil diterapkan pada MySQL 8.0.30 disposable/staging lokal: 12 migration, 68 `%_tenant_fk`. Batch B1 (delapan relasi `SET NULL`) masuk melalui PR #84. |
 | Join/agregasi keluarga dan penduduk menyertakan `villageId` | **Selesai di kode** | AUD-011/AUD-012; join DTKS/Suplemen dan repository penduduk/keluarga dibatasi tenant. |
 | Keamanan TTE: origin allowlist, redirect, private/link-local/metadata, TLS | **Selesai di kode dan test; belum diuji ke provider nyata** | PR #2. Test menolak URL lintas origin, redirect, IP internal, dan memaksa TLS. BSrE nyata, egress firewall, dan DNS/TLS staging belum diuji. Aktivasi produksi tetap berada di Fase 6. |
 | Webhook email: forwarded host dan binding credential | **Selesai di kode dan regression test; konfigurasi deployment belum diverifikasi** | PR #24. Webhook memakai HMAC, timestamp, event ID, dan hanya `Host`; `X-Forwarded-Host` tidak menjadi sumber tenant. Provider dan reverse proxy aktual belum diuji. |
 | Cabut sesi admin desa saat reset password | **Selesai di kode** | PR #41; `revokeSessionsOnPasswordReset: true`, `cookieCache` dimatikan, dan reset platform menghapus sesi user sasaran dalam transaksi. Uji runtime MySQL dan sesi lintas instance belum menjadi bukti tersendiri. |
-| Test dua tenant untuk baca, tulis, import, export | **Selesai di CI** | Peta integration test: 47 test, 20 modul, 21 test lintas modul. CI MySQL 8 menjadi bukti utama; integration lokal tidak tersedia pada environment ini. |
+| Test dua tenant untuk baca, tulis, import, export | **Selesai di CI dan lokal** | Peta integration test: 47 test, 20 modul, 21 test lintas modul. CI MySQL 8 dan run lokal pada MySQL 8.0.30 sama-sama lulus; run lokal memakai database disposable terpisah. |
 
 ## 4. Kriteria selesai roadmap
 
@@ -71,16 +84,17 @@ repository** dan dicatat sebagai blocker, bukan sebagai PASS.
 | Use case tidak dapat menyimpan relasi lintas tenant | **Terpenuhi dengan pengecualian** | Validasi aplikasi dan composite FK tersedia untuk modul prioritas. `users.role_id` tetap app-enforced; empat tabel anak tanpa `village_id` mengandalkan parent/application layer. |
 | TTE tidak mengirim Authorization ke host yang tidak disetujui | **Terpenuhi di kode/test** | Test origin, redirect, dan pemisahan URL unduhan lulus. Provider nyata belum diuji. |
 | Reset password membatalkan sesi lama | **Terpenuhi di kode** | Sesi dihapus untuk user sasaran; cookie cache dimatikan. Belum ada uji runtime MySQL khusus untuk skenario ini. |
-| Test isolasi tenant lulus untuk modul prioritas | **Terpenuhi di CI** | 47 integration test pada peta; CI MySQL 8 lulus pada PR terkait. |
+| Test isolasi tenant lulus untuk modul prioritas | **Terpenuhi di CI dan lokal** | 47 integration test pada peta; CI MySQL 8 lulus pada PR terkait, dan 47/47 suite (253 test) lulus pada MySQL 8.0.30 lokal. |
 
 ## 5. Blocker penutupan Fase 1
 
 ### B1 — Migration belum diterapkan dan diuji pada staging/production
 
-Ini blocker utama. Repository memiliki migration, tetapi tidak ada bukti
-preflight, backup, pengukuran lock/downtime, deployment bertahap, atau smoke
-test dua tenant pada database target. DDL composite FK juga dapat gagal bila
-data lama berisi referensi orphan atau lintas tenant.
+Ini blocker utama. Repository memiliki migration, dan migration tersebut sudah
+berhasil diterapkan pada database kosong lokal. Namun belum ada bukti preflight,
+backup, pengukuran lock/downtime, deployment bertahap, atau smoke test dua
+tenant pada database target yang berisi data legacy. DDL composite FK juga
+dapat gagal bila data lama berisi referensi orphan atau lintas tenant.
 
 Yang harus tersedia sebelum status berubah:
 
@@ -124,9 +138,11 @@ Dua kelompok berikut tetap menjadi keputusan/risiko yang harus eksplisit:
 ### B4 — Bukti operasional staging belum tersedia
 
 Laporan Fase 0 mencatat bahwa deployment staging live dan dump database staging
-belum dibuat karena tidak ada akses environment. Kondisi itu belum berubah.
-Akibatnya tidak ada lingkungan nyata untuk memverifikasi bootstrap tenant,
-migration, TTE, webhook, dan smoke test dua tenant.
+belum dibuat karena tidak ada akses environment. Pada 17 November 2026 sudah
+ada **staging lokal** di MySQL 8.0.30 Laragon untuk migration, build, dan smoke
+test HTTP. Namun staging tersebut tidak memiliki domain publik, reverse proxy,
+provider TTE, atau provider webhook. Jadi belum ada lingkungan eksternal untuk
+memverifikasi bootstrap tenant, callback, dan konfigurasi deployment nyata.
 
 ### B5 — Rollback tersedia, tetapi belum menjadi bukti operasional
 
@@ -158,22 +174,33 @@ Fase 1 per 17 November 2026; laporan lama tetap menjadi snapshot historis.
 - Kontrol webhook: `src/app/api/webhooks/email/route.ts` dan test route.
 - Keputusan `users.role_id`:
   `docs/decisions/ADR-002-users-role-id-app-enforced.md`.
+- Validasi lokal 17 November 2026: MySQL 8.0.30 Laragon, database disposable
+  `desa_test_phase1_20261117` dan `sid_staging_local`; 12 migration, 148 tabel,
+  68 `%_tenant_fk`, 47/47 suite integration, build production, dan smoke test
+  `/api/publik/openapi` serta `/masuk`.
 
 ## 7. Validasi yang dijalankan
 
 | Pemeriksaan | Perintah | Hasil |
 | --- | --- | --- |
-| Status working tree dan branch | `git status --short --branch` | **PASS** — bersih, branch task dari `main` |
+| Status working tree dan branch | `git status --short --branch` | **PASS** — branch task dari `main`; hanya laporan ini yang berubah |
 | Base commit | `git log -1 --format='%H %s'` | **PASS** — `47a17e7` |
 | Validator peta integration test | `node scripts/integration-test-map.mjs --check` | **PASS** — 47 test, 20 modul, 21 test lintas modul |
 | Jumlah constraint yang diharapkan | Pemeriksaan Node pada `tenant-composite-fk.integration.test.ts` | **PASS** — 68 nama unik `%_tenant_fk` |
 | Keberadaan rollback `0011` | `ls docs/reports/01-security/AUD-034-b1-rollback.*` | **PASS** — Markdown dan SQL ada |
+| Migration pada database disposable | `npm run db:migrate` dengan `DATABASE_URL` ke `sid_staging_local` | **PASS** — 12 migration tercatat, 148 tabel |
+| Constraint aktual di database | Query `INFORMATION_SCHEMA` | **PASS** — 68 constraint `%_tenant_fk` |
+| Integration suite penuh | `node node_modules/vitest/vitest.mjs run --config vitest.integration.config.mts --hookTimeout=300000 --testTimeout=300000` | **PASS** — 47/47 suite, 253/253 test, 169,87 detik |
+| Suite rollback B2 | Perintah Vitest yang sama, difilter ke `b2-migration-guard-rollback.integration.test.ts` | **PASS** — 5/5 test |
+| Runner integration repository | `npm run test:integration:ci` | **FAIL** — `spawnSync ... vitest.cmd EINVAL` pada Windows/Node 26.2.0; bukan kegagalan database/test |
+| Build production | `npm run build` | **PASS** — dengan warning tracing dinamis WhatsApp Baileys |
+| Smoke test OpenAPI | `curl /api/publik/openapi` pada server lokal port 3100 | **PASS** — HTTP 200 |
+| Smoke test halaman masuk | `curl /masuk` pada server lokal port 3100 | **PASS** — HTTP 200 |
 | Format laporan | `npx prettier --check docs/reports/01-security/PHASE-1-CLOSURE-2026-11-17.md` | **PASS** |
 | Whitespace diff | `git diff --check` | **PASS** |
-| Typecheck/lint/unit test | — | **SKIPPED** — hanya Markdown; tidak ada source code berubah |
-| Integration test MySQL | — | **SKIPPED** — tidak ada perubahan schema/kode; database disposable tidak tersedia |
-| Build | — | **SKIPPED** — tidak ada perubahan aplikasi |
-| Deployment staging / TTE nyata / webhook provider | — | **NOT TESTED** — tidak ada akses environment |
+| Typecheck/lint/unit test terpisah | — | **SKIPPED** — build menjalankan TypeScript; unit test terpisah tidak dijalankan karena tidak ada source code berubah |
+| Preflight dan rollback `0011` pada data legacy | — | **NOT TESTED** — database lokal kosong, bukan salinan data target |
+| Deployment staging eksternal / TTE nyata / webhook provider | — | **NOT TESTED** — tidak ada domain, reverse proxy, atau kredensial non-production |
 
 ## 8. Risiko dan keterbatasan
 
@@ -187,24 +214,38 @@ Fase 1 per 17 November 2026; laporan lama tetap menjadi snapshot historis.
   keberhasilan unit/route test tidak membuktikan konfigurasi deployment.
 - **Risiko enforcement:** `users.role_id` dan empat tabel anak tanpa
   `village_id` tidak memiliki jaminan database penuh.
-- **Keterbatasan bukti:** laporan ini tidak menjalankan database, migration,
-  atau integration test; status database target tidak dapat dipastikan dari
-  repository.
+- **Keterbatasan bukti:** migration, integration test, build, dan smoke test
+  sudah dijalankan secara lokal, tetapi database lokal kosong dan tidak
+  merepresentasikan data legacy, volume, atau konfigurasi target.
+- **Keterbatasan staging lokal:** server lokal tidak memiliki domain publik,
+  TLS, reverse proxy tenant, atau koneksi provider; callback dan TTE tidak
+  dapat diverifikasi end-to-end.
+- **Masalah runner:** `npm run test:integration:ci` gagal di Windows/Node 26
+  karena `spawnSync` tidak dapat menjalankan `vitest.cmd`. Suite lulus saat
+  Vitest dijalankan langsung, tetapi perbaikan runner belum termasuk task ini.
+- **Warning build:** tracing dinamis direktori autentikasi WhatsApp membuat
+  seluruh proyek ikut ditrace; ini warning deployment, bukan kegagalan build.
 
 ## 9. Kesimpulan dan rekomendasi
 
-**Fase 1 belum ditutup.** Kode dan schema hardening sudah hampir lengkap dan
-layak dilanjutkan ke validasi operasional, tetapi belum ada bukti yang cukup
-untuk menyebut fase ini selesai atau production-ready.
+**Fase 1 belum ditutup.** Kode dan schema hardening sudah hampir lengkap.
+Migration, integration suite, build, dan smoke test sudah terbukti pada database
+lokal kosong, tetapi belum ada bukti yang cukup pada staging/production dengan
+data legacy dan konfigurasi deployment nyata.
 
 Urutan yang direkomendasikan:
 
-1. Siapkan staging terisolasi dan salinan data yang aman.
-2. Jalankan preflight read-only untuk seluruh relasi composite FK.
-3. Buat backup database dan media; ukur lock/downtime.
-4. Terapkan migration `0001`–`0011` di staging dan verifikasi 68 constraint.
-5. Jalankan smoke test dua tenant untuk baca, tulis, import, export, dan hapus.
-6. Uji rollback `0011` pada salinan terverifikasi.
+1. Siapkan staging eksternal terisolasi, domain/TLS, dan salinan data yang aman.
+2. Jalankan preflight read-only untuk seluruh relasi composite FK pada salinan
+   data tersebut.
+3. Buat backup database dan media; ukur lock/downtime pada volume yang
+   representatif.
+4. Terapkan migration `0001`–`0011` di staging dengan data legacy dan verifikasi
+   68 constraint; bukti lokal saja tidak menutup blocker ini.
+5. Jalankan smoke test dua tenant pada deployment staging untuk baca, tulis,
+   import, export, dan hapus.
+6. Uji rollback `0011` pada salinan terverifikasi; rollback suite B2 di database
+   kosong bukan bukti pemulihan data target.
 7. Verifikasi TTE dan webhook pada konfigurasi staging/provider yang sebenarnya.
 8. Catat keputusan formal untuk `users.role_id` dan empat tabel anak tanpa
    `village_id`.
@@ -217,5 +258,6 @@ tetapi gate P0 tetap harus diselesaikan sebelum status fase berubah.
 ## 10. Status penyerahan
 
 **Siap review.** Laporan ini hanya dokumentasi; tidak ada perubahan kode,
-schema, migration, konfigurasi deployment, atau data. Belum ada merge atau
-deploy pada task ini.
+schema, migration, konfigurasi deployment, atau data. Validasi lokal memakai
+database disposable dan staging lokal terpisah; database pengembangan dan
+production tidak disentuh. Belum ada merge atau deploy pada task ini.
