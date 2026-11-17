@@ -7,7 +7,7 @@ lintas modul yang diuji. Sumber datanya adalah
 
 ## Ringkasan
 
-- **47** integration test
+- **53** integration test
 - **20** modul
 - **21** test lintas modul:
   - 20 test schema/migration/composite FK di `src/db/`
@@ -29,7 +29,7 @@ lintas modul yang diuji. Sumber datanya adalah
 | kontak | 1 | `kontak-tenant-isolation.integration.test.ts` |
 | konten | 1 | `dokumen-publik.integration.test.ts` |
 | layanan-mandiri | 3 | `permohonan-status-concurrency`, `integrasi-warga`, `permohonan-tenant-relations` |
-| multi-desa | 1 | `isolasi-host.integration.test.ts` |
+| multi-desa | 7 | `isolasi-host`, `kelola-domain`, `lifecycle-tenant`, `provisioning-template`, `template-ekspor`, `cleanup-ekspor`, `platform-konsol` |
 | penduduk | 4 | `dtks-tenant-isolation`, `penduduk-tenant-references`, `riwayat-penduduk-tenant-isolation`, `suplemen-tenant-isolation` |
 | pesan-warga | 1 | `integrasi-pesan-warga.test.ts` |
 | publik | 2 | `pengumuman-publik`, `media-quota-concurrency` |
