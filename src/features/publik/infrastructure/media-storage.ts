@@ -9,6 +9,7 @@ import { denganKunciMysql } from "@/db/kunci-mysql";
 import { villages } from "@/db/schema";
 import {
   namaBerkasAman,
+  validasiIsiMedia,
   validasiMedia,
   validasiMediaDenganPengaturan,
 } from "@/features/publik/domain/media";
@@ -176,6 +177,10 @@ export async function simpanUnggahanMedia(
 ): Promise<HasilSimpanMedia> {
   const validasi = validasiMedia(berkas.mime, berkas.ukuran);
   if (!validasi.ok) throw new Error(validasi.pesan);
+
+  // MIME kiriman klien tidak dipercaya; cocokkan dengan magic bytes isi berkas.
+  const isiSah = validasiIsiMedia(validasi.jenis.mime, berkas.isi);
+  if (!isiSah.ok) throw new Error(isiSah.pesan);
 
   const relatif = jalurRelatifMedia(
     villageId,

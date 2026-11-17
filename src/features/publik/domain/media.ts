@@ -101,6 +101,83 @@ export function validasiMedia(
   return { ok: true, jenis };
 }
 /**
+ * Deteksi tipe berkas dari magic bytes (isi), bukan dari MIME kiriman klien.
+ *
+ * Hanya jenis dalam allowlist media yang dikenali. `null` berarti isi berkas
+ * tidak cocok dengan format media mana pun.
+ */
+export function deteksiTipeIsi(isi: Uint8Array): string | null {
+  if (mulaiDengan(isi, [0xff, 0xd8, 0xff])) return "image/jpeg";
+  if (mulaiDengan(isi, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return "image/png";
+  if (cocokAscii(isi, "GIF87a") || cocokAscii(isi, "GIF89a")) return "image/gif";
+  if (cocokAscii(isi, "RIFF") && cocokAscii(isi, "WEBP", 8)) return "image/webp";
+  if (cariAscii(isi, "%PDF-", 1024) >= 0) return "application/pdf";
+  if (terlihatSvg(isi)) return "image/svg+xml";
+  return null;
+}
+
+/**
+ * Pastikan isi berkas benar-benar sesuai dengan MIME yang diklaim.
+ *
+ * MIME dari browser/`FormData` tidak dapat dipercaya: berkas teks yang diberi
+ * label `image/png` akan tersimpan dengan ekstensi `.png` dan disajikan dengan
+ * `Content-Type` gambar. Pemeriksaan magic bytes menutup celah itu.
+ */
+export function validasiIsiMedia(
+  mime: string | null | undefined,
+  isi: Uint8Array,
+): { ok: true } | { ok: false; pesan: string } {
+  if (!mime) return { ok: false, pesan: "Tipe berkas tidak dikenali." };
+  if (isi.length === 0) return { ok: false, pesan: "Berkas kosong." };
+
+  const terdeteksi = deteksiTipeIsi(isi);
+  if (!terdeteksi) {
+    return { ok: false, pesan: "Isi berkas tidak dikenali sebagai gambar atau PDF." };
+  }
+
+  if (terdeteksi !== mime.toLowerCase()) {
+    return {
+      ok: false,
+      pesan: `Isi berkas tidak sesuai dengan tipe ${mime} yang dikirim.`,
+    };
+  }
+
+  return { ok: true };
+}
+
+function mulaiDengan(isi: Uint8Array, awalan: number[]): boolean {
+  if (isi.length < awalan.length) return false;
+  return awalan.every((byte, indeks) => isi[indeks] === byte);
+}
+
+function cocokAscii(isi: Uint8Array, teks: string, offset = 0): boolean {
+  if (isi.length < offset + teks.length) return false;
+  for (let i = 0; i < teks.length; i += 1) {
+    if (isi[offset + i] !== teks.charCodeAt(i)) return false;
+  }
+  return true;
+}
+
+function cariAscii(isi: Uint8Array, teks: string, batas: number): number {
+  const akhir = Math.min(isi.length - teks.length, batas);
+  for (let i = 0; i <= akhir; i += 1) {
+    if (cocokAscii(isi, teks, i)) return i;
+  }
+  return -1;
+}
+
+/** SVG berbasis teks: kenali deklarasi XML atau elemen `<svg` di awal isi. */
+function terlihatSvg(isi: Uint8Array): boolean {
+  const cuplikan = new TextDecoder("utf-8", { fatal: false })
+    .decode(isi.subarray(0, 4096))
+    .replace(/^\uFEFF/, "")
+    .trimStart();
+
+  if (cuplikan.startsWith("<svg")) return true;
+  return cuplikan.startsWith("<?xml") && cuplikan.includes("<svg");
+}
+
+/**
  * Validasi MIME + ukuran unggahan menggunakan pengaturan dinamis.
  */
 export function validasiMediaDenganPengaturan(

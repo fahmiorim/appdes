@@ -1,0 +1,167 @@
+name: Visual QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/visual-qa.yml"
+      - "src/app/**/*.tsx"
+      - "src/app/**/*.css"
+      - "src/components/**"
+      - "src/features/**/*.tsx"
+      - "src/features/**/*.css"
+      - "src/features/**/presentation/**"
+      - "src/styles/**"
+      - "public/**"
+      - "docs/public/*.png"
+      - "docs/account/Modern Indonesian Village Login Portal.png"
+      - "package.json"
+      - "package-lock.json"
+      - "next.config.*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: visual-qa-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual-login:
+    name: Visual QA login (desktop/mobile)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: visual_qa_root
+          MYSQL_DATABASE: desa_visual_qa
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pvisual_qa_root"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=30
+          --health-start-period=15s
+    env:
+      NODE_ENV: development
+      APP_URL: http://127.0.0.1:3000
+      DATABASE_URL: mysql://root:visual_qa_root@127.0.0.1:3306/desa_visual_qa
+      # Seed resmi memakai guard yang sama dengan harness lokal; nama database
+      # wajib `desa_visual_qa*` dan ACK menandakan target disposable.
+      VISUAL_QA_DATABASE_URL: mysql://root:visual_qa_root@127.0.0.1:3306/desa_visual_qa
+      VISUAL_QA_DATABASE_ACK: "1"
+      DESA_BASE_DOMAIN: localhost
+      BETTER_AUTH_SECRET: visual-qa-only-secret-that-is-at-least-32-characters
+      BETTER_AUTH_URL: http://127.0.0.1:3000
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.22.1"
+          cache: npm
+
+      - name: Install dependency
+        run: npm ci
+
+      - name: Migrate visual database
+        run: npm run db:migrate
+
+      - name: Seed synthetic public tenant
+        run: npm run visual:qa:seed
+
+      - name: Install Chromium
+        run: npx --yes playwright install --with-deps chromium
+
+      - name: Start Next.js
+        run: |
+          if ! NODE_ENV=production npm run build > /tmp/flexidesa-build.log 2>&1; then
+            cat /tmp/flexidesa-build.log
+            exit 1
+          fi
+          NODE_ENV=production npm run start -- --hostname 127.0.0.1 > /tmp/flexidesa-next.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:3000/masuk > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat /tmp/flexidesa-next.log || true
+          exit 1
+
+      - name: Capture desktop
+        run: |
+          mkdir -p artifacts
+          npx --yes playwright screenshot --browser chromium --viewport-size "1440,1000" --full-page http://127.0.0.1:3000/masuk artifacts/login-desktop.png
+
+      - name: Capture mobile
+        run: |
+          mkdir -p artifacts
+          npx --yes playwright screenshot --browser chromium --viewport-size "390,844" --full-page http://127.0.0.1:3000/masuk artifacts/login-mobile.png
+
+      - name: Capture public pages (reference desktop, wide desktop, and mobile)
+        run: |
+          mkdir -p artifacts/public
+          routes=(
+            /
+            berita
+            agenda
+            galeri
+            galeri/kegiatan-desa
+            data/statistik
+            pemerintahan
+            wilayah
+            profil/sejarah
+            profil/visi-misi
+            dokumen
+            potensi
+            kontak
+            pengaduan
+            transparansi/apbdes
+            layanan
+            layanan/surat
+            profil
+          )
+          for route in "${routes[@]}"; do
+            slug=$(echo "${route#/}" | tr '/' '-')
+            if [ -z "$slug" ]; then slug="beranda"; fi
+            path="/${route#/}"
+            url="http://sukamaju.localhost:3000$path"
+            request_url="http://127.0.0.1:3000$path"
+            status=$(curl --silent --output /tmp/public-page.html --write-out "%{http_code}" -H "Host: sukamaju.localhost" "$request_url")
+            if [ "$status" -ne 200 ]; then
+              echo "Public route $route returned HTTP $status"
+              cat /tmp/public-page.html
+              exit 1
+            fi
+            npx --yes playwright screenshot --browser chromium --viewport-size "1024,1536" --full-page "$url" "artifacts/public/$slug-reference-desktop.png"
+            npx --yes playwright screenshot --browser chromium --viewport-size "1440,1000" --full-page "$url" "artifacts/public/$slug-wide-desktop.png"
+            npx --yes playwright screenshot --browser chromium --viewport-size "390,844" --full-page "$url" "artifacts/public/$slug-mobile.png"
+          done
+
+      - name: Include design reference
+        if: always()
+        run: |
+          mkdir -p artifacts
+          cp "docs/account/Modern Indonesian Village Login Portal.png" artifacts/reference-login.png
+
+      - name: Include public design references
+        if: always()
+        run: |
+          mkdir -p artifacts/reference/public
+          cp docs/public/*.png artifacts/reference/public/
+
+      - name: Upload visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flexidesa-public-visual-qa
+          path: artifacts/**/*.png
+          if-no-files-found: error
+          retention-days: 7

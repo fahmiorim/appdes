@@ -62,6 +62,10 @@ Database uji disposable `desa_test_agent` (MySQL loopback), bukan database penge
 | `npx eslint` (7 file berubah/baru) | **PASS** |
 | `npx prettier --check` (file berubah) | **PASS** |
 | `npx vitest run --config vitest.config.mts src/features/keuangan src/features/layanan-mandiri src/features/publik` | **PASS** — 27 file, 260 test |
+| `npx vitest run --config vitest.config.mts src/features/publik/domain/media.test.ts src/features/publik/infrastructure/media-storage.test.ts` (verifikasi setelah conflict resolution dengan AUD-017) | **PASS** — 2 file, 21 test; mock `pool.getConnection()` ditambahkan agar helper kunci MySQL teruji tanpa DB |
+| `npx vitest run --config vitest.integration.config.mts <3 file concurrency>` (verifikasi setelah conflict resolution) | **PASS** — 3 file, 3 test |
+| `npx prettier --check src/features/publik/infrastructure/media-storage.test.ts src/features/publik/infrastructure/media-storage.ts` | **PASS** |
+| `npx eslint src/features/publik/infrastructure/media-storage.test.ts src/features/publik/infrastructure/media-storage.ts` | **PASS** |
 | `npx vitest run --config vitest.integration.config.mts` (3 file concurrency, 3 kali berturut-turut) | **PASS** — 3 file / 3 test setiap run |
 | `npm run test:integration` (seluruh suite, DB `desa_test_agent`) | **FAIL** — 44 file / 239 test PASS, 5 test di `src/db/b2-migration-guard-rollback.integration.test.ts` SKIPPED karena `beforeAll` timeout 120 detik saat 7 file migration-guard berjalan paralel di MySQL lokal |
 | `npx vitest run --config vitest.integration.config.mts src/db/b2-migration-guard-rollback.integration.test.ts` (file yang timeout, dijalankan sendiri) | **PASS** — 5 test, 78,9 detik |
