@@ -5,6 +5,7 @@ import { forbidden as buatKesalahanForbidden, unauthenticated } from "@/lib/erro
 const state = vi.hoisted(() => ({
   requireSuperAdmin: vi.fn(),
   daftarDesaSuperAdmin: vi.fn(),
+  daftarSemuaDomain: vi.fn(),
   redirect: vi.fn((tujuan: string) => {
     throw Object.assign(new Error("NEXT_REDIRECT"), {
       digest: `NEXT_REDIRECT;replace;${tujuan};307;`,
@@ -27,8 +28,10 @@ vi.mock("@/features/multi-desa/application/provisioning-use-cases", () => ({
   daftarDesaSuperAdmin: state.daftarDesaSuperAdmin,
 }));
 
-vi.mock("@/features/multi-desa/presentation/tenant-table", () => ({
-  TenantTable: () => null,
+// Halaman memuat domain lewat use case terpisah; tanpa mock ini test akan
+// menyentuh database sungguhan.
+vi.mock("@/features/multi-desa/application/kelola-desa-use-cases", () => ({
+  daftarSemuaDomain: state.daftarSemuaDomain,
 }));
 
 vi.mock("@/components/ui/card", () => ({
@@ -81,11 +84,13 @@ describe("SuperAdminPage", () => {
   it("memuat data tenant setelah guard super admin lolos", async () => {
     state.requireSuperAdmin.mockResolvedValue({ id: "platform-1", villageId: null });
     state.daftarDesaSuperAdmin.mockResolvedValue(desa);
+    state.daftarSemuaDomain.mockResolvedValue([]);
     const { default: SuperAdminPage } = await import("./page");
 
     await expect(SuperAdminPage()).resolves.toBeDefined();
     expect(state.forbidden).not.toHaveBeenCalled();
     expect(state.redirect).not.toHaveBeenCalled();
     expect(state.daftarDesaSuperAdmin).toHaveBeenCalledOnce();
+    expect(state.daftarSemuaDomain).toHaveBeenCalledOnce();
   });
 });
