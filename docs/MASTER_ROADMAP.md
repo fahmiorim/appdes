@@ -94,18 +94,19 @@ Pekerjaan:
 
 **Prioritas:** P1 · **Prasyarat:** model role dan tenant sudah aman.
 
-Pekerjaan:
-- Bangun area Super Admin yang terpisah dari Admin Desa.
-- Dashboard daftar desa: status, domain, jumlah pengguna/penduduk/jenis surat, dan kuota media.
-- Halaman detail tenant: identitas, domain utama/alias, kuota, status, dan akun admin.
-- Buat provisioning berbasis template platform, bukan menyalin desa pertama.
-- Definisikan suspend/reactivate, reset admin, pengelolaan domain, dan audit trail.
-- Definisikan soft delete, retensi, ekspor data, dan prosedur purge khusus.
+**Status kode per 18 November 2026: implementasi repository selesai dan merged ke `main` melalui PR #106–#112.** Hasilnya mencakup bootstrap Super Admin, provisioning berbasis template, konsol tenant, pengelolaan domain, lifecycle retensi/purge, ekspor template, dan cleanup ekspor terjadwal. Ini menandai selesainya pekerjaan kode yang tercantum pada fase ini, bukan bukti deployment atau penerimaan operasional.
 
-**Kriteria selesai:**
-- Platform Super Admin dapat membuat dan mengelola tenant tanpa menyamar sebagai Admin Desa.
-- Provisioning bekerja pada instalasi baru tanpa desa sumber.
-- Semua aksi sensitif tercatat dalam audit trail.
+**Kriteria kode selesai:**
+- Konsol terpisah mengelola provisioning, status, kuota, reset admin, domain, ekspor, dan purge tenant dengan otorisasi server-side.
+- Provisioning menggunakan template platform dan tidak memerlukan desa sumber.
+- Aksi sensitif yang didukung use case mencatat audit trail.
+- Lifecycle menerapkan masa tenggang, ekspor wajib, purge, tombstone domain, dan cleanup ekspor kedaluwarsa.
+
+**Validasi operasional yang masih terbuka:**
+- Lakukan walkthrough konsol pada staging dengan tenant sintetis, termasuk provisioning, reset admin, perubahan domain, ekspor, dan status retensi.
+- Pasang systemd timer cleanup pada server yang dituju, lalu verifikasi jadwal dan log eksekusinya.
+- Tinjau template bawaan yang masih minimal sebelum onboarding tenant nyata.
+- Uji bootstrap dan login Super Admin pada lingkungan staging yang disetujui; jangan menguji pada production tanpa prosedur rilis.
 
 ### Fase 3 — Stabilkan core SID
 
@@ -193,7 +194,7 @@ Pekerjaan:
 | 3 | Audit foreign reference tenant | Daftar relasi, perbaikan, dan test per modul |
 | 4 | Role ownership dan session reset | Test role lintas tenant dan invalidasi sesi lama |
 | 5 | Backup media dan restore drill | Dokumentasi dan hasil pemulihan staging |
-| 6 | Rencana Super Admin UI | Route, menu, permission, dan acceptance criteria |
+| 6 | Walkthrough konsol Super Admin di staging | Hasil uji provisioning, domain, reset admin, ekspor, dan retensi |
 
 ## 6. Risiko bila urutan tidak diikuti
 

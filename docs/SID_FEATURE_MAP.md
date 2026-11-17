@@ -1,7 +1,7 @@
 # SID Feature Map — Appdes
 
-> Peta modul, fungsi, status bukti implementasi, prioritas, dan pekerjaan lanjutan.  
-> Repository: `fahmiorim/appdes` · Pemeriksaan statis: 12 November 2026.
+> Peta modul, fungsi, status bukti implementasi, prioritas, dan pekerjaan lanjutan.
+> Repository: `fahmiorim/appdes` · Status kode Fase 2 diperbarui 18 November 2026.
 >
 > Inventaris route, Server Action, repository, dan use case per modul:
 > [`architecture/MODULE-INVENTORY.md`](architecture/MODULE-INVENTORY.md).
@@ -22,7 +22,7 @@ Status di bawah menunjukkan keberadaan struktur/kode yang teridentifikasi pada r
 
 | Area | Folder/fitur | Fungsi utama | Status bukti | Prioritas | Catatan lanjutan |
 |---|---|---|---|---|---|
-| Platform multi-desa | `multi-desa`, `desa`, `pelanggan` | Provisioning, domain, status, kuota, akun admin | Backend use case dan dashboard `/super-admin` (daftar tenant) tersedia; bootstrap Super Admin pertama belum ada | Core platform | Template bootstrap independen dan pengelolaan domain di UI. |
+| Platform multi-desa | `multi-desa`, `desa`, `pelanggan` | Provisioning, domain, status, kuota, akun admin, retensi dan purge | Bootstrap CLI, template platform, konsol `/super-admin`, pengelolaan domain alias, ekspor tenant, purge, dan cleanup ekspor tersedia di `main` | Core platform | Walkthrough konsol dan bootstrap di staging; tinjau template bawaan minimal; pasang dan verifikasi timer cleanup. |
 | Auth & RBAC | `auth`, `rbac` | Login, sesi, role, permission | Struktur dan use case tersedia | Core | Validasi role ownership dan invalidasi sesi. |
 | Website desa | `publik`, `konten`, `navigation` | Profil, konten, menu, tema, media | Implementasi luas teridentifikasi | Core | Backup media, signature validation, SEO/editor regression. |
 | Profil & wilayah | `wilayah`, `desa`, `gis` | Identitas desa, wilayah, peta | Struktur fitur teridentifikasi | Core | Validasi relasi wilayah pada tenant yang sama. |
