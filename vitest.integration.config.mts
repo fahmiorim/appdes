@@ -59,6 +59,7 @@ export default defineConfig({
       "src/features/multi-desa/isolasi-host.integration.test.ts",
       "src/features/multi-desa/lifecycle-tenant.integration.test.ts",
       "src/features/multi-desa/provisioning-template.integration.test.ts",
+      "src/features/multi-desa/template-ekspor.integration.test.ts",
       "src/features/penduduk/infrastructure/dtks-tenant-isolation.integration.test.ts",
       "src/features/penduduk/infrastructure/penduduk-tenant-references.integration.test.ts",
       "src/features/penduduk/infrastructure/riwayat-penduduk-tenant-isolation.integration.test.ts",

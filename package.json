@@ -31,6 +31,7 @@
     "visual:qa:seed": "node scripts/visual-qa/seed.mjs",
     "visual:qa:capture": "node scripts/visual-qa/capture.mjs",
     "platform:bootstrap": "node scripts/platform/bootstrap.mjs",
+    "platform:export-template": "node scripts/platform/export-template.mjs",
     "prepare": "husky"
   },
   "dependencies": {

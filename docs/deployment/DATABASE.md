@@ -303,6 +303,32 @@ Catatan operasi:
   case pada `src/features/multi-desa/application/lifecycle-desa-use-cases.ts`
   oleh operator yang sudah terautentikasi sebagai Super Admin.
 
+### 6.4 Ekspor template dari instalasi referensi
+
+Template provisioning yang lebih kaya dapat diambil dari desa yang sudah
+terkonfigurasi, alih-alih ditulis tangan:
+
+```bash
+cd /opt/appdes/app
+npm run platform:export-template -- --village desa-sukamaju \
+  --out src/db/templates/tenant-template.export.json --json
+```
+
+Aturan skrip (`scripts/platform/export-template.mjs`):
+
+- Hanya membaca database; satu-satunya tulisan adalah berkas `--out`, dan
+  berkas yang sudah ada tidak ditimpa tanpa `--force`.
+- Bila instalasi punya lebih dari satu desa, `--village` (slug atau id) wajib.
+  Tanpa `--out`, JSON template dicetak ke stdout dan ringkasan ke stderr.
+- Yang diekspor hanya fondasi tenant: role, modul, matriks akses, tema aktif,
+  dan menu publik tingkat atas. Menu bertingkat dilewati dan jumlahnya
+  dilaporkan. Katalog surat, buku bumindes, kategori inventaris, dan data warga
+  tidak pernah ikut.
+- Hasil ekspor divalidasi skema template saat dipakai provisioning
+  (`parseTemplateTenant`), dan wajib memuat role `administrator`.
+- Tinjau isi berkas hasil ekspor sebelum menggantikan template bawaan; template
+  berlaku untuk desa yang dibuat setelahnya, bukan desa yang sudah ada.
+
 ## 7. Strategi backup database
 
 Repository tidak menyediakan backup otomatis, penjadwalan, enkripsi, retensi,
