@@ -3,7 +3,7 @@
 - **Tanggal:** 2026-11-16
 - **Branch:** `task/AUD-034-race-conditions`
 - **Base commit:** `30b81de` (`origin/main`)
-- **Commit perbaikan test:** `lihat commit terakhir branch` (revisi 2026-11-17)
+- **Commit perbaikan test:** `f8ca837` (revisi 2026-11-17)
 - **Task:** menutup tiga temuan race condition: AUD-013 (agregasi keuangan), AUD-014 (kuota media), AUD-016 (transisi status permohonan surat).
 
 ## 1. Analisis
