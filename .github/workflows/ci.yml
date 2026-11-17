@@ -1,12 +1,13 @@
 name: CI
 
-# Setiap PR ke main menjalankan quality gate lengkap. Push/merge ke main tidak
-# memicu workflow lagi karena branch protection mewajibkan check CI pada PR;
-# menghindari test ganda setelah merge. Visual QA browser dijalankan terpisah
-# oleh visual-qa.yml.
+# Quality gate berjalan pada PR ke main. Job berat dipilih berdasarkan file yang
+# berubah: PR dokumentasi hanya memeriksa format, PR UI tidak menjalankan
+# integration MySQL, dan PR kode/DB tetap menjalankan test yang relevan.
+# Push/merge ke main tidak memicu workflow lagi; Visual QA browser dijalankan
+# terpisah oleh visual-qa.yml.
 on:
-  # Semua PR ke main menjalankan quality gate, termasuk PR dokumentasi, agar
-  # status check yang diwajibkan branch protection selalu tersedia.
+  # Semua PR ke main memicu workflow agar required check branch protection
+  # selalu tersedia; job tetap ada dan sukses walau test berat dilewati.
   pull_request:
     branches: [main]
 
@@ -19,9 +20,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Deteksi perubahan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.filter.outputs.code }}
+      integration: ${{ steps.filter.outputs.integration }}
+      build: ${{ steps.filter.outputs.build }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Butuh riwayat base PR untuk menghitung diff.
+          fetch-depth: 0
+
+      - name: Klasifikasi perubahan
+        id: filter
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/ci-changes.mjs "$BASE_SHA" "$HEAD_SHA"
+
   quality:
     name: Unit test dan quality check
     runs-on: ubuntu-latest
+    needs: changes
     timeout-minutes: 20
     steps:
       - name: Checkout
@@ -36,21 +60,30 @@ jobs:
       - name: Install dependency
         run: npm ci
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Lint
-        run: npm run lint
-
       - name: Format check
         run: npm run format:check
 
+      - name: Typecheck
+        if: needs.changes.outputs.code == 'true'
+        run: npm run typecheck
+
+      - name: Lint
+        if: needs.changes.outputs.code == 'true'
+        run: npm run lint
+
       - name: Unit test
+        if: needs.changes.outputs.code == 'true'
         run: npm test
+
+      - name: Catat quality test dilewati
+        if: needs.changes.outputs.code != 'true'
+        run: |
+          echo "Typecheck, lint, dan unit test tidak dijalankan: tidak ada perubahan kode." >> "$GITHUB_STEP_SUMMARY"
 
   integration:
     name: Integration test (MySQL 8)
     runs-on: ubuntu-latest
+    needs: changes
     timeout-minutes: 20
 
     services:
@@ -87,17 +120,25 @@ jobs:
           cache: npm
 
       - name: Install dependency
+        if: needs.changes.outputs.integration == 'true'
         run: npm ci
 
       # Guard membaca TEST_DATABASE_URL + ACK dari environment di atas dan
       # menolak host non-loopback / nama di luar desa_test*. DATABASE_URL diisi
       # oleh src/testing/setup-integration.ts dari DSN yang sudah divalidasi.
       - name: Integration test
+        if: needs.changes.outputs.integration == 'true'
         run: npm run test:integration:ci
+
+      - name: Catat integration test dilewati
+        if: needs.changes.outputs.integration != 'true'
+        run: |
+          echo "Integration test tidak dijalankan: tidak ada perubahan database, repository, application, API, action, atau integration test." >> "$GITHUB_STEP_SUMMARY"
 
   build:
     name: Build produksi
     runs-on: ubuntu-latest
+    needs: changes
     timeout-minutes: 20
     env:
       # Nilai build-only: tidak ada koneksi database pada tahap build.
@@ -119,31 +160,59 @@ jobs:
           cache: npm
 
       - name: Install dependency
+        if: needs.changes.outputs.build == 'true'
         run: npm ci
 
       - name: Build
+        if: needs.changes.outputs.build == 'true'
         env:
           NODE_ENV: production
         run: npm run build
 
+      - name: Catat build dilewati
+        if: needs.changes.outputs.build != 'true'
+        run: |
+          echo "Build produksi tidak dijalankan: tidak ada perubahan source, dependency, konfigurasi build, atau aset publik." >> "$GITHUB_STEP_SUMMARY"
+
   summary:
     name: Ringkasan CI
     runs-on: ubuntu-latest
-    needs: [quality, integration, build]
+    needs: [changes, quality, integration, build]
     if: always()
     steps:
       - name: Tulis ringkasan
+        env:
+          CODE_CHANGED: ${{ needs.changes.outputs.code }}
+          INTEGRATION_CHANGED: ${{ needs.changes.outputs.integration }}
+          BUILD_CHANGED: ${{ needs.changes.outputs.build }}
         run: |
+          if [ "$CODE_CHANGED" = "true" ]; then
+            QUALITY_MODE="dijalankan"
+          else
+            QUALITY_MODE="format saja"
+          fi
+          if [ "$INTEGRATION_CHANGED" = "true" ]; then
+            INTEGRATION_MODE="dijalankan"
+          else
+            INTEGRATION_MODE="dilewati (tidak relevan)"
+          fi
+          if [ "$BUILD_CHANGED" = "true" ]; then
+            BUILD_MODE="dijalankan"
+          else
+            BUILD_MODE="dilewati (tidak relevan)"
+          fi
+
           {
             echo "## Ringkasan CI"
             echo ""
-            echo "| Job | Hasil |"
-            echo "|---|---|"
-            echo "| Unit/quality | ${{ needs.quality.result }} |"
-            echo "| Integration | ${{ needs.integration.result }} |"
-            echo "| Build | ${{ needs.build.result }} |"
+            echo "| Job | Hasil | Cakupan |"
+            echo "|---|---|---|"
+            echo "| Deteksi perubahan | ${{ needs.changes.result }} | - |"
+            echo "| Unit/quality | ${{ needs.quality.result }} | $QUALITY_MODE |"
+            echo "| Integration | ${{ needs.integration.result }} | $INTEGRATION_MODE |"
+            echo "| Build | ${{ needs.build.result }} | $BUILD_MODE |"
             echo ""
-            if [ "${{ needs.quality.result }}" != "success" ] || [ "${{ needs.integration.result }}" != "success" ] || [ "${{ needs.build.result }}" != "success" ]; then
+            if [ "${{ needs.changes.result }}" != "success" ] || [ "${{ needs.quality.result }}" != "success" ] || [ "${{ needs.integration.result }}" != "success" ] || [ "${{ needs.build.result }}" != "success" ]; then
               echo "**Status keseluruhan: GAGAL**"
             else
               echo "**Status keseluruhan: LULUS**"
@@ -151,5 +220,5 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Tegakkan status keseluruhan
-        if: needs.quality.result != 'success' || needs.integration.result != 'success' || needs.build.result != 'success'
+        if: needs.changes.result != 'success' || needs.quality.result != 'success' || needs.integration.result != 'success' || needs.build.result != 'success'
         run: exit 1
