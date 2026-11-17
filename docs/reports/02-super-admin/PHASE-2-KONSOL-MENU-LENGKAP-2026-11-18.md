@@ -10,7 +10,7 @@
 
 Pengguna menilai `/super-admin` dibangun "asal-asalan": hanya satu halaman besar, beberapa menu belum ada, dan tiga halaman baru masih baca-saja. Task ini:
 
-1. memisahkan konsol menjadi tujuh halaman dengan kerangka visual dan sub-navigasi yang konsisten;
+1. memisahkan konsol menjadi tujuh halaman dengan kerangka visual yang konsisten dan satu navigasi sidebar (tanpa menu ganda di dalam halaman);
 2. menambahkan backend yang belum ada untuk pengguna platform (buat akun, aktif/nonaktif, reset sandi, cabut sesi);
 3. melengkapi audit trail platform dengan filter desa/peristiwa, detail perubahan, dan ekspor CSV;
 4. memperbaiki cacat responsif dan tabel yang berdesakan.
@@ -39,10 +39,9 @@ Pengguna menilai `/super-admin` dibangun "asal-asalan": hanya satu halaman besar
 ### 4.1 Navigasi dan kerangka halaman
 
 - `src/features/navigation/domain/menu-platform.ts` (+ test): menu platform eksplisit; Ringkasan hanya aktif tepat di `/super-admin`.
-- `src/features/multi-desa/presentation/platform-nav.tsx`: sub-navigasi tujuh halaman.
 - `src/components/shell/admin-sidebar.tsx`: sidebar platform memakai menu platform, bukan menu modul desa.
 - `src/features/multi-desa/presentation/platform-ui.tsx`: `PlatformPageHeader`, `PlatformCard`, `PlatformEmpty`, `PlatformStatus` agar judul, deskripsi, section, dan empty state seragam.
-- `src/app/globals.css`: rangkaian aturan `.platform-*` (header, segmented sub-nav, kartu section, stat grid responsif, toolbar filter, definition list, row actions, feed aktivitas) dan penghapusan `.platform-stats-grid` yang menimpa media query.
+- `src/app/globals.css`: rangkaian aturan `.platform-*` (header, kartu section, stat grid responsif, toolbar filter, definition list, row actions, feed aktivitas) dan penghapusan `.platform-stats-grid` yang menimpa media query.
 
 ### 4.2 Backend pengguna platform
 

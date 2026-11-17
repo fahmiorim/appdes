@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 
-import { PlatformNav } from "@/features/multi-desa/presentation/platform-nav";
-
 /**
  * Kerangka visual konsol platform.
  *
- * Dipakai seluruh halaman `/super-admin` agar judul, deskripsi, sub-navigasi,
- * dan kartu section memiliki ritme yang sama. Komponen ini murni presentasi:
- * otorisasi dan pengambilan data tetap di halaman/use case.
+ * Dipakai seluruh halaman `/super-admin` agar judul, deskripsi, dan kartu
+ * section memiliki ritme yang sama. Navigasi antarhalaman cukup lewat sidebar
+ * platform; menampilkannya lagi di dalam halaman hanya menduplikasi menu.
+ * Komponen ini murni presentasi: otorisasi dan pengambilan data tetap di
+ * halaman/use case.
  */
 
 export function PlatformPageHeader({
@@ -22,17 +22,14 @@ export function PlatformPageHeader({
   actions?: ReactNode;
 }) {
   return (
-    <>
-      <div className="platform-page-head">
-        <div>
-          <span className="eyebrow">{eyebrow}</span>
-          <h1>{title}</h1>
-          <p>{description}</p>
-        </div>
-        {actions ? <div className="platform-head-actions">{actions}</div> : null}
+    <div className="platform-page-head">
+      <div>
+        <span className="eyebrow">{eyebrow}</span>
+        <h1>{title}</h1>
+        <p>{description}</p>
       </div>
-      <PlatformNav />
-    </>
+      {actions ? <div className="platform-head-actions">{actions}</div> : null}
+    </div>
   );
 }
 

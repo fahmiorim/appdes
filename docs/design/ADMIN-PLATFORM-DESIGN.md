@@ -94,7 +94,7 @@ Muncul ketika produk dan jumlah tenant bertambah; bukan prasyarat Fase 2.
 #### Pola tata letak
 
 1. Sidebar tetap dengan grup: **Platform** (Ringkasan), **Tenant** (Desa, Domain, Langganan), **Operasional** (Audit, Monitor, Backup), **Pengaturan**.
-2. Ringkasan tidak memuat semua hal: halaman depan berisi KPI, tabel tenant terbaru, dan tautan ke halaman lain. Aksi berat pindah ke halaman atau detail tersendiri. Setiap halaman konsol memuat sub-navigasi yang sama agar operator dapat berpindah tanpa membuka sidebar.
+2. Ringkasan tidak memuat semua hal: halaman depan berisi KPI, tabel tenant terbaru, dan tautan ke halaman lain. Aksi berat pindah ke halaman atau detail tersendiri. Navigasi antarhalaman cukup lewat sidebar platform; menu tidak diulang sebagai sub-navigasi di dalam halaman agar tidak menduplikasi pilihan yang sama.
 3. Halaman detail per tenant memuat tab: Profil, Domain, Pengguna, Kuota, Ekspor/Retensi, Audit.
 4. Aksi destruktif dipisah ke panel *danger zone* dengan konfirmasi mengetik nama atau slug tenant.
 5. Setiap aksi platform tercatat di audit trail dan dapat dibaca kembali dari konsol, bukan hanya disimpan.
@@ -108,12 +108,12 @@ Muncul ketika produk dan jumlah tenant bertambah; bukan prasyarat Fase 2.
 
 #### Catatan implementasi menu
 
-Menu admin desa dibangun dari tabel `modules` yang dibatasi tenant, sedangkan akun platform memakai `villageId === null` dan tidak memiliki baris modul. Karena itu menu platform ditulis eksplisit di `src/features/navigation/domain/menu-platform.ts`, dirender oleh `AdminSidebar` bila pengguna adalah pengelola platform, dan diulang sebagai sub-navigasi `PlatformNav` di setiap halaman konsol. Rute yang sudah ada dicatat pada `RUTE_ADMIN_TERSEDIA` agar menu berbasis modul tidak pernah menautkan halaman yang belum dibuat.
+Menu admin desa dibangun dari tabel `modules` yang dibatasi tenant, sedangkan akun platform memakai `villageId === null` dan tidak memiliki baris modul. Karena itu menu platform ditulis eksplisit di `src/features/navigation/domain/menu-platform.ts` dan dirender oleh `AdminSidebar` bila pengguna adalah pengelola platform. Menu tersebut tidak diulang di dalam halaman agar tidak ada dua navigasi yang menampilkan pilihan sama. Rute yang sudah ada dicatat pada `RUTE_ADMIN_TERSEDIA` agar menu berbasis modul tidak pernah menautkan halaman yang belum dibuat.
 
 ## 4. Batasan saat ini
 
 - Admin sidebar desa saat ini baru menampilkan Beranda; kelompok menu desa di §2 adalah target, bukan fitur yang sudah diimplementasikan.
-- Konsol Super Admin sudah memiliki tujuh halaman (Ringkasan, Tenant, Domain, Pengguna platform, Audit trail, Template, Pengaturan) dengan menu sidebar, sub-navigasi, dan kerangka visual yang sama. Halaman Template dan Pengaturan masih baca-saja karena sumbernya artefak kode dan environment; MFA, undangan anggota tim, monitor, backup, feature flag per tenant, dan langganan belum ada.
+- Konsol Super Admin sudah memiliki tujuh halaman (Ringkasan, Tenant, Domain, Pengguna platform, Audit trail, Template, Pengaturan) dengan menu sidebar dan kerangka visual yang sama. Halaman Template dan Pengaturan masih baca-saja karena sumbernya artefak kode dan environment; MFA, undangan anggota tim, monitor, backup, feature flag per tenant, dan langganan belum ada.
 - Audit trail platform dapat dicari, difilter per desa dan jenis peristiwa, menampilkan detail perubahan, serta diekspor ke CSV (maksimal 5.000 baris per unduhan). Retensi dan arsip audit terpusat belum ada.
 - Pengelolaan pengguna platform hanya menjangkau akun `village_id IS NULL`; akun administrator desa tetap dikelola dari konsol tenant masing-masing.
 - Tidak ada screenshot desain yang menjadi sumber visual langsung untuk dua dashboard ini. Setiap penyimpangan/keputusan produk harus direview dan dicatat sebelum acceptance.
