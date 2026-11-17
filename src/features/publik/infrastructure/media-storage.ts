@@ -7,12 +7,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { denganKunciMysql } from "@/db/kunci-mysql";
 import { villages } from "@/db/schema";
-import {
-  namaBerkasAman,
-  validasiIsiMedia,
-  validasiMedia,
-  validasiMediaDenganPengaturan,
-} from "@/features/publik/domain/media";
+import { namaBerkasAman, validasiIsiMedia, validasiMedia } from "@/features/publik/domain/media";
 
 /**
  * Penyimpanan media situs publik (gambar, dokumen) di disk lokal.
@@ -191,48 +186,6 @@ export async function simpanUnggahanMedia(
 
   // Pemeriksaan kuota dan penulisan berkas dijalankan sambil memegang kunci
   // per desa, sehingga unggahan paralel tidak sama-sama lolos pemeriksaan.
-  await denganKunciMysql(`media:${villageId}`, async () => {
-    await pastikanKuotaMedia(villageId, berkas.ukuran);
-    await simpanMedia(relatif, berkas.isi);
-  });
-
-  return { jalur: relatif, mime: validasi.jenis.mime };
-}
-/**
- * Validasi lalu simpan berkas unggahan menggunakan pengaturan dinamis.
- *
- * @param villageId - ID desa
- * @param kategori - Kategori media
- * @param berkas - Data berkas
- * @param pengaturan - Pengaturan dinamis (opsional): { mimeAllowlist, maxSizeBytes }
- * @throws Error bila MIME/ukuran tidak sah
- */
-export async function simpanUnggahanMediaDenganPengaturan(
-  villageId: number,
-  kategori: KategoriMedia,
-  berkas: { nama: string; mime: string | null; ukuran: number; isi: Uint8Array },
-  pengaturan?: { mimeAllowlist: string[]; maxSizeBytes: number },
-): Promise<HasilSimpanMedia> {
-  const validasi = pengaturan
-    ? validasiMediaDenganPengaturan(
-        berkas.mime,
-        berkas.ukuran,
-        pengaturan.mimeAllowlist,
-        pengaturan.maxSizeBytes,
-      )
-    : validasiMedia(berkas.mime, berkas.ukuran);
-
-  if (!validasi.ok) throw new Error(validasi.pesan);
-
-  const relatif = jalurRelatifMedia(
-    villageId,
-    kategori,
-    namaBerkasAman(berkas.nama),
-    validasi.jenis.ekstensi,
-  );
-
-  // Sama seperti `simpanUnggahanMedia`: cek kuota dan tulis berkas di bawah
-  // kunci desa agar unggahan paralel tidak melampaui kuota.
   await denganKunciMysql(`media:${villageId}`, async () => {
     await pastikanKuotaMedia(villageId, berkas.ukuran);
     await simpanMedia(relatif, berkas.isi);
