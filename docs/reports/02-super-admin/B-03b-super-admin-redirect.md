@@ -7,6 +7,8 @@
 - **Commit pekerjaan:** `43428c42683bbb8d02db0ce82c5b7e43489e54e1`
 - **Tujuan:** Admin Desa dialihkan ke `/beranda` dan pengguna tanpa sesi ke `/masuk`, bukan menerima halaman error.
 
+> **Status revisi (17 November 2026):** perilaku redirect untuk pengguna yang sudah login tanpa hak **digantikan oleh [B-03c](./B-03c-forbidden-page.md)**. Pengguna tersebut kini menerima halaman 403 berisi penjelasan melalui `forbidden()`, sedangkan pengguna tanpa sesi tetap diarahkan ke `/masuk`. Laporan ini dipertahankan sebagai catatan keputusan B-03b; jangan memakai redirect `FORBIDDEN` → `/beranda` sebagai perilaku terkini.
+
 ## 1. Kondisi awal
 
 Setelah B-03, halaman menjalankan `await requireSuperAdmin();` sebelum memuat data. Guard berhasil menolak akses, tetapi `requireSuperAdmin()` melempar `AppError` `FORBIDDEN` (atau `UNAUTHENTICATED`) dari Server Component. Repository belum memiliki `forbidden.tsx` maupun `error.tsx` khusus, sehingga hasilnya error boundary generik — bukan penolakan yang dapat dipahami pengguna.
@@ -81,7 +83,7 @@ Test memakai mock `next/navigation` untuk memastikan `redirect("/beranda")` dan 
 ## 7. Risiko dan keterbatasan
 
 1. **Redirect terjadi di Server Component.** Belum diuji pada browser/Next runtime nyata; test memverifikasi pemanggilan `redirect`, bukan respons HTTP akhir.
-2. **Tidak ada halaman 403 yang dapat dibaca.** Pengguna hanya melihat beranda tanpa penjelasan. Bila ingin pesan eksplisit, diperlukan `forbidden.tsx` dengan `authInterrupts` atau halaman khusus terpisah.
+2. **Tidak ada halaman 403 yang dapat dibaca.** Pengguna hanya melihat beranda tanpa penjelasan. **Ditindaklanjuti di B-03c:** `forbidden.tsx` dengan `authInterrupts` dipilih sehingga penolakan kini menampilkan halaman 403 yang menjelaskan.
 3. **Halaman `/beranda` harus dapat diakses Admin Desa.** Layout admin mensyaratkan izin baca dashboard; akun desa tanpa izin tersebut akan diteruskan ke `/masuk` oleh layout, bukan loop ke halaman ini.
 4. **Role lookup tetap ganda** (`requireSuperAdmin` di halaman dan di use case), sama seperti B-03.
 5. **Tidak ada pengujian integration/DB**, sesuai scope dan aturan AGENTS.md.
@@ -90,4 +92,4 @@ Test memakai mock `next/navigation` untuk memastikan `redirect("/beranda")` dan 
 
 Non-super-admin kini dialihkan ke beranda dan pengguna tanpa sesi ke halaman masuk sebelum data tenant dimuat, sehingga tidak lagi melihat error boundary karena masalah otorisasi.
 
-**Status: siap review.** Branch bertumpuk di atas B-03; commit hanya lokal dan belum di-push atau di-merge.
+**Status: digantikan B-03c.** Perilaku redirect `FORBIDDEN` pada laporan ini tidak lagi berlaku; lihat [B-03c](./B-03c-forbidden-page.md). Branch B-03b tetap dipertahankan sebagai riwayat keputusan, dan commit hanya lokal (belum di-push atau di-merge).
