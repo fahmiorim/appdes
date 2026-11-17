@@ -1,5 +1,12 @@
 # Laporan — Deployment Documentation (B-02/Phase 0.3)
 
+> **Addendum 17 November 2026:** temuan "belum ada halaman web/login" dan
+> "belum ada halaman Super Admin" adalah kondisi historis pada commit
+> `d6f2a61`. UI login, dashboard admin, halaman publik, dan `/super-admin` sudah
+> ada. Bootstrap Super Admin/tenant pertama tetap belum tersedia. Dokumen
+> deployment telah disegarkan; lihat
+> [`phase-0-completion-report.md`](./phase-0-completion-report.md).
+
 - **Task:** Phase 0.3 — Deployment Documentation (B-02)
 - **Tanggal:** 12 November 2026
 - **Repository:** `fahmiorim/appdes`

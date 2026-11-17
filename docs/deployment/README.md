@@ -6,21 +6,25 @@ dari asumsi fitur yang belum tersedia.
 
 > **Status snapshot repository**
 >
-> Dokumentasi ini ditulis terhadap `main` pada commit `d6f2a61` (12 November
-> 2026). Pada commit tersebut:
+> Dokumen ini ditinjau terhadap `main` pada commit `f19267d` (17 November 2026).
+> Pada commit tersebut:
 >
-> - `src/app` hanya berisi route handler/API. **Tidak ditemukan `page.tsx` atau
->   `layout.tsx`**, sehingga belum ada antarmuka web untuk login, dashboard,
->   atau pengelolaan desa.
-> - Belum ada seed, perintah bootstrap, atau halaman provisioning untuk membuat
->   desa dan administrator pertama. Database hasil migrasi berisi skema kosong.
+> - `src/app` berisi 29 `page.tsx` dan 2 `layout.tsx`: login `/masuk`, dashboard
+>   admin `/beranda`, layanan mandiri warga, halaman publik, dan dashboard
+>   `/super-admin` untuk memantau tenant.
+> - Belum ada seed atau perintah bootstrap untuk membuat Super Admin platform
+>   dan desa pertama. Database hasil migrasi berisi skema kosong. Use case
+>   provisioning membutuhkan Super Admin dan desa yang sudah ada; halaman
+>   `/super-admin` hanya menampilkan tenant, bukan membuat Super Admin pertama.
 > - Belum ada Dockerfile, konfigurasi PM2, konfigurasi Nginx, atau unit systemd
 >   di repository. Contoh di dokumen ini adalah pilihan operasional, bukan file
 >   yang disediakan aplikasi.
+> - `npm run build` diverifikasi berhasil pada snapshot ini, termasuk job build
+>   di CI. Build memerlukan environment valid; lihat [ENVIRONMENT.md](./ENVIRONMENT.md).
 >
-> Karena itu, prosedur instalasi sampai aplikasi berjalan dapat diikuti, tetapi
-> instalasi **belum dapat dinyatakan siap dipakai sebagai SID** sampai antarmuka
-> dan bootstrap tenant tersedia. Temuan lengkap ada di
+> Prosedur instalasi sampai aplikasi berjalan dapat diikuti. Bootstrap tenant
+> dan Super Admin pertama masih memerlukan dump baseline yang disetujui atau
+> mekanisme bootstrap dari maintainer; lihat bagian 6.1. Temuan historis ada di
 > [`docs/reports/00-baseline/deployment-documentation-report.md`](../reports/00-baseline/deployment-documentation-report.md).
 
 ## 1. Ruang lingkup
@@ -42,6 +46,7 @@ Dokumen pendukung:
 | [DATABASE.md](./DATABASE.md) | MySQL, migrasi, perbedaan development/testing/production |
 | [BACKUP-RESTORE.md](./BACKUP-RESTORE.md) | Backup DB, media, restore, verifikasi, dan recovery |
 | [OPERATIONS.md](./OPERATIONS.md) | Start/stop, log, health check, pemeliharaan, insiden |
+| [STAGING.md](./STAGING.md) | Build dan verifikasi staging dengan database terpisah |
 
 ## 2. Arsitektur aplikasi
 
@@ -90,7 +95,7 @@ Karakteristik yang memengaruhi deployment:
 | Komponen | Versi/ketentuan | Catatan |
 |---|---|---|
 | Linux | x86_64/arm64, systemd disarankan | Perintah contoh memakai bash dan systemd |
-| Node.js | **22.x** | `package.json` mensyaratkan `>=20.9.0`; CI memakai Node 22 |
+| Node.js | **22.x** | `package.json` mensyaratkan `>=22.12.0`; CI memakai Node 22.22.1 |
 | npm | Mengikuti Node 22 | Gunakan `npm ci`, bukan `npm install`, untuk reproducible install |
 | MySQL | **8.0.x** | CI memakai image `mysql:8.0`; kompatibilitas MariaDB belum diuji |
 | MySQL client | `mysql` dan `mysqldump` | Dibutuhkan fitur backup/restore aplikasi |
@@ -169,7 +174,8 @@ dari versi client yang kompatibel dengan server MySQL 8.0.
 sudo -u "$APP_USER" git clone https://github.com/fahmiorim/appdes.git "$APP_DIR"
 cd "$APP_DIR"
 sudo -u "$APP_USER" git fetch --tags
-sudo -u "$APP_USER" git checkout d6f2a61
+COMMIT_SHA=GANTI_DENGAN_COMMIT_ATAU_TAG_YANG_DISETUJUI
+sudo -u "$APP_USER" git checkout "$COMMIT_SHA"
 ```
 
 Untuk production, gunakan commit atau tag yang sudah disetujui, bukan branch
@@ -242,16 +248,18 @@ Aturan penting:
   ke database production. Integration test membuat database, menjalankan
   migrasi, dan menulis fixture.
 - Buat backup sebelum migrasi apa pun pada database yang sudah berisi data.
-- Repository saat ini hanya memiliki satu migrasi baseline
-  (`src/db/migrations/0000_baseline.sql`). Tidak ada migrasi rollback otomatis;
+- Repository saat ini memiliki 12 migrasi: baseline
+  `src/db/migrations/0000_baseline.sql` dan `0001`–`0011` untuk composite
+  foreign key serta kontrol tenant. Tidak ada migrasi rollback otomatis;
   pemulihan dilakukan dari backup.
 
 ### 6.1 Bootstrap desa dan administrator pertama
 
 **Belum tersedia di repository.** Setelah `db:migrate`, skema terbentuk tetapi
 tidak ada baris `villages`, role, modul, atau akun administrator. Use case
-provisioning membutuhkan Super Admin platform dan desa pertama sebagai cetakan,
-sedangkan belum ada halaman atau perintah bootstrap untuk membuat keduanya.
+provisioning membutuhkan Super Admin platform dan desa pertama sebagai cetakan.
+Dashboard `/super-admin` sudah ada, tetapi hanya menampilkan tenant yang sudah
+terdaftar; belum ada perintah atau halaman untuk membuat Super Admin pertama.
 
 Jangan menganggap endpoint sign-up Better Auth sebagai prosedur instalasi resmi.
 Akun yang dibuat lewat sign-up tidak otomatis memiliki `villageId`, role, atau
@@ -427,10 +435,10 @@ subdomain bertingkat (`a.b.desa.id`) tidak dipetakan ke desa `a`.
 
 Sumber kebenaran ada di tabel `village_domains`; `villages.domain` adalah
 cermin domain utama untuk kompatibilitas. Use case pengelolaan domain tersedia
-di backend, tetapi **tidak ada halaman Super Admin** pada commit ini. Jangan
-mengubah tabel secara manual di production tanpa backup, validasi, dan
-persetujuan; kesalahan domain dapat membuat tenant tidak dapat diakses atau
-menunjuk desa yang salah.
+di backend. Dashboard `/super-admin` dapat menampilkan tenant, tetapi belum ada
+form pengelolaan domain di UI. Jangan mengubah tabel secara manual di production
+tanpa backup, validasi, dan persetujuan; kesalahan domain dapat membuat tenant
+tidak dapat diakses atau menunjuk desa yang salah.
 
 Pemeriksaan operasional:
 

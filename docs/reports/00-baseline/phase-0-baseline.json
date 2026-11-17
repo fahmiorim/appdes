@@ -1,0 +1,77 @@
+{
+  "phase": 0,
+  "captured_at": "2026-11-17",
+  "repository": "fahmiorim/appdes",
+  "baseline_commit": "f19267d6aba583c1ad1765b54dbd03eb8737b700",
+  "baseline_commit_short": "f19267d",
+  "baseline_commit_subject": "Merge pull request #94 from fahmiorim/task/AUD-034-b1-pin-error-masking-pr-2026-11-17",
+  "node": {
+    "required": ">=22.12.0",
+    "ci": "22.22.1"
+  },
+  "application": {
+    "pages": 29,
+    "route_handlers": 80,
+    "layouts": 2,
+    "feature_modules": 52,
+    "unit_test_files": 203,
+    "integration_test_files": 47
+  },
+  "database_baseline": {
+    "type": "migration-manifest",
+    "migration_count": 12,
+    "note": "Baseline skema ditetapkan dari 12 file migrasi. Dump database staging adalah artefak operasional yang dibuat dari instalasi staging menggunakan prosedur BACKUP-RESTORE.md; dump tersebut tidak disimpan di repository.",
+    "staging_dump_procedure": "docs/deployment/BACKUP-RESTORE.md",
+    "staging_build_procedure": "docs/deployment/STAGING.md"
+  },
+  "migrations": [
+    {
+      "file": "src/db/migrations/0000_baseline.sql",
+      "sha256": "f04e320d1eb44e1546bc9fbeefd502054f609128dcbf721c74ba367f4f2514f8"
+    },
+    {
+      "file": "src/db/migrations/0001_aud002_composite_tenant_fk.sql",
+      "sha256": "d0534ea417a653dc04fa9f2a64b92e7640633b844189ef6e39e675115d457d9a"
+    },
+    {
+      "file": "src/db/migrations/0002_b2_dtks_suplemen_composite_fk.sql",
+      "sha256": "c09c88155f3f4808ea7fb78e4234b748a4d5ee35d230be3e4e7642da98fe19b7"
+    },
+    {
+      "file": "src/db/migrations/0003_b2_bantuan_composite_fk.sql",
+      "sha256": "fb4ada658f6d73ecc5340e1c04cdca90c36cd17497c6ea924886fe1534593504"
+    },
+    {
+      "file": "src/db/migrations/0004_b2_resident_composite_fk.sql",
+      "sha256": "689284b01b8759cfb1bd249a481569b478ff6fc2d5f040795021c8e77c6281f5"
+    },
+    {
+      "file": "src/db/migrations/0005_b3_inventaris_composite_fk.sql",
+      "sha256": "15c95a58d34f9d5ed0b54ca73026daf0d108a6737663a0060dbf5eb1fcf7e01d"
+    },
+    {
+      "file": "src/db/migrations/0006_b4_cascade_relations_composite_fk.sql",
+      "sha256": "0fb3d65a36b2716feee6c263085f83ae1d1b3f2ad5f58bc7a368c0342776dd8d"
+    },
+    {
+      "file": "src/db/migrations/0007_b4b_cascade_relations_composite_fk.sql",
+      "sha256": "031b0c139a66b35c3fd3abd8193a525452a108842925f4f3a4cf8d717939299e"
+    },
+    {
+      "file": "src/db/migrations/0008_b4c1_restrict_relations_composite_fk.sql",
+      "sha256": "9242924d2608be6a765ab30173a7ca0af276e15252564563c55746eb84129d42"
+    },
+    {
+      "file": "src/db/migrations/0009_b4c2a_letter_classification_restrict.sql",
+      "sha256": "098b7c640051112cbb4059c54db9ae54f30018a85c5328cba097d3fe1cec6e89"
+    },
+    {
+      "file": "src/db/migrations/0010_b4c2b_remaining_relations_restrict.sql",
+      "sha256": "41eb685c208192e189b02b1235a3775afdaeec2ff126f179cce637a7a2f82726"
+    },
+    {
+      "file": "src/db/migrations/0011_b1_set_null_relations_composite_fk.sql",
+      "sha256": "cdca9b8caa79b6e37f9c446b848110593a2108c403b09d4d89a1a18fa1f2945e"
+    }
+  ]
+}
