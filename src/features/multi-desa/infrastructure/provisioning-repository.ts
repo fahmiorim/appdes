@@ -5,7 +5,7 @@ import { hashPassword } from "better-auth/crypto";
 import { asc, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db";
-import { accounts, users, villageDomains, villages } from "@/db/schema";
+import { accounts, tenantDomainTombstones, users, villageDomains, villages } from "@/db/schema";
 import type { DesaBaruInput } from "@/features/multi-desa/domain/desa-baru";
 import {
   muatTemplateTenant,
@@ -106,6 +106,19 @@ export async function provisionDesa(input: DesaBaruInput): Promise<{ id: number 
       .where(eq(villageDomains.domain, input.domain))
       .limit(1);
     if (domainAda) throw conflict("Domain tersebut sudah dipakai desa lain.");
+
+    // Domain milik desa yang sudah di-purge tetap dicadangkan (tombstone) agar
+    // tenant baru tidak mewarisi identitas desa lama.
+    const [tombstone] = await db
+      .select({ id: tenantDomainTombstones.id })
+      .from(tenantDomainTombstones)
+      .where(eq(tenantDomainTombstones.domain, input.domain))
+      .limit(1);
+    if (tombstone) {
+      throw conflict(
+        "Domain tersebut milik desa yang sudah di-purge dan tidak dapat dipakai ulang.",
+      );
+    }
   }
 
   // Slug unik untuk wildcard `<slug>.<DESA_BASE_DOMAIN>`.

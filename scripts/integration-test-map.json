@@ -61,6 +61,7 @@
     ],
     "multi-desa": [
       "src/features/multi-desa/isolasi-host.integration.test.ts",
+      "src/features/multi-desa/lifecycle-tenant.integration.test.ts",
       "src/features/multi-desa/provisioning-template.integration.test.ts"
     ],
     "penduduk": [

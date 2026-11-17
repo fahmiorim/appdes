@@ -3,6 +3,7 @@ import {
   index,
   int,
   mysqlTable,
+  text,
   timestamp,
   tinyint,
   varchar,
@@ -62,6 +63,20 @@ export const villages = mysqlTable("villages", {
   active: boolean("active").notNull().default(true),
 
   /**
+   * Saat desa dinonaktifkan. Menjadi awal masa tenggang retensi (90 hari)
+   * sebelum datanya boleh di-purge. Diisi saat status berubah menjadi nonaktif
+   * dan dikosongkan lagi bila desa diaktifkan kembali.
+   */
+  nonaktifSejak: timestamp("nonaktif_sejak"),
+
+  /**
+   * Saat data desa di-purge. Baris `villages` tetap disimpan sebagai
+   * **tombstone**: `slug` dan `domain` unik tidak boleh dipakai ulang tenant
+   * baru, dan penanda ini mencegah purge dijalankan dua kali.
+   */
+  purgedAt: timestamp("purged_at"),
+
+  /**
    * Kuota penyimpanan media dalam MB untuk desa ini. `NULL` = tanpa batas.
    * Ditegakkan saat unggah media (`simpanUnggahanMedia*`).
    */
@@ -114,3 +129,62 @@ export const villageDomains = mysqlTable(
 
 export type VillageDomain = typeof villageDomains.$inferSelect;
 export type NewVillageDomain = typeof villageDomains.$inferInsert;
+
+/**
+ * `tenant_domain_tombstones` — host milik desa yang sudah di-purge.
+ *
+ * Baris `village_domains` dihapus saat purge agar host tidak lagi menunjuk
+ * tenant mana pun, tetapi nilainya disimpan di sini supaya domain tersebut
+ * tidak bisa dipakai ulang tanpa keputusan eksplisit maintainer.
+ */
+export const tenantDomainTombstones = mysqlTable(
+  "tenant_domain_tombstones",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    domain: varchar("domain", { length: 255 }).notNull().unique(),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
+    purgedAt: timestamp("purged_at").notNull().defaultNow(),
+  },
+  (table) => [index("tenant_domain_tombstones_village_idx").on(table.villageId)],
+);
+
+/**
+ * `tenant_exports` — bukti ekspor data tenant sebelum purge.
+ *
+ * Purge menolak berjalan tanpa ekspor yang masih berlaku. `dibuat_oleh` tidak
+ * memakai foreign key karena akun pengelola desa ikut terhapus saat purge,
+ * sementara catatan ekspor harus tetap ada untuk audit.
+ */
+export const tenantExports = mysqlTable(
+  "tenant_exports",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
+    dibuatOleh: varchar("dibuat_oleh", { length: 36 }).notNull(),
+    berkas: varchar("berkas", { length: 255 }).notNull(),
+    ukuranByte: int("ukuran_byte").notNull().default(0),
+    jumlahBaris: int("jumlah_baris").notNull().default(0),
+    dibuatPada: timestamp("dibuat_pada").notNull().defaultNow(),
+    kedaluwarsaPada: timestamp("kedaluwarsa_pada").notNull(),
+  },
+  (table) => [index("tenant_exports_village_idx").on(table.villageId, table.dibuatPada)],
+);
+
+/**
+ * `tenant_purge_archive` — ringkasan agregat tenant yang sudah di-purge.
+ *
+ * Menggantikan data mentah yang dihapus: jumlah warga, surat, pengguna, dan
+ * seterusnya, tanpa data pribadi. Satu baris per desa, tidak bisa ditimpa.
+ */
+export const tenantPurgeArchive = mysqlTable("tenant_purge_archive", {
+  villageId: int("village_id")
+    .primaryKey()
+    .references(() => villages.id, { onDelete: "cascade" }),
+  ringkasan: text("ringkasan").notNull(),
+  dibuatOleh: varchar("dibuat_oleh", { length: 36 }).notNull(),
+  dibuatPada: timestamp("dibuat_pada").notNull().defaultNow(),
+});
