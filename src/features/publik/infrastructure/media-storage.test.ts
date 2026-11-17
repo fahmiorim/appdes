@@ -17,7 +17,13 @@ vi.mock("@/db", () => {
   const limit = vi.fn(async () => [{ kuotaMediaMb: null }]);
   const where = vi.fn(() => ({ limit }));
   const from = vi.fn(() => ({ where }));
-  return { db: { select: vi.fn(() => ({ from })) } };
+  const pool = {
+    getConnection: vi.fn(async () => ({
+      query: vi.fn(async () => [[{ ok: 1 }]]),
+      release: vi.fn(),
+    })),
+  };
+  return { db: { select: vi.fn(() => ({ from })) }, pool };
 });
 
 const { writeFile } = await import("node:fs/promises");
