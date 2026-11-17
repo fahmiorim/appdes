@@ -1,17 +1,13 @@
 name: CI
 
-# Setiap PR ke main dan setiap push ke branch kerja menjalankan quality gate
-# kode. Visual QA browser dijalankan terpisah oleh visual-qa.yml. Push langsung
-# ke main tidak memicu workflow karena main dilindungi.
+# Setiap PR ke main menjalankan quality gate lengkap. Push ke main juga
+# divalidasi untuk perubahan non-dokumentasi. Visual QA browser dijalankan
+# terpisah oleh visual-qa.yml. Branch protection mewajibkan check CI pada PR.
 on:
+  # Semua PR ke main menjalankan quality gate, termasuk PR dokumentasi, agar
+  # status check yang diwajibkan branch protection selalu tersedia.
   pull_request:
     branches: [main]
-    # PR yang hanya mengubah dokumentasi tidak perlu membangun aplikasi atau
-    # memasang Chromium. Bila branch protection mewajibkan check ini, longgarkan
-    # aturan tersebut untuk PR dokumentasi atau hapus paths-ignore ini.
-    paths-ignore:
-      - "docs/**"
-      - "**/*.md"
   push:
     branches: [main]
     paths-ignore:
@@ -103,12 +99,40 @@ jobs:
       # menolak host non-loopback / nama di luar desa_test*. DATABASE_URL diisi
       # oleh src/testing/setup-integration.ts dari DSN yang sudah divalidasi.
       - name: Integration test
-        run: npm run test:integration
+        run: npm run test:integration:ci
+
+  build:
+    name: Build produksi
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Nilai build-only: tidak ada koneksi database pada tahap build.
+      NODE_ENV: production
+      APP_URL: http://localhost:3000
+      BETTER_AUTH_URL: http://localhost:3000
+      BETTER_AUTH_SECRET: rahasia-build-ci-minimal-32-karakter
+      DATABASE_URL: mysql://build:build@127.0.0.1:3306/build_only
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.22.1"
+          cache: npm
+
+      - name: Install dependency
+        run: npm ci
+
+      - name: Build
+        run: npm run build
 
   summary:
     name: Ringkasan CI
     runs-on: ubuntu-latest
-    needs: [quality, integration]
+    needs: [quality, integration, build]
     if: always()
     steps:
       - name: Tulis ringkasan
@@ -120,8 +144,9 @@ jobs:
             echo "|---|---|"
             echo "| Unit/quality | ${{ needs.quality.result }} |"
             echo "| Integration | ${{ needs.integration.result }} |"
+            echo "| Build | ${{ needs.build.result }} |"
             echo ""
-            if [ "${{ needs.quality.result }}" != "success" ] || [ "${{ needs.integration.result }}" != "success" ]; then
+            if [ "${{ needs.quality.result }}" != "success" ] || [ "${{ needs.integration.result }}" != "success" ] || [ "${{ needs.build.result }}" != "success" ]; then
               echo "**Status keseluruhan: GAGAL**"
             else
               echo "**Status keseluruhan: LULUS**"
@@ -129,5 +154,5 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Tegakkan status keseluruhan
-        if: needs.quality.result != 'success' || needs.integration.result != 'success'
+        if: needs.quality.result != 'success' || needs.integration.result != 'success' || needs.build.result != 'success'
         run: exit 1

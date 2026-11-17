@@ -1,5 +1,10 @@
 # Laporan Baseline — Phase 0
 
+> **Addendum 17 November 2026:** laporan ini adalah snapshot historis commit
+> `c17fc05` dan status **FAIL** di bawah berlaku pada tanggal pemeriksaan.
+> Status Fase 0 setelah perbaikan ada di
+> [`phase-0-completion-report.md`](./phase-0-completion-report.md).
+
 > **Proyek:** Appdes SID (`fahmiorim/appdes`)
 > **Tanggal pemeriksaan:** 12 November 2026
 > **Jenis task:** pemeriksaan read-only (baseline & quality check)

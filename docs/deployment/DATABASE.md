@@ -135,9 +135,10 @@ DATABASE_URL=mysql://sid_app:GANTI_PASSWORD_APP@127.0.0.1:3306/sid_production
 | `npm run db:push` | Menyamakan schema langsung ke database | **Tidak** |
 | `npm run db:studio` | GUI database | Jangan diekspos ke production |
 
-Repository saat ini memiliki satu migration baseline:
-`src/db/migrations/0000_baseline.sql`. Tidak ada mekanisme down/rollback
-otomatis; rollback aplikasi harus disertai pemulihan backup yang sesuai.
+Repository saat ini memiliki 12 migration: baseline
+`src/db/migrations/0000_baseline.sql` serta `0001`–`0011` untuk composite
+foreign key dan kontrol tenant. Tidak ada mekanisme down/rollback otomatis;
+rollback aplikasi harus disertai pemulihan backup yang sesuai.
 
 ### 5.2 Sebelum migrasi
 
@@ -211,9 +212,10 @@ seed untuk:
 - data master awal.
 
 Use case provisioning membutuhkan Super Admin platform dan desa pertama sebagai
-cetakan, tetapi belum ada halaman atau perintah untuk membuat Super Admin
-pertama. Endpoint sign-up Better Auth bukan pengganti: akun hasil sign-up tidak
-mendapat `villageId`, role, atau akses modul secara otomatis.
+cetakan. Dashboard `/super-admin` sudah ada untuk memantau tenant, tetapi belum
+ada perintah atau halaman untuk membuat Super Admin pertama. Endpoint sign-up
+Better Auth bukan pengganti: akun hasil sign-up tidak mendapat `villageId`,
+role, atau akses modul secara otomatis.
 
 Pilihan yang dapat dipertanggungjawabkan:
 

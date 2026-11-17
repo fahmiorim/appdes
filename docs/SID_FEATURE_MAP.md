@@ -2,6 +2,9 @@
 
 > Peta modul, fungsi, status bukti implementasi, prioritas, dan pekerjaan lanjutan.  
 > Repository: `fahmiorim/appdes` · Pemeriksaan statis: 12 November 2026.
+>
+> Inventaris route, Server Action, repository, dan use case per modul:
+> [`architecture/MODULE-INVENTORY.md`](architecture/MODULE-INVENTORY.md).
 
 ## 1. Cara membaca status
 
@@ -19,7 +22,7 @@ Status di bawah menunjukkan keberadaan struktur/kode yang teridentifikasi pada r
 
 | Area | Folder/fitur | Fungsi utama | Status bukti | Prioritas | Catatan lanjutan |
 |---|---|---|---|---|---|
-| Platform multi-desa | `multi-desa`, `desa`, `pelanggan` | Provisioning, domain, status, kuota, akun admin | Backend use case teridentifikasi; UI Super Admin belum jelas | Core platform | Dashboard Super Admin dan template bootstrap independen. |
+| Platform multi-desa | `multi-desa`, `desa`, `pelanggan` | Provisioning, domain, status, kuota, akun admin | Backend use case dan dashboard `/super-admin` (daftar tenant) tersedia; bootstrap Super Admin pertama belum ada | Core platform | Template bootstrap independen dan pengelolaan domain di UI. |
 | Auth & RBAC | `auth`, `rbac` | Login, sesi, role, permission | Struktur dan use case tersedia | Core | Validasi role ownership dan invalidasi sesi. |
 | Website desa | `publik`, `konten`, `navigation` | Profil, konten, menu, tema, media | Implementasi luas teridentifikasi | Core | Backup media, signature validation, SEO/editor regression. |
 | Profil & wilayah | `wilayah`, `desa`, `gis` | Identitas desa, wilayah, peta | Struktur fitur teridentifikasi | Core | Validasi relasi wilayah pada tenant yang sama. |

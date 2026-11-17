@@ -14,9 +14,10 @@ Sesuaikan nama service dan path dengan instalasi Anda. Repository tidak memuat
 service manager, monitoring, atau konfigurasi log terpusat; contoh di sini
 adalah prosedur operasional, bukan fitur bawaan.
 
-> **Penting:** pada snapshot ini belum ada halaman web/login dan belum ada
-> bootstrap tenant. Pemeriksaan API dapat dilakukan, tetapi uji login hanya
-> mungkin setelah bootstrap tersedia.
+> **Penting:** halaman login (`/masuk`), dashboard admin, dan halaman publik
+> sudah tersedia, tetapi belum ada bootstrap tenant/Super Admin pertama. Uji
+> login baru mungkin dilakukan setelah akun dan tenant dibuat melalui prosedur
+> bootstrap yang disetujui (lihat [DATABASE.md](./DATABASE.md) bagian 6).
 
 ## 1. Start, stop, dan restart
 
@@ -89,8 +90,9 @@ curl -fsS -o /dev/null -w 'HTTP %{http_code}\n' \
 ```
 
 `/api/publik/openapi` adalah route yang benar-benar ada dan tidak memerlukan
-sesi. **Jangan memakai `/` sebagai health check**: pada snapshot ini tidak ada
-halaman root, sehingga 404 bukan bukti aplikasi rusak.
+sesi. Gunakan endpoint ini untuk health check API. Halaman root `/` sekarang
+ada, tetapi render UI juga bergantung pada tenant/host sehingga tidak menggantikan
+health check API.
 
 Respons 200 berarti proses dan jalur database dapat melayani request. Jika 429,
 aplikasi hidup tetapi kena rate limit; cek log dan ulangi dari IP yang sah. Jika
