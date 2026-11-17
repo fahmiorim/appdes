@@ -26,7 +26,12 @@ import { successState, toErrorState, type ActionState } from "@/lib/action-state
  * memeriksa desa sebelum mengubah data.
  */
 
-const HALAMAN = "/super-admin";
+const HALAMAN = ["/super-admin", "/super-admin/tenant"] as const;
+
+/** Ringkasan dan konsol tenant memuat data yang sama. */
+function segarkanHalaman(): void {
+  for (const path of HALAMAN) revalidatePath(path);
+}
 
 export async function buatDesaAction(
   _state: ActionState<{ id: number }>,
@@ -44,7 +49,7 @@ export async function buatDesaAction(
       kuotaMediaMb: formData.get("kuotaMediaMb") ?? "",
     });
 
-    revalidatePath(HALAMAN);
+    segarkanHalaman();
     return successState("Desa baru berhasil dibuat.", hasil);
   } catch (error) {
     return toErrorState(error);
@@ -61,7 +66,7 @@ export async function ubahStatusAction(
       active: formData.get("active"),
     });
 
-    revalidatePath(HALAMAN);
+    segarkanHalaman();
     return successState(
       hasil.active
         ? "Desa diaktifkan kembali; masa tenggang retensi direset."
@@ -83,7 +88,7 @@ export async function ubahKuotaAction(
       kuotaMediaMb: formData.get("kuotaMediaMb") ?? "",
     });
 
-    revalidatePath(HALAMAN);
+    segarkanHalaman();
     return successState(
       hasil.kuotaMediaMb === null
         ? "Kuota media dihapus (tanpa batas)."
@@ -105,7 +110,7 @@ export async function tambahDomainAction(
       domain: formData.get("domain"),
     });
 
-    revalidatePath(HALAMAN);
+    segarkanHalaman();
     return successState("Domain ditambahkan.", hasil);
   } catch (error) {
     return toErrorState(error);
@@ -122,7 +127,7 @@ export async function hapusDomainAction(
       domainId: formData.get("domainId"),
     });
 
-    revalidatePath(HALAMAN);
+    segarkanHalaman();
     return successState("Domain dihapus.");
   } catch (error) {
     return toErrorState(error);
@@ -139,7 +144,7 @@ export async function jadikanUtamaAction(
       domainId: formData.get("domainId"),
     });
 
-    revalidatePath(HALAMAN);
+    segarkanHalaman();
     return successState("Domain utama diperbarui.");
   } catch (error) {
     return toErrorState(error);
@@ -153,7 +158,7 @@ export async function resetAdminAction(
   try {
     const hasil = await resetAksesAdminDesa(formData.get("villageId"));
 
-    revalidatePath(HALAMAN);
+    segarkanHalaman();
     return successState(
       "Akses administrator desa direset. Sandi sementara hanya ditampilkan sekali ini.",
       hasil,
@@ -171,7 +176,7 @@ export async function eksporDataAction(
   try {
     const hasil = await eksporDataDesa(formData.get("villageId"));
 
-    revalidatePath(HALAMAN);
+    segarkanHalaman();
     return successState(
       `Ekspor selesai: ${hasil.jumlahBaris.toLocaleString("id-ID")} baris. Simpan berkas sebelum masa berlaku 30 hari berakhir.`,
       hasil,
@@ -193,7 +198,7 @@ export async function purgeAction(
       konfirmasi: formData.get("konfirmasi"),
     });
 
-    revalidatePath(HALAMAN);
+    segarkanHalaman();
     return successState(
       `Data desa di-purge: ${hasil.jumlahBarisDihapus.toLocaleString("id-ID")} baris dari ${hasil.tabelDiproses} tabel. Media ${hasil.mediaDihapus ? "terhapus" : "perlu dibersihkan manual"}.`,
       hasil,

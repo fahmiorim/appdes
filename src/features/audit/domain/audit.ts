@@ -46,6 +46,10 @@ export const AUDIT_EVENTS = {
   desaAdminReset: "desa.admin.reset",
   desaExport: "desa.export",
   desaPurge: "desa.purge",
+  platformUserCreate: "platform.user.create",
+  platformUserStatus: "platform.user.status",
+  platformUserReset: "platform.user.reset",
+  platformUserSessionRevoke: "platform.user.session.revoke",
 } as const;
 
 export type AuditEvent = (typeof AUDIT_EVENTS)[keyof typeof AUDIT_EVENTS];
@@ -98,6 +102,10 @@ export const AUDIT_EVENT_LABELS: Record<AuditEvent, string> = {
   [AUDIT_EVENTS.desaAdminReset]: "Reset akses admin desa",
   [AUDIT_EVENTS.desaExport]: "Ekspor data desa",
   [AUDIT_EVENTS.desaPurge]: "Purge data desa",
+  [AUDIT_EVENTS.platformUserCreate]: "Buat pengguna platform",
+  [AUDIT_EVENTS.platformUserStatus]: "Ubah status pengguna platform",
+  [AUDIT_EVENTS.platformUserReset]: "Reset sandi pengguna platform",
+  [AUDIT_EVENTS.platformUserSessionRevoke]: "Cabut sesi pengguna platform",
 };
 
 export interface AuditEventInput {

@@ -1,0 +1,72 @@
+import type { Metadata } from "next";
+
+import { daftarSemuaDomain } from "@/features/multi-desa/application/kelola-desa-use-cases";
+import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisioning-use-cases";
+import { hariMenujuPurge, statusRetensi } from "@/features/multi-desa/domain/lifecycle-tenant";
+import { PlatformCard, PlatformPageHeader } from "@/features/multi-desa/presentation/platform-ui";
+import { TenantConsole } from "@/features/multi-desa/presentation/tenant-console";
+
+import {
+  buatDesaAction,
+  eksporDataAction,
+  hapusDomainAction,
+  jadikanUtamaAction,
+  purgeAction,
+  resetAdminAction,
+  tambahDomainAction,
+  ubahKuotaAction,
+  ubahStatusAction,
+} from "../actions";
+import { pastikanSuperAdmin } from "../guard";
+
+export const metadata: Metadata = {
+  title: "Tenant Desa",
+  robots: { index: false, follow: false },
+};
+
+const angka = new Intl.NumberFormat("id-ID");
+
+export default async function SuperAdminTenantPage() {
+  await pastikanSuperAdmin();
+
+  const [desa, domain] = await Promise.all([daftarDesaSuperAdmin(), daftarSemuaDomain()]);
+  const rows = desa.map((item) => ({
+    ...item,
+    statusRetensi: statusRetensi(item),
+    hariMenujuPurge: hariMenujuPurge(item),
+  }));
+
+  return (
+    <>
+      <PlatformPageHeader
+        description={`${angka.format(rows.length)} desa terdaftar. Kelola status, kuota media, domain, akses administrator, ekspor, dan purge dari satu meja kerja.`}
+        eyebrow="Konsol platform"
+        title="Tenant desa"
+      />
+
+      <PlatformCard
+        description="Setiap baris dapat dibuka untuk mengubah pengaturan desa. Purge bersifat permanen dan hanya tersedia setelah ekspor berlaku."
+        flush
+        title="Daftar tenant"
+      >
+        <div className="platform-tenant-console">
+          <TenantConsole
+            desa={rows}
+            domain={domain}
+            aksi={{
+              buat: buatDesaAction,
+              status: ubahStatusAction,
+              kuota: ubahKuotaAction,
+              reset: resetAdminAction,
+              ekspor: eksporDataAction,
+              purge: purgeAction,
+              tambahDomain: tambahDomainAction,
+              hapusDomain: hapusDomainAction,
+              jadikanUtama: jadikanUtamaAction,
+            }}
+          />
+        </div>
+      </PlatformCard>
+    </>
+  );
+}
