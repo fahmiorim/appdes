@@ -59,6 +59,17 @@ Pekerjaan:
 - Test yang di-skip tidak dilaporkan sebagai bukti keberhasilan integrasi.
 - Staging dapat dibangun berdasarkan dokumentasi.
 
+**Status implementasi (17 November 2026):** selesai untuk deliverable repository.
+CI menjalankan quality, integration MySQL, build, dan ringkasan pada semua PR;
+`main` dilindungi keempat required check tersebut. `npm run test:integration`
+melaporkan `SKIPPED` eksplisit, sedangkan `test:integration:ci` gagal bila database
+tidak tersedia. Dokumentasi staging ada di `docs/deployment/STAGING.md`; inventaris
+modul ada di `docs/architecture/MODULE-INVENTORY.md`; baseline ada di
+`docs/reports/00-baseline/phase-0-baseline.json`. Bukti: PR #95 dan laporan
+`docs/reports/00-baseline/phase-0-completion-report.md`. Dump database staging dan
+deployment staging live tetap merupakan langkah operator karena memerlukan
+environment eksternal.
+
 ### Fase 1 — Tenant isolation dan security hardening
 
 **Prioritas:** P0 · **Penghambat produksi multi-tenant.**

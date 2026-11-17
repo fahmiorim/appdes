@@ -5,8 +5,9 @@
 - **Repository:** `fahmiorim/appdes`
 - **Branch:** `task/phase-0-completion-2026-11-17`
 - **Base commit:** `f19267d6aba583c1ad1765b54dbd03eb8737b700` (`main`)
-- **Commit pekerjaan:** `21c2c348c932039cff87c244e7ac26700e72960e`
-- **Status:** siap review; CI PR dan branch protection masih harus diverifikasi
+- **Commit pekerjaan:** `c2e9885` (perbaikan CI setelah commit awal `21c2c34`)
+- **PR:** [#95](https://github.com/fahmiorim/appdes/pull/95)
+- **Status:** siap review/merge; CI PR hijau dan branch protection sudah aktif
 
 ## 1. Tujuan
 
@@ -150,13 +151,17 @@ commit `21c2c34`.
 | Build | `npm run build` dengan environment build-only | **PASS** (exit 0) |
 | Integration lokal tanpa DB | `npm run test:integration` | **SKIPPED** eksplisit (exit 0, bukan bukti integrasi) |
 | Integration mode CI tanpa DB | `TEST_DATABASE_ACK=1 npm run test:integration:ci` | **FAIL** sesuai desain (exit 1) |
-| Integration MySQL | CI job PR | **PENDING** — diverifikasi setelah PR |
-| Branch protection | GitHub API | **PENDING** — diaktifkan setelah CI hijau |
+| Integration MySQL | CI job PR | **PASS** ([run 44099212925](https://github.com/fahmiorim/appdes/actions/runs/44099212925)) |
+| Build CI | CI job PR | **PASS** ([run 44099212925](https://github.com/fahmiorim/appdes/actions/runs/44099212925)) |
+| Visual QA | CI job PR | **PASS** (desktop/mobile) |
+| Branch protection | GitHub API | **PASS** — required checks quality, integration, build, ringkasan; admin termasuk |
 | Deployment staging live | server staging | **TIDAK DIJALANKAN** — tidak ada akses server |
 
 Catatan: build lokal memakai `DATABASE_URL` build-only dan tidak membuktikan
 koneksi database. Integration test pada MySQL disposable diverifikasi oleh CI,
-bukan oleh run lokal ini.
+bukan oleh run lokal ini. Build CI sempat gagal karena `NODE_ENV=production` di
+level job membuat `npm ci` melewatkan `husky`; perbaikan membatasi `NODE_ENV` ke
+step build dan run berikutnya lulus.
 
 ## 8. Risiko dan keterbatasan
 
@@ -173,14 +178,15 @@ bukan oleh run lokal ini.
   koneksi database atau render dengan data nyata.
 - **Node lokal berbeda dari CI.** Lokal memakai Node 26.2.0; CI memakai 22.22.1.
   Build/typecheck CI tetap harus menjadi bukti utama.
-- Branch protection baru akan berlaku setelah diaktifkan; sebelum itu CI tidak
-  memaksa merge.
+- Branch protection sudah aktif dan mencakup admin, sehingga perubahan berikutnya
+  harus melewati keempat required check CI.
 
 ## 9. Kesimpulan
 
-Seluruh deliverable repository-side Fase 0 sudah diimplementasikan: CI lengkap
-dan berjalan pada semua PR, skip integration test eksplisit, build job, dokumen
-deployment/staging yang sesuai kondisi kode, inventaris modul, dan manifest
-baseline. Dua bukti operasional masih bergantung pada environment eksternal:
-dump database staging dan deployment staging live. Status akhir menunggu CI PR
-dan branch protection diverifikasi.
+Seluruh deliverable repository-side Fase 0 sudah diimplementasikan dan
+diverifikasi: CI lengkap berjalan pada semua PR, skip integration test eksplisit,
+build job, dokumen deployment/staging yang sesuai kondisi kode, inventaris
+modul, manifest baseline, dan branch protection. Dua bukti operasional masih
+bergantung pada environment eksternal: dump database staging dan deployment
+staging live. Keduanya bukan artefak yang dapat dibuat dari repository ini dan
+tidak diklaim selesai.
