@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 
 import {
+  hapusDomain,
+  jadikanDomainUtamaDesa,
   resetAksesAdminDesa,
+  tambahDomain,
   ubahKuotaMedia,
   ubahStatusDesa,
 } from "@/features/multi-desa/application/kelola-desa-use-cases";
@@ -87,6 +90,57 @@ export async function ubahKuotaAction(
         : `Kuota media disetel ke ${hasil.kuotaMediaMb} MB.`,
       hasil,
     );
+  } catch (error) {
+    return toErrorState(error);
+  }
+}
+
+export async function tambahDomainAction(
+  _state: ActionState<{ id: number }>,
+  formData: FormData,
+): Promise<ActionState<{ id: number }>> {
+  try {
+    const hasil = await tambahDomain({
+      villageId: formData.get("villageId"),
+      domain: formData.get("domain"),
+    });
+
+    revalidatePath(HALAMAN);
+    return successState("Domain ditambahkan.", hasil);
+  } catch (error) {
+    return toErrorState(error);
+  }
+}
+
+export async function hapusDomainAction(
+  _state: ActionState<null>,
+  formData: FormData,
+): Promise<ActionState<null>> {
+  try {
+    await hapusDomain({
+      villageId: formData.get("villageId"),
+      domainId: formData.get("domainId"),
+    });
+
+    revalidatePath(HALAMAN);
+    return successState("Domain dihapus.");
+  } catch (error) {
+    return toErrorState(error);
+  }
+}
+
+export async function jadikanUtamaAction(
+  _state: ActionState<null>,
+  formData: FormData,
+): Promise<ActionState<null>> {
+  try {
+    await jadikanDomainUtamaDesa({
+      villageId: formData.get("villageId"),
+      domainId: formData.get("domainId"),
+    });
+
+    revalidatePath(HALAMAN);
+    return successState("Domain utama diperbarui.");
   } catch (error) {
     return toErrorState(error);
   }

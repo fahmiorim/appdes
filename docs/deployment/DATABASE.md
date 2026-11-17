@@ -302,9 +302,11 @@ Catatan operasi:
   (panel **Kelola** setiap desa), yang memanggil use case pada
   `src/features/multi-desa/application/lifecycle-desa-use-cases.ts`. Konsol dan
   use case sama-sama menolak pengguna yang bukan Super Admin platform.
-- Konsol juga menyediakan pembuatan desa, aktif/nonaktif, kuota media, dan
-  reset akses administrator desa. Pengelolaan domain alias belum tersedia di
-  konsol; use case-nya sudah ada dan belum diekspos ke UI.
+- Konsol juga menyediakan pembuatan desa, aktif/nonaktif, kuota media, reset
+  akses administrator desa, serta pengelolaan domain/alias: menambah alias,
+  menjadikan salah satu domain sebagai utama (mencerminkan ke `villages.domain`),
+  dan menghapus alias non-utama. Domain pertama desa otomatis menjadi utama, dan
+  domain yang sudah dipakai tenant lain ditolak.
 
 ### 6.4 Ekspor template dari instalasi referensi
 

@@ -18,6 +18,7 @@ import {
   hapusDomainDesa,
   jadikanDomainUtama,
   listDomainDesa,
+  listSemuaDomain,
   resetAdminDesa as resetAdminDesaRepo,
   setKuotaMediaDesa,
   setStatusDesa,
@@ -56,6 +57,17 @@ async function pastikanDesaAda(villageId: number): Promise<DesaKelolaRow> {
 export async function getDetailDesa(input: unknown): Promise<DesaKelolaRow> {
   await requireSuperAdmin();
   return pastikanDesaAda(villageIdSchema.parse(input));
+}
+
+/**
+ * Daftar seluruh alias domain tenant, dipetakan per desa oleh konsol.
+ *
+ * Satu query untuk semua tenant menghindari N+1 saat panel kelola dibuka,
+ * dan tetap hanya berisi hostname (bukan data pribadi).
+ */
+export async function daftarSemuaDomain(): Promise<DomainDesaRow[]> {
+  await requireSuperAdmin();
+  return listSemuaDomain();
 }
 
 /** Daftar alias domain milik desa. */
