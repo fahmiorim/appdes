@@ -300,8 +300,9 @@ Catatan operasi:
   `npm run platform:cleanup-exports` — lihat
   [OPERATIONS.md](./OPERATIONS.md) bagian 8.1 untuk penjadwalannya. Skrip hanya
   menghapus berkas di bawah `storage/exports`, menghapus baris `tenant_exports`
-  yang kedaluwarsa, dan idempoten. Aturan pemilihan baris sama dengan use case
-  `bersihkanEksporKedaluwarsa`.
+  yang kedaluwarsa, dan idempoten. Aturan kedaluwarsa dan penjagaan path hanya
+  ada di `src/features/multi-desa/domain/ekspor-kedaluwarsa.mjs`, dipakai
+  bersama oleh skrip itu dan use case `bersihkanEksporKedaluwarsa`.
 - Ekspor dan purge dijalankan dari konsol Super Admin di `/super-admin`
   (panel **Kelola** setiap desa), yang memanggil use case pada
   `src/features/multi-desa/application/lifecycle-desa-use-cases.ts`. Konsol dan

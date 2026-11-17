@@ -1,8 +1,11 @@
 /**
- * Tipe untuk fungsi murni `cleanup-exports.mjs` yang diuji unit.
+ * Tipe untuk `cleanup-exports.mjs`.
  *
  * Skrip CLI-nya sengaja tetap `.mjs` (bukan TypeScript) agar dapat dijalankan
- * langsung oleh Node dari systemd timer tanpa build tambahan.
+ * langsung oleh Node dari systemd timer tanpa build tambahan. Aturan
+ * kedaluwarsa dan penjagaan path berada di
+ * `src/features/multi-desa/domain/ekspor-kedaluwarsa.mjs`; file ini hanya
+ * mendeklarasikan parsing argumen milik CLI.
  */
 
 export interface OpsiCleanupEkspor {
@@ -12,9 +15,3 @@ export interface OpsiCleanupEkspor {
 }
 
 export function parseArgumen(argv: string[]): OpsiCleanupEkspor;
-
-/**
- * Path absolut berkas ekspor, atau `null` bila path berada di luar folder
- * ekspor (absolut, `..`, atau awalan mirip seperti `storage/exports-lain`).
- */
-export function jalurBerkasAman(akarEkspor: string, berkas: string, cwd?: string): string | null;
