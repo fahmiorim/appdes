@@ -236,6 +236,7 @@ sudo ls -la /opt/appdes/app/storage/whatsapp-auth
 |---|---|---|
 | Harian | Cek service, health check, disk, error log | Status dan timestamp |
 | Harian | Backup database + media | File, checksum, exit code |
+| Harian | Jalankan pembersihan ekspor tenant (bagian 8.1) | Ringkasan JSON/exit code |
 | Mingguan | Uji `gzip -t`/checksum, cek ukuran backup, cek sertifikat | Log pemeriksaan |
 | Bulanan | Restore drill di staging, review akses, review kuota/media | Laporan drill |
 | Bulanan | Patch OS/Node/MySQL dan review dependency | Change ticket |
@@ -250,6 +251,88 @@ Pemeliharaan wajib:
 - jangan menghapus backup lama sebelum backup baru diverifikasi;
 - jangan mengekspos database atau port 3000 ke internet;
 - jangan menonaktifkan TLS atau `TRUST_PROXY` untuk "mempercepat" perbaikan.
+
+### 8.1 Pembersihan berkas ekspor tenant (terjadwal)
+
+Ekspor data tenant di `storage/exports/<villageId>/` berlaku 30 hari. Skrip
+`scripts/platform/cleanup-exports.mjs` menghapus berkas yang sudah kedaluwarsa
+beserta baris `tenant_exports`-nya. Tanpa penjadwal, salinan data pribadi dari
+desa yang sudah di-purge akan tersimpan selamanya.
+
+Coba dulu tanpa mengubah apa pun:
+
+```bash
+cd /opt/appdes/app
+sudo -u appdes npm run platform:cleanup-exports -- --dry-run
+```
+
+Jalankan sungguhan (cetak ringkasan JSON untuk log):
+
+```bash
+sudo -u appdes npm run platform:cleanup-exports -- --json
+```
+
+Sifat skrip:
+
+- hanya menghapus berkas di bawah `storage/exports`; path dari database
+  diverifikasi ulang, sehingga path absolut atau `..` dilewati dan dilaporkan
+  sebagai `berkasDilewati`;
+- baris `tenant_exports` yang kedaluwarsa selalu dihapus, termasuk bila
+  berkasnya sudah hilang;
+- idempoten, aman dijalankan berulang atau bersamaan;
+- tidak menyentuh data desa, media, atau tabel lain.
+
+Contoh systemd timer harian (template operasional; sesuaikan path dan user):
+
+```ini
+# /etc/systemd/system/appdes-cleanup-exports.service
+[Unit]
+Description=Appdes SID - bersihkan ekspor tenant kedaluwarsa
+After=network-online.target mysql.service
+
+[Service]
+Type=oneshot
+User=appdes
+Group=appdes
+WorkingDirectory=/opt/appdes/app
+Environment=NODE_ENV=production
+EnvironmentFile=-/opt/appdes/app/.env
+ExecStart=/usr/bin/npm run platform:cleanup-exports -- --json
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+```
+
+```ini
+# /etc/systemd/system/appdes-cleanup-exports.timer
+[Unit]
+Description=Jadwal harian pembersihan ekspor tenant Appdes SID
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+Persistent=true
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now appdes-cleanup-exports.timer
+sudo systemctl list-timers appdes-cleanup-exports.timer --no-pager
+sudo journalctl -u appdes-cleanup-exports --no-pager | tail -20
+```
+
+Catatan:
+
+- `Persistent=true` menjalankan jadwal yang terlewat setelah server mati.
+- Timer dijalankan sebagai user aplikasi agar dapat membaca `.env` dan
+  menghapus berkas miliknya sendiri.
+- Periksa `journalctl` secara berkala; tanpa monitoring, kegagalan hanya terlihat
+  di journal. Exit code non-nol berarti ada error koneksi/database.
+- Jalankan manual setelah purge besar atau setelah memulihkan dari backup agar
+  sisa ekspor lama tidak tertinggal.
 
 ## 9. Prosedur rilis/update
 

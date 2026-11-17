@@ -88,22 +88,6 @@ memindahkan badge dan `villages.domain`, alias lama bisa dihapus, domain tenant
 lain ditolak saat ditambah, dan ID domain tenant lain ditolak untuk
 jadikan-utama/hapus.
 
-### Koreksi setelah CI (18 November 2026)
-
-CI pada PR menolak `Unit test dan quality check`:
-`src/app/(admin)/super-admin/page.test.ts` ternyata menjalankan query domain
-asli (`village_domains`), karena mock `daftarSemuaDomain` belum ditambahkan saat
-halaman mulai memuat domain. Di mesin lokal hal ini lolos selama database dapat
-diakses (atau hanya terlihat saat kredensial salah), sehingga pemeriksaan PASS
-di atas bergantung pada lingkungan.
-
-Perbaikan: mock `daftarSemuaDomain` ditambahkan ke test dan mock `tenant-table`
-yang sudah dihapus dibersihkan. Test halaman kini lulus tanpa database:
-
-| Perintah | Hasil |
-|---|---|
-| `npx vitest run "src/app/(admin)/super-admin/page.test.ts"` | PASS — 3 test, tanpa koneksi database |
-
 ## 8. Risiko dan batasan
 
 - Interaksi form domain belum diuji otomatis di browser; verifikasi terbatas

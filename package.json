@@ -32,6 +32,7 @@
     "visual:qa:capture": "node scripts/visual-qa/capture.mjs",
     "platform:bootstrap": "node scripts/platform/bootstrap.mjs",
     "platform:export-template": "node scripts/platform/export-template.mjs",
+    "platform:cleanup-exports": "node scripts/platform/cleanup-exports.mjs",
     "prepare": "husky"
   },
   "dependencies": {

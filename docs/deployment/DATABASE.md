@@ -296,8 +296,12 @@ Catatan operasi:
   tanpa perlu mengubah daftar manual.
 - Purge tidak dapat dibatalkan. Jalankan hanya setelah ekspor diverifikasi dan
   backup database dibuat.
-- Pembersihan berkas ekspor kedaluwarsa dilakukan oleh use case
-  `bersihkanEksporKedaluwarsa` (dipanggil operator/penjadwal).
+- Berkas ekspor kedaluwarsa (30 hari) dibersihkan oleh skrip operasional
+  `npm run platform:cleanup-exports` — lihat
+  [OPERATIONS.md](./OPERATIONS.md) bagian 8.1 untuk penjadwalannya. Skrip hanya
+  menghapus berkas di bawah `storage/exports`, menghapus baris `tenant_exports`
+  yang kedaluwarsa, dan idempoten. Aturan pemilihan baris sama dengan use case
+  `bersihkanEksporKedaluwarsa`.
 - Ekspor dan purge dijalankan dari konsol Super Admin di `/super-admin`
   (panel **Kelola** setiap desa), yang memanggil use case pada
   `src/features/multi-desa/application/lifecycle-desa-use-cases.ts`. Konsol dan
