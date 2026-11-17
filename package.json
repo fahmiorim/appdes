@@ -30,6 +30,7 @@
     "visual:qa:migrate": "node scripts/visual-qa/migrate.mjs",
     "visual:qa:seed": "node scripts/visual-qa/seed.mjs",
     "visual:qa:capture": "node scripts/visual-qa/capture.mjs",
+    "platform:bootstrap": "node scripts/platform/bootstrap.mjs",
     "prepare": "husky"
   },
   "dependencies": {

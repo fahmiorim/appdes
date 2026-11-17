@@ -202,30 +202,61 @@ yang diperiksa oleh fitur restore aplikasi.
 
 ## 6. Bootstrap data awal
 
-**Tidak tersedia di repository ini.** Migrasi hanya membuat skema. Tidak ada
-seed untuk:
+Migrasi hanya membuat skema. Dua langkah berikut menyiapkan instalasi baru:
 
-- baris `villages`;
-- role platform/desa dan permission;
-- akun administrator;
-- domain tenant;
-- data master awal.
+1. `npm run platform:bootstrap` — membuat role platform `super-admin`
+   (`village_id IS NULL`) dan satu akun pengelola platform;
+2. form/halaman pembuatan desa oleh Super Admin — membuat tenant beserta role,
+   modul, tema, dan akun administrator desa dari template platform.
 
-Use case provisioning membutuhkan Super Admin platform dan desa pertama sebagai
-cetakan. Dashboard `/super-admin` sudah ada untuk memantau tenant, tetapi belum
-ada perintah atau halaman untuk membuat Super Admin pertama. Endpoint sign-up
-Better Auth bukan pengganti: akun hasil sign-up tidak mendapat `villageId`,
-role, atau akses modul secara otomatis.
+### 6.1 Bootstrap Super Admin pertama
 
-Pilihan yang dapat dipertanggungjawabkan:
+```bash
+cd /opt/appdes/app
+sudo -u appdes env \
+  PLATFORM_ADMIN_NAME='Nama Pengelola' \
+  PLATFORM_ADMIN_USERNAME=platform \
+  PLATFORM_ADMIN_EMAIL=platform@contoh.id \
+  PLATFORM_ADMIN_PASSWORD='sandi-acak-minimal-12-karakter' \
+  npm run platform:bootstrap -- --yes
+```
 
-1. **Dump baseline yang disetujui** dari instalasi yang sudah berjalan, dengan
-   data tenant yang sudah dibersihkan/anonimisasi. Ikuti prosedur restore di
-   [BACKUP-RESTORE.md](./BACKUP-RESTORE.md), lalu verifikasi.
-2. **Tunggu implementasi bootstrap** dari maintainer. Jangan mengarang SQL
-   insert untuk role, permission, atau password hash.
-3. Untuk pengujian lokal, gunakan fixture integration test hanya pada database
-   disposable; jangan memindahkan fixture ke production.
+Aturan skrip:
+
+- Tanpa `--yes`, skrip hanya mencetak target database dan rencana, lalu berhenti
+  tanpa menulis apa pun. Jalankan tanpa `--yes` lebih dulu pada database nyata.
+- Skrip **menolak berjalan** bila sudah ada akun platform (`village_id IS NULL`).
+  Skrip tidak mereset atau menimpa akun yang sudah ada.
+- Kredensial dibaca dari environment, bukan argumen, agar tidak tersimpan di
+  shell history atau daftar proses. Jangan menaruhnya di unit systemd.
+- Sandi minimal 12 karakter dan di-hash dengan mekanisme Better Auth.
+- Akun dibuat dengan `must_change_pin = 1`, sehingga sandi wajib diganti pada
+  login pertama.
+
+Jangan menganggap endpoint sign-up Better Auth sebagai prosedur instalasi resmi.
+Akun hasil sign-up tidak memiliki `villageId`, role platform, atau akses modul.
+
+### 6.2 Template tenant
+
+Desa baru dibentuk dari template platform di
+`src/db/templates/tenant-template.ts`, **bukan** dengan menyalin desa pertama.
+Karena itu provisioning berjalan pada instalasi yang belum berisi desa sama
+sekali. Template memuat role, modul, matriks akses, tema, dan menu publik.
+
+Batas yang perlu diketahui operator:
+
+- Template bawaan masih minimal (hanya role `administrator`), karena katalog
+  halaman admin saat ini baru `/beranda`. Modul lain ditambahkan ke template
+  ketika halamannya tersedia.
+- Katalog jenis surat, buku bumindes, dan kategori inventaris **tidak** dibuat
+  otomatis. Ketiganya data master milik desa dan tidak diwariskan dari tenant
+  lain; administrator desa menyiapkannya sendiri.
+- Mengubah template memengaruhi seluruh desa yang dibuat setelahnya, bukan desa
+  yang sudah ada.
+
+Database hasil migrasi tetap kosong sebelum bootstrap dijalankan. Untuk
+pengujian lokal, gunakan fixture integration test hanya pada database
+disposable; jangan memindahkan fixture ke production.
 
 Jangan menyalin database development yang berisi data pribadi ke production.
 Jangan membuat akun administrator dengan password default atau hash yang tidak

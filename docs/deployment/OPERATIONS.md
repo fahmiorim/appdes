@@ -15,9 +15,10 @@ service manager, monitoring, atau konfigurasi log terpusat; contoh di sini
 adalah prosedur operasional, bukan fitur bawaan.
 
 > **Penting:** halaman login (`/masuk`), dashboard admin, dan halaman publik
-> sudah tersedia, tetapi belum ada bootstrap tenant/Super Admin pertama. Uji
-> login baru mungkin dilakukan setelah akun dan tenant dibuat melalui prosedur
-> bootstrap yang disetujui (lihat [DATABASE.md](./DATABASE.md) bagian 6).
+> sudah tersedia. Akun pengelola platform dibuat dengan
+> `npm run platform:bootstrap`, lalu desa pertama dibuat dari template platform.
+> Uji login baru dapat dilakukan setelah kedua langkah itu selesai (lihat
+> [DATABASE.md](./DATABASE.md) bagian 6).
 
 ## 1. Start, stop, dan restart
 

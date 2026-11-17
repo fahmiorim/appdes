@@ -57,6 +57,7 @@ export default defineConfig({
       "src/features/konten/dokumen-publik.integration.test.ts",
       "src/features/layanan-mandiri/integrasi-warga.test.ts",
       "src/features/multi-desa/isolasi-host.integration.test.ts",
+      "src/features/multi-desa/provisioning-template.integration.test.ts",
       "src/features/penduduk/infrastructure/dtks-tenant-isolation.integration.test.ts",
       "src/features/penduduk/infrastructure/penduduk-tenant-references.integration.test.ts",
       "src/features/penduduk/infrastructure/riwayat-penduduk-tenant-isolation.integration.test.ts",

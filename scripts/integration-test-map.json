@@ -59,7 +59,10 @@
       "src/features/layanan-mandiri/integrasi-warga.test.ts",
       "src/features/layanan-mandiri/permohonan-tenant-relations.integration.test.ts"
     ],
-    "multi-desa": ["src/features/multi-desa/isolasi-host.integration.test.ts"],
+    "multi-desa": [
+      "src/features/multi-desa/isolasi-host.integration.test.ts",
+      "src/features/multi-desa/provisioning-template.integration.test.ts"
+    ],
     "penduduk": [
       "src/features/penduduk/infrastructure/dtks-tenant-isolation.integration.test.ts",
       "src/features/penduduk/infrastructure/penduduk-tenant-references.integration.test.ts",
