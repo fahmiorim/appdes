@@ -5,6 +5,7 @@
 - **Branch:** `task/phase-1-local-followups`.
 - **Base commit:** `7f17746b701915ffcdfc4672c2bbcb09e99fe46c` (`main`, merge PR #103).
 - **Commit implementasi:** `bf6b72b2fa8e203b352b2f8b59c40f145b19fa10`.
+- **Pull Request:** [#104](https://github.com/fahmiorim/appdes/pull/104).
 - **Status:** siap review; belum di-merge.
 - **Lingkungan:** Windows, Node `26.2.0`, MySQL `8.0.30` dari Laragon.
 
@@ -97,13 +98,14 @@ Catatan: `mysql < 0011.sql` langsung gagal karena marker `--> statement-breakpoi
 | Rollback `0011` | `mysql < docs/reports/01-security/AUD-034-b1-rollback.sql` | **PASS** — 68 → 60 tenant FK |
 | Forward `0011` setelah rollback | Apply `0011` tanpa marker Drizzle | **PASS** — 60 → 68 tenant FK |
 | Diff whitespace | `git diff --check` | **PASS** |
+| CI PR #104 | GitHub Actions | **PASS** — quality, build, MySQL integration, dan ringkasan |
 | Build/unit test terpisah | — | **SKIPPED** — tidak ada perubahan aplikasi; integration suite dan typecheck menjadi bukti utama |
 
 ## 8. Risiko dan batasan
 
 - Rehearsal memakai schema tanpa data domain. Rollback tidak mengubah baris, tetapi perilaku dengan data legacy tetap harus diuji pada staging.
 - `hookTimeout` 300 detik juga memperpanjang waktu tunggu bila suatu suite benar-benar macet. Nilai ini hanya batas waktu, bukan pelemahan assertion.
-- Perbaikan runner diverifikasi pada Windows/Node 26 dan lewat integration suite lokal; CI Linux/Node 22 belum dijalankan untuk branch ini.
+- Perbaikan runner diverifikasi pada Windows/Node 26 dan lewat integration suite lokal; CI Linux/Node 22 pada PR #104 juga menjalankan integration dan lulus.
 - Forward `0011` pada rehearsal memakai SQL yang marker Drizzle-nya dihapus; migrasi resmi tetap melalui Drizzle.
 - Forward setelah rollback mempertahankan dua index `village_id` buatan rollback, sehingga state index tidak identik dengan `0011` fresh. Bila kesetaraan persis diperlukan, rekonsiliasi index harus dilakukan terpisah.
 - Staging eksternal, data legacy, TTE, dan webhook tetap belum diuji. Fase 1 belum ditutup.
