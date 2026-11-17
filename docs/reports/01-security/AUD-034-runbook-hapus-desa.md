@@ -51,6 +51,17 @@ Empat kategori master juga dilindungi `RESTRICT`: `analisis_kategori`, `polygon`
 
 Aplikasi melakukan ini lewat `deleteAnalisisKategori`, `deletePolygon`, `deleteInventarisKategori`, dan `deleteKategori`, yang melepas referensi dalam satu transaksi per parent. Untuk hapus desa, keempat tabel child dapat dihapus/di-`NULL`-kan per `village_id` sebelum `villages`.
 
+### 2.4 Tambahan bila Batch B1 (`0011`) sudah merged
+
+Delapan relasi yang sebelumnya `ON DELETE SET NULL` kini memakai composite FK `RESTRICT` `(village_id, <parent>_id)`. Composite `SET NULL` tidak dipakai karena akan ikut mengosongkan `village_id NOT NULL`; efek bisnisnya dipertahankan dengan melepas `*_id` lebih dulu.
+
+1. `kontak.resident_id`, `lapak.resident_id`, `notifikasi_terkirim.resident_id`, `pendapat.resident_id` → `residents`.
+2. `family_member_logs.resident_id` → `residents`; `family_member_logs.family_id` → `families`.
+3. `users.resident_id` → `residents`. Baris platform ber-`village_id` NULL tidak diperiksa MySQL, jadi ikut dilepas berdasarkan `resident_id` tanpa filter desa.
+4. `letter_number_archive.letter_id` → `letters`.
+
+Aplikasi melakukannya di `deletePenduduk`, `deleteKeluarga`, dan `deleteSurat` dalam satu transaksi per parent. Untuk hapus desa, `NULL`-kan atau hapus baris kedelapan tabel tersebut per `village_id` sebelum `residents`, `families`, dan `letters` dihapus lewat cascade desa.
+
 ## 3. Constraint RESTRICT lain
 
 Database juga memuat `RESTRICT` lama dari batch sebelumnya (mis. `residents → families`, `families/rtm → regions`, `letters → letter_types`, `dtks_*`, `kia_*`). Jangan mengandalkan daftar statis di dokumen ini. Selalu jalankan query blocker pada §4.2 sebelum menghapus; query itu membaca `information_schema` sehingga tetap benar bila constraint berubah.
@@ -100,7 +111,7 @@ SELECT 'jabatan_perangkat', COUNT(*)
 FROM jabatan_perangkat WHERE village_id = :village_id;
 ```
 
-Untuk 4C-2a, tambahkan `incoming_letters`, `letter_dinas`, `letter_types`, `outgoing_letters`, dan `letter_classifications`. Untuk 4C-2b, tambahkan `analisis_indikator`, `area`, `inventaris`, `kelompok`, beserta parent `analisis_kategori`, `polygon`, `inventaris_kategori`, dan `kelompok_master`.
+Untuk 4C-2a, tambahkan `incoming_letters`, `letter_dinas`, `letter_types`, `outgoing_letters`, dan `letter_classifications`. Untuk 4C-2b, tambahkan `analisis_indikator`, `area`, `inventaris`, `kelompok`, beserta parent `analisis_kategori`, `polygon`, `inventaris_kategori`, dan `kelompok_master`. Untuk B1 (`0011`), tambahkan `kontak`, `lapak`, `notifikasi_terkirim`, `pendapat`, `family_member_logs`, `users`, dan `letter_number_archive`, beserta parent `residents`, `families`, dan `letters`.
 
 ### 4.3 Urutan hapus
 
@@ -125,6 +136,19 @@ DELETE FROM area WHERE village_id = :village_id;
 DELETE FROM inventaris WHERE village_id = :village_id;
 DELETE FROM kelompok WHERE village_id = :village_id;
 
+-- B1 (bila 0011 sudah merged): lepas anak residents/families/letters.
+DELETE FROM family_member_logs WHERE village_id = :village_id;
+DELETE FROM kontak WHERE village_id = :village_id;
+DELETE FROM lapak WHERE village_id = :village_id;
+DELETE FROM notifikasi_terkirim WHERE village_id = :village_id;
+DELETE FROM pendapat WHERE village_id = :village_id;
+DELETE FROM letter_number_archive WHERE village_id = :village_id;
+-- Akun platform (village_id NULL) tetap harus dilepas lewat resident_id.
+UPDATE users u
+  JOIN residents r ON r.id = u.resident_id
+  SET u.resident_id = NULL
+  WHERE r.village_id = :village_id;
+
 -- Parent RESTRICT ikut ter-cascade bersama desa.
 DELETE FROM villages WHERE id = :village_id;
 ```
@@ -138,6 +162,16 @@ UPDATE analisis_indikator SET kategori_id = NULL WHERE village_id = :village_id;
 UPDATE area SET ref_polygon = NULL WHERE village_id = :village_id;
 UPDATE inventaris SET kategori_id = NULL WHERE village_id = :village_id;
 UPDATE kelompok SET category_id = NULL WHERE village_id = :village_id;
+UPDATE family_member_logs SET family_id = NULL, resident_id = NULL WHERE village_id = :village_id;
+UPDATE kontak SET resident_id = NULL WHERE village_id = :village_id;
+UPDATE lapak SET resident_id = NULL WHERE village_id = :village_id;
+UPDATE notifikasi_terkirim SET resident_id = NULL WHERE village_id = :village_id;
+UPDATE pendapat SET resident_id = NULL WHERE village_id = :village_id;
+UPDATE letter_number_archive SET letter_id = NULL WHERE village_id = :village_id;
+UPDATE users u
+  JOIN residents r ON r.id = u.resident_id
+  SET u.resident_id = NULL
+  WHERE r.village_id = :village_id;
 ```
 
 Pilihan hapus vs `NULL` adalah keputusan bisnis pemilik data, bukan teknis. `NULL` mempertahankan surat/berita tetapi menghilangkan klasifikasinya; hapus baris membuang arsip.
@@ -150,6 +184,14 @@ SELECT COUNT(*) FROM berita WHERE village_id = :village_id;           -- harus 0
 SELECT COUNT(*) FROM perangkat_desa WHERE village_id = :village_id;   -- harus 0
 SELECT COUNT(*) FROM berita_kategori WHERE village_id = :village_id;  -- harus 0
 SELECT COUNT(*) FROM jabatan_perangkat WHERE village_id = :village_id;-- harus 0
+SELECT COUNT(*) FROM family_member_logs WHERE village_id = :village_id;  -- harus 0
+SELECT COUNT(*) FROM kontak WHERE village_id = :village_id;              -- harus 0
+SELECT COUNT(*) FROM lapak WHERE village_id = :village_id;               -- harus 0
+SELECT COUNT(*) FROM notifikasi_terkirim WHERE village_id = :village_id; -- harus 0
+SELECT COUNT(*) FROM pendapat WHERE village_id = :village_id;            -- harus 0
+SELECT COUNT(*) FROM letter_number_archive WHERE village_id = :village_id; -- harus 0
+SELECT COUNT(*) FROM users u JOIN residents r ON r.id = u.resident_id
+  WHERE r.village_id = :village_id;                                      -- harus 0
 ```
 
 Bila salah satu gagal atau jumlahnya tidak sesuai, `ROLLBACK`. Jangan memperbaiki sebagian dengan `DELETE` ad-hoc di luar transaksi.
@@ -162,7 +204,7 @@ Bila salah satu gagal atau jumlahnya tidak sesuai, `ROLLBACK`. Jangan memperbaik
 
 ## 5. Larangan
 
-- Jangan menjalankan `DELETE FROM villages` tanpa membersihkan referensi 4C-1/4C-2a/4C-2b lebih dulu; kegagalan 1451 dapat meninggalkan pekerjaan separuh jalan bila autocommit aktif.
+- Jangan menjalankan `DELETE FROM villages` tanpa membersihkan referensi 4C-1/4C-2a/4C-2b/B1 lebih dulu; kegagalan 1451 dapat meninggalkan pekerjaan separuh jalan bila autocommit aktif.
 - Jangan menonaktifkan `FOREIGN_KEY_CHECKS` untuk melewati `RESTRICT` pada data produksi. Itu membuat referensi yatim dan melanggar invariant tenant.
 - Jangan menjalankan prosedur ini pada database test bersama tanpa memastikan tidak ada suite lain yang berjalan.
 - Jangan menyalin data desa ke lingkungan lain tanpa dasar bisnis dan persetujuan; data kependudukan bukan fixture.

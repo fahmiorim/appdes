@@ -366,10 +366,11 @@ export async function updateKeluarga(
 /**
  * Hapus KK.
  *
- * Referensi penduduk, DTKS, dan Suplemen dilepas dalam transaksi sebelum KK
- * dihapus agar `village_id` tetap terjaga pada composite foreign key. Ketiganya
- * memakai FK `RESTRICT` (bukan `SET NULL`) karena composite FK menyertakan
- * `village_id NOT NULL`; `SET NULL` akan ikut mengosongkan kolom desa.
+ * Referensi penduduk, DTKS, Suplemen, dan riwayat anggota dilepas dalam
+ * transaksi sebelum KK dihapus agar `village_id` tetap terjaga pada composite
+ * foreign key. Semuanya memakai FK `RESTRICT` (bukan `SET NULL`) karena
+ * composite FK menyertakan `village_id NOT NULL`; `SET NULL` akan ikut
+ * mengosongkan kolom desa.
  */
 export async function deleteKeluarga(villageId: number, id: number): Promise<void> {
   await db.transaction(async (tx) => {
@@ -377,6 +378,10 @@ export async function deleteKeluarga(villageId: number, id: number): Promise<voi
       .update(residents)
       .set({ familyId: null })
       .where(and(eq(residents.villageId, villageId), eq(residents.familyId, id)));
+    await tx
+      .update(familyMemberLogs)
+      .set({ familyId: null })
+      .where(and(eq(familyMemberLogs.villageId, villageId), eq(familyMemberLogs.familyId, id)));
     await tx
       .update(dtks)
       .set({ keluargaId: null })
