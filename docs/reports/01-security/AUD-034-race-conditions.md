@@ -3,6 +3,7 @@
 - **Tanggal:** 2026-11-16
 - **Branch:** `task/AUD-034-race-conditions`
 - **Base commit:** `30b81de` (`origin/main`)
+- **Commit perbaikan test:** `lihat commit terakhir branch` (revisi 2026-11-17)
 - **Task:** menutup tiga temuan race condition: AUD-013 (agregasi keuangan), AUD-014 (kuota media), AUD-016 (transisi status permohonan surat).
 
 ## 1. Analisis
@@ -46,14 +47,14 @@ Kunci dipegang di luar transaksi kerja dengan sengaja. Versi pertama task ini me
 | File (baru) | Isi |
 | --- | --- |
 | `src/features/keuangan/infrastructure/keuangan-concurrency.integration.test.ts` | 4 penyimpanan paralel per tahun (3 tahun berbeda); induk harus sama dengan jumlah anak |
-| `src/features/publik/infrastructure/media-quota-concurrency.integration.test.ts` | kuota 1 MB, 4 unggahan 400 KB paralel; tepat 2 berhasil, 2 ditolak dengan pesan kuota, pemakaian disk ≤ kuota |
-| `src/features/layanan-mandiri/infrastructure/permohonan-status-concurrency.integration.test.ts` | dua transisi sah dari status 1 (ke 2 dan ke 5) dijalankan bersamaan; tepat satu berhasil, yang lain konflik, status akhir = pemenang |
+| `src/features/publik/infrastructure/media-quota-concurrency.integration.test.ts` | kuota 1 MB, 4 unggahan 400 KB paralel; tepat 2 berhasil, 2 ditolak dengan pesan kuota, pemakaian disk ≤ kuota. Desa uji memakai id tinggi acak agar folder `storage/media/<id>` tidak bertabrakan dengan desa dev atau sisa run sebelumnya; folder dihapus di `afterAll` |
+| `src/features/layanan-mandiri/infrastructure/permohonan-status-concurrency.integration.test.ts` | dua transisi sah dari status 1 (ke 2 dan ke 5) dijalankan bersamaan; baris permohonan dikunci `FOR UPDATE` di koneksi lain agar kedua permintaan membaca status 1, lalu tepat satu berhasil, yang lain konflik, status akhir = pemenang |
 
 Ketiganya didaftarkan di `vitest.integration.config.mts`.
 
 ## 4. Validasi yang dijalankan
 
-Database uji disposable `desa_test_race_local` (MySQL 8.0.30 loopback), bukan database pengembangan/produksi.
+Database uji disposable `desa_test_agent` (MySQL loopback), bukan database pengembangan/produksi. Revisi test 2026-11-17 dijalankan terhadap DB yang sama setelah menjalankan migrasi.
 
 | Perintah | Hasil |
 | --- | --- |
@@ -61,12 +62,13 @@ Database uji disposable `desa_test_race_local` (MySQL 8.0.30 loopback), bukan da
 | `npx eslint` (7 file berubah/baru) | **PASS** |
 | `npx prettier --check` (file berubah) | **PASS** |
 | `npx vitest run --config vitest.config.mts src/features/keuangan src/features/layanan-mandiri src/features/publik` | **PASS** — 27 file, 260 test |
-| `npx vitest run --config vitest.integration.config.mts src/features/keuangan/infrastructure/keuangan-concurrency.integration.test.ts` | **PASS** |
-| `npx vitest run --config vitest.integration.config.mts src/features/publik/infrastructure/media-quota-concurrency.integration.test.ts` | **PASS** |
-| `npx vitest run --config vitest.integration.config.mts src/features/layanan-mandiri/infrastructure/permohonan-status-concurrency.integration.test.ts` | **PASS** |
-| Seluruh suite `npm run test:integration` | **SKIPPED** — hanya file baru dan unit test fitur terkait yang dijalankan. |
+| `npx vitest run --config vitest.integration.config.mts` (3 file concurrency, 3 kali berturut-turut) | **PASS** — 3 file / 3 test setiap run |
+| `npm run test:integration` (seluruh suite, DB `desa_test_agent`) | **FAIL** — 44 file / 239 test PASS, 5 test di `src/db/b2-migration-guard-rollback.integration.test.ts` SKIPPED karena `beforeAll` timeout 120 detik saat 7 file migration-guard berjalan paralel di MySQL lokal |
+| `npx vitest run --config vitest.integration.config.mts src/db/b2-migration-guard-rollback.integration.test.ts` (file yang timeout, dijalankan sendiri) | **PASS** — 5 test, 78,9 detik |
 
 Bukti test benar-benar menangkap bug: pada implementasi kunci versi pertama (di dalam transaksi), test keuangan gagal dengan `expected '8000000.00' to be '10000000.00'`. Setelah urutan kunci diperbaiki, test lulus.
+
+Catatan kegagalan suite penuh: timeout tersebut bukan berasal dari perubahan task ini. File itu tidak diubah, dan lulus saat dijalankan sendiri; penyebabnya kontensi migrasi paralel pada MySQL lokal. CI tetap perlu dijalankan ulang setelah commit perbaikan test.
 
 ## 5. Risiko dan keterbatasan
 
@@ -74,7 +76,8 @@ Bukti test benar-benar menangkap bug: pada implementasi kunci versi pertama (di 
 - Kunci media hanya mengoordinasi proses yang memakai MySQL yang sama. Bila `storage/media` dibagi lewat NFS antar-host, konsistensi tetap bergantung pada filesystem bersama; belum diuji.
 - Pemeriksaan kuota masih memindai seluruh direktori desa per unggahan (O(jumlah berkas)). Rekonsiliasi/agregat pemakaian belum ditambahkan; audit AUD-014 menyarankannya sebagai langkah lanjutan, bukan syarat perbaikan race.
 - `upsertKeuanganBatch` (impor APBDes) menulis tanpa kunci yang sama. Impor yang berjalan bersamaan dengan penyimpanan manual masih dapat menghasilkan induk tidak konsisten; di luar scope task ini.
-- Test konkurensi bersifat probabilistik: ia membuktikan perilaku pada interleaving yang terjadi saat dijalankan, bukan semua kemungkinan. Penguncian deterministik diverifikasi lewat pembacaan kode + kegagalan versi pertama.
+- Test transisi status kini deterministik: baris dikunci `FOR UPDATE` sehingga kedua permintaan pasti membaca status awal yang sama. Test keuangan dan media masih bergantung pada interleaving yang benar-benar terjadi saat dijalankan, meski sudah diulang dan stabil.
+- Suite integration penuh pada mesin lokal gagal sekali karena timeout hook migration-guard paralel (lihat bagian 4); file terkait lulus sendiri. Ini keterbatasan lingkungan lokal, bukan bukti regresi, dan belum tentu sama dengan kondisi runner CI.
 - `docs/TECHNICAL_AUDIT.md` tidak diubah karena dokumen itu baseline audit, bukan status hidup.
 
 ## 6. Status

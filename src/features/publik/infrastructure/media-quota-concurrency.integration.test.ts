@@ -26,6 +26,13 @@ const RUN = randomUUID().slice(0, 8);
 const KUOTA_MB = 1;
 const UKURAN_BERKAS = 400 * 1024;
 
+/**
+ * id sengaja dipilih dari rentang tinggi agar folder `storage/media/<id>`
+ * tidak bertabrakan dengan desa dev (id kecil) atau sisa run sebelumnya.
+ * Test tidak boleh menghapus/menghitung berkas milik database lain.
+ */
+const ID_DESA_UJI = 1_500_000_000 + Math.floor(Math.random() * 1_000_000);
+
 let villageId: number | null = null;
 
 function isiBerkas(seed: number): Uint8Array {
@@ -39,7 +46,12 @@ beforeAll(async () => {
 
   const [desaRow] = await db
     .insert(villages)
-    .values({ name: `Desa Media ${RUN}`, code: `FM${RUN}`, kuotaMediaMb: KUOTA_MB })
+    .values({
+      id: ID_DESA_UJI,
+      name: `Desa Media ${RUN}`,
+      code: `FM${RUN}`,
+      kuotaMediaMb: KUOTA_MB,
+    })
     .$returningId();
   if (desaRow?.id === undefined) throw new Error("Seed uji gagal: desa tidak terbentuk.");
   villageId = desaRow.id;

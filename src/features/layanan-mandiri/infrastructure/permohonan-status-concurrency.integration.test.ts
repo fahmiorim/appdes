@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { and, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { db } from "@/db";
+import { db, pool } from "@/db";
 import { letterTypes, permohonanSurat, residents, villages } from "@/db/schema";
 import {
   buatPermohonan,
@@ -15,6 +15,13 @@ import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
  * AUD-016 — `prosesPermohonan` membaca status, memvalidasi transisi, lalu
  * menulis. Dua operator bersamaan dapat menimpa hasil satu sama lain. Update
  * sekarang bersyarat pada status yang dibaca, sehingga hanya satu yang menang.
+ *
+ * Agar kedua permintaan dijamin membaca status awal yang sama, baris
+ * permohonan dikunci `FOR UPDATE` di koneksi lain sebelum keduanya dijalankan.
+ * SELECT biasa tidak ikut menunggu, sedangkan UPDATE keduanya tertahan sampai
+ * kunci dilepas. Tanpa ini, permintaan kedua dapat membaca status yang sudah
+ * diperbarui dan melakukan transisi lanjutan yang sah (mis. 2 → 5), sehingga
+ * "hanya satu yang menang" menjadi tidak deterministik.
  */
 
 const MIGRATIONS_FOLDER = fileURLToPath(new URL("../../../db/migrations", import.meta.url));
@@ -28,6 +35,32 @@ const permohonanIds: number[] = [];
 function pastiId(row: { id: number | undefined } | undefined, label: string): number {
   if (row?.id === undefined) throw new Error(`Seed uji gagal: ${label} tidak terbentuk.`);
   return row.id;
+}
+
+/** Jalankan `jalankan` saat baris permohonan terkunci di koneksi lain. */
+async function denganBarisTerkunci<T>(
+  desa: number,
+  id: number,
+  jalankan: () => Promise<T>,
+): Promise<T> {
+  const koneksi = await pool.getConnection();
+  try {
+    await koneksi.beginTransaction();
+    await koneksi.query(
+      "SELECT id FROM permohonan_surat WHERE village_id = ? AND id = ? FOR UPDATE",
+      [desa, id],
+    );
+    const hasil = jalankan();
+    // Beri kedua permintaan waktu membaca status lama dan mengantre di UPDATE.
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await koneksi.commit();
+    return await hasil;
+  } catch (error) {
+    await koneksi.rollback().catch(() => undefined);
+    throw error;
+  } finally {
+    koneksi.release();
+  }
 }
 
 beforeAll(async () => {
@@ -101,10 +134,12 @@ describe("AUD-016 transisi status permohonan bersamaan", () => {
       if (id === undefined) throw new Error("Seed uji gagal: permohonan tidak terbentuk.");
       permohonanIds.push(id);
 
-      const hasil = await Promise.allSettled([
-        prosesPermohonan(desa, id, 2),
-        prosesPermohonan(desa, id, 5, "Dibatalkan operator lain"),
-      ]);
+      const hasil = await denganBarisTerkunci(desa, id, () =>
+        Promise.allSettled([
+          prosesPermohonan(desa, id, 2),
+          prosesPermohonan(desa, id, 5, "Dibatalkan operator lain"),
+        ]),
+      );
 
       const berhasil = hasil.filter((item) => item.status === "fulfilled");
       const gagal = hasil.filter((item) => item.status === "rejected");
