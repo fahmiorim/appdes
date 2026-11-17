@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import type { MenuNode } from "@/features/navigation/application/build-menu";
 import { MENU_PLATFORM, menuPlatformAktif } from "@/features/navigation/domain/menu-platform";
@@ -19,24 +19,89 @@ export function AdminSidebar({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const drawerRef = useRef<HTMLElement>(null);
   const homeHref = isPlatformAdmin ? "/super-admin" : "/beranda";
 
   // Beranda sudah dirender sebagai tautan utama; jangan tampilkan dua kali.
   const baris = ratakanMenu(menu).filter((row) => pathMenu(row.url) !== homeHref);
+
+  /**
+   * Menutup drawer mobile dan mengembalikan fokus ke tombol pemicu.
+   * Dipakai oleh backdrop dan tombol Escape; tautan navigasi menutup drawer
+   * tanpa memindahkan fokus karena halaman akan berganti.
+   */
+  function closeDrawer() {
+    setOpen(false);
+    triggerRef.current?.focus();
+  }
+
+  useEffect(() => {
+    const drawer = drawerRef.current;
+    if (!open || !drawer) return;
+
+    // `offsetParent` selalu null untuk elemen fixed, jadi visibility diperiksa
+    // lewat kotak render agar tautan yang tersembunyi tidak ikut fokus.
+    const ambilFocusable = () =>
+      Array.from(drawer.querySelectorAll<HTMLElement>("a[href], button:not([disabled])")).filter(
+        (element) => element.getClientRects().length > 0,
+      );
+
+    ambilFocusable()[0]?.focus();
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setOpen(false);
+        triggerRef.current?.focus();
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+
+      const focusable = ambilFocusable();
+      if (focusable.length === 0) return;
+
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
+      const active = document.activeElement;
+      const diLuarDrawer = active === null || !drawerRef.current?.contains(active);
+
+      if (event.shiftKey && (diLuarDrawer || active === first)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (diLuarDrawer || active === last)) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
 
   return (
     <>
       <button
         className="mobile-menu-button button button-secondary"
         type="button"
-        aria-label="Buka navigasi"
+        ref={triggerRef}
+        aria-label={open ? "Tutup navigasi" : "Buka navigasi"}
         aria-expanded={open}
         aria-controls="admin-sidebar-navigation"
         onClick={() => setOpen((value) => !value)}
       >
         ☰
       </button>
-      <aside className="admin-sidebar" data-open={open} id="admin-sidebar-navigation">
+      {open ? (
+        <div className="admin-drawer-backdrop" aria-hidden="true" onClick={closeDrawer} />
+      ) : null}
+      <aside
+        className="admin-sidebar"
+        data-open={open}
+        id="admin-sidebar-navigation"
+        ref={drawerRef}
+      >
         <Link className="admin-sidebar-brand" href={homeHref} onClick={() => setOpen(false)}>
           <span className="brand-mark" aria-hidden="true">
             ⌂
