@@ -38,6 +38,8 @@ let villageId: number | null = null;
 function isiBerkas(seed: number): Uint8Array {
   const isi = new Uint8Array(UKURAN_BERKAS);
   isi.fill(seed % 251);
+  // Simpan signature PNG supaya fixture tetap valid setelah validasi magic bytes.
+  isi.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
   return isi;
 }
 

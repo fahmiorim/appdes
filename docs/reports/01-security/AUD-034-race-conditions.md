@@ -47,7 +47,7 @@ Kunci dipegang di luar transaksi kerja dengan sengaja. Versi pertama task ini me
 | File (baru) | Isi |
 | --- | --- |
 | `src/features/keuangan/infrastructure/keuangan-concurrency.integration.test.ts` | 4 penyimpanan paralel per tahun (3 tahun berbeda); induk harus sama dengan jumlah anak |
-| `src/features/publik/infrastructure/media-quota-concurrency.integration.test.ts` | kuota 1 MB, 4 unggahan 400 KB paralel; tepat 2 berhasil, 2 ditolak dengan pesan kuota, pemakaian disk ≤ kuota. Desa uji memakai id tinggi acak agar folder `storage/media/<id>` tidak bertabrakan dengan desa dev atau sisa run sebelumnya; folder dihapus di `afterAll` |
+| `src/features/publik/infrastructure/media-quota-concurrency.integration.test.ts` | kuota 1 MB, 4 unggahan 400 KB paralel; tepat 2 berhasil, 2 ditolak dengan pesan kuota, pemakaian disk ≤ kuota. Desa uji memakai id tinggi acak agar folder `storage/media/<id>` tidak bertabrakan dengan desa dev atau sisa run sebelumnya; isi fixture dimulai dengan signature PNG yang valid agar tetap kompatibel dengan validasi magic bytes AUD-017 (#81); folder dihapus di `afterAll` |
 | `src/features/layanan-mandiri/infrastructure/permohonan-status-concurrency.integration.test.ts` | dua transisi sah dari status 1 (ke 2 dan ke 5) dijalankan bersamaan; baris permohonan dikunci `FOR UPDATE` di koneksi lain agar kedua permintaan membaca status 1, lalu tepat satu berhasil, yang lain konflik, status akhir = pemenang |
 
 Ketiganya didaftarkan di `vitest.integration.config.mts`.
