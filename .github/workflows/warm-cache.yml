@@ -1,0 +1,45 @@
+name: Warm dependency cache
+
+# Cache node_modules disimpan di main agar PR dapat me-restore-nya. Workflow ini
+# tidak menjalankan test; hanya memasang dependency saat lock berubah atau saat
+# dijalankan manual. PR tidak menyimpan cache agar cache PR tidak mengotori main.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - package.json
+      - package-lock.json
+
+permissions:
+  contents: read
+
+concurrency:
+  group: warm-dependency-cache
+  cancel-in-progress: true
+
+jobs:
+  warm:
+    name: Warm node_modules
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.22.1"
+          cache: npm
+
+      - name: Cache node_modules
+        id: node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-22.22.1-modules-${{ hashFiles('package.json', 'package-lock.json') }}
+
+      - name: Install dependency
+        if: steps.node-modules.outputs.cache-hit != 'true'
+        run: npm ci
