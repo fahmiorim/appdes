@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Card } from "@/components/ui/card";
+import { StatIcon } from "@/components/ui/stat-icon";
 import { AUDIT_EVENT_LABELS, type AuditEvent } from "@/features/audit/domain/audit";
 import { ambilAuditPlatform } from "@/features/multi-desa/application/audit-platform-use-cases";
 import { daftarSemuaDomain } from "@/features/multi-desa/application/kelola-desa-use-cases";
@@ -62,23 +63,52 @@ export default async function SuperAdminPage() {
         title="Ringkasan platform"
       />
 
+      <div className="section-heading">
+        <div>
+          <h2>Gambaran platform</h2>
+          <p>Agregat seluruh desa, domain, dan akun pengelola.</p>
+        </div>
+      </div>
+
       <div className="platform-stat-grid">
         <Card>
+          <StatIcon>
+            <path d="M3.5 20.5V9.2L9 6.3v14.2" />
+            <path d="M9 20.5h11.5V11l-6-3.2" />
+            <path d="M6 11.4h.01M6 14.8h.01M6 18.2h.01" />
+            <path d="M12.5 12.2h.01M12.5 15.4h.01M12.5 18.6h.01M16 12.2h.01M16 15.4h.01" />
+          </StatIcon>
           <div className="stat-card-label">Total desa</div>
           <div className="stat-card-value">{angka.format(rows.length)}</div>
           <div className="stat-card-note">{angka.format(totalAktif)} desa aktif</div>
         </Card>
         <Card>
+          <StatIcon>
+            <circle cx="9" cy="8" r="3.2" />
+            <path d="M2.8 20a6.2 6.2 0 0 1 12.4 0" />
+            <path d="M16.4 5.6a3.2 3.2 0 0 1 0 6.4" />
+            <path d="M18.3 14.4a6.2 6.2 0 0 1 3.1 5.6" />
+          </StatIcon>
           <div className="stat-card-label">Pengguna desa</div>
           <div className="stat-card-value">{angka.format(totalPengguna)}</div>
           <div className="stat-card-note">{angka.format(totalPenduduk)} penduduk tercatat</div>
         </Card>
         <Card>
+          <StatIcon>
+            <circle cx="12" cy="12" r="8.4" />
+            <path d="M3.6 12h16.8" />
+            <path d="M12 3.6c2.4 2.4 3.6 5.2 3.6 8.4s-1.2 6-3.6 8.4c-2.4-2.4-3.6-5.2-3.6-8.4s1.2-6 3.6-8.4" />
+          </StatIcon>
           <div className="stat-card-label">Domain terdaftar</div>
           <div className="stat-card-value">{angka.format(domain.length)}</div>
           <div className="stat-card-note">{angka.format(desaTanpaDomain)} desa belum berdomain</div>
         </Card>
         <Card>
+          <StatIcon>
+            <path d="M12 3.4 19 6v5.4c0 4.2-2.9 7.6-7 9.2-4.1-1.6-7-5-7-9.2V6z" />
+            <circle cx="12" cy="10.4" r="2" />
+            <path d="M8.7 16.1a3.8 3.8 0 0 1 6.6 0" />
+          </StatIcon>
           <div className="stat-card-label">Pengguna platform</div>
           <div className="stat-card-value">
             {angka.format(penggunaPlatform.filter((item) => item.active).length)}
