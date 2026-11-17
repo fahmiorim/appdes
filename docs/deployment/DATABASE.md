@@ -135,9 +135,9 @@ DATABASE_URL=mysql://sid_app:GANTI_PASSWORD_APP@127.0.0.1:3306/sid_production
 | `npm run db:push` | Menyamakan schema langsung ke database | **Tidak** |
 | `npm run db:studio` | GUI database | Jangan diekspos ke production |
 
-Repository saat ini memiliki 12 migration: baseline
-`src/db/migrations/0000_baseline.sql` serta `0001`–`0011` untuk composite
-foreign key dan kontrol tenant. Tidak ada mekanisme down/rollback otomatis;
+Repository saat ini memiliki 13 migration: baseline
+`src/db/migrations/0000_baseline.sql` serta `0001`–`0012` untuk composite
+foreign key, kontrol tenant, dan lifecycle retensi tenant. Tidak ada mekanisme down/rollback otomatis;
 rollback aplikasi harus disertai pemulihan backup yang sesuai.
 
 ### 5.2 Sebelum migrasi
@@ -261,6 +261,47 @@ disposable; jangan memindahkan fixture ke production.
 Jangan menyalin database development yang berisi data pribadi ke production.
 Jangan membuat akun administrator dengan password default atau hash yang tidak
 dibuat oleh mekanisme Better Auth.
+
+### 6.3 Lifecycle retensi dan purge tenant
+
+Kebijakan default yang berlaku (kode: `src/features/multi-desa/domain/lifecycle-tenant.ts`):
+
+1. Desa dinonaktifkan oleh Super Admin → `villages.active = 0` dan
+   `villages.nonaktif_sejak = now()`. Masa tenggang berjalan **90 hari**.
+   Mengaktifkan kembali desa menghapus `nonaktif_sejak` dan mengulang hitungan.
+2. Sebelum purge, Super Admin **wajib** membuat ekspor data tenant. Ekspor
+   ditulis ke `storage/exports/<villageId>/<waktu>.json`, berlaku 30 hari, dan
+   dicatat di `tenant_exports`. Kolom seperti password/token/PIN dikosongkan.
+3. Purge hanya boleh dijalankan setelah masa tenggang selesai, ekspor berlaku
+   tersedia, desa nonaktif, dan operator mengetik slug desa sebagai konfirmasi.
+
+Apa yang dihapus dan dipertahankan:
+
+| Objek | Setelah purge |
+|---|---|
+| Semua tabel ber-`village_id` (penduduk, layanan, surat, konten, role, user, domain) | Dihapus permanen |
+| `storage/media/<villageId>/` | Dihapus |
+| `villages` | Tetap sebagai tombstone: `purged_at` terisi, slug/domain tidak dipakai ulang |
+| `audit_logs` | Tetap (retensi 2 tahun) |
+| `tenant_exports` | Tetap sampai kedaluwarsa 30 hari |
+| `tenant_purge_archive` | Tetap: statistik jumlah baris per tabel (tanpa PII) |
+| `tenant_domain_tombstones` | Tetap: mencegah domain lama didaftarkan tenant baru |
+
+Catatan operasi:
+
+- Purge berjalan dalam satu transaksi; urutan hapus dihitung dari graf foreign
+  key `information_schema` (anak lebih dulu). Bila graf membentuk siklus,
+  transaksi dibatalkan — pemeriksaan foreign key **tidak** dinonaktifkan.
+- Bila ada tabel baru ber-`village_id`, tabel tersebut otomatis ikut terhapus
+  tanpa perlu mengubah daftar manual.
+- Purge tidak dapat dibatalkan. Jalankan hanya setelah ekspor diverifikasi dan
+  backup database dibuat.
+- Pembersihan berkas ekspor kedaluwarsa dilakukan oleh use case
+  `bersihkanEksporKedaluwarsa` (dipanggil operator/penjadwal).
+- Halaman konsol Super Admin untuk memicu ekspor dan purge disediakan pada
+  irisan pekerjaan berikutnya; sampai saat itu operasi dijalankan melalui use
+  case pada `src/features/multi-desa/application/lifecycle-desa-use-cases.ts`
+  oleh operator yang sudah terautentikasi sebagai Super Admin.
 
 ## 7. Strategi backup database
 

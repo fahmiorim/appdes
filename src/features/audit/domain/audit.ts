@@ -44,6 +44,8 @@ export const AUDIT_EVENTS = {
   desaDomain: "desa.domain",
   desaKuota: "desa.kuota",
   desaAdminReset: "desa.admin.reset",
+  desaExport: "desa.export",
+  desaPurge: "desa.purge",
 } as const;
 
 export type AuditEvent = (typeof AUDIT_EVENTS)[keyof typeof AUDIT_EVENTS];
@@ -94,6 +96,8 @@ export const AUDIT_EVENT_LABELS: Record<AuditEvent, string> = {
   [AUDIT_EVENTS.desaDomain]: "Ubah domain desa",
   [AUDIT_EVENTS.desaKuota]: "Ubah kuota media desa",
   [AUDIT_EVENTS.desaAdminReset]: "Reset akses admin desa",
+  [AUDIT_EVENTS.desaExport]: "Ekspor data desa",
+  [AUDIT_EVENTS.desaPurge]: "Purge data desa",
 };
 
 export interface AuditEventInput {

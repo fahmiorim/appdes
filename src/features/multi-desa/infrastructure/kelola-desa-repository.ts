@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, isNull } from "drizzle-orm";
 
 import { db } from "@/db";
 import { accounts, roles, sessions, users, villageDomains, villages } from "@/db/schema";
@@ -150,8 +150,26 @@ export async function jadikanDomainUtama(villageId: number, domainId: number): P
 
 /** Aktifkan/nonaktifkan desa. Data tetap tersimpan (arsip lunak). */
 export async function setStatusDesa(villageId: number, active: boolean): Promise<void> {
-  const hasil = await db.update(villages).set({ active }).where(eq(villages.id, villageId));
-  if (hasil[0].affectedRows === 0) throw notFound("Desa tidak ditemukan.");
+  // Periksa keberadaan lebih dulu: MySQL melaporkan `affectedRows = 0` untuk
+  // pembaruan tanpa perubahan, yang tidak boleh disalahartikan sebagai "tidak
+  // ditemukan".
+  const [desa] = await db
+    .select({ purgedAt: villages.purgedAt })
+    .from(villages)
+    .where(eq(villages.id, villageId))
+    .limit(1);
+  if (!desa) throw notFound("Desa tidak ditemukan.");
+  if (desa.purgedAt !== null) throw conflict("Desa sudah di-purge; status tidak dapat diubah.");
+
+  await db
+    .update(villages)
+    .set({
+      active,
+      // Masa tenggang retensi dimulai saat desa dinonaktifkan dan dihapus lagi
+      // bila desa diaktifkan kembali sebelum di-purge.
+      nonaktifSejak: active ? null : new Date(),
+    })
+    .where(and(eq(villages.id, villageId), isNull(villages.purgedAt)));
 }
 
 /** Atur kuota media desa (MB); `null` = tanpa batas. */
