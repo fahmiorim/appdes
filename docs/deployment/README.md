@@ -12,19 +12,23 @@ dari asumsi fitur yang belum tersedia.
 > - `src/app` berisi 29 `page.tsx` dan 2 `layout.tsx`: login `/masuk`, dashboard
 >   admin `/beranda`, layanan mandiri warga, halaman publik, dan dashboard
 >   `/super-admin` untuk memantau tenant.
-> - Belum ada seed atau perintah bootstrap untuk membuat Super Admin platform
->   dan desa pertama. Database hasil migrasi berisi skema kosong. Use case
->   provisioning membutuhkan Super Admin dan desa yang sudah ada; halaman
->   `/super-admin` hanya menampilkan tenant, bukan membuat Super Admin pertama.
+> - Bootstrap Super Admin platform tersedia lewat `npm run platform:bootstrap`
+>   (lihat bagian 6.1). Database hasil migrasi berisi skema kosong sampai
+>   perintah itu dijalankan, dan perintah tersebut menolak bila akun platform
+>   sudah ada.
+> - Desa baru dibentuk dari template platform di
+>   `src/db/templates/tenant-template.ts`, tidak lagi dengan menyalin desa
+>   pertama. Template bawaan masih minimal dan halaman/konsol pengelolaan tenant
+>   di UI belum lengkap.
 > - Belum ada Dockerfile, konfigurasi PM2, konfigurasi Nginx, atau unit systemd
 >   di repository. Contoh di dokumen ini adalah pilihan operasional, bukan file
 >   yang disediakan aplikasi.
 > - `npm run build` diverifikasi berhasil pada snapshot ini, termasuk job build
 >   di CI. Build memerlukan environment valid; lihat [ENVIRONMENT.md](./ENVIRONMENT.md).
 >
-> Prosedur instalasi sampai aplikasi berjalan dapat diikuti. Bootstrap tenant
-> dan Super Admin pertama masih memerlukan dump baseline yang disetujui atau
-> mekanisme bootstrap dari maintainer; lihat bagian 6.1. Temuan historis ada di
+> Prosedur instalasi sampai aplikasi berjalan dapat diikuti. Bootstrap Super
+> Admin memakai perintah pada bagian 6.1; pembuatan tenant dilakukan dari
+> template platform. Temuan historis ada di
 > [`docs/reports/00-baseline/deployment-documentation-report.md`](../reports/00-baseline/deployment-documentation-report.md).
 
 ## 1. Ruang lingkup
@@ -253,19 +257,36 @@ Aturan penting:
   foreign key serta kontrol tenant. Tidak ada migrasi rollback otomatis;
   pemulihan dilakukan dari backup.
 
-### 6.1 Bootstrap desa dan administrator pertama
+### 6.1 Bootstrap Super Admin dan desa pertama
 
-**Belum tersedia di repository.** Setelah `db:migrate`, skema terbentuk tetapi
-tidak ada baris `villages`, role, modul, atau akun administrator. Use case
-provisioning membutuhkan Super Admin platform dan desa pertama sebagai cetakan.
-Dashboard `/super-admin` sudah ada, tetapi hanya menampilkan tenant yang sudah
-terdaftar; belum ada perintah atau halaman untuk membuat Super Admin pertama.
+Setelah `db:migrate`, skema terbentuk tetapi belum ada akun maupun desa. Buat
+pengelola platform lebih dulu:
+
+```bash
+cd "$APP_DIR"
+sudo -u "$APP_USER" env \
+  PLATFORM_ADMIN_NAME='Nama Pengelola' \
+  PLATFORM_ADMIN_USERNAME=platform \
+  PLATFORM_ADMIN_EMAIL=platform@contoh.id \
+  PLATFORM_ADMIN_PASSWORD='sandi-acak-minimal-12-karakter' \
+  npm run platform:bootstrap -- --yes
+```
+
+Jalankan sekali tanpa `--yes` untuk melihat target database dan rencana; skrip
+hanya menulis bila flag itu diberikan. Skrip menolak berjalan bila sudah ada
+akun platform (`village_id IS NULL`), sehingga tidak pernah menimpa akun lama.
+Sandi dibaca dari environment (bukan argumen) dan wajib diganti pada login
+pertama.
+
+Desa baru kemudian dibuat dari konsol/dashboard Super Admin. Fondasinya berasal
+dari template platform `src/db/templates/tenant-template.ts`, bukan dari desa
+lain, sehingga instalasi baru tidak membutuhkan desa sumber. Template bawaan
+masih minimal; katalog surat, buku bumindes, dan kategori inventaris sengaja
+tidak diwariskan dan disiapkan oleh administrator desa.
 
 Jangan menganggap endpoint sign-up Better Auth sebagai prosedur instalasi resmi.
 Akun yang dibuat lewat sign-up tidak otomatis memiliki `villageId`, role, atau
-akses modul. Untuk instalasi baru, hentikan proses dan minta maintainer
-menyediakan mekanisme bootstrap/dump baseline yang disetujui. Jangan menulis
-data production secara manual tanpa prosedur yang direview.
+akses modul. Rincian ada di [DATABASE.md](./DATABASE.md) bagian 6.
 
 ## 7. Build dan menjalankan aplikasi
 
@@ -491,10 +512,13 @@ Checklist minimum:
 - [ ] `storage/media` dapat ditulis dan dibaca.
 - [ ] Log tidak memuat secret, password, atau data pribadi.
 - [ ] Backup database dan media dibuat serta diuji restore di staging.
-- [ ] Bootstrap desa/admin tersedia sebelum pengguna diundang.
+- [ ] Super Admin platform dibuat dengan `npm run platform:bootstrap` dan sandi
+      awalnya sudah diganti.
+- [ ] Desa pertama dibuat dari template platform dan administrator desa dapat
+      masuk.
 
-Jika bootstrap belum tersedia, login dan alur admin **tidak dapat diuji**. Jangan
-menandai deployment production selesai hanya karena service menyala.
+Login dan alur admin **tidak dapat diuji** sebelum akun platform dan desa dibuat.
+Jangan menandai deployment production selesai hanya karena service menyala.
 
 ## 11. Troubleshooting umum
 

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
+import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 import { desaBaruSchema } from "@/features/multi-desa/domain/desa-baru";
 import {
   listDesaSuperAdmin,
@@ -54,7 +56,20 @@ export async function daftarDesaSuperAdmin(): Promise<DesaSuperAdminRow[]> {
  * dipanggil langsung tanpa melewati UI.
  */
 export async function buatDesaBaru(input: unknown): Promise<{ id: number }> {
-  await requireSuperAdmin();
+  const user = await requireSuperAdmin();
   const parsed = desaBaruSchema.parse(input);
-  return provisionDesa(parsed);
+  const hasil = await provisionDesa(parsed);
+
+  // Aksi sensitif platform wajib tercatat: pembuatan tenant mengubah data
+  // lintas desa dan menjadi dasar audit ketika ada sengketa kepemilikan.
+  await recordAuditEvent({
+    villageId: hasil.id,
+    actorId: user.id,
+    event: AUDIT_EVENTS.desaCreate,
+    resource: "villages",
+    resourceId: String(hasil.id),
+    details: { nama: parsed.name, code: parsed.code, domain: parsed.domain },
+  });
+
+  return hasil;
 }
