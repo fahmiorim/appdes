@@ -1,11 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { forbidden } from "@/lib/errors";
+import { forbidden, unauthenticated } from "@/lib/errors";
 
 const state = vi.hoisted(() => ({
   requireSuperAdmin: vi.fn(),
   daftarDesaSuperAdmin: vi.fn(),
+  redirect: vi.fn((tujuan: string) => {
+    throw Object.assign(new Error("NEXT_REDIRECT"), {
+      digest: `NEXT_REDIRECT;replace;${tujuan};307;`,
+    });
+  }),
 }));
+
+vi.mock("next/navigation", () => ({ redirect: state.redirect }));
 
 vi.mock("@/features/multi-desa/application/provisioning-use-cases", () => ({
   requireSuperAdmin: state.requireSuperAdmin,
@@ -38,16 +45,26 @@ const desa = [
 
 describe("SuperAdminPage", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
-  it("menolak pengguna non-super-admin sebelum memuat data tenant", async () => {
+  it("mengalihkan Admin Desa ke beranda tanpa memuat data tenant", async () => {
     state.requireSuperAdmin.mockRejectedValue(
       forbidden("Hanya super admin yang boleh mengelola desa."),
     );
     const { default: SuperAdminPage } = await import("./page");
 
-    await expect(SuperAdminPage()).rejects.toMatchObject({ code: "FORBIDDEN" });
+    await expect(SuperAdminPage()).rejects.toThrow("NEXT_REDIRECT");
+    expect(state.redirect).toHaveBeenCalledWith("/beranda");
+    expect(state.daftarDesaSuperAdmin).not.toHaveBeenCalled();
+  });
+
+  it("mengalihkan pengguna tanpa sesi ke halaman masuk", async () => {
+    state.requireSuperAdmin.mockRejectedValue(unauthenticated());
+    const { default: SuperAdminPage } = await import("./page");
+
+    await expect(SuperAdminPage()).rejects.toThrow("NEXT_REDIRECT");
+    expect(state.redirect).toHaveBeenCalledWith("/masuk");
     expect(state.daftarDesaSuperAdmin).not.toHaveBeenCalled();
   });
 
@@ -57,7 +74,7 @@ describe("SuperAdminPage", () => {
     const { default: SuperAdminPage } = await import("./page");
 
     await expect(SuperAdminPage()).resolves.toBeDefined();
-    expect(state.requireSuperAdmin).toHaveBeenCalledOnce();
+    expect(state.redirect).not.toHaveBeenCalled();
     expect(state.daftarDesaSuperAdmin).toHaveBeenCalledOnce();
   });
 });

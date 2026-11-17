@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
 import {
@@ -6,16 +7,36 @@ import {
   requireSuperAdmin,
 } from "@/features/multi-desa/application/provisioning-use-cases";
 import { TenantTable } from "@/features/multi-desa/presentation/tenant-table";
+import { isAppError } from "@/lib/errors";
 
 export const metadata: Metadata = {
   title: "Dashboard Super Admin",
   robots: { index: false, follow: false },
 };
 
+/**
+ * Gerbang halaman: alihkan pengguna yang tidak berhak alih-alih membiarkan
+ * `AppError` jatuh ke error boundary. Guard tetap dijalankan di level halaman,
+ * bukan hanya di use case data.
+ */
+async function pastikanSuperAdmin(): Promise<void> {
+  try {
+    await requireSuperAdmin();
+  } catch (error) {
+    if (isAppError(error) && error.code === "FORBIDDEN") {
+      redirect("/beranda");
+    }
+
+    if (isAppError(error) && error.code === "UNAUTHENTICATED") {
+      redirect("/masuk");
+    }
+
+    throw error;
+  }
+}
+
 export default async function SuperAdminPage() {
-  // Guard di level halaman, bukan hanya di use case, agar halaman ini tidak
-  // pernah merender data tenant bila suatu saat pemanggilan use case berubah.
-  await requireSuperAdmin();
+  await pastikanSuperAdmin();
 
   const desa = await daftarDesaSuperAdmin();
   const totalAktif = desa.filter((item) => item.active).length;
