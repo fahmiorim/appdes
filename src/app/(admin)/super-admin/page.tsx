@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 
 import { Card } from "@/components/ui/card";
-import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisioning-use-cases";
+import {
+  daftarDesaSuperAdmin,
+  requireSuperAdmin,
+} from "@/features/multi-desa/application/provisioning-use-cases";
 import { TenantTable } from "@/features/multi-desa/presentation/tenant-table";
 
 export const metadata: Metadata = {
@@ -10,6 +13,10 @@ export const metadata: Metadata = {
 };
 
 export default async function SuperAdminPage() {
+  // Guard di level halaman, bukan hanya di use case, agar halaman ini tidak
+  // pernah merender data tenant bila suatu saat pemanggilan use case berubah.
+  await requireSuperAdmin();
+
   const desa = await daftarDesaSuperAdmin();
   const totalAktif = desa.filter((item) => item.active).length;
   const totalPenduduk = desa.reduce((total, item) => total + item.penduduk, 0);
