@@ -34,6 +34,13 @@ export interface DesaKonsolRow {
   hariMenujuPurge: number | null;
 }
 
+export interface DomainKonsolRow {
+  id: number;
+  villageId: number;
+  domain: string;
+  isPrimary: boolean;
+}
+
 interface AksiKonsol {
   buat: (
     state: ActionState<{ id: number }>,
@@ -65,6 +72,12 @@ interface AksiKonsol {
   ) => Promise<
     ActionState<{ jumlahBarisDihapus: number; tabelDiproses: number; mediaDihapus: boolean }>
   >;
+  tambahDomain: (
+    state: ActionState<{ id: number }>,
+    formData: FormData,
+  ) => Promise<ActionState<{ id: number }>>;
+  hapusDomain: (state: ActionState<null>, formData: FormData) => Promise<ActionState<null>>;
+  jadikanUtama: (state: ActionState<null>, formData: FormData) => Promise<ActionState<null>>;
 }
 
 type StatusFilter = "semua" | "aktif" | "nonaktif" | "siap-purge";
@@ -216,7 +229,122 @@ function FormBuatDesa({ aksi }: { aksi: AksiKonsol["buat"] }) {
   );
 }
 
-function PanelKelola({ desa, aksi }: { desa: DesaKonsolRow; aksi: AksiKonsol }) {
+function KelolaDomain({
+  desa,
+  domain,
+  aksi,
+}: {
+  desa: DesaKonsolRow;
+  domain: DomainKonsolRow[];
+  aksi: AksiKonsol;
+}) {
+  const [tambahState, tambahAction, tambahPending] = useActionState(
+    aksi.tambahDomain,
+    createIdleActionState<{ id: number }>(),
+  );
+  const [hapusState, hapusAction, hapusPending] = useActionState(
+    aksi.hapusDomain,
+    createIdleActionState<null>(),
+  );
+  const [utamaState, utamaAction, utamaPending] = useActionState(
+    aksi.jadikanUtama,
+    createIdleActionState<null>(),
+  );
+
+  const daftar = domain
+    .filter((item) => item.villageId === desa.id)
+    .sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary) || a.id - b.id);
+  const sudahPurge = desa.statusRetensi === "sudah-purge";
+
+  return (
+    <section className="tenant-panel-wide">
+      <h4>Domain dan alias</h4>
+      <p className="form-help">
+        Domain utama dipakai untuk mengenali tenant dari host. Domain pertama otomatis menjadi
+        utama; alias lain hanya mengarah ke desa yang sama.
+      </p>
+
+      {daftar.length === 0 ? (
+        <p className="form-help">Belum ada domain terdaftar untuk desa ini.</p>
+      ) : (
+        <ul className="tenant-domain-list">
+          {daftar.map((item) => (
+            <li key={item.id} className="tenant-domain-item">
+              <span className="tenant-domain-name">{item.domain}</span>
+              {item.isPrimary ? (
+                <span className="tenant-status is-active">
+                  <span aria-hidden="true" />
+                  Utama
+                </span>
+              ) : (
+                <span className="tenant-domain-actions">
+                  <form action={utamaAction}>
+                    <input type="hidden" name="villageId" value={desa.id} />
+                    <input type="hidden" name="domainId" value={item.id} />
+                    <button
+                      className="button button-secondary tenant-expand"
+                      type="submit"
+                      disabled={utamaPending || sudahPurge}
+                    >
+                      Jadikan utama
+                    </button>
+                  </form>
+                  <form action={hapusAction}>
+                    <input type="hidden" name="villageId" value={desa.id} />
+                    <input type="hidden" name="domainId" value={item.id} />
+                    <button
+                      className="button button-secondary tenant-expand"
+                      type="submit"
+                      disabled={hapusPending || sudahPurge}
+                    >
+                      Hapus
+                    </button>
+                  </form>
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <form action={tambahAction} className="tenant-inline-form">
+        <input type="hidden" name="villageId" value={desa.id} />
+        <label className="form-field">
+          <span className="form-label">Tambah domain atau alias</span>
+          <input
+            className="form-input"
+            name="domain"
+            required
+            maxLength={255}
+            autoComplete="off"
+            placeholder="desa-sukamaju.id"
+            disabled={sudahPurge}
+          />
+        </label>
+        <button
+          className="button button-secondary"
+          type="submit"
+          disabled={tambahPending || sudahPurge}
+        >
+          {tambahPending ? "Menambah..." : "Tambah domain"}
+        </button>
+      </form>
+      <Pesan state={tambahState} />
+      <Pesan state={hapusState} />
+      <Pesan state={utamaState} />
+    </section>
+  );
+}
+
+function PanelKelola({
+  desa,
+  domain,
+  aksi,
+}: {
+  desa: DesaKonsolRow;
+  domain: DomainKonsolRow[];
+  aksi: AksiKonsol;
+}) {
   const id = useId();
   const [statusState, statusAction, statusPending] = useActionState(
     aksi.status,
@@ -291,6 +419,8 @@ function PanelKelola({ desa, aksi }: { desa: DesaKonsolRow; aksi: AksiKonsol }) 
             </p>
           ) : null}
         </section>
+
+        <KelolaDomain desa={desa} domain={domain} aksi={aksi} />
 
         <section>
           <h4>Kuota media</h4>
@@ -390,7 +520,15 @@ function PanelKelola({ desa, aksi }: { desa: DesaKonsolRow; aksi: AksiKonsol }) 
   );
 }
 
-export function TenantConsole({ desa, aksi }: { desa: DesaKonsolRow[]; aksi: AksiKonsol }) {
+export function TenantConsole({
+  desa,
+  domain,
+  aksi,
+}: {
+  desa: DesaKonsolRow[];
+  domain: DomainKonsolRow[];
+  aksi: AksiKonsol;
+}) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<StatusFilter>("semua");
   const [terbuka, setTerbuka] = useState<number | null>(null);
@@ -467,6 +605,7 @@ export function TenantConsole({ desa, aksi }: { desa: DesaKonsolRow[]; aksi: Aks
                 <TrTenant
                   key={item.id}
                   desa={item}
+                  domain={domain}
                   aksi={aksi}
                   terbuka={terbuka === item.id}
                   onToggle={() =>
@@ -492,11 +631,13 @@ export function TenantConsole({ desa, aksi }: { desa: DesaKonsolRow[]; aksi: Aks
 
 function TrTenant({
   desa,
+  domain,
   aksi,
   terbuka,
   onToggle,
 }: {
   desa: DesaKonsolRow;
+  domain: DomainKonsolRow[];
   aksi: AksiKonsol;
   terbuka: boolean;
   onToggle: () => void;
@@ -539,7 +680,7 @@ function TrTenant({
       {terbuka ? (
         <tr className="tenant-panel-row">
           <td colSpan={9}>
-            <PanelKelola desa={desa} aksi={aksi} />
+            <PanelKelola desa={desa} domain={domain} aksi={aksi} />
           </td>
         </tr>
       ) : null}

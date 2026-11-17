@@ -5,7 +5,13 @@ import * as gate from "@/features/multi-desa/application/provisioning-use-cases"
 import * as repo from "@/features/multi-desa/infrastructure/kelola-desa-repository";
 import { forbidden } from "@/lib/errors";
 
-import { getDetailDesa, resetAksesAdminDesa, ubahStatusDesa } from "./kelola-desa-use-cases";
+import {
+  daftarSemuaDomain,
+  getDetailDesa,
+  resetAksesAdminDesa,
+  tambahDomain,
+  ubahStatusDesa,
+} from "./kelola-desa-use-cases";
 
 vi.mock("@/features/multi-desa/application/provisioning-use-cases", () => ({
   requireSuperAdmin: vi.fn(),
@@ -16,6 +22,7 @@ vi.mock("@/features/multi-desa/infrastructure/kelola-desa-repository", () => ({
   hapusDomainDesa: vi.fn(),
   jadikanDomainUtama: vi.fn(),
   listDomainDesa: vi.fn(),
+  listSemuaDomain: vi.fn(),
   resetAdminDesa: vi.fn(),
   setKuotaMediaDesa: vi.fn(),
   setStatusDesa: vi.fn(),
@@ -50,6 +57,20 @@ describe("gerbang pengelola platform pada kelola desa", () => {
     expect(repo.resetAdminDesa).not.toHaveBeenCalled();
     expect(audit.recordAuditEvent).not.toHaveBeenCalled();
   });
+
+  it("menolak daftar domain seluruh tenant", async () => {
+    await expect(daftarSemuaDomain()).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(repo.listSemuaDomain).not.toHaveBeenCalled();
+  });
+
+  it("menolak penambahan domain tanpa membaca atau menulis domain", async () => {
+    await expect(tambahDomain({ villageId: 2, domain: "desa-uji.id" })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
+    expect(repo.getDesaKelola).not.toHaveBeenCalled();
+    expect(repo.tambahDomainDesa).not.toHaveBeenCalled();
+    expect(audit.recordAuditEvent).not.toHaveBeenCalled();
+  });
 });
 
 describe("jalur sah kelola desa", () => {
@@ -63,5 +84,22 @@ describe("jalur sah kelola desa", () => {
 
     await expect(getDetailDesa(2)).resolves.toBe(desa);
     expect(repo.getDesaKelola).toHaveBeenCalledWith(2);
+  });
+
+  it("menambah domain setelah gerbang lolos dan mencatat audit", async () => {
+    vi.mocked(gate.requireSuperAdmin).mockResolvedValue({
+      id: "u-platform",
+      villageId: null,
+    } as never);
+    vi.mocked(repo.getDesaKelola).mockResolvedValue({ id: 2, name: "Desa Uji" } as never);
+    vi.mocked(repo.tambahDomainDesa).mockResolvedValue({ id: 15 });
+
+    await expect(tambahDomain({ villageId: 2, domain: "desa-uji.id" })).resolves.toEqual({
+      id: 15,
+    });
+    expect(repo.tambahDomainDesa).toHaveBeenCalledWith(2, "desa-uji.id");
+    expect(audit.recordAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ villageId: 2, resourceId: "15" }),
+    );
   });
 });

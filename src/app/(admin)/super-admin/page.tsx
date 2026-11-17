@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { forbidden, redirect } from "next/navigation";
 
 import { Card } from "@/components/ui/card";
+import { daftarSemuaDomain } from "@/features/multi-desa/application/kelola-desa-use-cases";
 import {
   daftarDesaSuperAdmin,
   requireSuperAdmin,
@@ -13,8 +14,11 @@ import { isAppError } from "@/lib/errors";
 import {
   buatDesaAction,
   eksporDataAction,
+  hapusDomainAction,
+  jadikanUtamaAction,
   purgeAction,
   resetAdminAction,
+  tambahDomainAction,
   ubahKuotaAction,
   ubahStatusAction,
 } from "./actions";
@@ -49,6 +53,7 @@ export default async function SuperAdminPage() {
   await pastikanSuperAdmin();
 
   const desa = await daftarDesaSuperAdmin();
+  const domain = await daftarSemuaDomain();
   const rows = desa.map((item) => ({
     ...item,
     statusRetensi: statusRetensi(item),
@@ -104,6 +109,7 @@ export default async function SuperAdminPage() {
         </div>
         <TenantConsole
           desa={rows}
+          domain={domain}
           aksi={{
             buat: buatDesaAction,
             status: ubahStatusAction,
@@ -111,6 +117,9 @@ export default async function SuperAdminPage() {
             reset: resetAdminAction,
             ekspor: eksporDataAction,
             purge: purgeAction,
+            tambahDomain: tambahDomainAction,
+            hapusDomain: hapusDomainAction,
+            jadikanUtama: jadikanUtamaAction,
           }}
         />
       </section>

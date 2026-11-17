@@ -57,6 +57,7 @@ export default defineConfig({
       "src/features/konten/dokumen-publik.integration.test.ts",
       "src/features/layanan-mandiri/integrasi-warga.test.ts",
       "src/features/multi-desa/isolasi-host.integration.test.ts",
+      "src/features/multi-desa/kelola-domain.integration.test.ts",
       "src/features/multi-desa/lifecycle-tenant.integration.test.ts",
       "src/features/multi-desa/provisioning-template.integration.test.ts",
       "src/features/multi-desa/template-ekspor.integration.test.ts",
