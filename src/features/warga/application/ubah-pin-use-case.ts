@@ -1,5 +1,6 @@
 import "server-only";
 
+import { isAPIError } from "better-auth/api";
 import { headers } from "next/headers";
 
 import { ubahPinSchema, type UbahPinInput } from "@/features/warga/domain/warga";
@@ -63,14 +64,66 @@ async function bersihkanStatusPinSementara(userId: string): Promise<void> {
 }
 
 /**
+ * Petakan kegagalan `changePassword` better-auth.
+ *
+ * Hanya `INVALID_PASSWORD` yang berarti PIN lama salah. Kegagalan lain
+ * (sesi tidak segar, akun tanpa kredensial, rate limit, gangguan database)
+ * tidak boleh disamarkan menjadi "PIN lama tidak sesuai", karena pengguna
+ * akan mengulang percobaan yang tidak mungkin berhasil dan penyebab aslinya
+ * hilang dari diagnosa.
+ */
+function lemparKesalahanGantiPin(error: unknown): never {
+  const kode = isAPIError(error) ? (error.body as { code?: unknown } | undefined)?.code : undefined;
+
+  if (isAPIError(error) && error.statusCode === 429) {
+    throw new AppError("RATE_LIMITED", undefined, { cause: error });
+  }
+
+  switch (kode) {
+    case "INVALID_PASSWORD":
+      throw validationError(
+        "PIN lama tidak sesuai. Pastikan PIN yang Anda masukkan benar.",
+        { pinLama: ["PIN lama tidak sesuai."] },
+        error,
+      );
+    case "PASSWORD_TOO_SHORT":
+    case "PASSWORD_TOO_LONG":
+      throw validationError(
+        "PIN baru tidak memenuhi ketentuan panjang PIN.",
+        {
+          pinBaru: ["PIN baru tidak memenuhi ketentuan panjang PIN."],
+        },
+        error,
+      );
+    case "SESSION_NOT_FRESH":
+      throw new AppError(
+        "UNAUTHENTICATED",
+        "Sesi Anda sudah terlalu lama untuk mengubah PIN. Silakan masuk kembali, lalu ubah PIN.",
+        { cause: error },
+      );
+    case "SESSION_EXPIRED":
+      throw new AppError("UNAUTHENTICATED", undefined, { cause: error });
+    case "CREDENTIAL_ACCOUNT_NOT_FOUND":
+      throw new AppError(
+        "CONFLICT",
+        "Akun ini tidak memiliki PIN yang dapat diubah. Hubungi administrator desa.",
+        { cause: error },
+      );
+    default:
+      logger.error("Ganti PIN gagal karena kesalahan yang tidak terduga.", {
+        error,
+        kode: typeof kode === "string" ? kode : null,
+      });
+      throw new AppError("INTERNAL", undefined, { cause: error });
+  }
+}
+
+/**
  * Ganti PIN warga yang sedang login.
  *
  * PIN lama diverifikasi oleh better-auth (bukan dibandingkan manual), lalu
  * `mustChangePin` dibersihkan agar layanan mandiri dapat dipakai. Sesi perangkat
  * lain dicabut agar PIN lama tidak tetap berlaku di tempat lain.
- *
- * Kegagalan autentikasi dipetakan ke `validationError` dengan pesan seragam,
- * sehingga route handler tidak perlu mengetahui detail provider.
  */
 export async function ubahPinWarga(input: UbahPinInput): Promise<void> {
   const user = await requireWarga();
@@ -85,10 +138,8 @@ export async function ubahPinWarga(input: UbahPinInput): Promise<void> {
       },
       headers: await headers(),
     });
-  } catch {
-    throw validationError("PIN lama tidak sesuai. Pastikan PIN yang Anda masukkan benar.", {
-      pinLama: ["PIN lama tidak sesuai."],
-    });
+  } catch (error) {
+    lemparKesalahanGantiPin(error);
   }
 
   await bersihkanStatusPinSementara(user.id);

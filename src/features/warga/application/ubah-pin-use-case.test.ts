@@ -1,3 +1,4 @@
+import { APIError } from "better-auth/api";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { PESAN_PIN_BERGANTI_STATUS_GAGAL, ubahPinWarga } from "./ubah-pin-use-case";
@@ -25,6 +26,10 @@ vi.mock("@/lib/logger", () => ({ logger: { warn: logWarn, error: logError } }));
 
 const INPUT = { pinLama: "123456", pinBaru: "654321", konfirmasiPin: "654321" };
 
+function kesalahanAuth(code: string, status: "BAD_REQUEST" | "TOO_MANY_REQUESTS" = "BAD_REQUEST") {
+  return APIError.from(status, { code, message: code });
+}
+
 describe("ubahPinWarga", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -50,11 +55,59 @@ describe("ubahPinWarga", () => {
   });
 
   it("menolak PIN lama yang salah tanpa menyentuh penanda PIN sementara", async () => {
-    changePassword.mockRejectedValue(new Error("invalid password"));
+    changePassword.mockRejectedValue(kesalahanAuth("INVALID_PASSWORD"));
 
     await expect(ubahPinWarga(INPUT)).rejects.toMatchObject({
       code: "VALIDATION",
       message: "PIN lama tidak sesuai. Pastikan PIN yang Anda masukkan benar.",
+      details: { pinLama: ["PIN lama tidak sesuai."] },
+    });
+    expect(clearMustChangePin).not.toHaveBeenCalled();
+  });
+
+  it("tidak menyamarkan kegagalan tak terduga sebagai PIN lama salah", async () => {
+    changePassword.mockRejectedValue(new Error("database tidak tersedia"));
+
+    await expect(ubahPinWarga(INPUT)).rejects.toMatchObject({ code: "INTERNAL" });
+    expect(logError).toHaveBeenCalledTimes(1);
+    expect(clearMustChangePin).not.toHaveBeenCalled();
+  });
+
+  it("melaporkan PIN baru yang tidak memenuhi panjang sebagai kesalahan field", async () => {
+    changePassword.mockRejectedValue(kesalahanAuth("PASSWORD_TOO_SHORT"));
+
+    await expect(ubahPinWarga(INPUT)).rejects.toMatchObject({
+      code: "VALIDATION",
+      details: { pinBaru: ["PIN baru tidak memenuhi ketentuan panjang PIN."] },
+    });
+    expect(clearMustChangePin).not.toHaveBeenCalled();
+  });
+
+  it("meminta masuk ulang ketika sesi terlalu lama untuk mengganti PIN", async () => {
+    changePassword.mockRejectedValue(kesalahanAuth("SESSION_NOT_FRESH"));
+
+    await expect(ubahPinWarga(INPUT)).rejects.toMatchObject({
+      code: "UNAUTHENTICATED",
+      message:
+        "Sesi Anda sudah terlalu lama untuk mengubah PIN. Silakan masuk kembali, lalu ubah PIN.",
+    });
+    expect(logError).not.toHaveBeenCalled();
+    expect(clearMustChangePin).not.toHaveBeenCalled();
+  });
+
+  it("memetakan rate limit better-auth ke RATE_LIMITED", async () => {
+    changePassword.mockRejectedValue(kesalahanAuth("TOO_MANY_REQUESTS", "TOO_MANY_REQUESTS"));
+
+    await expect(ubahPinWarga(INPUT)).rejects.toMatchObject({ code: "RATE_LIMITED" });
+    expect(clearMustChangePin).not.toHaveBeenCalled();
+  });
+
+  it("melaporkan akun tanpa kredensial sebagai konflik yang dapat ditindaklanjuti", async () => {
+    changePassword.mockRejectedValue(kesalahanAuth("CREDENTIAL_ACCOUNT_NOT_FOUND"));
+
+    await expect(ubahPinWarga(INPUT)).rejects.toMatchObject({
+      code: "CONFLICT",
+      message: "Akun ini tidak memiliki PIN yang dapat diubah. Hubungi administrator desa.",
     });
     expect(clearMustChangePin).not.toHaveBeenCalled();
   });
