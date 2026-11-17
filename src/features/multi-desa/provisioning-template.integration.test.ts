@@ -1,11 +1,12 @@
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { eq, inArray } from "drizzle-orm";
+import { asc, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
 import {
   accounts,
+  menuPublik,
   modules,
   rolePermissions,
   roles,
@@ -132,17 +133,80 @@ describe("provisioning desa dari template platform", () => {
     expect(desa?.slug).toBe(`desa-baru-${RUN}`);
 
     const roleBaru = await db
-      .select({ slug: roles.slug, isSystem: roles.isSystem })
+      .select({ id: roles.id, slug: roles.slug, isSystem: roles.isSystem })
       .from(roles)
       .where(eq(roles.villageId, hasil.id));
-    expect(roleBaru).toEqual([{ slug: "administrator", isSystem: true }]);
+    expect(roleBaru.map((role) => role.slug).sort()).toEqual([
+      "administrator",
+      "kepala-desa",
+      "operator",
+      "sekretaris",
+    ]);
+    expect(roleBaru.filter((role) => role.isSystem).map((role) => role.slug)).toEqual([
+      "administrator",
+    ]);
 
-    // Template bawaan tidak membawa modul desa sumber mana pun.
+    // Template bawaan hanya membawa modul yang benar-benar punya halaman, dan
+    // tidak mewarisi modul desa sumber (`khusus-sumber`).
     const modulBaru = await db
-      .select({ slug: modules.slug })
+      .select({ id: modules.id, slug: modules.slug, isActive: modules.isActive })
       .from(modules)
       .where(eq(modules.villageId, hasil.id));
-    expect(modulBaru).toEqual([]);
+    expect(modulBaru.map((modul) => ({ slug: modul.slug, isActive: modul.isActive }))).toEqual([
+      { slug: "beranda", isActive: true },
+    ]);
+
+    // Matriks akses: administrator manage, role lain hanya membaca beranda.
+    const modulBeranda = modulBaru.find((modul) => modul.slug === "beranda");
+    if (!modulBeranda) throw new Error("Modul beranda tidak terbentuk dari template.");
+    const grantBaru = await db
+      .select({
+        roleId: rolePermissions.roleId,
+        moduleId: rolePermissions.moduleId,
+        access: rolePermissions.access,
+      })
+      .from(rolePermissions)
+      .where(
+        inArray(
+          rolePermissions.roleId,
+          roleBaru.map((role) => role.id),
+        ),
+      );
+    const slugPerRoleId = new Map(roleBaru.map((role) => [role.id, role.slug]));
+    expect(
+      grantBaru
+        .filter((grant) => grant.moduleId === modulBeranda.id)
+        .map((grant) => `${slugPerRoleId.get(grant.roleId)}:${grant.access}`)
+        .sort(),
+    ).toEqual(["administrator:manage", "kepala-desa:read", "operator:read", "sekretaris:read"]);
+
+    // Menu publik awal: delapan tautan yang semuanya punya halaman.
+    const menuBaru = await db
+      .select({ nama: menuPublik.nama, link: menuPublik.link, aktif: menuPublik.aktif })
+      .from(menuPublik)
+      .where(eq(menuPublik.villageId, hasil.id))
+      .orderBy(asc(menuPublik.urut));
+    expect(menuBaru.map((menu) => menu.nama)).toEqual([
+      "Beranda",
+      "Profil Desa",
+      "Pemerintahan",
+      "Layanan",
+      "Berita",
+      "Agenda",
+      "Statistik",
+      "Kontak",
+    ]);
+    expect(menuBaru.map((menu) => menu.link)).toEqual([
+      "/",
+      "/profil",
+      "/pemerintahan",
+      "/layanan",
+      "/berita",
+      "/agenda",
+      "/statistik",
+      "/kontak",
+    ]);
+    expect(menuBaru.every((menu) => menu.aktif)).toBe(true);
 
     const temaBaru = await db
       .select({ slug: theme.slug, aktif: theme.aktif })

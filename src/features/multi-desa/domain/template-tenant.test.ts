@@ -1,6 +1,9 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { TENANT_TEMPLATE } from "@/db/templates/tenant-template";
+import { ruteTersedia } from "@/features/navigation/domain/menu-tampil";
 
 import {
   parseTemplateTenant,
@@ -49,6 +52,68 @@ describe("template bawaan platform", () => {
 
     expect(hasil.versi).toBe(1);
     expect(hasil.roles.map((role) => role.slug)).toContain(ROLE_ADMINISTRATOR);
+  });
+});
+
+/**
+ * Penjaga isi template yang benar-benar dikirim.
+ *
+ * Kesalahan di sini tidak terlihat saat typecheck karena template adalah data;
+ * akibatnya baru muncul sebagai sidebar penuh label "Segera", tautan 404, atau
+ * role yang tidak bisa membuka apa pun pada tenant baru.
+ */
+describe("template bawaan yang dikirim", () => {
+  const template = parseTemplateTenant(TENANT_TEMPLATE);
+
+  it("memuat administrator sebagai satu-satunya role sistem", () => {
+    expect(template.roles.map((role) => role.slug).sort()).toEqual([
+      "administrator",
+      "kepala-desa",
+      "operator",
+      "sekretaris",
+    ]);
+    expect(template.roles.filter((role) => role.isSystem).map((role) => role.slug)).toEqual([
+      ROLE_ADMINISTRATOR,
+    ]);
+  });
+
+  it("memberi setiap role minimal satu grant dan hanya administrator memegang manage", () => {
+    for (const role of template.roles) {
+      const punyaGrant = template.akses.some((grant) => grant.roleSlug === role.slug);
+      expect(punyaGrant, `Role "${role.slug}" tidak memiliki grant apa pun`).toBe(true);
+    }
+
+    const pemegangManage = new Set(
+      template.akses.filter((grant) => grant.access === "manage").map((grant) => grant.roleSlug),
+    );
+    expect([...pemegangManage]).toEqual([ROLE_ADMINISTRATOR]);
+  });
+
+  it("hanya menautkan modul aktif ke rute admin yang sudah tersedia", () => {
+    for (const modul of template.modules) {
+      if (modul.url === null || !modul.isActive) continue;
+      expect(
+        ruteTersedia(modul.url),
+        `Modul "${modul.slug}" menunjuk ${modul.url} yang belum terdaftar di RUTE_ADMIN_TERSEDIA`,
+      ).toBe(true);
+    }
+  });
+
+  it("menu publik hanya menunjuk halaman yang ada, tanpa duplikat", () => {
+    const nama = template.menuPublik.map((menu) => menu.nama);
+    expect(new Set(nama).size).toBe(nama.length);
+
+    const urutan = template.menuPublik.map((menu) => menu.urut);
+    expect([...urutan].sort((a, b) => a - b)).toEqual(urutan);
+
+    for (const menu of template.menuPublik) {
+      if (menu.linkTipe !== "internal") continue;
+      const berkas = menu.link === "/" ? "page.tsx" : `${menu.link.replace(/^\//, "")}/page.tsx`;
+      expect(
+        existsSync(join(process.cwd(), "src", "app", berkas)),
+        `Menu "${menu.nama}" menunjuk ${menu.link} tetapi src/app/${berkas} tidak ada`,
+      ).toBe(true);
+    }
   });
 });
 
