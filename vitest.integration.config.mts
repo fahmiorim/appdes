@@ -71,7 +71,9 @@ export default defineConfig({
       "src/features/surat/infrastructure/penomoran-archive.integration.test.ts",
     ],
     setupFiles: ["./src/testing/setup-integration.ts"],
-    hookTimeout: 120_000,
+    // Suite migration membuat beberapa database dan menjalankan DDL; pada
+    // Windows dengan suite paralel, beforeAll dapat melewati 120 detik.
+    hookTimeout: 300_000,
     env: {
       NODE_ENV: "test",
       BETTER_AUTH_SECRET: "rahasia-uji-coba-minimal-32-karakter",

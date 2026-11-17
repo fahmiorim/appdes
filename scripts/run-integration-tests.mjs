@@ -42,18 +42,19 @@ if (!punyaDsn || !punyaAck) {
 }
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const executable = path.join(
-  root,
-  "node_modules",
-  ".bin",
-  process.platform === "win32" ? "vitest.cmd" : "vitest",
-);
+const vitestEntry = path.join(root, "node_modules", "vitest", "vitest.mjs");
 
-const hasil = spawnSync(executable, ["run", "--config", "vitest.integration.config.mts"], {
-  cwd: root,
-  env: process.env,
-  stdio: "inherit",
-});
+// Jalankan entry JavaScript Vitest dengan Node yang sama. Menjalankan
+// `vitest.cmd` lewat spawnSync gagal di Windows/Node 26 (EINVAL).
+const hasil = spawnSync(
+  process.execPath,
+  [vitestEntry, "run", "--config", "vitest.integration.config.mts"],
+  {
+    cwd: root,
+    env: process.env,
+    stdio: "inherit",
+  },
+);
 
 if (hasil.error) {
   process.stderr.write(`[integration-db] Gagal menjalankan Vitest: ${hasil.error.message}\n`);
