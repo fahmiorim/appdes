@@ -16,17 +16,24 @@ export async function listUrutanMenu(userId: string): Promise<string[]> {
   return rows.map((row) => row.slug);
 }
 
-/** Ganti seluruh urutan menu pengguna. Daftar kosong berarti kembali ke bawaan. */
+/**
+ * Ganti seluruh urutan menu pengguna. Daftar kosong berarti kembali ke bawaan.
+ *
+ * Hapus dan sisip ulang berada dalam satu transaksi agar kegagalan insert tidak
+ * meninggalkan pengguna tanpa preferensi (urutan lama sudah terhapus).
+ */
 export async function simpanUrutanMenu(userId: string, slugs: readonly string[]): Promise<void> {
-  await db.delete(penggunaMenuUrutan).where(eq(penggunaMenuUrutan.userId, userId));
+  await db.transaction(async (tx) => {
+    await tx.delete(penggunaMenuUrutan).where(eq(penggunaMenuUrutan.userId, userId));
 
-  if (slugs.length === 0) return;
+    if (slugs.length === 0) return;
 
-  await db.insert(penggunaMenuUrutan).values(
-    slugs.map((slug, urut) => ({
-      userId,
-      slug,
-      urut,
-    })),
-  );
+    await tx.insert(penggunaMenuUrutan).values(
+      slugs.map((slug, urut) => ({
+        userId,
+        slug,
+        urut,
+      })),
+    );
+  });
 }

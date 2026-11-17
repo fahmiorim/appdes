@@ -16,19 +16,26 @@ export async function listShortcut(userId: string): Promise<string[]> {
   return rows.map((row) => row.href);
 }
 
-/** Ganti seluruh pintasan pengguna. Daftar kosong berarti kembali ke bawaan. */
+/**
+ * Ganti seluruh pintasan pengguna. Daftar kosong berarti kembali ke bawaan.
+ *
+ * Hapus dan sisip ulang berada dalam satu transaksi agar kegagalan insert tidak
+ * meninggalkan pengguna tanpa pintasan (daftar lama sudah terhapus).
+ */
 export async function simpanShortcut(userId: string, hrefs: readonly string[]): Promise<void> {
-  await db.delete(penggunaShortcut).where(eq(penggunaShortcut.userId, userId));
+  await db.transaction(async (tx) => {
+    await tx.delete(penggunaShortcut).where(eq(penggunaShortcut.userId, userId));
 
-  if (hrefs.length === 0) return;
+    if (hrefs.length === 0) return;
 
-  await db.insert(penggunaShortcut).values(
-    hrefs.map((href, urut) => ({
-      userId,
-      href,
-      urut,
-    })),
-  );
+    await tx.insert(penggunaShortcut).values(
+      hrefs.map((href, urut) => ({
+        userId,
+        href,
+        urut,
+      })),
+    );
+  });
 }
 
 /** Hapus satu pintasan (dipakai saat pengguna mengurangi pilihan). */
