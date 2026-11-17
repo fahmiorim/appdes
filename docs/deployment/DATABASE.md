@@ -298,10 +298,13 @@ Catatan operasi:
   backup database dibuat.
 - Pembersihan berkas ekspor kedaluwarsa dilakukan oleh use case
   `bersihkanEksporKedaluwarsa` (dipanggil operator/penjadwal).
-- Halaman konsol Super Admin untuk memicu ekspor dan purge disediakan pada
-  irisan pekerjaan berikutnya; sampai saat itu operasi dijalankan melalui use
-  case pada `src/features/multi-desa/application/lifecycle-desa-use-cases.ts`
-  oleh operator yang sudah terautentikasi sebagai Super Admin.
+- Ekspor dan purge dijalankan dari konsol Super Admin di `/super-admin`
+  (panel **Kelola** setiap desa), yang memanggil use case pada
+  `src/features/multi-desa/application/lifecycle-desa-use-cases.ts`. Konsol dan
+  use case sama-sama menolak pengguna yang bukan Super Admin platform.
+- Konsol juga menyediakan pembuatan desa, aktif/nonaktif, kuota media, dan
+  reset akses administrator desa. Pengelolaan domain alias belum tersedia di
+  konsol; use case-nya sudah ada dan belum diekspos ke UI.
 
 ### 6.4 Ekspor template dari instalasi referensi
 

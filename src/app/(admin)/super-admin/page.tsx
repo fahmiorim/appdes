@@ -6,8 +6,18 @@ import {
   daftarDesaSuperAdmin,
   requireSuperAdmin,
 } from "@/features/multi-desa/application/provisioning-use-cases";
-import { TenantTable } from "@/features/multi-desa/presentation/tenant-table";
+import { hariMenujuPurge, statusRetensi } from "@/features/multi-desa/domain/lifecycle-tenant";
+import { TenantConsole } from "@/features/multi-desa/presentation/tenant-console";
 import { isAppError } from "@/lib/errors";
+
+import {
+  buatDesaAction,
+  eksporDataAction,
+  purgeAction,
+  resetAdminAction,
+  ubahKuotaAction,
+  ubahStatusAction,
+} from "./actions";
 
 export const metadata: Metadata = {
   title: "Dashboard Super Admin",
@@ -39,9 +49,16 @@ export default async function SuperAdminPage() {
   await pastikanSuperAdmin();
 
   const desa = await daftarDesaSuperAdmin();
+  const rows = desa.map((item) => ({
+    ...item,
+    statusRetensi: statusRetensi(item),
+    hariMenujuPurge: hariMenujuPurge(item),
+  }));
+
   const totalAktif = desa.filter((item) => item.active).length;
   const totalPenduduk = desa.reduce((total, item) => total + item.penduduk, 0);
   const totalPengguna = desa.reduce((total, item) => total + item.pengguna, 0);
+  const totalSiapPurge = rows.filter((item) => item.statusRetensi === "siap-purge").length;
 
   return (
     <>
@@ -49,7 +66,7 @@ export default async function SuperAdminPage() {
         <div>
           <span className="eyebrow">Konsol platform</span>
           <h1>Dashboard Super Admin</h1>
-          <p>Pantau tenant desa dan ringkasan penggunaan platform FlexiDesa.</p>
+          <p>Kelola tenant desa, retensi data, dan ringkasan penggunaan platform FlexiDesa.</p>
         </div>
       </div>
 
@@ -70,9 +87,11 @@ export default async function SuperAdminPage() {
           <div className="stat-card-note">Akun yang terdaftar pada seluruh desa</div>
         </Card>
         <Card>
-          <div className="stat-card-label">Total penduduk</div>
-          <div className="stat-card-value">{totalPenduduk.toLocaleString("id-ID")}</div>
-          <div className="stat-card-note">Data penduduk seluruh tenant</div>
+          <div className="stat-card-label">Siap purge</div>
+          <div className="stat-card-value">{totalSiapPurge.toLocaleString("id-ID")}</div>
+          <div className="stat-card-note">
+            Masa tenggang selesai · {totalPenduduk.toLocaleString("id-ID")} penduduk tercatat
+          </div>
         </Card>
       </div>
 
@@ -83,7 +102,17 @@ export default async function SuperAdminPage() {
             <p>{desa.length.toLocaleString("id-ID")} desa terdaftar di platform.</p>
           </div>
         </div>
-        <TenantTable desa={desa} />
+        <TenantConsole
+          desa={rows}
+          aksi={{
+            buat: buatDesaAction,
+            status: ubahStatusAction,
+            kuota: ubahKuotaAction,
+            reset: resetAdminAction,
+            ekspor: eksporDataAction,
+            purge: purgeAction,
+          }}
+        />
       </section>
     </>
   );

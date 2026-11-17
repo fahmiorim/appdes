@@ -16,6 +16,7 @@ import { conflict } from "@/lib/errors";
 export interface DesaSuperAdminRow {
   id: number;
   name: string | null;
+  slug: string | null;
   code: string | null;
   domain: string | null;
   active: boolean;
@@ -25,6 +26,11 @@ export interface DesaSuperAdminRow {
   penduduk: number;
   jenisSurat: number;
   createdAt: Date;
+  /** Awal masa tenggang retensi; `null` = desa aktif atau belum pernah nonaktif. */
+  nonaktifSejak: Date | null;
+  purgedAt: Date | null;
+  /** Apakah ada berkas ekspor yang masih berlaku (syarat purge). */
+  adaEksporBerlaku: boolean;
 }
 
 /** Daftar seluruh desa beserta ringkasan isinya (khusus super admin). */
@@ -33,11 +39,14 @@ export async function listDesaSuperAdmin(): Promise<DesaSuperAdminRow[]> {
     .select({
       id: villages.id,
       name: villages.name,
+      slug: villages.slug,
       code: villages.code,
       domain: villages.domain,
       active: villages.active,
       kuotaMediaMb: villages.kuotaMediaMb,
       createdAt: villages.createdAt,
+      nonaktifSejak: villages.nonaktifSejak,
+      purgedAt: villages.purgedAt,
       tema: sql<string | null>`(
         SELECT t.slug FROM theme t
         WHERE t.village_id = ${villages.id} AND t.aktif = 1
@@ -49,6 +58,9 @@ export async function listDesaSuperAdmin(): Promise<DesaSuperAdminRow[]> {
       penduduk: sql<number>`(SELECT COUNT(*) FROM residents r WHERE r.village_id = villages.id)`,
       jenisSurat: sql<number>`(
         SELECT COUNT(*) FROM letter_types lt WHERE lt.village_id = villages.id )`,
+      adaEksporBerlaku: sql<number>`EXISTS(
+        SELECT 1 FROM tenant_exports te
+        WHERE te.village_id = villages.id AND te.kedaluwarsa_pada > NOW() )`,
     })
     .from(villages)
     .orderBy(asc(villages.id));
@@ -58,6 +70,7 @@ export async function listDesaSuperAdmin(): Promise<DesaSuperAdminRow[]> {
     pengguna: Number(row.pengguna),
     penduduk: Number(row.penduduk),
     jenisSurat: Number(row.jenisSurat),
+    adaEksporBerlaku: Boolean(Number(row.adaEksporBerlaku)),
   }));
 }
 
