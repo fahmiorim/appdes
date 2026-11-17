@@ -1,27 +1,21 @@
 name: CI
 
-# Setiap PR ke main menjalankan quality gate lengkap. Push ke main juga
-# divalidasi untuk perubahan non-dokumentasi. Visual QA browser dijalankan
-# terpisah oleh visual-qa.yml. Branch protection mewajibkan check CI pada PR.
+# Setiap PR ke main menjalankan quality gate lengkap. Push/merge ke main tidak
+# memicu workflow lagi karena branch protection mewajibkan check CI pada PR;
+# menghindari test ganda setelah merge. Visual QA browser dijalankan terpisah
+# oleh visual-qa.yml.
 on:
   # Semua PR ke main menjalankan quality gate, termasuk PR dokumentasi, agar
   # status check yang diwajibkan branch protection selalu tersedia.
   pull_request:
     branches: [main]
-  push:
-    branches: [main]
-    paths-ignore:
-      - "docs/**"
-      - "**/*.md"
-    tags-ignore: ["**"]
 
 permissions:
   contents: read
 
 concurrency:
-  # Push dan pull_request memakai `ref` berbeda; nomor PR menyatukan keduanya
-  # agar tidak ada pipeline ganda untuk commit yang sama.
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  # Satu pipeline per PR; commit baru membatalkan run lama pada PR yang sama.
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
