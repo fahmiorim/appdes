@@ -176,26 +176,28 @@ Role slug `administrator` memberi hak penuh dalam konteks aplikasi desa dan buka
 
 **Status awal (12 November 2026):** dashboard belum teridentifikasi dalam audit statis.
 
-**Status kode terkini (17 November 2026):** dashboard daftar tenant sudah ada; UI lifecycle tenant belum lengkap.
+**Status kode terkini (18 November 2026):** dashboard tenant, konsol pengelolaan, domain alias, ekspor, dan lifecycle retensi/purge sudah ada di `main`. Validasi UI di staging masih terbuka.
 
 **Temuan baseline:** audit 12 November tidak menemukan route group `(super-admin)`. Temuan itu menggambarkan snapshot saat audit, bukan kondisi kode sekarang.
 
-**Bukti kode saat ini:** halaman `src/app/(admin)/super-admin/page.tsx` memeriksa role Super Admin dan menampilkan KPI serta tabel tenant. Tabel menampilkan status, domain utama, jumlah pengguna, penduduk, jenis surat, dan tanggal pendaftaran, serta menyediakan pencarian dan filter status. Use case detail tenant, provisioning, status, domain, kuota, dan reset admin ada di `src/features/multi-desa/application/`, tetapi tidak ditemukan halaman atau Server Action yang menghubungkan pengelolaan lifecycle tersebut ke UI. Provisioning juga masih mengambil desa pertama sebagai sumber konfigurasi; karena itu provisioning instalasi baru tanpa desa sumber belum terpenuhi. Implementasi dan test yang ada belum membuktikan alur ini lewat UI runtime.
+**Bukti kode saat ini:** halaman `src/app/(admin)/super-admin/page.tsx` memeriksa role Super Admin dan menampilkan KPI, tabel tenant, serta konsol pengelolaan (`TenantConsole`). Server Action di `src/app/(admin)/super-admin/actions.ts` menghubungkan provisioning, status, kuota, reset admin, domain alias, ekspor, dan purge ke use case yang memanggil `requireSuperAdmin` kembali. Provisioning memakai template platform `src/db/templates/tenant-template.ts`, bukan desa pertama, sehingga instalasi baru tanpa desa sumber terpenuhi. Bootstrap akun platform tersedia melalui `npm run platform:bootstrap`. Cleanup ekspor kedaluwarsa tersedia sebagai CLI `npm run platform:cleanup-exports`.
 
-**Dampak saat ini:** Super Admin dapat melihat ringkasan tenant lewat dashboard. Pengelolaan tenant melalui konsol belum lengkap, dan provisioning belum dapat memenuhi kriteria instalasi baru tanpa desa sumber.
+**Dampak saat ini:** Super Admin dapat membuat dan mengelola tenant dari konsol tanpa menyamar sebagai Admin Desa. Yang belum terbukti adalah jalur runtime pada lingkungan staging: interaksi form, login hasil bootstrap, dan eksekusi purge belum diuji browser/server nyata pada task implementasi.
 
-**Rekomendasi:** lengkapi UI lifecycle tenant dan ganti sumber provisioning dengan template platform independen. Pertahankan guard server-side dan audit untuk setiap aksi sensitif. Untuk rincian target serta acceptance criteria, lihat [Fase 2 di Master Roadmap](MASTER_ROADMAP.md#fase-2--super-admin-dan-lifecycle-tenant).
+**Rekomendasi:** jalankan walkthrough konsol pada staging dengan tenant sintetis, verifikasi login hasil bootstrap, dan tinjau hasil purge pada database uji. Pertahankan guard server-side dan audit untuk setiap aksi sensitif. Untuk sisa validasi Fase 2, lihat [Fase 2 di Master Roadmap](MASTER_ROADMAP.md#fase-2--super-admin-dan-lifecycle-tenant).
 
 ### AUD-010 — Use case penghapusan permanen tenant belum ditemukan
 
 **Prioritas:** P2 — Menengah  
-**Status:** belum ditemukan pada repository yang diperiksa.
+**Status (18 November 2026):** tertutup di lapisan kode dan masih menunggu validasi operasional.
 
-**Bukti:** pengelolaan desa menyediakan status aktif/nonaktif; use case penghapusan permanen tidak ditemukan.
+**Bukti awal:** pengelolaan desa menyediakan status aktif/nonaktif; use case penghapusan permanen belum ditemukan pada audit 12 November 2026.
 
-**Dampak:** kebijakan retensi, ekspor, dan penghapusan sesuai ketentuan belum terdefinisi pada aplikasi.
+**Perubahan kode:** lifecycle tenant kini tersedia dengan jalur nonaktif → masa tenggang 90 hari → ekspor wajib → purge. Purge menghapus baris ber-`village_id` dalam satu transaksi, menyimpan statistik agregat di `tenant_purge_archive`, mencatat domain bekas tenant di `tenant_domain_tombstones`, dan menolak desa aktif atau desa tanpa ekspor berlaku. UI konsol menyediakan aksi ekspor dan purge; cleanup ekspor kedaluwarsa dapat dijadwalkan dengan `npm run platform:cleanup-exports`.
 
-**Rekomendasi:** jadikan soft deactivate sebagai default; rancang ekspor, retensi, persetujuan, backup, dan purge terkontrol untuk kasus khusus.
+**Dampak saat ini:** kebijakan retensi, ekspor, dan penghapusan terdefinisi di aplikasi dan tercatat lewat audit `desa.export`/`desa.purge`.
+
+**Rekomendasi:** uji purge hanya pada database atau tenant sintetis, dan pastikan backup database serta `storage/media` selesai sebelum eksekusi. Purge tidak dapat dibatalkan. Lihat [DATABASE.md](deployment/DATABASE.md) §6.3.
 
 ### AUD-011 — Join dan agregasi keluarga tidak seluruhnya tenant-scoped
 

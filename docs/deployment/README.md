@@ -252,15 +252,16 @@ Aturan penting:
   ke database production. Integration test membuat database, menjalankan
   migrasi, dan menulis fixture.
 - Buat backup sebelum migrasi apa pun pada database yang sudah berisi data.
-- Repository saat ini memiliki 12 migrasi: baseline
-  `src/db/migrations/0000_baseline.sql` dan `0001`–`0011` untuk composite
-  foreign key serta kontrol tenant. Tidak ada migrasi rollback otomatis;
-  pemulihan dilakukan dari backup.
+- Repository saat ini memiliki 13 migrasi: baseline
+  `src/db/migrations/0000_baseline.sql` dan `0001`–`0012` untuk composite
+  foreign key, kontrol tenant, dan lifecycle tenant. Tidak ada migrasi rollback
+  otomatis; pemulihan dilakukan dari backup.
 
 ### 6.1 Bootstrap Super Admin dan desa pertama
 
 Setelah `db:migrate`, skema terbentuk tetapi belum ada akun maupun desa. Buat
-pengelola platform lebih dulu:
+pengelola platform lebih dulu dengan skrip repository. Setelah bootstrap,
+buat desa pertama dari konsol `/super-admin`:
 
 ```bash
 cd "$APP_DIR"
@@ -455,11 +456,11 @@ subdomain bertingkat (`a.b.desa.id`) tidak dipetakan ke desa `a`.
 ### 9.3 Data domain
 
 Sumber kebenaran ada di tabel `village_domains`; `villages.domain` adalah
-cermin domain utama untuk kompatibilitas. Use case pengelolaan domain tersedia
-di backend. Dashboard `/super-admin` dapat menampilkan tenant, tetapi belum ada
-form pengelolaan domain di UI. Jangan mengubah tabel secara manual di production
-tanpa backup, validasi, dan persetujuan; kesalahan domain dapat membuat tenant
-tidak dapat diakses atau menunjuk desa yang salah.
+cermin domain utama untuk kompatibilitas. Konsol `/super-admin` dapat menambah
+alias, menjadikan alias domain utama, dan menghapus alias. Tetap validasi DNS,
+TLS, dan routing domain pada lingkungan deployment. Jangan mengubah tabel secara
+manual di production tanpa backup, validasi, dan persetujuan; kesalahan domain
+dapat membuat tenant tidak dapat diakses atau menunjuk desa yang salah.
 
 Pemeriksaan operasional:
 

@@ -75,12 +75,11 @@ Fitur berikut ada di peta fitur/roadmap, tetapi tidak memiliki screenshot khusus
 
 - Dashboard Admin Desa dan navigasi operasional — `/beranda` dan admin shell sudah tersedia; **product design — no reference**, visual review pending.
 - Dashboard Super Admin dan tabel tenant — `/super-admin` sudah tersedia; **product design — no reference**, visual review pending.
-- Manajemen tenant (detail, provisioning, domain, kuota, status, reset akses) — belum ada UI lengkap.
+- Manajemen tenant (detail, provisioning, domain, kuota, status, reset akses) — UI tersedia di `/super-admin`; **product design — no reference**, visual review pending.
+- Lifecycle tenant (retensi, ekspor, purge) — UI tersedia di panel kelola tenant; **product design — no reference**, visual review pending.
 - Manajemen penduduk, keluarga, rumah tangga, mutasi, dan wilayah.
 - Inbox surat masuk/keluar, disposisi, verifikasi, dan arsip surat.
 - Form dan dashboard IDM/SDGs.
-- Dashboard Super Admin platform dan lifecycle tenant.
-- Provisioning desa, pengaturan domain, paket, kuota, suspend/reactivate.
 - Bantuan sosial, kelompok, inventaris, pembangunan, KIA, kehadiran, arsip, anjungan.
 - Pengaturan modul, role/permission, audit log, backup/restore, monitoring.
 

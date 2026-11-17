@@ -89,9 +89,10 @@ curl -fsS -H 'Host: staging.example.go.id' \
   http://127.0.0.1:3000/api/publik/informasi | head -c 500
 ```
 
-Halaman `/masuk` dan `/` dapat dibuka setelah tenant staging tersedia. Bootstrap
-Super Admin/tenant pertama belum tersedia sebagai perintah repository; gunakan
-dump baseline yang disetujui (lihat [DATABASE.md](./DATABASE.md) bagian 6).
+Halaman `/masuk` dan `/` dapat dibuka setelah tenant staging tersedia. Buat akun
+Super Admin dengan prosedur bootstrap di [DATABASE.md](./DATABASE.md) bagian 6,
+lalu provision tenant uji dari konsol `/super-admin`. Gunakan data sintetis dan
+jangan menjalankan alur destructive pada tenant yang berisi data penting.
 
 ## 6. Integration test pada database disposable
 
@@ -113,11 +114,14 @@ runner lokal tanpa database, `npm run test:integration` akan mencetak status
 
 - [ ] Database staging terpisah dan kredensial bukan production.
 - [ ] `npm ci` selesai tanpa error.
-- [ ] `npm run db:migrate` selesai dan 12 migrasi tercatat.
+- [ ] `npm run db:migrate` selesai dan 13 migrasi tercatat.
 - [ ] `npm run build` selesai tanpa error.
 - [ ] Service berjalan sebagai user non-root.
 - [ ] `/api/publik/openapi` merespons 200.
 - [ ] Domain staging dan HTTPS valid.
 - [ ] Backup database staging dibuat sebelum pengujian yang mengubah data.
-- [ ] Bootstrap tenant/Super Admin pertama disetujui dan diuji.
+- [ ] Bootstrap Super Admin dan provisioning tenant uji disetujui dan diuji.
+- [ ] Walkthrough konsol selesai: status, kuota, reset admin, domain, ekspor,
+  dan retensi.
+- [ ] Timer cleanup ekspor dipasang; jadwal dan log eksekusi diverifikasi.
 - [ ] Tidak ada secret atau data pribadi di log, screenshot, atau laporan.
