@@ -4,7 +4,9 @@
 - **Tanggal:** 18 November 2026.
 - **Branch:** `feat/super-admin-menu-lengkap-2026-11-18`.
 - **Base commit:** `829e0f0` (main setelah PR #115).
-- **Status:** siap review.
+- **PR:** [#116 — Konsol platform lengkap dengan pengelolaan akses dan audit](https://github.com/fahmiorim/appdes/pull/116).
+- **Commit branch:** `d2f9868` (implementasi), `cf36993` (hapus sub-navigasi duplikat), `680e10d` (pemetaan test integrasi).
+- **Status:** CI PR hijau; menunggu squash-merge.
 
 ## 1. Tujuan
 
@@ -90,7 +92,7 @@ Pengguna menilai `/super-admin` dibangun "asal-asalan": hanya satu halaman besar
 | Perintah | Hasil |
 |---|---|
 | `npm run typecheck` | PASS |
-| `npm run lint` | PASS — 0 error (5 warning `no-console` dari skrip bantu sementara yang dihapus sebelum commit) |
+| `npm run lint` | PASS — 0 error; semula 5 warning `no-console` berasal dari skrip bantu tidak terkait di working tree, tidak ikut commit. Skrip sementara dibersihkan setelah validasi lokal. |
 | `npm run format:check` | PASS |
 | `npm run test:unit` | PASS — 214 file, 1.876 test |
 | `npm run build` | PASS — rute `/super-admin`, `/super-admin/audit`, `/super-admin/audit/ekspor`, `/super-admin/domain`, `/super-admin/pengaturan`, `/super-admin/pengguna`, `/super-admin/template`, `/super-admin/tenant` terdaftar |
