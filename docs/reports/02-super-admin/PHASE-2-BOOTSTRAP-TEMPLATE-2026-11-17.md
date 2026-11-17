@@ -5,7 +5,8 @@
 - **Tanggal:** 17 November 2026.
 - **Branch:** `task/phase-2-self-contained-provisioning`.
 - **Base commit:** `da63c9cd7f06d631763cd51da0fbae10cd9d1842` (`main`).
-- **Commit hasil:** belum dibuat saat laporan ini ditulis; diisi pada commit yang sama.
+- **Commit implementasi:** `10128244d0b62cb7185bc21867f38f5000a13c3b`.
+- **Commit laporan:** commit `docs(report)` tepat setelah commit implementasi.
 
 ## 1. Kondisi awal dan analisis
 
