@@ -104,7 +104,7 @@ jobs:
     if: always()
     steps:
       - name: Tegakkan hasil integration test
-        if: needs.changes.result != 'success' || (needs.changes.outputs.integration == 'true' && needs.integration-test.result != 'success')
+        if: always() && (needs.changes.result != 'success' || (needs.changes.outputs.integration == 'true' && needs.integration-test.result != 'success'))
         run: exit 1
 
   integration-test:
