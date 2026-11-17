@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "crossCutting": [
+    {
+      "id": "database-schema",
+      "description": "Schema, composite foreign key, migration guard, cascade, dan rollback. Dijalankan untuk perubahan src/db, migration, atau konfigurasi database.",
+      "tests": [
+        "src/db/b2-bantuan-composite-fk.integration.test.ts",
+        "src/db/b2-dtks-suplemen-composite-fk.integration.test.ts",
+        "src/db/b2-migration-guard-rollback.integration.test.ts",
+        "src/db/b2-resident-composite-fk.integration.test.ts",
+        "src/db/b2-resident-migration-guard.integration.test.ts",
+        "src/db/b3-inventaris-composite-fk.integration.test.ts",
+        "src/db/b3-inventaris-migration-guard.integration.test.ts",
+        "src/db/b4-cascade-relations-composite-fk.integration.test.ts",
+        "src/db/b4-tenant-migration-guard.integration.test.ts",
+        "src/db/b4b-cascade-relations-composite-fk.integration.test.ts",
+        "src/db/b4b-tenant-migration-guard.integration.test.ts",
+        "src/db/b4c1-restrict-relations-composite-fk.integration.test.ts",
+        "src/db/b4c1-tenant-migration-guard.integration.test.ts",
+        "src/db/b4c2a-letter-classification-composite-fk.integration.test.ts",
+        "src/db/b4c2a-tenant-migration-guard.integration.test.ts",
+        "src/db/b4c2b-remaining-relations-composite-fk.integration.test.ts",
+        "src/db/b4c2b-tenant-migration-guard.integration.test.ts",
+        "src/db/b5-set-null-relations-composite-fk.integration.test.ts",
+        "src/db/b5-tenant-migration-guard.integration.test.ts",
+        "src/db/tenant-composite-fk.integration.test.ts"
+      ]
+    },
+    {
+      "id": "tenant-isolation-lintas-modul",
+      "description": "Isolasi villageId untuk modul yang tidak punya test khusus. Dijalankan bila salah satu modul yang dicakup berubah.",
+      "coversModules": ["anjungan", "arsip", "buku-tamu", "kehadiran", "keuangan", "lapak"],
+      "tests": ["src/features/isolasi-village.integration.test.ts"]
+    }
+  ],
+  "modules": {
+    "agenda": ["src/features/agenda/infrastructure/agenda-repository.integration.test.ts"],
+    "bantuan": ["src/features/bantuan/integrasi-warga.test.ts"],
+    "database": ["src/features/database/infrastructure/verifikasi-restore.integration.test.ts"],
+    "gis": ["src/features/gis/infrastructure/gis-repository.integration.test.ts"],
+    "inventaris": [
+      "src/features/inventaris/infrastructure/inventaris-tenant-isolation.integration.test.ts"
+    ],
+    "kehadiran": [
+      "src/features/kehadiran/infrastructure/rekap-kehadiran-tenant-isolation.integration.test.ts"
+    ],
+    "kelompok": [
+      "src/features/kelompok/infrastructure/kelompok-tenant-isolation.integration.test.ts"
+    ],
+    "keluarga": [
+      "src/features/keluarga/infrastructure/keluarga-tenant-isolation.integration.test.ts"
+    ],
+    "keuangan": ["src/features/keuangan/infrastructure/keuangan-concurrency.integration.test.ts"],
+    "kontak": ["src/features/kontak/application/kontak-tenant-isolation.integration.test.ts"],
+    "konten": ["src/features/konten/dokumen-publik.integration.test.ts"],
+    "layanan-mandiri": [
+      "src/features/layanan-mandiri/infrastructure/permohonan-status-concurrency.integration.test.ts",
+      "src/features/layanan-mandiri/integrasi-warga.test.ts",
+      "src/features/layanan-mandiri/permohonan-tenant-relations.integration.test.ts"
+    ],
+    "multi-desa": ["src/features/multi-desa/isolasi-host.integration.test.ts"],
+    "penduduk": [
+      "src/features/penduduk/infrastructure/dtks-tenant-isolation.integration.test.ts",
+      "src/features/penduduk/infrastructure/penduduk-tenant-references.integration.test.ts",
+      "src/features/penduduk/infrastructure/riwayat-penduduk-tenant-isolation.integration.test.ts",
+      "src/features/penduduk/infrastructure/suplemen-tenant-isolation.integration.test.ts"
+    ],
+    "pesan-warga": ["src/features/pesan-warga/integrasi-pesan-warga.test.ts"],
+    "publik": [
+      "src/features/publik/application/pengumuman-publik.integration.test.ts",
+      "src/features/publik/infrastructure/media-quota-concurrency.integration.test.ts"
+    ],
+    "rbac": ["src/features/rbac/infrastructure/rbac-tenant-isolation.integration.test.ts"],
+    "rumah-tangga": [
+      "src/features/rumah-tangga/infrastructure/rumah-tangga-tenant-isolation.integration.test.ts"
+    ],
+    "statistik": [
+      "src/features/statistik/infrastructure/statistik-tenant-isolation.integration.test.ts"
+    ],
+    "surat": ["src/features/surat/infrastructure/penomoran-archive.integration.test.ts"]
+  }
+}

@@ -63,6 +63,9 @@ jobs:
       - name: Format check
         run: npm run format:check
 
+      - name: Validasi peta integration test
+        run: node scripts/integration-test-map.mjs --check
+
       - name: Typecheck
         if: needs.changes.outputs.code == 'true'
         run: npm run typecheck
