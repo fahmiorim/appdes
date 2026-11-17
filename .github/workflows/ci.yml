@@ -1,10 +1,10 @@
 name: CI
 
 # Quality gate berjalan pada PR ke main. Job berat dipilih berdasarkan file yang
-# berubah: PR dokumentasi hanya memeriksa format, PR UI tidak menjalankan
-# integration MySQL, dan PR kode/DB tetap menjalankan test yang relevan.
-# Push/merge ke main tidak memicu workflow lagi; Visual QA browser dijalankan
-# terpisah oleh visual-qa.yml.
+# berubah: PR dokumentasi tidak memasang dependency atau menjalankan test, PR UI
+# tidak menjalankan integration MySQL, dan PR kode/DB tetap menjalankan test yang
+# relevan. Push/merge ke main tidak memicu workflow lagi; Visual QA browser
+# dijalankan terpisah oleh visual-qa.yml.
 on:
   # Semua PR ke main memicu workflow agar required check branch protection
   # selalu tersedia; job tetap ada dan sukses walau test berat dilewati.
@@ -57,10 +57,24 @@ jobs:
           node-version: "22.22.1"
           cache: npm
 
+      # Hanya PR yang mengubah kode yang membutuhkan dependency. PR dokumentasi
+      # cukup menjalankan validator peta yang hanya memakai Node built-in.
+      - name: Restore node_modules
+        id: node-modules
+        if: needs.changes.outputs.code == 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-22.22.1-modules-${{ hashFiles('package.json', 'package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-22.22.1-modules-
+
       - name: Install dependency
+        if: needs.changes.outputs.code == 'true' && steps.node-modules.outputs.cache-hit != 'true'
         run: npm ci
 
       - name: Format check
+        if: needs.changes.outputs.code == 'true'
         run: npm run format:check
 
       - name: Validasi peta integration test
@@ -81,7 +95,7 @@ jobs:
       - name: Catat quality test dilewati
         if: needs.changes.outputs.code != 'true'
         run: |
-          echo "Typecheck, lint, dan unit test tidak dijalankan: tidak ada perubahan kode." >> "$GITHUB_STEP_SUMMARY"
+          echo "Dependency, format, typecheck, lint, dan unit test tidak dijalankan: tidak ada perubahan kode. Validasi peta integration tetap dijalankan." >> "$GITHUB_STEP_SUMMARY"
 
   integration:
     name: Integration test (MySQL 8)
@@ -192,7 +206,7 @@ jobs:
           if [ "$CODE_CHANGED" = "true" ]; then
             QUALITY_MODE="dijalankan"
           else
-            QUALITY_MODE="format saja"
+            QUALITY_MODE="validasi peta saja"
           fi
           if [ "$INTEGRATION_CHANGED" = "true" ]; then
             INTEGRATION_MODE="dijalankan"
