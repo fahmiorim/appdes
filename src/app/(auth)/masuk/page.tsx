@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/app/(auth)/masuk/login-form";
@@ -26,7 +27,15 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
     <div className="login-site">
       <header className="login-site-header">
         <a className="login-brand" href="#top" aria-label="FlexiDesa, beranda">
-          <img className="login-brand-symbol" src="/images/flexidesa-mark.svg" alt="" />
+          <Image
+            className="login-brand-symbol"
+            src="/images/flexidesa-mark.svg"
+            alt=""
+            width={42}
+            height={42}
+            priority
+            unoptimized
+          />
           <span className="login-brand-copy">
             <strong>FlexiDesa</strong>
             <small>Sistem Informasi Desa</small>
@@ -72,7 +81,13 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
           <div className="login-form-area">
             <section className="login-card" id="login-card" aria-labelledby="login-title">
               <div className="login-illustration" aria-hidden="true">
-                <img src="/images/login-security.svg" alt="" />
+                <Image
+                  src="/images/login-security.svg"
+                  alt=""
+                  width={132}
+                  height={120}
+                  unoptimized
+                />
               </div>
               <span className="login-card-eyebrow">SELAMAT DATANG KEMBALI</span>
               <h2 id="login-title">Masuk ke Akun</h2>
@@ -92,7 +107,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
         <section className="login-benefits" aria-label="Keunggulan layanan desa">
           <article className="login-benefit">
             <span className="login-benefit-icon" aria-hidden="true">
-              <img src="/images/benefit-fast.svg" alt="" />
+              <Image src="/images/benefit-fast.svg" alt="" width={30} height={30} unoptimized />
             </span>
             <div>
               <h3>Cepat &amp; Mudah</h3>
@@ -101,7 +116,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
           </article>
           <article className="login-benefit">
             <span className="login-benefit-icon" aria-hidden="true">
-              <img src="/images/benefit-secure.svg" alt="" />
+              <Image src="/images/benefit-secure.svg" alt="" width={30} height={30} unoptimized />
             </span>
             <div>
               <h3>Aman &amp; Terpercaya</h3>
@@ -110,7 +125,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
           </article>
           <article className="login-benefit">
             <span className="login-benefit-icon" aria-hidden="true">
-              <img src="/images/benefit-services.svg" alt="" />
+              <Image src="/images/benefit-services.svg" alt="" width={30} height={30} unoptimized />
             </span>
             <div>
               <h3>Layanan Lengkap</h3>
@@ -119,7 +134,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
           </article>
           <article className="login-benefit">
             <span className="login-benefit-icon" aria-hidden="true">
-              <img src="/images/benefit-devices.svg" alt="" />
+              <Image src="/images/benefit-devices.svg" alt="" width={30} height={30} unoptimized />
             </span>
             <div>
               <h3>Multi Perangkat</h3>
@@ -132,7 +147,14 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
       <footer className="login-footer">
         <div className="login-footer-main">
           <div className="login-footer-brand">
-            <img className="login-brand-symbol" src="/images/flexidesa-mark.svg" alt="" />
+            <Image
+              className="login-brand-symbol"
+              src="/images/flexidesa-mark.svg"
+              alt=""
+              width={42}
+              height={42}
+              unoptimized
+            />
             <div>
               <strong>FlexiDesa</strong>
               <span>{APP_NAME}</span>
