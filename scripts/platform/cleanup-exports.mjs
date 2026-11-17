@@ -16,19 +16,25 @@
  * - `--dry-run` hanya melaporkan, tidak menyentuh berkas maupun database.
  * - Tidak pernah menghapus data desa, hanya artefak ekspornya.
  *
- * Aturan pemilihan baris (`kedaluwarsa_pada <= NOW()`) sama dengan
- * `bersihkanEksporKedaluwarsa()` di `lifecycle-tenant-repository.ts`; bila
- * aturan berubah, ubah keduanya dan test integrasinya.
+ * Aturan pemilihan baris dan penjagaan path **tidak** ditulis di sini: keduanya
+ * berasal dari `src/features/multi-desa/domain/ekspor-kedaluwarsa.mjs`, sumber
+ * yang sama dengan `bersihkanEksporKedaluwarsa()` di
+ * `lifecycle-tenant-repository.ts`.
  *
  * Pemakaian:
  *   npm run platform:cleanup-exports -- --dry-run
  *   npm run platform:cleanup-exports -- --json
  */
 import fs from "node:fs";
-import { unlink } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import mysql from "mysql2/promise";
+
+import {
+  hapusBerkasEkspor,
+  periksaBerkasEkspor,
+  pilihKedaluwarsa,
+} from "../../src/features/multi-desa/domain/ekspor-kedaluwarsa.mjs";
 
 const PREFIX = "[platform:cleanup-exports]";
 const UKURAN_BATCH = 500;
@@ -90,48 +96,19 @@ export function parseArgumen(argv) {
 }
 
 /**
- * Ubah `tenant_exports.berkas` menjadi path absolut yang dijamin berada di
- * dalam folder ekspor. Mengembalikan `null` untuk path yang tidak aman, supaya
- * data yang tidak wajar tidak dapat menghapus berkas di luar folder ekspor.
+ * Ambil metadata ekspor lalu saring dengan aturan bersama.
+ *
+ * Query sengaja tanpa kondisi SQL sendiri: satu-satunya definisi
+ * "kedaluwarsa" ada di `pilihKedaluwarsa`, sehingga CLI dan repository tidak
+ * dapat menyimpang. Tabel hanya berisi ekspor maksimal 30 hari.
  */
-export function jalurBerkasAman(akarEkspor, berkas, cwd = process.cwd()) {
-  const akar = path.resolve(akarEkspor);
-  const absolut = path.resolve(cwd, berkas);
-  if (!absolut.startsWith(akar + path.sep)) return null;
-  return absolut;
-}
-
-/** Ambil baris ekspor yang sudah melewati masa berlaku, terlama lebih dulu. */
 async function ambilKedaluwarsa(koneksi) {
   const [baris] = await koneksi.query(
-    `SELECT id, village_id, berkas FROM tenant_exports
-      WHERE kedaluwarsa_pada <= NOW()
+    `SELECT id, berkas, kedaluwarsa_pada AS kedaluwarsaPada
+       FROM tenant_exports
       ORDER BY kedaluwarsa_pada ASC, id ASC`,
   );
-  return baris;
-}
-
-async function hapusBerkas(akarEkspor, daftar) {
-  let berkasDihapus = 0;
-  let berkasTidakAda = 0;
-  let berkasDilewati = 0;
-
-  for (const catatan of daftar) {
-    const absolut = jalurBerkasAman(akarEkspor, catatan.berkas);
-    if (absolut === null) {
-      berkasDilewati += 1;
-      continue;
-    }
-    try {
-      await unlink(absolut);
-      berkasDihapus += 1;
-    } catch (error) {
-      if (error?.code === "ENOENT") berkasTidakAda += 1;
-      else berkasDilewati += 1;
-    }
-  }
-
-  return { berkasDihapus, berkasTidakAda, berkasDilewati };
+  return pilihKedaluwarsa(baris);
 }
 
 /** Hapus baris `tenant_exports` per batch agar IN-list tidak membengkak. */
@@ -165,8 +142,8 @@ async function main() {
   try {
     const kedaluwarsa = await ambilKedaluwarsa(koneksi);
     const berkas = opsi.dryRun
-      ? periksaBerkas(akarEkspor, kedaluwarsa)
-      : await hapusBerkas(akarEkspor, kedaluwarsa);
+      ? periksaBerkasEkspor(akarEkspor, kedaluwarsa)
+      : await hapusBerkasEkspor(akarEkspor, kedaluwarsa);
     const barisDihapus = opsi.dryRun ? 0 : await hapusBaris(koneksi, kedaluwarsa);
 
     ringkasan = {
@@ -197,25 +174,6 @@ async function main() {
         `storage/exports atau tidak dapat dihapus; periksa manual.\n`,
     );
   }
-}
-
-/** Mode `--dry-run`: hitung berkas yang memenuhi syarat tanpa menghapus. */
-function periksaBerkas(akarEkspor, daftar) {
-  let berkasDihapus = 0;
-  let berkasTidakAda = 0;
-  let berkasDilewati = 0;
-
-  for (const catatan of daftar) {
-    const absolut = jalurBerkasAman(akarEkspor, catatan.berkas);
-    if (absolut === null) {
-      berkasDilewati += 1;
-      continue;
-    }
-    if (fs.existsSync(absolut)) berkasDihapus += 1;
-    else berkasTidakAda += 1;
-  }
-
-  return { berkasDihapus, berkasTidakAda, berkasDilewati };
 }
 
 const dijalankanLangsung =

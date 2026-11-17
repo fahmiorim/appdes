@@ -1,11 +1,15 @@
 import "server-only";
 
-import { mkdir, rm, stat, unlink, writeFile } from "node:fs/promises";
+import { mkdir, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { desc, eq, lte, sql, type SQL } from "drizzle-orm";
+import { desc, eq, inArray, sql, type SQL } from "drizzle-orm";
 
 import { db } from "@/db";
 import { tenantExports, tenantPurgeArchive, villages } from "@/db/schema";
+import {
+  hapusBerkasEkspor,
+  pilihKedaluwarsa,
+} from "@/features/multi-desa/domain/ekspor-kedaluwarsa.mjs";
 import { kedaluwarsaEkspor, type RetensiDesa } from "@/features/multi-desa/domain/lifecycle-tenant";
 import { akarPenyimpananMedia } from "@/features/publik/infrastructure/media-storage";
 import { conflict, notFound } from "@/lib/errors";
@@ -375,27 +379,37 @@ export async function purgeTenant(input: {
   };
 }
 
-/** Hapus berkas dan catatan ekspor yang sudah melewati masa berlaku. */
+/**
+ * Hapus berkas dan catatan ekspor yang sudah melewati masa berlaku.
+ *
+ * Aturan "kedaluwarsa" dan penjagaan path tidak ditulis di sini: keduanya
+ * berasal dari `domain/ekspor-kedaluwarsa.mjs`, sumber yang sama dengan CLI
+ * penjadwal (`scripts/platform/cleanup-exports.mjs`).
+ */
 export async function bersihkanEksporKedaluwarsa(
   sekarang: Date = new Date(),
 ): Promise<{ dihapus: number }> {
-  const kedaluwarsa = await db
-    .select({ id: tenantExports.id, berkas: tenantExports.berkas })
-    .from(tenantExports)
-    .where(lte(tenantExports.kedaluwarsaPada, sekarang));
+  // Tabel hanya menyimpan ekspor 30 hari terakhir (dihapus fungsi ini), jadi
+  // membaca seluruh baris metadata lebih murah daripada menduplikasi aturan
+  // kedaluwarsa sebagai kondisi SQL terpisah.
+  const semua = await db
+    .select({
+      id: tenantExports.id,
+      berkas: tenantExports.berkas,
+      kedaluwarsaPada: tenantExports.kedaluwarsaPada,
+    })
+    .from(tenantExports);
 
-  const akarEkspor = path.join(process.cwd(), "storage", "exports");
+  const kedaluwarsa = pilihKedaluwarsa(semua, sekarang);
+  if (kedaluwarsa.length === 0) return { dihapus: 0 };
 
-  for (const catatan of kedaluwarsa) {
-    const absolut = path.resolve(process.cwd(), catatan.berkas);
-    // Cegah penghapusan di luar folder ekspor meski data berkas tidak wajar.
-    if (!absolut.startsWith(path.resolve(akarEkspor) + path.sep)) continue;
-    await unlink(absolut).catch(() => undefined);
-  }
-
-  if (kedaluwarsa.length > 0) {
-    await db.delete(tenantExports).where(lte(tenantExports.kedaluwarsaPada, sekarang));
-  }
+  await hapusBerkasEkspor(path.join(process.cwd(), "storage", "exports"), kedaluwarsa);
+  await db.delete(tenantExports).where(
+    inArray(
+      tenantExports.id,
+      kedaluwarsa.map((catatan) => catatan.id),
+    ),
+  );
 
   return { dihapus: kedaluwarsa.length };
 }

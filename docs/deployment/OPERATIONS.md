@@ -280,6 +280,10 @@ Sifat skrip:
 - baris `tenant_exports` yang kedaluwarsa selalu dihapus, termasuk bila
   berkasnya sudah hilang;
 - idempoten, aman dijalankan berulang atau bersamaan;
+- memakai aturan kedaluwarsa dan penjagaan path yang sama dengan use case
+  `bersihkanEksporKedaluwarsa`
+  (`src/features/multi-desa/domain/ekspor-kedaluwarsa.mjs`), sehingga tidak ada
+  dua definisi "kedaluwarsa" yang bisa menyimpang;
 - tidak menyentuh data desa, media, atau tabel lain.
 
 Contoh systemd timer harian (template operasional; sesuaikan path dan user):

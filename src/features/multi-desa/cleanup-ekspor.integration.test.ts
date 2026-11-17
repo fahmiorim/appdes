@@ -8,6 +8,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 import { db } from "@/db";
 import { accounts, roles, tenantExports, users, villageDomains, villages } from "@/db/schema";
+import { bersihkanEksporKedaluwarsa } from "@/features/multi-desa/infrastructure/lifecycle-tenant-repository";
 import { provisionDesa } from "@/features/multi-desa/infrastructure/provisioning-repository";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
@@ -175,6 +176,28 @@ describe("pembersihan ekspor tenant kedaluwarsa", () => {
 
     rmSync(luar, { force: true });
     expect(catatan.relatif).toBe(`storage/bukan-ekspor-${RUN}.txt`);
+  });
+
+  it("repository/use case memakai aturan yang sama dengan CLI", async () => {
+    const lama = await buatEkspor(`repo-lama-${RUN}`, new Date(Date.now() - HARI));
+    const baru = await buatEkspor(`repo-baru-${RUN}`, new Date(Date.now() + HARI));
+
+    const hasil = await bersihkanEksporKedaluwarsa();
+
+    expect(hasil.dihapus).toBe(1);
+    expect(existsSync(lama.absolut)).toBe(false);
+    expect(existsSync(baru.absolut)).toBe(true);
+    const sisa = await db
+      .select({ id: tenantExports.id })
+      .from(tenantExports)
+      .where(eq(tenantExports.villageId, villageId as number));
+    const idSisa = sisa.map((baris) => baris.id);
+    expect(idSisa).toContain(baru.id);
+    expect(idSisa).not.toContain(lama.id);
+
+    // CLI dan repository tidak boleh berbeda pendapat: setelah repository
+    // membersihkan, CLI tidak menemukan sisa yang kedaluwarsa.
+    expect(jalankanCleanup()).toMatchObject({ diperiksa: 0, barisDihapus: 0 });
   });
 
   it("menghapus catatan yang berkasnya sudah hilang", async () => {
