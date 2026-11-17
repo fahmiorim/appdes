@@ -170,16 +170,21 @@ Role slug `administrator` memberi hak penuh dalam konteks aplikasi desa dan buka
 
 **Rekomendasi:** buat template/bootstrap platform independen dan berversi; salin konfigurasi master saja, bukan data operasional/private.
 
-### AUD-009 — Dashboard UI Super Admin belum teridentifikasi
+### AUD-009 — Dashboard dan pengelolaan tenant Super Admin belum lengkap
 
-**Prioritas:** P2 — Menengah  
-**Status:** belum terkonfirmasi sepenuhnya.
+**Prioritas awal:** P2 — Menengah
 
-**Bukti:** route group yang terlihat adalah `(admin)`, `(public)`, `(warga)`, dan `api`; route group khusus `(super-admin)` tidak ditemukan. Backend use case multi-desa untuk daftar, pembuatan, detail, domain, status, kuota, dan reset admin tersedia.
+**Status awal (12 November 2026):** dashboard belum teridentifikasi dalam audit statis.
 
-**Dampak:** pengelolaan tenant mungkin belum memiliki antarmuka platform yang terpisah dari Admin Desa.
+**Status kode terkini (17 November 2026):** dashboard daftar tenant sudah ada; UI lifecycle tenant belum lengkap.
 
-**Rekomendasi:** inventarisasi seluruh page/action; sediakan dashboard platform Super Admin terpisah.
+**Temuan baseline:** audit 12 November tidak menemukan route group `(super-admin)`. Temuan itu menggambarkan snapshot saat audit, bukan kondisi kode sekarang.
+
+**Bukti kode saat ini:** halaman `src/app/(admin)/super-admin/page.tsx` memeriksa role Super Admin dan menampilkan KPI serta tabel tenant. Tabel menampilkan status, domain utama, jumlah pengguna, penduduk, jenis surat, dan tanggal pendaftaran, serta menyediakan pencarian dan filter status. Use case detail tenant, provisioning, status, domain, kuota, dan reset admin ada di `src/features/multi-desa/application/`, tetapi tidak ditemukan halaman atau Server Action yang menghubungkan pengelolaan lifecycle tersebut ke UI. Provisioning juga masih mengambil desa pertama sebagai sumber konfigurasi; karena itu provisioning instalasi baru tanpa desa sumber belum terpenuhi. Implementasi dan test yang ada belum membuktikan alur ini lewat UI runtime.
+
+**Dampak saat ini:** Super Admin dapat melihat ringkasan tenant lewat dashboard. Pengelolaan tenant melalui konsol belum lengkap, dan provisioning belum dapat memenuhi kriteria instalasi baru tanpa desa sumber.
+
+**Rekomendasi:** lengkapi UI lifecycle tenant dan ganti sumber provisioning dengan template platform independen. Pertahankan guard server-side dan audit untuk setiap aksi sensitif. Untuk rincian target serta acceptance criteria, lihat [Fase 2 di Master Roadmap](MASTER_ROADMAP.md#fase-2--super-admin-dan-lifecycle-tenant).
 
 ### AUD-010 — Use case penghapusan permanen tenant belum ditemukan
 
