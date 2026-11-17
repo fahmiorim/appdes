@@ -4,7 +4,7 @@
 - **Tanggal:** 17 November 2026
 - **Branch:** `task/quality-docs-cache-2026-11-17`
 - **Base commit:** `e65485e3dad391046c976aa668fba15ce9891e3c` (`main`)
-- **Status:** siap review; PR #99 sudah merged, verifikasi PR dokumentasi murni menyusul
+- **Status:** siap review; PR #99 dan verifikasi dokumentasi PR #100 sudah merged
 
 ## 1. Kondisi awal
 
@@ -82,7 +82,8 @@ yang diubah. Tidak ada test yang dihapus atau dilemahkan.
 | Build lokal | tidak dijalankan | **SKIPPED**: tidak ada perubahan source |
 | CI PR #99 | GitHub Actions | **PASS**: quality, integration (skip), build (skip), ringkasan sukses |
 | Warm cache | workflow_dispatch `44108993475` | **PASS**: job 62 detik, cache `main` 153 MB |
-| Quality PR dokumentasi murni | PR verifikasi setelah merge | **PENDING** — diukur pada PR ini |
+| Quality PR dokumentasi murni #100 | GitHub Actions run `44109432065` | **PASS**: job quality 16 detik; restore, install, format, typecheck, lint, unit semuanya `skipped`; validator peta lulus |
+| Integration/build pada PR dokumentasi #100 | job detail run yang sama | **PASS**: test/build dilewati, tetapi job integration masih memulai service MySQL; total job 42 detik. Perbaikan startup service dilacak terpisah |
 
 ## 6. Risiko dan batasan
 
