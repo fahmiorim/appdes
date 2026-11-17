@@ -4,9 +4,10 @@
 - **Tanggal:** 18 November 2026.
 - **Branch:** `feat/super-admin-menu-lengkap-2026-11-18`.
 - **Base commit:** `829e0f0` (main setelah PR #115).
-- **PR:** [#116 — Konsol platform lengkap dengan pengelolaan akses dan audit](https://github.com/fahmiorim/appdes/pull/116).
-- **Commit branch:** `d2f9868` (implementasi), `cf36993` (hapus sub-navigasi duplikat), `680e10d` (pemetaan test integrasi).
-- **Status:** CI PR hijau; menunggu squash-merge.
+- **PR:** [#116 — Konsol platform lengkap dengan pengelolaan akses dan audit](https://github.com/fahmiorim/appdes/pull/116) — merged 17 November 2026.
+- **Commit branch sebelum squash:** `d2f9868` (implementasi), `cf36993` (hapus sub-navigasi duplikat), `680e10d` (pemetaan test integrasi), `4537fcb` (tautan PR dan laporan).
+- **Merge commit:** `75c0f06dc3c5ab68db6781926f32b65b15dab61a`.
+- **Status:** selesai; seluruh check wajib PR hijau dan perubahan sudah di `main`.
 
 ## 1. Tujuan
 
