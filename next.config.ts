@@ -4,6 +4,15 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
 
   /**
+   * Mengaktifkan `forbidden()` dari `next/navigation` agar halaman dapat
+   * merespons 403 dengan UI penjelasan (`src/app/forbidden.tsx`), bukan error
+   * boundary generik. Flag ini hanya membuka API; tidak mengubah rute lain.
+   */
+  experimental: {
+    authInterrupts: true,
+  },
+
+  /**
    * Cache Components dinonaktifkan dengan sengaja.
    *
    * Aplikasi ini adalah sistem administrasi yang menuntut autentikasi: hampir
