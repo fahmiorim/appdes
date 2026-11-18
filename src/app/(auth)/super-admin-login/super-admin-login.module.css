@@ -331,7 +331,9 @@
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
-  transition: transform 0.16s, box-shadow 0.16s;
+  transition:
+    transform 0.16s,
+    box-shadow 0.16s;
 }
 .submit:hover:not(:disabled) {
   box-shadow: 0 13px 26px rgb(70 83 190 / 30%);
@@ -489,22 +491,48 @@
   }
 }
 
-
 /* Alignment pass: match the approved bright-blue / violet login concept. */
 @media (min-width: 761px) {
-  .visualCopy { margin-top: clamp(44px, 7vh, 78px); }
-  .visualCopy h1 { max-width: 560px; font-size: clamp(39px, 4vw, 56px); }
-  .featureGrid { position: relative; z-index: 2; }
-  .landscape { height: 46%; min-height: 350px; }
+  .visualCopy {
+    margin-top: clamp(44px, 7vh, 78px);
+  }
+  .visualCopy h1 {
+    max-width: 560px;
+    font-size: clamp(39px, 4vw, 56px);
+  }
+  .featureGrid {
+    position: relative;
+    z-index: 2;
+  }
+  .landscape {
+    height: 46%;
+    min-height: 350px;
+  }
 }
 @media (max-width: 760px) {
-  .visual { min-height: 500px; }
-  .visualCopy { margin-top: 38px; }
-  .landscape { height: 38%; min-height: 190px; }
-  .visualFooter { text-shadow: 0 1px 8px rgb(19 48 109 / 35%); }
+  .visual {
+    min-height: 500px;
+  }
+  .visualCopy {
+    margin-top: 38px;
+  }
+  .landscape {
+    height: 38%;
+    min-height: 190px;
+  }
+  .visualFooter {
+    text-shadow: 0 1px 8px rgb(19 48 109 / 35%);
+  }
 }
 @media (max-width: 420px) {
-  .visual { min-height: 520px; }
-  .landscape { height: 34%; min-height: 175px; }
-  .card { padding-inline: 20px; }
+  .visual {
+    min-height: 520px;
+  }
+  .landscape {
+    height: 34%;
+    min-height: 175px;
+  }
+  .card {
+    padding-inline: 20px;
+  }
 }
