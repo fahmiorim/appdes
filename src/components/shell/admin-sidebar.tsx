@@ -78,8 +78,15 @@ export function AdminSidebar({
       >
         ☰
       </button>
-      {open ? <div className="admin-drawer-backdrop" aria-hidden="true" onClick={closeDrawer} /> : null}
-      <aside className="admin-sidebar" data-open={open} id="admin-sidebar-navigation" ref={drawerRef}>
+      {open ? (
+        <div className="admin-drawer-backdrop" aria-hidden="true" onClick={closeDrawer} />
+      ) : null}
+      <aside
+        className="admin-sidebar"
+        data-open={open}
+        id="admin-sidebar-navigation"
+        ref={drawerRef}
+      >
         <Link className="admin-sidebar-brand" href={homeHref} onClick={() => setOpen(false)}>
           <Image
             className="brand-mark"
@@ -105,7 +112,9 @@ export function AdminSidebar({
                   aria-current={menuPlatformAktif(item.href, pathname) ? "page" : undefined}
                   onClick={() => setOpen(false)}
                 >
-                  <span className="admin-nav-icon" aria-hidden="true">{item.icon}</span>
+                  <span className="admin-nav-icon" aria-hidden="true">
+                    {item.icon}
+                  </span>
                   <span>{item.label}</span>
                 </Link>
               ))
@@ -117,7 +126,9 @@ export function AdminSidebar({
               aria-current={pathname === "/beranda" ? "page" : undefined}
               onClick={() => setOpen(false)}
             >
-              <span className="admin-nav-icon" aria-hidden="true">⌂</span>
+              <span className="admin-nav-icon" aria-hidden="true">
+                ⌂
+              </span>
               <span>Beranda</span>
             </Link>
           ) : null}
@@ -125,7 +136,12 @@ export function AdminSidebar({
             ? null
             : baris.map((row, index) => {
                 const key = `${row.kind}-${row.label}-${index}`;
-                if (row.kind === "grup") return <div className="admin-nav-label" key={key}>{row.label}</div>;
+                if (row.kind === "grup")
+                  return (
+                    <div className="admin-nav-label" key={key}>
+                      {row.label}
+                    </div>
+                  );
                 if (row.tersedia && row.url) {
                   const aktif = pathMenu(row.url) === pathname;
                   return (
@@ -136,14 +152,18 @@ export function AdminSidebar({
                       aria-current={aktif ? "page" : undefined}
                       onClick={() => setOpen(false)}
                     >
-                      <span className="admin-nav-icon" aria-hidden="true">·</span>
+                      <span className="admin-nav-icon" aria-hidden="true">
+                        ·
+                      </span>
                       <span>{row.label}</span>
                     </Link>
                   );
                 }
                 return (
                   <span className="admin-nav-link admin-nav-pending" key={key} aria-disabled="true">
-                    <span className="admin-nav-icon" aria-hidden="true">·</span>
+                    <span className="admin-nav-icon" aria-hidden="true">
+                      ·
+                    </span>
                     <span>{row.label}</span>
                     <span className="admin-nav-badge">Segera</span>
                   </span>
