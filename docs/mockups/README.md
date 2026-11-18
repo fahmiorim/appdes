@@ -2,7 +2,7 @@
 
 Katalog aset desain Appdes SID. Seluruh gambar di folder ini adalah **referensi visual**, bukan bukti bahwa halaman sudah diimplementasikan atau lulus visual acceptance.
 
-Diperbarui: 18 November 2026. Status implementasi per mockup ada di [audit final](../reports/05-ui-audit/UI-MOCKUP-AUDIT-FINAL-2026-11-18.md).
+Diperbarui: 19 November 2026. Status implementasi per mockup ada di [audit final](../reports/05-ui-audit/UI-MOCKUP-AUDIT-FINAL-2026-11-18.md). Kelompok **Dashboard Admin Desa** ditambahkan 19 November 2026 dan ditinjau di [review mockup Admin Desa](../reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md).
 
 ## Ringkasan
 
@@ -13,9 +13,10 @@ Diperbarui: 18 November 2026. Status implementasi per mockup ada di [audit final
 | Halaman pendukung | 7 | [`support/`](./support/) |
 | Landing platform | 1 | [`platform/landing/`](./platform/landing/) |
 | Dashboard Super Admin | 1 | [`platform/super-admin/`](./platform/super-admin/) |
-| **Total** | **42** | |
+| Dashboard Admin Desa | 9 | [`village/`](./village/) |
+| **Total** | **51** | |
 
-Folder `account/` memuat 11 referensi akun warga dan 1 referensi login Super Admin.
+Folder `account/` memuat 11 referensi akun warga dan 1 referensi login Super Admin. Folder `village/` memuat sembilan layar kerja Admin Desa untuk satu tenant contoh (Desa Suka Maju). Angka dan nama di dalamnya adalah data contoh; perlakukan sebagai data sensitif dan jangan dipakai sebagai fixture.
 
 ## A. Website publik desa — 21
 
@@ -79,6 +80,22 @@ Folder `account/` memuat 11 referensi akun warga dan 1 referensi login Super Adm
 | 1 | [`FlexiDesa.id Modern Village Dashboard.png`](./platform/landing/FlexiDesa.id%20Modern%20Village%20Dashboard.png) | Landing platform |
 | 2 | [`FlexiDesa Super Admin Dashboard.png`](./platform/super-admin/FlexiDesa%20Super%20Admin%20Dashboard.png) | Dashboard Super Admin |
 
+## E. Dashboard Admin Desa — 9
+
+Ditambahkan 19 November 2026. Seluruh file berukuran 1536 × 1024 dan hanya tersedia dalam satu varian desktop.
+
+| No. | File | Area |
+|---:|---|---|
+| 1 | [`Modern Village Admin Dashboard.png`](./village/Modern%20Village%20Admin%20Dashboard.png) | Beranda Admin Desa |
+| 2 | [`Desa Suka Maju Population Dashboard.png`](./village/Desa%20Suka%20Maju%20Population%20Dashboard.png) | Data penduduk |
+| 3 | [`Data Statistik Penduduk Desa Suka Maju.png`](./village/Data%20Statistik%20Penduduk%20Desa%20Suka%20Maju.png) | Statistik penduduk |
+| 4 | [`Village Letter Administration Dashboard.png`](./village/Village%20Letter%20Administration%20Dashboard.png) | Administrasi surat |
+| 5 | [`Desa Suka Maju Berita Dashboard.png`](./village/Desa%20Suka%20Maju%20Berita%20Dashboard.png) | Berita dan informasi |
+| 6 | [`Modern Village Administration Dashboard.png`](./village/Modern%20Village%20Administration%20Dashboard.png) | Pemerintahan desa |
+| 7 | [`Transparansi APBDes Desa Suka Maju.png`](./village/Transparansi%20APBDes%20Desa%20Suka%20Maju.png) | Transparansi APBDes |
+| 8 | [`Village Complaints Dashboard Overview.png`](./village/Village%20Complaints%20Dashboard%20Overview.png) | Pengaduan masyarakat |
+| 9 | [`Pengaturan Desa Suka Maju Dashboard.png`](./village/Pengaturan%20Desa%20Suka%20Maju%20Dashboard.png) | Pengaturan desa |
+
 ## Aturan penggunaan
 
 1. Buka PNG asli sebelum implementasi; nama file bukan spesifikasi interaksi.
@@ -87,10 +104,12 @@ Folder `account/` memuat 11 referensi akun warga dan 1 referensi login Super Adm
 4. Gunakan data sintetis. Jangan menambahkan NIK, nomor KK, atau data warga nyata ke mockup, fixture, atau laporan.
 5. Perbedaan implementasi dari referensi dicatat di laporan audit, bukan dengan mengubah gambar referensi.
 6. Referensi visual bukan pengganti pengujian browser; status implementasi mengikuti audit final.
+7. Untuk layar Admin Desa, folder `village/` menjadi acuan visual utama. Folder `public/` adalah versi publik desa dan tidak boleh dijadikan pengganti dashboard admin.
 
 ## Referensi
 
 - [Audit final mockup ↔ UI ↔ backend](../reports/05-ui-audit/UI-MOCKUP-AUDIT-FINAL-2026-11-18.md)
 - [Design system](../design/DESIGN-SYSTEM.md)
+- [Review mockup Admin Desa](../reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md)
 - [Spesifikasi visual admin dan Super Admin](../design/ADMIN-PLATFORM-DESIGN.md)
 - [Peta dokumentasi](../README.md)
