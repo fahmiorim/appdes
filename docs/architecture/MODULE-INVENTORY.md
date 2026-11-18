@@ -1,16 +1,21 @@
 # Inventaris Modul Appdes SID
 
-Dokumen ini adalah inventaris route, Server Action, repository, dan use case
-yang ada di kode pada snapshot `main` commit `f19267d` (17 November 2026).
+Dokumen ini adalah inventaris route, Server Action, repository, dan use case yang
+digenerate ulang dari tree `origin/main` commit `f5a6f42` (18 November 2026).
 Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 
-- 29 halaman (`page.tsx`), 2 layout, dan 80 route handler.
-- 2 berkas berisi `"use server"` (Server Action).
-- 52 direktori fitur di `src/features`; 68 repository dan 83 berkas application/use case non-test.
+- 36 halaman (`page.tsx`), 2 layout, dan 81 route handler.
+- 4 berkas berisi `"use server"` (Server Action).
+- 52 direktori fitur di `src/features`; 71 berkas `*-repository.ts` dan 89 berkas application/use case non-test.
+- 8 halaman admin: `/beranda` dan `/super-admin/*`.
 
-> Catatan: route di bawah adalah path URL setelah route group Next.js
-> (`(admin)`, `(auth)`, `(public)`, `(warga)`) dihapus. Dynamic segment
-> ditulis apa adanya, misalnya `[id]`.
+> Metode: `git ls-tree -r --name-only origin/main`; hitungan `page.tsx`,
+> `route.ts`, `layout.tsx`, `src/features/*/application/*.ts` non-test, dan
+> `src/features/*/infrastructure/**/*-repository.ts` non-test. Route group
+> Next.js (`(admin)`, `(auth)`, `(public)`, `(warga)`) dihapus dari path;
+> dynamic segment ditulis apa adanya, misalnya `[id]`.
+
+Layout: `src/app/(admin)/layout.tsx`, `src/app/layout.tsx`.
 
 ## 1. Ringkasan per modul
 
@@ -29,7 +34,7 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 | bumindes | 1 | 4 |
 | dashboard | 1 | 1 |
 | database | 1 | 0 |
-| desa | 5 | 2 |
+| desa | 6 | 2 |
 | gis | 1 | 1 |
 | idm | 1 | 1 |
 | inventaris | 2 | 1 |
@@ -44,7 +49,7 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 | lapak | 0 | 1 |
 | layanan-mandiri | 6 | 2 |
 | modul | 0 | 0 |
-| multi-desa | 2 | 2 |
+| multi-desa | 6 | 5 |
 | navigation | 4 | 2 |
 | notifikasi | 3 | 2 |
 | pelanggan | 1 | 1 |
@@ -57,7 +62,7 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 | pengguna | 1 | 1 |
 | pesan-warga | 0 | 1 |
 | plugin | 1 | 1 |
-| publik | 4 | 1 |
+| publik | 5 | 1 |
 | rate-limit | 1 | 1 |
 | rbac | 2 | 1 |
 | rumah-tangga | 1 | 1 |
@@ -71,59 +76,15 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 
 ## 2. Route dan route handler
 
+Halaman adalah UI; route handler adalah endpoint ekspor, PDF, berkas, API, atau
+webhook. Route handler Admin di bawah umumnya bukan UI pengelolaan.
+
 | Path | Jenis | Area | Berkas |
 |---|---|---|---|
-| `/(admin)/analisis-survei/[id]/ekspor` | Route handler | Admin | `src/app/(admin)/analisis-survei/[id]/ekspor/route.ts` |
-| `/(admin)/analisis-survei/[id]/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/analisis-survei/[id]/laporan/ekspor/route.ts` |
-| `/(admin)/bantuan/ekspor` | Route handler | Admin | `src/app/(admin)/bantuan/ekspor/route.ts` |
-| `/(admin)/beranda` | Halaman | Admin | `src/app/(admin)/beranda/page.tsx` |
-| `/(admin)/bumindes/buku-administrasi/[id]/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/buku-administrasi/[id]/ekspor/route.ts` |
-| `/(admin)/bumindes/pembangunan/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/pembangunan/ekspor/route.ts` |
-| `/(admin)/bumindes/pembangunan/kader/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/pembangunan/kader/ekspor/route.ts` |
-| `/(admin)/bumindes/sekretariat/agenda/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/sekretariat/agenda/ekspor/route.ts` |
-| `/(admin)/bumindes/sekretariat/aparat/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/sekretariat/aparat/ekspor/route.ts` |
-| `/(admin)/bumindes/sekretariat/peraturan/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/sekretariat/peraturan/ekspor/route.ts` |
-| `/(admin)/bumindes/tanah-kas/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/tanah-kas/ekspor/route.ts` |
-| `/(admin)/bumindes/tanah-kas/mutasi/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/tanah-kas/mutasi/ekspor/route.ts` |
-| `/(admin)/desa/idm/ekspor` | Route handler | Admin | `src/app/(admin)/desa/idm/ekspor/route.ts` |
-| `/(admin)/desa/sinergi/ekspor` | Route handler | Admin | `src/app/(admin)/desa/sinergi/ekspor/route.ts` |
-| `/(admin)/hubung-warga/daftar-kontak/ekspor` | Route handler | Admin | `src/app/(admin)/hubung-warga/daftar-kontak/ekspor/route.ts` |
-| `/(admin)/inventaris/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/inventaris/laporan/ekspor/route.ts` |
-| `/(admin)/kehadiran/rekap/ekspor` | Route handler | Admin | `src/app/(admin)/kehadiran/rekap/ekspor/route.ts` |
-| `/(admin)/kelompok/ekspor` | Route handler | Admin | `src/app/(admin)/kelompok/ekspor/route.ts` |
-| `/(admin)/keluarga/[id]/pdf` | Route handler | Admin | `src/app/(admin)/keluarga/[id]/pdf/route.ts` |
-| `/(admin)/kesehatan/ibu-hamil/ekspor` | Route handler | Admin | `src/app/(admin)/kesehatan/ibu-hamil/ekspor/route.ts` |
-| `/(admin)/kesehatan/kia/ekspor` | Route handler | Admin | `src/app/(admin)/kesehatan/kia/ekspor/route.ts` |
-| `/(admin)/kesehatan/pemantauan-anak/ekspor` | Route handler | Admin | `src/app/(admin)/kesehatan/pemantauan-anak/ekspor/route.ts` |
-| `/(admin)/keuangan/anggaran/template` | Route handler | Admin | `src/app/(admin)/keuangan/anggaran/template/route.ts` |
-| `/(admin)/keuangan/laporan-dokumen/[id]/berkas` | Route handler | Admin | `src/app/(admin)/keuangan/laporan-dokumen/[id]/berkas/route.ts` |
-| `/(admin)/keuangan/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/keuangan/laporan/ekspor/route.ts` |
-| `/(admin)/keuangan/laporan/ekspor-excel` | Route handler | Admin | `src/app/(admin)/keuangan/laporan/ekspor-excel/route.ts` |
-| `/(admin)/keuangan/laporan/realisasi/ekspor` | Route handler | Admin | `src/app/(admin)/keuangan/laporan/realisasi/ekspor/route.ts` |
-| `/(admin)/keuangan/triwulan/ekspor` | Route handler | Admin | `src/app/(admin)/keuangan/triwulan/ekspor/route.ts` |
-| `/(admin)/pelanggan/[id]/dokumen` | Route handler | Admin | `src/app/(admin)/pelanggan/[id]/dokumen/route.ts` |
-| `/(admin)/pembangunan/buku/ekspor` | Route handler | Admin | `src/app/(admin)/pembangunan/buku/ekspor/route.ts` |
-| `/(admin)/pendapat/ekspor` | Route handler | Admin | `src/app/(admin)/pendapat/ekspor/route.ts` |
-| `/(admin)/penduduk/dpt/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/dpt/ekspor/route.ts` |
-| `/(admin)/penduduk/dpt/rekap/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/dpt/rekap/ekspor/route.ts` |
-| `/(admin)/penduduk/dtks/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/dtks/ekspor/route.ts` |
-| `/(admin)/penduduk/dtks/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/dtks/laporan/ekspor/route.ts` |
-| `/(admin)/penduduk/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/ekspor/route.ts` |
-| `/(admin)/penduduk/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/laporan/ekspor/route.ts` |
-| `/(admin)/penduduk/riwayat/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/riwayat/ekspor/route.ts` |
-| `/(admin)/penduduk/suplemen/[id]/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/suplemen/[id]/ekspor/route.ts` |
-| `/(admin)/penduduk/suplemen/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/suplemen/laporan/ekspor/route.ts` |
-| `/(admin)/permohonan-surat/[id]/syarat/[syaratId]` | Route handler | Admin | `src/app/(admin)/permohonan-surat/[id]/syarat/[syaratId]/route.ts` |
-| `/(admin)/permohonan-surat/ekspor` | Route handler | Admin | `src/app/(admin)/permohonan-surat/ekspor/route.ts` |
-| `/(admin)/persuratan/surat/[id]/pdf` | Route handler | Admin | `src/app/(admin)/persuratan/surat/[id]/pdf/route.ts` |
-| `/(admin)/persuratan/surat/arsip/ekspor` | Route handler | Admin | `src/app/(admin)/persuratan/surat/arsip/ekspor/route.ts` |
-| `/(admin)/rumah-tangga/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/rumah-tangga/laporan/ekspor/route.ts` |
-| `/(admin)/statistik/bantuan/ekspor` | Route handler | Admin | `src/app/(admin)/statistik/bantuan/ekspor/route.ts` |
-| `/(admin)/statistik/bantuan/ekspor/pdf` | Route handler | Admin | `src/app/(admin)/statistik/bantuan/ekspor/pdf/route.ts` |
-| `/(admin)/statistik/penduduk/ekspor` | Route handler | Admin | `src/app/(admin)/statistik/penduduk/ekspor/route.ts` |
-| `/(admin)/statistik/penduduk/ekspor/pdf` | Route handler | Admin | `src/app/(admin)/statistik/penduduk/ekspor/pdf/route.ts` |
-| `/(admin)/statistik/rentang-umur/ekspor` | Route handler | Admin | `src/app/(admin)/statistik/rentang-umur/ekspor/route.ts` |
-| `/(admin)/super-admin` | Halaman | Admin | `src/app/(admin)/super-admin/page.tsx` |
+| `/` | Halaman | Publik | `src/app/page.tsx` |
+| `/agenda` | Halaman | Publik | `src/app/agenda/page.tsx` |
+| `/analisis-survei/[id]/ekspor` | Route handler | Admin | `src/app/(admin)/analisis-survei/[id]/ekspor/route.ts` |
+| `/analisis-survei/[id]/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/analisis-survei/[id]/laporan/ekspor/route.ts` |
 | `/api/auth/[...all]` | Route handler | API | `src/app/api/auth/[...all]/route.ts` |
 | `/api/database/backup` | Route handler | API | `src/app/api/database/backup/route.ts` |
 | `/api/database/restore` | Route handler | API | `src/app/api/database/restore/route.ts` |
@@ -146,47 +107,104 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 | `/api/publik/surat` | Route handler | API | `src/app/api/publik/surat/route.ts` |
 | `/api/publik/survei/[id]/respons` | Route handler | API | `src/app/api/publik/survei/[id]/respons/route.ts` |
 | `/api/webhooks/email` | Route handler | API | `src/app/api/webhooks/email/route.ts` |
-| `/(auth)/masuk` | Halaman | Auth | `src/app/(auth)/masuk/page.tsx` |
-| `/` | Halaman | Publik | `src/app/page.tsx` |
-| `/(public)/desa/apbdes/dokumen/[id]/berkas` | Route handler | Publik | `src/app/(public)/desa/apbdes/dokumen/[id]/berkas/route.ts` |
-| `/(public)/desa/inventaris/ekspor` | Route handler | Publik | `src/app/(public)/desa/inventaris/ekspor/route.ts` |
-| `/(public)/desa/kesehatan/ibu-hamil/ekspor` | Route handler | Publik | `src/app/(public)/desa/kesehatan/ibu-hamil/ekspor/route.ts` |
-| `/(public)/desa/kesehatan/kia/ekspor` | Route handler | Publik | `src/app/(public)/desa/kesehatan/kia/ekspor/route.ts` |
-| `/(public)/desa/kesehatan/pemantauan-anak/ekspor` | Route handler | Publik | `src/app/(public)/desa/kesehatan/pemantauan-anak/ekspor/route.ts` |
-| `/(public)/desa/statistik/ekspor` | Route handler | Publik | `src/app/(public)/desa/statistik/ekspor/route.ts` |
-| `/agenda` | Halaman | Publik | `src/app/agenda/page.tsx` |
+| `/bantuan/ekspor` | Route handler | Admin | `src/app/(admin)/bantuan/ekspor/route.ts` |
+| `/beranda` | Halaman | Admin | `src/app/(admin)/beranda/page.tsx` |
 | `/berita` | Halaman | Publik | `src/app/berita/page.tsx` |
 | `/berita/[slug]` | Halaman | Publik | `src/app/berita/[slug]/page.tsx` |
+| `/bumindes/buku-administrasi/[id]/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/buku-administrasi/[id]/ekspor/route.ts` |
+| `/bumindes/pembangunan/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/pembangunan/ekspor/route.ts` |
+| `/bumindes/pembangunan/kader/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/pembangunan/kader/ekspor/route.ts` |
+| `/bumindes/sekretariat/agenda/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/sekretariat/agenda/ekspor/route.ts` |
+| `/bumindes/sekretariat/aparat/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/sekretariat/aparat/ekspor/route.ts` |
+| `/bumindes/sekretariat/peraturan/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/sekretariat/peraturan/ekspor/route.ts` |
+| `/bumindes/tanah-kas/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/tanah-kas/ekspor/route.ts` |
+| `/bumindes/tanah-kas/mutasi/ekspor` | Route handler | Admin | `src/app/(admin)/bumindes/tanah-kas/mutasi/ekspor/route.ts` |
 | `/data/statistik` | Halaman | Publik | `src/app/data/statistik/page.tsx` |
+| `/desa/apbdes/dokumen/[id]/berkas` | Route handler | Publik | `src/app/(public)/desa/apbdes/dokumen/[id]/berkas/route.ts` |
+| `/desa/idm/ekspor` | Route handler | Admin | `src/app/(admin)/desa/idm/ekspor/route.ts` |
+| `/desa/inventaris/ekspor` | Route handler | Publik | `src/app/(public)/desa/inventaris/ekspor/route.ts` |
+| `/desa/kesehatan/ibu-hamil/ekspor` | Route handler | Publik | `src/app/(public)/desa/kesehatan/ibu-hamil/ekspor/route.ts` |
+| `/desa/kesehatan/kia/ekspor` | Route handler | Publik | `src/app/(public)/desa/kesehatan/kia/ekspor/route.ts` |
+| `/desa/kesehatan/pemantauan-anak/ekspor` | Route handler | Publik | `src/app/(public)/desa/kesehatan/pemantauan-anak/ekspor/route.ts` |
+| `/desa/sinergi/ekspor` | Route handler | Admin | `src/app/(admin)/desa/sinergi/ekspor/route.ts` |
+| `/desa/statistik/ekspor` | Route handler | Publik | `src/app/(public)/desa/statistik/ekspor/route.ts` |
 | `/dokumen` | Halaman | Publik | `src/app/dokumen/page.tsx` |
 | `/galeri` | Halaman | Publik | `src/app/galeri/page.tsx` |
 | `/galeri/[slug]` | Halaman | Publik | `src/app/galeri/[slug]/page.tsx` |
+| `/hubung-warga/daftar-kontak/ekspor` | Route handler | Admin | `src/app/(admin)/hubung-warga/daftar-kontak/ekspor/route.ts` |
+| `/inventaris/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/inventaris/laporan/ekspor/route.ts` |
+| `/kehadiran/rekap/ekspor` | Route handler | Admin | `src/app/(admin)/kehadiran/rekap/ekspor/route.ts` |
+| `/kelompok/ekspor` | Route handler | Admin | `src/app/(admin)/kelompok/ekspor/route.ts` |
+| `/keluarga/[id]/pdf` | Route handler | Admin | `src/app/(admin)/keluarga/[id]/pdf/route.ts` |
+| `/kesehatan/ibu-hamil/ekspor` | Route handler | Admin | `src/app/(admin)/kesehatan/ibu-hamil/ekspor/route.ts` |
+| `/kesehatan/kia/ekspor` | Route handler | Admin | `src/app/(admin)/kesehatan/kia/ekspor/route.ts` |
+| `/kesehatan/pemantauan-anak/ekspor` | Route handler | Admin | `src/app/(admin)/kesehatan/pemantauan-anak/ekspor/route.ts` |
+| `/keuangan/anggaran/template` | Route handler | Admin | `src/app/(admin)/keuangan/anggaran/template/route.ts` |
+| `/keuangan/laporan-dokumen/[id]/berkas` | Route handler | Admin | `src/app/(admin)/keuangan/laporan-dokumen/[id]/berkas/route.ts` |
+| `/keuangan/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/keuangan/laporan/ekspor/route.ts` |
+| `/keuangan/laporan/ekspor-excel` | Route handler | Admin | `src/app/(admin)/keuangan/laporan/ekspor-excel/route.ts` |
+| `/keuangan/laporan/realisasi/ekspor` | Route handler | Admin | `src/app/(admin)/keuangan/laporan/realisasi/ekspor/route.ts` |
+| `/keuangan/triwulan/ekspor` | Route handler | Admin | `src/app/(admin)/keuangan/triwulan/ekspor/route.ts` |
 | `/kontak` | Halaman | Publik | `src/app/kontak/page.tsx` |
 | `/layanan` | Halaman | Publik | `src/app/layanan/page.tsx` |
+| `/layanan-mandiri` | Halaman | Warga | `src/app/(warga)/layanan-mandiri/page.tsx` |
+| `/layanan-mandiri/beranda` | Halaman | Warga | `src/app/(warga)/layanan-mandiri/beranda/page.tsx` |
+| `/layanan-mandiri/dokumen/[id]/berkas` | Route handler | Warga | `src/app/(warga)/layanan-mandiri/dokumen/[id]/berkas/route.ts` |
+| `/layanan-mandiri/permohonan/[id]/syarat/[syaratId]` | Route handler | Warga | `src/app/(warga)/layanan-mandiri/permohonan/[id]/syarat/[syaratId]/route.ts` |
+| `/layanan-mandiri/surat/[id]/pdf` | Route handler | Warga | `src/app/(warga)/layanan-mandiri/surat/[id]/pdf/route.ts` |
+| `/layanan-mandiri/ubah-pin` | Halaman | Warga | `src/app/(warga)/layanan-mandiri/ubah-pin/page.tsx` |
 | `/layanan/surat` | Halaman | Publik | `src/app/layanan/surat/page.tsx` |
+| `/masuk` | Halaman | Auth | `src/app/(auth)/masuk/page.tsx` |
+| `/pelanggan/[id]/dokumen` | Route handler | Admin | `src/app/(admin)/pelanggan/[id]/dokumen/route.ts` |
+| `/pembangunan/buku/ekspor` | Route handler | Admin | `src/app/(admin)/pembangunan/buku/ekspor/route.ts` |
 | `/pemerintahan` | Halaman | Publik | `src/app/pemerintahan/page.tsx` |
+| `/pendapat/ekspor` | Route handler | Admin | `src/app/(admin)/pendapat/ekspor/route.ts` |
+| `/penduduk/dpt/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/dpt/ekspor/route.ts` |
+| `/penduduk/dpt/rekap/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/dpt/rekap/ekspor/route.ts` |
+| `/penduduk/dtks/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/dtks/ekspor/route.ts` |
+| `/penduduk/dtks/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/dtks/laporan/ekspor/route.ts` |
+| `/penduduk/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/ekspor/route.ts` |
+| `/penduduk/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/laporan/ekspor/route.ts` |
+| `/penduduk/riwayat/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/riwayat/ekspor/route.ts` |
+| `/penduduk/suplemen/[id]/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/suplemen/[id]/ekspor/route.ts` |
+| `/penduduk/suplemen/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/suplemen/laporan/ekspor/route.ts` |
 | `/pengaduan` | Halaman | Publik | `src/app/pengaduan/page.tsx` |
 | `/pengumuman` | Halaman | Publik | `src/app/pengumuman/page.tsx` |
+| `/permohonan-surat/[id]/syarat/[syaratId]` | Route handler | Admin | `src/app/(admin)/permohonan-surat/[id]/syarat/[syaratId]/route.ts` |
+| `/permohonan-surat/ekspor` | Route handler | Admin | `src/app/(admin)/permohonan-surat/ekspor/route.ts` |
+| `/persuratan/surat/[id]/pdf` | Route handler | Admin | `src/app/(admin)/persuratan/surat/[id]/pdf/route.ts` |
+| `/persuratan/surat/arsip/ekspor` | Route handler | Admin | `src/app/(admin)/persuratan/surat/arsip/ekspor/route.ts` |
 | `/potensi` | Halaman | Publik | `src/app/potensi/page.tsx` |
 | `/profil` | Halaman | Publik | `src/app/profil/page.tsx` |
 | `/profil/sejarah` | Halaman | Publik | `src/app/profil/sejarah/page.tsx` |
 | `/profil/visi-misi` | Halaman | Publik | `src/app/profil/visi-misi/page.tsx` |
+| `/rumah-tangga/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/rumah-tangga/laporan/ekspor/route.ts` |
 | `/sejarah` | Halaman | Publik | `src/app/sejarah/page.tsx` |
 | `/statistik` | Halaman | Publik | `src/app/statistik/page.tsx` |
+| `/statistik/bantuan/ekspor` | Route handler | Admin | `src/app/(admin)/statistik/bantuan/ekspor/route.ts` |
+| `/statistik/bantuan/ekspor/pdf` | Route handler | Admin | `src/app/(admin)/statistik/bantuan/ekspor/pdf/route.ts` |
+| `/statistik/penduduk/ekspor` | Route handler | Admin | `src/app/(admin)/statistik/penduduk/ekspor/route.ts` |
+| `/statistik/penduduk/ekspor/pdf` | Route handler | Admin | `src/app/(admin)/statistik/penduduk/ekspor/pdf/route.ts` |
+| `/statistik/rentang-umur/ekspor` | Route handler | Admin | `src/app/(admin)/statistik/rentang-umur/ekspor/route.ts` |
+| `/super-admin` | Halaman | Admin | `src/app/(admin)/super-admin/page.tsx` |
+| `/super-admin-login` | Halaman | Auth | `src/app/(auth)/super-admin-login/page.tsx` |
+| `/super-admin/audit` | Halaman | Admin | `src/app/(admin)/super-admin/audit/page.tsx` |
+| `/super-admin/audit/ekspor` | Route handler | Admin | `src/app/(admin)/super-admin/audit/ekspor/route.ts` |
+| `/super-admin/domain` | Halaman | Admin | `src/app/(admin)/super-admin/domain/page.tsx` |
+| `/super-admin/pengaturan` | Halaman | Admin | `src/app/(admin)/super-admin/pengaturan/page.tsx` |
+| `/super-admin/pengguna` | Halaman | Admin | `src/app/(admin)/super-admin/pengguna/page.tsx` |
+| `/super-admin/template` | Halaman | Admin | `src/app/(admin)/super-admin/template/page.tsx` |
+| `/super-admin/tenant` | Halaman | Admin | `src/app/(admin)/super-admin/tenant/page.tsx` |
 | `/transparansi/apbdes` | Halaman | Publik | `src/app/transparansi/apbdes/page.tsx` |
 | `/visi-misi` | Halaman | Publik | `src/app/visi-misi/page.tsx` |
 | `/wilayah` | Halaman | Publik | `src/app/wilayah/page.tsx` |
-| `/(warga)/layanan-mandiri` | Halaman | Warga | `src/app/(warga)/layanan-mandiri/page.tsx` |
-| `/(warga)/layanan-mandiri/beranda` | Halaman | Warga | `src/app/(warga)/layanan-mandiri/beranda/page.tsx` |
-| `/(warga)/layanan-mandiri/dokumen/[id]/berkas` | Route handler | Warga | `src/app/(warga)/layanan-mandiri/dokumen/[id]/berkas/route.ts` |
-| `/(warga)/layanan-mandiri/permohonan/[id]/syarat/[syaratId]` | Route handler | Warga | `src/app/(warga)/layanan-mandiri/permohonan/[id]/syarat/[syaratId]/route.ts` |
-| `/(warga)/layanan-mandiri/surat/[id]/pdf` | Route handler | Warga | `src/app/(warga)/layanan-mandiri/surat/[id]/pdf/route.ts` |
-| `/(warga)/layanan-mandiri/ubah-pin` | Halaman | Warga | `src/app/(warga)/layanan-mandiri/ubah-pin/page.tsx` |
 
 ## 3. Server Action
 
 | Berkas |
 |---|
+| `src/app/(admin)/super-admin/actions.ts` |
+| `src/app/(admin)/super-admin/pengguna/actions.ts` |
 | `src/app/(warga)/layanan-mandiri/ubah-pin/actions.ts` |
 | `src/features/keuangan/application/apbdes-import-use-cases.ts` |
 
@@ -203,7 +221,7 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 ### analisis
 
 **Use case/application**
-- _(tidak ada)_
+- Tidak ada.
 
 **Repository**
 - `src/features/analisis/infrastructure/analisis-repository.ts`
@@ -231,12 +249,12 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 - `src/features/api-publik/application/public-api.ts`
 
 **Repository**
-- _(tidak ada)_
+- Tidak ada.
 
 ### arsip
 
 **Use case/application**
-- _(tidak ada)_
+- Tidak ada.
 
 **Repository**
 - `src/features/arsip/infrastructure/arsip-repository.ts`
@@ -269,7 +287,7 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 ### buku-tamu
 
 **Use case/application**
-- _(tidak ada)_
+- Tidak ada.
 
 **Repository**
 - `src/features/buku-tamu/infrastructure/buku-tamu-repository.ts`
@@ -299,12 +317,13 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 - `src/features/database/application/database-use-cases.ts`
 
 **Repository**
-- _(tidak ada)_
+- Tidak ada.
 
 ### desa
 
 **Use case/application**
 - `src/features/desa/application/get-identitas.ts`
+- `src/features/desa/application/platform-host.ts`
 - `src/features/desa/application/resolve-village.ts`
 - `src/features/desa/application/statistik-desa.ts`
 - `src/features/desa/application/statistik-publik.ts`
@@ -342,10 +361,10 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 ### kebijakan-berkas
 
 **Use case/application**
-- _(tidak ada)_
+- Tidak ada.
 
 **Repository**
-- _(tidak ada)_
+- Tidak ada.
 
 ### kehadiran
 
@@ -411,15 +430,15 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 ### konten
 
 **Use case/application**
-- _(tidak ada)_
+- Tidak ada.
 
 **Repository**
-- _(tidak ada)_
+- Tidak ada.
 
 ### lapak
 
 **Use case/application**
-- _(tidak ada)_
+- Tidak ada.
 
 **Repository**
 - `src/features/lapak/infrastructure/lapak-repository.ts`
@@ -441,20 +460,27 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 ### modul
 
 **Use case/application**
-- _(tidak ada)_
+- Tidak ada.
 
 **Repository**
-- _(tidak ada)_
+- Tidak ada.
 
 ### multi-desa
 
 **Use case/application**
+- `src/features/multi-desa/application/audit-platform-use-cases.ts`
 - `src/features/multi-desa/application/kelola-desa-use-cases.ts`
+- `src/features/multi-desa/application/lifecycle-desa-use-cases.ts`
+- `src/features/multi-desa/application/pengguna-platform-use-cases.ts`
+- `src/features/multi-desa/application/platform-info-use-cases.ts`
 - `src/features/multi-desa/application/provisioning-use-cases.ts`
 
 **Repository**
 - `src/features/multi-desa/infrastructure/kelola-desa-repository.ts`
+- `src/features/multi-desa/infrastructure/lifecycle-tenant-repository.ts`
+- `src/features/multi-desa/infrastructure/pengguna-platform-repository.ts`
 - `src/features/multi-desa/infrastructure/provisioning-repository.ts`
+- `src/features/multi-desa/infrastructure/template-tenant-repository.ts`
 
 ### navigation
 
@@ -498,10 +524,10 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 ### pemilihan
 
 **Use case/application**
-- _(tidak ada)_
+- Tidak ada.
 
 **Repository**
-- _(tidak ada)_
+- Tidak ada.
 
 ### pendapat
 
@@ -560,7 +586,7 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 ### pesan-warga
 
 **Use case/application**
-- _(tidak ada)_
+- Tidak ada.
 
 **Repository**
 - `src/features/pesan-warga/infrastructure/pesan-warga-repository.ts`
@@ -579,6 +605,7 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 - `src/features/publik/application/dokumen-publik.ts`
 - `src/features/publik/application/konten-publik.ts`
 - `src/features/publik/application/media-publik.ts`
+- `src/features/publik/application/nav-publik.ts`
 - `src/features/publik/application/simpan-berkas-media.ts`
 
 **Repository**
@@ -651,10 +678,10 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 ### umpan-balik
 
 **Use case/application**
-- _(tidak ada)_
+- Tidak ada.
 
 **Repository**
-- _(tidak ada)_
+- Tidak ada.
 
 ### warga
 
@@ -674,10 +701,12 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 
 ## 5. Batasan
 
-- Inventaris ini mencakup berkas application di `src/features/*/application`;
-  beberapa berkas di sana adalah helper/notification, bukan use case tunggal.
+- Inventaris mencakup berkas di `src/features/*/application`; beberapa berkas di
+  sana adalah helper/notifikasi, bukan use case tunggal.
 - Route handler di `src/app/api` tercatat sebagai route, bukan Server Action.
 - Halaman yang memakai data langsung dari repository tanpa lapisan application
   tetap tercatat route-nya, tetapi tidak menambah daftar use case.
 - Inventaris tidak menilai kualitas, cakupan test, atau status fitur. Untuk
   status fitur lihat `docs/SID_FEATURE_MAP.md`.
+- Angka mengikuti ref yang digenerate; jalankan `npm run docs:inventory`
+  setelah route atau modul bertambah.
