@@ -25,7 +25,7 @@ export function AdminTopbar({
     setIsSigningOut(true);
     try {
       await authClient.signOut();
-      router.replace("/masuk");
+      router.replace(isPlatformAdmin ? "/super-admin-login" : "/masuk-admin");
       router.refresh();
     } finally {
       setIsSigningOut(false);

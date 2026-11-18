@@ -10,7 +10,7 @@ import { DEFAULT_RESOURCE, hasPermission } from "@/features/rbac/application/aut
 import { verifySession } from "@/lib/dal";
 
 export default async function AdminLayout({ children }: Readonly<{ children: ReactNode }>) {
-  const user = await verifySession();
+  const user = await verifySession("/masuk-admin");
 
   if (user.residentId !== null) {
     redirect("/layanan-mandiri");
@@ -18,12 +18,12 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
 
   const isPlatformAdmin = await isSuperAdminUser(user);
   if (user.villageId === null && !isPlatformAdmin) {
-    redirect("/masuk");
+    redirect("/masuk-admin");
   }
 
   const canReadDashboard = hasPermission(user.permissions, DEFAULT_RESOURCE, "read");
   if (!canReadDashboard) {
-    redirect("/masuk");
+    redirect("/masuk-admin");
   }
 
   const [villageName, menu] = await Promise.all([

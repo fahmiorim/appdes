@@ -20,10 +20,14 @@ export function proxy(request: NextRequest) {
   const sessionCookie = getSessionCookie(request);
 
   if (!isPublicPath(pathname) && !sessionCookie) {
+    // Area warga memakai login warga; rute terlindungi lainnya adalah area
+    // Admin Desa, sehingga memakai halaman masuk staf.
     const tujuanMasuk =
       pathname === "/super-admin" || pathname.startsWith("/super-admin/")
         ? "/super-admin-login"
-        : "/masuk";
+        : pathname.startsWith("/layanan-mandiri/")
+          ? "/masuk"
+          : "/masuk-admin";
     const url = new URL(tujuanMasuk, request.url);
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
