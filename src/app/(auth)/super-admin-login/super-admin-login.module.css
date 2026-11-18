@@ -13,8 +13,9 @@
   overflow: hidden;
   padding: 38px clamp(34px, 5.2vw, 78px) 26px;
   background:
-    radial-gradient(circle at 12% 8%, #527ce0 0, transparent 30%),
-    linear-gradient(145deg, #10275f 0%, #193f91 48%, #5147a7 100%);
+    radial-gradient(circle at 18% 16%, rgb(255 255 255 / 20%), transparent 30%),
+    radial-gradient(circle at 88% 34%, rgb(202 160 255 / 34%), transparent 36%),
+    linear-gradient(128deg, #078bff 0%, #197df4 44%, #7652ed 100%);
   color: #fff;
   isolation: isolate;
 }
@@ -22,7 +23,9 @@
   position: absolute;
   z-index: -1;
   inset: 0;
-  background: radial-gradient(ellipse at 70% 45%, rgb(113 119 230 / 32%), transparent 42%);
+  background:
+    radial-gradient(ellipse at 50% 66%, rgb(255 255 255 / 12%), transparent 45%),
+    linear-gradient(180deg, transparent 45%, rgb(20 83 190 / 18%) 100%);
 }
 .brand {
   position: relative;
@@ -142,23 +145,25 @@
 .landscape {
   position: absolute;
   z-index: 0;
-  right: 0;
+  right: -1px;
   bottom: 0;
-  left: 0;
-  height: 35%;
-  min-height: 220px;
-  opacity: 0.95;
+  left: -1px;
+  height: 47%;
+  min-height: 330px;
+  opacity: 1;
   pointer-events: none;
+  overflow: hidden;
 }
 .landscape:after {
   position: absolute;
   inset: 0;
   content: "";
-  background: linear-gradient(180deg, #243e87 0%, transparent 42%);
+  background: linear-gradient(180deg, #2580ed 0%, rgb(44 104 214 / 14%) 19%, transparent 55%);
 }
 .landscape img {
   object-fit: cover;
   object-position: center bottom;
+  filter: saturate(1.12) contrast(1.02);
 }
 .visualFooter {
   position: relative;
@@ -208,43 +213,53 @@
   color: #4d55bc;
 }
 .card {
-  width: min(100%, 410px);
+  width: min(100%, 430px);
   margin: auto;
+  padding: 34px 36px 30px;
+  border: 1px solid rgb(255 255 255 / 90%);
+  border-radius: 24px;
+  background: rgb(255 255 255 / 96%);
+  box-shadow: 0 24px 70px rgb(37 65 133 / 15%);
 }
 .cardIcon {
   display: grid;
-  width: 58px;
-  height: 58px;
-  margin-bottom: 22px;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 18px;
   place-items: center;
-  border: 1px solid #e5e8f8;
-  border-radius: 18px;
-  background: linear-gradient(145deg, #f0f4ff, #f3efff);
-  color: #5262c4;
+  border: 1px solid #e4eaff;
+  border-radius: 19px;
+  background: linear-gradient(145deg, #edf5ff, #f1edff);
+  color: #496fe0;
 }
 .cardIcon svg {
   width: 34px;
   height: 34px;
 }
 .cardEyebrow {
-  color: #6977c4;
+  display: block;
+  color: #6577c8;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 0.15em;
+  text-align: center;
 }
 .card h2 {
   margin: 9px 0 7px;
   color: #182344;
-  font-size: 30px;
+  font-size: 29px;
   font-weight: 800;
   letter-spacing: -0.055em;
   line-height: 1.18;
+  text-align: center;
 }
 .cardIntro {
-  margin: 0 0 28px;
+  margin: 0 auto 27px;
+  max-width: 340px;
   color: #7b87a1;
   font-size: 13px;
   line-height: 1.65;
+  text-align: center;
 }
 .form {
   display: grid;
@@ -310,15 +325,13 @@
   margin-top: 3px;
   border: 0;
   border-radius: 11px;
-  background: linear-gradient(105deg, #345fce, #6a56c7);
-  box-shadow: 0 10px 22px rgb(70 83 190 / 22%);
+  background: linear-gradient(105deg, #0879f7 0%, #4c69e8 55%, #8655e9 100%);
+  box-shadow: 0 10px 22px rgb(67 103 220 / 25%);
   color: #fff;
   font-size: 12px;
   font-weight: 800;
   cursor: pointer;
-  transition:
-    transform 0.16s,
-    box-shadow 0.16s;
+  transition: transform 0.16s, box-shadow 0.16s;
 }
 .submit:hover:not(:disabled) {
   box-shadow: 0 13px 26px rgb(70 83 190 / 30%);
@@ -331,7 +344,7 @@
 .securityNote {
   display: flex;
   gap: 11px;
-  margin-top: 25px;
+  margin-top: 23px;
   padding: 14px;
   border: 1px solid #e5eaf7;
   border-radius: 12px;
@@ -423,9 +436,9 @@
     min-height: 56px;
   }
   .landscape {
-    height: 28%;
-    min-height: 150px;
-    opacity: 0.65;
+    height: 36%;
+    min-height: 190px;
+    opacity: 1;
   }
   .visualFooter {
     font-size: 8px;
@@ -436,6 +449,7 @@
   }
   .card {
     margin: 52px auto;
+    padding: 28px 24px 24px;
   }
   .card h2 {
     font-size: 27px;
@@ -473,4 +487,24 @@
   .submit {
     transition: none;
   }
+}
+
+
+/* Alignment pass: match the approved bright-blue / violet login concept. */
+@media (min-width: 761px) {
+  .visualCopy { margin-top: clamp(44px, 7vh, 78px); }
+  .visualCopy h1 { max-width: 560px; font-size: clamp(39px, 4vw, 56px); }
+  .featureGrid { position: relative; z-index: 2; }
+  .landscape { height: 46%; min-height: 350px; }
+}
+@media (max-width: 760px) {
+  .visual { min-height: 500px; }
+  .visualCopy { margin-top: 38px; }
+  .landscape { height: 38%; min-height: 190px; }
+  .visualFooter { text-shadow: 0 1px 8px rgb(19 48 109 / 35%); }
+}
+@media (max-width: 420px) {
+  .visual { min-height: 520px; }
+  .landscape { height: 34%; min-height: 175px; }
+  .card { padding-inline: 20px; }
 }
