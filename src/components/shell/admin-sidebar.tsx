@@ -102,11 +102,15 @@ export function AdminSidebar({
             unoptimized
           />
           <span className="admin-brand-text">
-            <strong>FlexiDesa<span className="admin-brand-domain">.id</span></strong>
+            <strong>
+              FlexiDesa<span className="admin-brand-domain">.id</span>
+            </strong>
             <span>{isPlatformAdmin ? "Konsol Super Admin" : "Sistem Informasi Desa"}</span>
           </span>
         </Link>
-        <div className="admin-nav-label">{isPlatformAdmin ? "Workspace platform" : "Menu utama"}</div>
+        <div className="admin-nav-label">
+          {isPlatformAdmin ? "Workspace platform" : "Menu utama"}
+        </div>
         <nav className="admin-nav" aria-label="Navigasi administrasi">
           {isPlatformAdmin
             ? MENU_PLATFORM.map((item) => (
@@ -117,9 +121,13 @@ export function AdminSidebar({
                   aria-current={menuPlatformAktif(item.href, pathname) ? "page" : undefined}
                   onClick={() => setOpen(false)}
                 >
-                  <span className="admin-nav-icon" aria-hidden="true">{item.icon}</span>
+                  <span className="admin-nav-icon" aria-hidden="true">
+                    {item.icon}
+                  </span>
                   <span>{item.label}</span>
-                  {menuPlatformAktif(item.href, pathname) ? <span className="admin-nav-active-dot" /> : null}
+                  {menuPlatformAktif(item.href, pathname) ? (
+                    <span className="admin-nav-active-dot" />
+                  ) : null}
                 </Link>
               ))
             : null}
@@ -131,7 +139,9 @@ export function AdminSidebar({
               aria-current={pathname === "/beranda" ? "page" : undefined}
               onClick={() => setOpen(false)}
             >
-              <span className="admin-nav-icon" aria-hidden="true">⌂</span>
+              <span className="admin-nav-icon" aria-hidden="true">
+                ⌂
+              </span>
               <span>Beranda</span>
             </Link>
           ) : null}
@@ -141,7 +151,11 @@ export function AdminSidebar({
             : baris.map((row, index) => {
                 const key = `${row.kind}-${row.label}-${index}`;
                 if (row.kind === "grup") {
-                  return <div className="admin-nav-label" key={key}>{row.label}</div>;
+                  return (
+                    <div className="admin-nav-label" key={key}>
+                      {row.label}
+                    </div>
+                  );
                 }
                 if (row.tersedia && row.url) {
                   const aktif = pathMenu(row.url) === pathname;
@@ -153,14 +167,18 @@ export function AdminSidebar({
                       aria-current={aktif ? "page" : undefined}
                       onClick={() => setOpen(false)}
                     >
-                      <span className="admin-nav-icon" aria-hidden="true">·</span>
+                      <span className="admin-nav-icon" aria-hidden="true">
+                        ·
+                      </span>
                       <span>{row.label}</span>
                     </Link>
                   );
                 }
                 return (
                   <span className="admin-nav-link admin-nav-pending" key={key} aria-disabled="true">
-                    <span className="admin-nav-icon" aria-hidden="true">·</span>
+                    <span className="admin-nav-icon" aria-hidden="true">
+                      ·
+                    </span>
                     <span>{row.label}</span>
                     <span className="admin-nav-badge">Segera</span>
                   </span>
