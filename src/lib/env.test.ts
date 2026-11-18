@@ -58,6 +58,19 @@ describe("parseEnv", () => {
     ).toThrow(/EMAIL_WEBHOOK_TOKEN minimal 32 karakter/);
   });
 
+  it("fallback satu desa mati secara default dan hanya aktif bila diminta", () => {
+    const dasar = { DATABASE_URL: "mysql://x", BETTER_AUTH_SECRET: SECRET };
+
+    expect(parseEnv(dasar).TENANT_LEGACY_SINGLE_HOST_FALLBACK).toBe(false);
+    expect(
+      parseEnv({ ...dasar, TENANT_LEGACY_SINGLE_HOST_FALLBACK: "true" })
+        .TENANT_LEGACY_SINGLE_HOST_FALLBACK,
+    ).toBe(true);
+    expect(() => parseEnv({ ...dasar, TENANT_LEGACY_SINGLE_HOST_FALLBACK: "1" })).toThrow(
+      /Konfigurasi environment tidak valid/,
+    );
+  });
+
   it("menerima token webhook email yang kuat", () => {
     const env = parseEnv({
       DATABASE_URL: "mysql://x",

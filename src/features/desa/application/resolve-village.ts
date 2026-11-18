@@ -39,10 +39,10 @@ export async function resolveVillageId(user: CurrentUser): Promise<number> {
  * dapat dipalsukan oleh klien kecuali setiap hop proxy dipastikan menghapus
  * header masuk dan menimpanya dengan nilai yang telah divalidasi.
  *
- * Aturan pemetaan ada di `domain/tenant.ts` (murni, teruji): domain persis →
- * alias `www` → fallback **hanya** bila instalasi benar-benar memiliki satu
- * desa. Bila ada banyak desa dan host tidak dikenal, hasilnya 404 agar tenant
- * tidak bocor.
+ * Aturan pemetaan ada di `domain/tenant.ts` (murni, teruji): host platform →
+ * domain persis → alias `www` → wildcard. Fallback satu-desa **opt-in** lewat
+ * `TENANT_LEGACY_SINGLE_HOST_FALLBACK`; default mati sehingga host tak dikenal
+ * menghasilkan 404 dan tenant tidak bocor, bahkan pada instalasi satu desa.
  */
 export const resolveVillageByHost = cache(
   async (host: string | null | undefined): Promise<IdentitasDesa> => {
@@ -54,7 +54,10 @@ export const resolveVillageByHost = cache(
     }
 
     const peta = susunPetaDesa(await listVillageDomains(), env.DESA_BASE_DOMAIN ?? null);
-    const villageId = villageIdDariHost(host, peta);
+    const villageId = villageIdDariHost(host, peta, {
+      hostPlatform,
+      fallbackSatuDesa: env.TENANT_LEGACY_SINGLE_HOST_FALLBACK,
+    });
 
     if (villageId !== null) {
       const desa = await getIdentitasDesa(villageId);
