@@ -111,7 +111,7 @@ export default async function SuperAdminLoginPage({
           />
         </div>
         <footer className={styles.visualFooter}>
-          <span>FLEXIDESА PLATFORM</span>
+          <span>FLEXIDESA PLATFORM</span>
           <span>TERHUBUNG · TERPISAH · TERKENDALI</span>
         </footer>
       </section>
