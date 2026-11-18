@@ -3,7 +3,7 @@
 - **Tanggal:** 19 November 2026
 - **Branch:** `task/admin-pengguna`
 - **Base commit:** `d62526b` (branch `task/admin-beranda`)
-- **Commit implementasi:** `e22d960`
+- **Commit implementasi:** `e22d960` (modul), `b3ec7c0` (menu sidebar)
 - **Status:** Selesai secara lokal, siap review. Belum di-push.
 
 ## Tujuan
@@ -68,6 +68,9 @@ angka palsu.
 | `src/app/globals.css` | Kelas `.pengguna-*`, `.form-check`, dan tombol bahaya untuk kedua halaman. |
 | `src/features/navigation/domain/menu-tampil.ts` | Mendaftarkan `/pengaturan/pengguna` dan `/pengaturan/grup-akses` sebagai rute tersedia. |
 | `src/features/navigation/domain/menu-tampil.test.ts` | Assertion rute pengguna tersedia. |
+| `src/db/templates/tenant-template.ts` | Menambahkan grup Pengaturan, dua modul anak, dan grant administrator agar tenant baru langsung memiliki menu. |
+| `src/db/migrations/0014_menu_pengguna_grup_akses.sql` | Backfill idempoten menu dan grant untuk tenant yang sudah berjalan. |
+| `src/db/migrations/meta/_journal.json`, `0014_snapshot.json` | Mencatat migrasi 0014 pada journal dan snapshot Drizzle. |
 
 ## Perubahan
 
@@ -102,6 +105,27 @@ angka palsu.
   lewat `fromCrudPermissions`. Modul yang tidak valid diabaikan use case.
 - Tambah/ubah/hapus role memakai `roleFormSchema` dan use case yang sudah ada.
 
+### Menu sidebar
+
+Setelah halaman dibuat, menu belum muncul karena sidebar dibangun dari tabel
+`modules`, bukan dari `RUTE_ADMIN_TERSEDIA`. Tenant yang sudah berjalan hanya
+memiliki baris `beranda`; daftar rute saja tidak menambah menu.
+
+Perbaikan:
+
+- `TENANT_TEMPLATE` kini memuat grup `pengaturan` (tanpa URL) dengan anak
+  `pengguna` dan `grup-akses`. Hanya role `administrator` mendapat `manage`.
+- Migrasi `0014_menu_pengguna_grup_akses.sql` mengisi tenant lama secara
+  idempoten: baris dengan slug yang sudah ada dilewati, sehingga penyesuaian
+  menu milik desa tidak ditimpa. Grant hanya ditambahkan bila belum ada.
+- Migrasi sudah dijalankan pada database pengembangan lokal. Hasil query:
+  grup `pengaturan` (id 2), `pengguna` (id 3), `grup-akses` (id 4), dengan
+  grant `manage` untuk role `administrator` desa.
+
+Dampak migration: hanya `INSERT ... SELECT`, tanpa mengubah atau menghapus baris
+lama. Urutan deploy: backup database, jalankan `npm run db:migrate`, lalu login
+ulang halaman sebagai administrator desa agar menu ter-render dari data terbaru.
+
 ## Security dan tenant
 
 - Tidak ada `villageId` dari body/query yang dipakai sebagai otorisasi. Desa
@@ -125,10 +149,14 @@ angka palsu.
 | `npm run typecheck` | **PASS** |
 | `npx eslint "src/app/(admin)/pengaturan" src/features/pengguna src/features/navigation/domain src/components/ui/dialog-hapus.tsx` | **PASS** |
 | `npx vitest run --config vitest.config.mts src/features/pengguna/domain/statistik-pengguna.test.ts src/features/navigation/domain/menu-tampil.test.ts src/features/pengguna/application/pengguna-use-cases.test.ts src/features/rbac/application/grup-use-cases.test.ts` | **PASS** — 4 file, 19 test |
+| `npx vitest run --config vitest.config.mts src/features/multi-desa/domain/template-tenant.test.ts src/db/migrasi-paritas.test.ts src/features/navigation/domain/menu-tampil.test.ts src/features/navigation/application/build-menu.test.ts` | **PASS** — 4 file, 35 test |
+| `npm run db:migrate` (database pengembangan lokal) | **PASS** — migrasi 0014 diterapkan |
+| Query verifikasi `modules` dan `role_permissions` | **PASS** — 3 modul baru dan grant administrator terverifikasi |
 | `npm run build` | **PASS** — `/pengaturan/pengguna` dan `/pengaturan/grup-akses` muncul sebagai rute dinamis |
 | Pemeriksaan browser/visual | **SKIPPED** — tidak diminta dan tidak ada sesi login desa di lingkungan ini |
 
-`npx prettier --write` dijalankan pada file baru dan `src/app/globals.css`.
+`npx prettier --write` dijalankan pada file baru, `src/app/globals.css`, dan
+`TENANT_TEMPLATE`.
 
 ## Risiko dan keterbatasan
 
