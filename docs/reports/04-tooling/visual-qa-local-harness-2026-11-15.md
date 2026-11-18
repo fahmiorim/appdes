@@ -39,7 +39,7 @@
 | `scripts/visual-qa/seed.mjs` | Fixture sintetis satu tenant: profil, perangkat, wilayah/warga, agenda (termasuk arsip + draf), galeri, dokumen, potensi, pengaduan, keuangan, surat, dan layer GIS. |
 | `scripts/visual-qa/capture.mjs` | Cek HTTP 200 per route lalu screenshot 1440×1000 dan 390×844; menyalin gambar referensi ke samping hasil. |
 | `src/testing/visual-qa-guard.test.ts` | 10 unit test untuk jalur terima/tolak guard. |
-| `docs/visual-qa-local.md` | Prosedur lengkap, termasuk alternatif tanpa Docker dan troubleshooting. |
+| `docs/testing/VISUAL-QA-LOCAL.md` | Prosedur lengkap, termasuk alternatif tanpa Docker dan troubleshooting. |
 | `package.json` | Script `visual:qa:db:up`, `visual:qa:db:down`, `visual:qa:migrate`, `visual:qa:seed`, `visual:qa:capture`. |
 | `.gitignore` | `/artifacts` (hasil capture) tidak masuk repository. |
 
@@ -84,7 +84,7 @@ Pengamatan atas hasil capture:
 - Jalur Docker (`compose.visual-qa.yml`) belum dijalankan karena daemon mati; validasi yang terbukti adalah jalur MySQL lokal. Konfigurasi compose mengikuti pola service MySQL CI dan hanya berbeda pada tmpfs/port.
 - Untuk verifikasi kali ini, database `desa_visual_qa` dibuat di **server MySQL lokal pengembangan** (bukan di container). Database itu terpisah dari `desa_dev` dan dapat dihapus dengan `DROP DATABASE desa_visual_qa;` setelah selesai.
 - Capture memakai `npx --yes playwright`, sehingga pemakaian pertama membutuhkan jaringan. Chromium milik Playwright tidak diunduh pada sesi ini.
-- Screenshot tidak disimpan di repository (gitignored). Reviewer harus menjalankan ulang perintah di `docs/visual-qa-local.md` untuk melihat hasilnya.
+- Screenshot tidak disimpan di repository (gitignored). Reviewer harus menjalankan ulang perintah di `docs/testing/VISUAL-QA-LOCAL.md` untuk melihat hasilnya.
 - Tidak ada pembanding otomatis (ambang diff visual); penilaian tetap manual terhadap folder `reference/`.
 - `scripts/visual-qa/*.mjs` tidak melalui typecheck TypeScript (hanya `node --check` + ESLint + unit test guard). Guard diberi deklarasi `.d.mts` agar kontraknya tetap terkunci oleh test.
 - Seed berhenti bila tenant contoh sudah ada; belum ada mode `--force` yang menghapus data, supaya data hasil QA manual tidak hilang tanpa persetujuan.

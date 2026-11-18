@@ -17,7 +17,9 @@
  *   aset publik.
  *
  * Dokumentasi saja tidak menjalankan ketiganya; job tetap dibuat agar required
- * check branch protection selalu memiliki status.
+ * check branch protection selalu memiliki status. Perubahan workflow/CI juga
+ * tidak dianggap perubahan kode aplikasi, sehingga tidak memicu typecheck,
+ * unit test, integration test, atau build yang tidak relevan.
  */
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -54,7 +56,7 @@ const normalized = files.map((file) => file.replaceAll("\\", "/"));
 const isTest = (file) => /\.(test|integration\.test|integrasi\.test)\.tsx?$/.test(file);
 const isSource = (file) => file.startsWith("src/");
 const isDocs = (file) => file.startsWith("docs/") || file.endsWith(".md");
-const isTooling = (file) => file.startsWith("scripts/") || file.startsWith(".github/");
+const isTooling = (file) => file.startsWith("scripts/");
 const isBuildConfig = (file) =>
   [
     "package.json",
@@ -88,12 +90,13 @@ const isIntegrationPath = (file) =>
 const code = normalized.some(
   (file) => (isSource(file) && !isDocs(file)) || isBuildConfig(file) || isTooling(file),
 );
+const docs = normalized.some(isDocs);
 const integration = normalized.some((file) => isIntegrationConfig(file) || isIntegrationPath(file));
 const build = normalized.some(
   (file) => (isSource(file) && !isTest(file) && !isDocs(file)) || isBuildConfig(file),
 );
 
-const outputs = { code, integration, build };
+const outputs = { code, docs, integration, build };
 const lines = Object.entries(outputs).map(([key, value]) => `${key}=${value}`);
 
 if (process.env.GITHUB_OUTPUT) {

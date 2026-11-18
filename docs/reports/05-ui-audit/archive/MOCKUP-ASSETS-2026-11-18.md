@@ -14,10 +14,10 @@ Tiga mockup desain berada sebagai file untracked pada working tree lokal. Task i
 
 | File | Ukuran | Format / dimensi |
 |---|---:|---|
-| `docs/account/FlexiDesa Super Admin Login Interface.png` | 1.864.705 byte | PNG, 1536 × 1024 |
-| `docs/landing page/FlexiDesa.id Modern Village Dashboard.png` | 1.859.966 byte | PNG, 1199 × 1312 |
-| `docs/superadmin/FlexiDesa Super Admin Dashboard.png` | 1.597.491 byte | PNG, 1672 × 941 |
-| `docs/reports/02-super-admin/MOCKUP-ASSETS-2026-11-18.md` | — | Laporan task |
+| `docs/mockups/account/FlexiDesa Super Admin Login Interface.png` | 1.864.705 byte | PNG, 1536 × 1024 |
+| `docs/mockups/platform/landing/FlexiDesa.id Modern Village Dashboard.png` | 1.859.966 byte | PNG, 1199 × 1312 |
+| `docs/mockups/platform/super-admin/FlexiDesa Super Admin Dashboard.png` | 1.597.491 byte | PNG, 1672 × 941 |
+| `docs/reports/05-ui-audit/archive/MOCKUP-ASSETS-2026-11-18.md` | — | Laporan task |
 
 ## Hasil
 
@@ -156,55 +156,55 @@ Pemeriksaan ulang recursive repository tree pada 18 November 2026 menemukan **42
 
 | No. | File | Area yang perlu dipetakan |
 |---:|---|---|
-| 1 | `docs/account/Edit Profil Pengguna SID Desa Sukamaju.png` | Profil akun |
-| 2 | `docs/account/Modern Indonesian Village Login Portal.png` | Login portal desa |
-| 3 | `docs/account/Pengaturan Keamanan Akun Desa Sukamaju.png` | Keamanan akun |
-| 4 | `docs/account/Reset Kata Sandi SID Desa Sukamaju.png` | Reset kata sandi |
-| 5 | `docs/account/Riwayat Pengajuan Layanan Desa Sukamaju.png` | Riwayat layanan warga |
-| 6 | `docs/account/SID Desa Sukamaju Notification Settings Dashboard.png` | Preferensi notifikasi |
-| 7 | `docs/account/SID Desa Sukamaju OTP Verification.png` | Verifikasi OTP |
-| 8 | `docs/account/SID Desa Sukamaju Registration Page.png` | Registrasi |
-| 9 | `docs/account/SID Desa Sukamaju Reset Kata Sandi.png` | Reset kata sandi |
-| 10 | `docs/account/SID Desa Sukamaju_ Akun Terverifikasi.png` | Status verifikasi akun |
-| 11 | `docs/account/Sukamaju Village Profile Dashboard.png` | Profil pengguna/warga |
+| 1 | `docs/mockups/account/Edit Profil Pengguna SID Desa Sukamaju.png` | Profil akun |
+| 2 | `docs/mockups/account/Modern Indonesian Village Login Portal.png` | Login portal desa |
+| 3 | `docs/mockups/account/Pengaturan Keamanan Akun Desa Sukamaju.png` | Keamanan akun |
+| 4 | `docs/mockups/account/Reset Kata Sandi SID Desa Sukamaju.png` | Reset kata sandi |
+| 5 | `docs/mockups/account/Riwayat Pengajuan Layanan Desa Sukamaju.png` | Riwayat layanan warga |
+| 6 | `docs/mockups/account/SID Desa Sukamaju Notification Settings Dashboard.png` | Preferensi notifikasi |
+| 7 | `docs/mockups/account/SID Desa Sukamaju OTP Verification.png` | Verifikasi OTP |
+| 8 | `docs/mockups/account/SID Desa Sukamaju Registration Page.png` | Registrasi |
+| 9 | `docs/mockups/account/SID Desa Sukamaju Reset Kata Sandi.png` | Reset kata sandi |
+| 10 | `docs/mockups/account/SID Desa Sukamaju_ Akun Terverifikasi.png` | Status verifikasi akun |
+| 11 | `docs/mockups/account/Sukamaju Village Profile Dashboard.png` | Profil pengguna/warga |
 
 ### B. Halaman pendukung — 7 mockup
 
 | No. | File | Area yang perlu dipetakan |
 |---:|---|---|
-| 12 | `docs/pendukung/Akses Ditolak di Desa Sukamaju.png` | Akses ditolak/403 |
-| 13 | `docs/pendukung/Kebijakan Privasi SID Sukamaju.png` | Kebijakan privasi |
-| 14 | `docs/pendukung/SID Desa Sukamaju 404 Page.png` | Halaman 404 |
-| 15 | `docs/pendukung/SID Desa Sukamaju Maintenance Page.png` | Maintenance |
-| 16 | `docs/pendukung/SID Desa Sukamaju Search Results.png` | Hasil pencarian |
-| 17 | `docs/pendukung/Sitemap Desa Sukamaju Website.png` | Sitemap |
-| 18 | `docs/pendukung/Syarat dan Ketentuan SID Desa Sukamaju.png` | Syarat dan ketentuan |
+| 12 | `docs/mockups/support/Akses Ditolak di Desa Sukamaju.png` | Akses ditolak/403 |
+| 13 | `docs/mockups/support/Kebijakan Privasi SID Sukamaju.png` | Kebijakan privasi |
+| 14 | `docs/mockups/support/SID Desa Sukamaju 404 Page.png` | Halaman 404 |
+| 15 | `docs/mockups/support/SID Desa Sukamaju Maintenance Page.png` | Maintenance |
+| 16 | `docs/mockups/support/SID Desa Sukamaju Search Results.png` | Hasil pencarian |
+| 17 | `docs/mockups/support/Sitemap Desa Sukamaju Website.png` | Sitemap |
+| 18 | `docs/mockups/support/Syarat dan Ketentuan SID Desa Sukamaju.png` | Syarat dan ketentuan |
 
 ### C. Website publik desa — 21 mockup
 
 | No. | File | Area yang perlu dipetakan |
 |---:|---|---|
-| 19 | `docs/public/Agenda Kegiatan Desa Suka Maju.png` | Agenda |
-| 20 | `docs/public/Berita Gotong Royong Desa Suka Maju.png` | Detail berita |
-| 21 | `docs/public/Data Statistik Desa Suka Maju Dashboard.png` | Statistik |
-| 22 | `docs/public/Desa Suka Maju APBDes Dashboard.png` | Transparansi APBDes |
-| 23 | `docs/public/Desa Suka Maju Photo Gallery.png` | Galeri |
-| 24 | `docs/public/Desa Sukamaju Online Services.png` | Layanan publik |
-| 25 | `docs/public/Indonesian Village Finance Dashboard.png` | Keuangan desa |
-| 26 | `docs/public/Kontak & Pengaduan Desa Suka Maju.png` | Kontak/pengaduan |
-| 27 | `docs/public/Pemerintahan Desa Suka Maju Dashboard.png` | Pemerintahan |
-| 28 | `docs/public/Pengumuman Musdes Desa Suka Maju.png` | Pengumuman |
-| 29 | `docs/public/Potensi Desa Suka Maju Dashboard.png` | Potensi desa |
-| 30 | `docs/public/Profil Desa Suka Maju_ Informasi dan Potensi Desa.png` | Profil desa |
-| 31 | `docs/public/Sejarah Desa Suka Maju_ Jejak Perjalanan Desa.png` | Sejarah |
-| 32 | `docs/public/Sistem Informasi Desa Suka Maju.png` | Beranda publik |
-| 33 | `docs/public/Suka Maju Online Letter Services Dashboard.png` | Layanan surat |
-| 34 | `docs/public/Suka Maju Village Gallery Dashboard.png` | Galeri desa |
-| 35 | `docs/public/Suka Maju Village Information Dashboard.png` | Informasi desa |
-| 36 | `docs/public/Village News Dashboard – Desa Suka Maju.png` | Daftar berita |
-| 37 | `docs/public/Village Official Profile Dashboard.png` | Profil perangkat desa |
-| 38 | `docs/public/Visi & Misi Desa Suka Maju.png` | Visi dan misi |
-| 39 | `docs/public/Wilayah Desa Suka Maju.png` | Wilayah desa |
+| 19 | `docs/mockups/public/Agenda Kegiatan Desa Suka Maju.png` | Agenda |
+| 20 | `docs/mockups/public/Berita Gotong Royong Desa Suka Maju.png` | Detail berita |
+| 21 | `docs/mockups/public/Data Statistik Desa Suka Maju Dashboard.png` | Statistik |
+| 22 | `docs/mockups/public/Desa Suka Maju APBDes Dashboard.png` | Transparansi APBDes |
+| 23 | `docs/mockups/public/Desa Suka Maju Photo Gallery.png` | Galeri |
+| 24 | `docs/mockups/public/Desa Sukamaju Online Services.png` | Layanan publik |
+| 25 | `docs/mockups/public/Indonesian Village Finance Dashboard.png` | Keuangan desa |
+| 26 | `docs/mockups/public/Kontak & Pengaduan Desa Suka Maju.png` | Kontak/pengaduan |
+| 27 | `docs/mockups/public/Pemerintahan Desa Suka Maju Dashboard.png` | Pemerintahan |
+| 28 | `docs/mockups/public/Pengumuman Musdes Desa Suka Maju.png` | Pengumuman |
+| 29 | `docs/mockups/public/Potensi Desa Suka Maju Dashboard.png` | Potensi desa |
+| 30 | `docs/mockups/public/Profil Desa Suka Maju_ Informasi dan Potensi Desa.png` | Profil desa |
+| 31 | `docs/mockups/public/Sejarah Desa Suka Maju_ Jejak Perjalanan Desa.png` | Sejarah |
+| 32 | `docs/mockups/public/Sistem Informasi Desa Suka Maju.png` | Beranda publik |
+| 33 | `docs/mockups/public/Suka Maju Online Letter Services Dashboard.png` | Layanan surat |
+| 34 | `docs/mockups/public/Suka Maju Village Gallery Dashboard.png` | Galeri desa |
+| 35 | `docs/mockups/public/Suka Maju Village Information Dashboard.png` | Informasi desa |
+| 36 | `docs/mockups/public/Village News Dashboard – Desa Suka Maju.png` | Daftar berita |
+| 37 | `docs/mockups/public/Village Official Profile Dashboard.png` | Profil perangkat desa |
+| 38 | `docs/mockups/public/Visi & Misi Desa Suka Maju.png` | Visi dan misi |
+| 39 | `docs/mockups/public/Wilayah Desa Suka Maju.png` | Wilayah desa |
 
 ### Tahapan audit lanjutan untuk 39 mockup
 
@@ -224,7 +224,7 @@ Pemeriksaan ulang recursive repository tree pada 18 November 2026 menemukan **42
 
 **Tanggal pembaruan:** 18 November 2026  
 **Basis inventaris:** recursive tree repository `main` yang diperiksa pada pembaruan ini.  
-**Sumber audit visual terdahulu:** `docs/design/PUBLIC-VISUAL-AUDIT-2026-11-15.md`, yang mendokumentasikan screenshot CI dan perbandingan visual setelah PR #49.  
+**Sumber audit visual terdahulu:** `docs/reports/05-ui-audit/archive/PUBLIC-VISUAL-AUDIT-2026-11-15.md`, yang mendokumentasikan screenshot CI dan perbandingan visual setelah PR #49.
 **Catatan penting:** nama file dipakai untuk mengenali maksud halaman, bukan bukti bahwa isi gambarnya sudah diperiksa pada pembaruan ini. Connector GitHub yang tersedia mengembalikan file PNG sebagai data biner kosong, sehingga inspeksi ulang isi PNG satu per satu tidak dapat dilakukan dari sesi ini. Untuk itu, status visual di bawah hanya mengutip audit visual terdahulu jika ada; sisanya ditandai belum diverifikasi, bukan dianggap lulus.
 
 ### Koreksi jumlah

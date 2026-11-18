@@ -1,14 +1,14 @@
 # FlexiDesa Design System
 
-> Status: **Draft v0.3 — referensi visual 39 screenshot telah ditinjau melalui contact sheet; login diperiksa pada resolusi penuh dan token awal diturunkan dari bukti visual.**
-> Sumber referensi: 39 screenshot di `docs/public/`, `docs/account/`, dan `docs/pendukung/`.
+> Status: **Draft v0.3 — referensi visual 42 mockup telah diinventarisasi; 39 di antaranya ditinjau melalui contact sheet, login diperiksa pada resolusi penuh, dan token awal diturunkan dari bukti visual.**
+> Sumber referensi: 42 mockup di `docs/mockups/public/`, `docs/mockups/account/`, `docs/mockups/support/`, dan `docs/mockups/platform/`.
 
 ## 1. Tujuan dan aturan sumber kebenaran
 
 Design System ini menjadi kontrak visual bersama untuk website publik desa, area akun/warga, dashboard Admin Desa, dan kelak Super Admin.
 
 Urutan sumber kebenaran:
-1. Screenshot halaman yang sesuai di folder `docs/`.
+1. Screenshot halaman yang sesuai di folder `docs/mockups/`.
 2. Token dan komponen bersama dalam dokumen ini setelah diverifikasi terhadap screenshot.
 3. Implementasi komponen UI.
 4. Preferensi atau improvisasi individual tidak boleh mengalahkan referensi tanpa keputusan desain tercatat.
@@ -65,7 +65,7 @@ Persyaratan:
 
 ### 4.1.1 Baseline warna hasil inspeksi screenshot
 
-Referensi yang diperiksa: `docs/account/Modern Indonesian Village Login Portal.png` (1199 × 1312), `docs/public/Sistem Informasi Desa Suka Maju.png` (1024 × 1536), dan `docs/pendukung/SID Desa Sukamaju 404 Page.png` (1536 × 1024). Sampel pixel login mengonfirmasi biru hero sekitar `#0387FE`, ungu sekitar `#A776FC`, tombol sekitar `#0166FE`, dan footer sekitar `#0D2136`.
+Referensi yang diperiksa: `docs/mockups/account/Modern Indonesian Village Login Portal.png` (1199 × 1312), `docs/mockups/public/Sistem Informasi Desa Suka Maju.png` (1024 × 1536), dan `docs/mockups/support/SID Desa Sukamaju 404 Page.png` (1536 × 1024). Sampel pixel login mengonfirmasi biru hero sekitar `#0387FE`, ungu sekitar `#A776FC`, tombol sekitar `#0166FE`, dan footer sekitar `#0D2136`.
 
 | Peran | Baseline CSS | Bukti/pemakaian |
 |---|---|---|
@@ -212,7 +212,7 @@ Komponen berikut perlu satu implementasi bersama dan API konsisten. Jangan membu
 ## 9. Gerbang pengesahan token final
 
 Sebelum mengubah status dokumen menjadi stable:
-- Audit minimal 3 screenshot representatif per kelompok (publik, akun, pendukung) dan seluruh screenshot yang memiliki pola unik.
+- Audit minimal 3 screenshot representatif per kelompok (publik, akun, pendukung, platform) dan seluruh screenshot yang memiliki pola unik.
 - Catat warna, font, ukuran, grid, radius, shadow, ikon, dan breakpoint yang terlihat.
 - Tentukan komponen yang benar-benar berulang.
 - Uji kontras dan responsive behavior.
@@ -222,9 +222,9 @@ Sebelum mengubah status dokumen menjadi stable:
 
 | Area | Status |
 |---|---|
-| Inventaris screenshot | 39 file terdaftar: 21 publik, 11 akun, 7 pendukung |
+| Inventaris mockup | 42 file terdaftar: 21 publik, 12 akun, 7 pendukung, 2 platform |
 | Audit struktur repository | Dilakukan pada `main` `681753b`; halaman UI aktif: `/masuk`, `/beranda`, `/super-admin` |
-| Audit visual referensi | Contact sheet 39 PNG ditinjau; login, beranda publik, dan 404 diperiksa pada resolusi penuh |
+| Audit visual referensi | Contact sheet 39 PNG halaman desa/akun/pendukung ditinjau; login, beranda publik, dan 404 diperiksa pada resolusi penuh. Tiga mockup platform belum melalui audit visual yang sama |
 | Prinsip dan semantik token | Draft; dapat dipakai sebagai kontrak semantik |
 | Baseline warna | Draft v0.3 diturunkan dari sampel visual; perlu contrast check dan browser comparison |
 | Komponen bersama | Spesifikasi awal; perlu visual review dan konsolidasi |
@@ -240,7 +240,7 @@ Sebelum mengubah status dokumen menjadi stable:
 
 ### 10.2 Gate sebelum status Stable
 
-1. Render dan periksa 39 PNG asli; catat ukuran, viewport, warna, tipografi, grid, radius, shadow, ikon, dan elemen berulang.
+1. Render dan periksa 42 PNG asli; catat ukuran, viewport, warna, tipografi, grid, radius, shadow, ikon, dan elemen berulang.
 2. Audit minimal tiga referensi representatif per kelompok serta seluruh pola unik.
 3. Revisi token hanya berdasarkan hasil inspeksi; sertakan nilai dan bukti referensi.
 4. Bandingkan `/masuk` dengan screenshot login pada ukuran viewport yang sama.

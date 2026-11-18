@@ -23,7 +23,7 @@
 
 Temuan paling menentukan:
 
-1. **PR #50 dan PR #52 membuat file yang sama** (`docs/design/PUBLIC-VISUAL-AUDIT-2026-11-15.md`) dengan isi berbeda. Keduanya tidak dapat di-merge berurutan tanpa konflik add/add dan tanpa memilih satu sumber kebenaran.
+1. **PR #50 dan PR #52 membuat file yang sama** (`docs/reports/05-ui-audit/archive/PUBLIC-VISUAL-AUDIT-2026-11-15.md`) dengan isi berbeda. Keduanya tidak dapat di-merge berurutan tanpa konflik add/add dan tanpa memilih satu sumber kebenaran.
 2. **PR #50 gagal CI pada head terbaru** (`0f0e7bde`): job visual gagal tepat di langkah capture halaman publik, sehingga "perluasan cakupan audit visual" belum terbukti berjalan.
 3. **PR #56 gagal CI pada head terbaru** (`cd20331f`) karena Prettier. Unit test ter-skip akibat gate format. Perbaikan memakai Prettier repository sudah dibuat di branch ini (`3020138`); gate lokal kini PASS.
 4. **Tidak ditemukan kebocoran lintas tenant** pada kode PR #53–#56. Semua query publik memakai tenant dari host (`getIdentitasFromRequest`) dan filter status publik/aktif.
@@ -74,7 +74,7 @@ Tidak ada temuan Critical. Tidak ada indikasi IDOR, XSS, atau kebocoran data lin
 ### F-01 — High — PR #50 dan #52 menulis file laporan yang sama
 
 - **PR:** #50, #52.
-- **File:** `docs/design/PUBLIC-VISUAL-AUDIT-2026-11-15.md`.
+- **File:** `docs/reports/05-ui-audit/archive/PUBLIC-VISUAL-AUDIT-2026-11-15.md`.
 - **Bukti:** `git diff --name-only origin/main...origin/audit/public-visual-review-2026-11-15` dan `...origin/audit/public-visual-review-nov15-v2` sama-sama menghasilkan file tersebut. Isinya berbeda: versi #50 136 baris dan menyimpulkan 14 referensi FAIL; versi #52 65 baris dengan tabel temuan per halaman.
 - **Dampak:** merge berurutan menghasilkan konflik add/add; jika dipaksa, satu dokumen akan menimpa dokumen lain dan rekomendasi visual menjadi ambigu.
 - **Rekomendasi:** tetapkan satu dokumen kanonik. Pilihan paling sederhana: merge #52 lebih dulu sebagai catatan audit, lalu ubah #50 agar hanya membawa perubahan `.github/workflows/ci.yml` (buang salinan dokumennya) atau perbarui dokumen kanonik yang sama dalam commit terpisah.
@@ -176,7 +176,7 @@ Tidak ada temuan Critical. Tidak ada indikasi IDOR, XSS, atau kebocoran data lin
 ### F-12 — Low — PR #52: kalimat duplikat dan klaim viewport
 
 - **PR:** #52.
-- **File:** `docs/design/PUBLIC-VISUAL-AUDIT-2026-11-15.md:44`.
+- **File:** `docs/reports/05-ui-audit/archive/PUBLIC-VISUAL-AUDIT-2026-11-15.md:44`.
 - **Deskripsi:** kalimat "Route yang belum dibuat atau belum memiliki data tidak boleh dianggap lulus." tertulis dua kali. Dokumen juga menyatakan viewport desktop `1440×1000` saja, sedangkan #50 menambahkan capture `1024×1536`; bila keduanya digabung, dokumen akan menyimpang dari workflow.
 - **Dampak:** kualitas dokumen dan risiko dokumentasi tidak sinkron.
 - **Rekomendasi:** hapus duplikasi; setelah memilih dokumen kanonik (F-01), selaraskan daftar viewport dengan workflow final.
@@ -214,7 +214,7 @@ Screenshot aktual **tidak dapat diambil ulang** karena tiga hal yang terverifika
 2. Tidak ada Playwright lokal (`node_modules/.bin/playwright` tidak ditemukan) dan tidak ada database test/disposable; Docker daemon tidak berjalan (`docker info` gagal), sehingga aplikasi tidak dapat dijalankan dengan fixture sintetis.
 3. `gh` tidak tersedia di environment; metadata dan check diambil via GitHub API publik.
 
-Screenshot referensi di `docs/public/` berhasil diperiksa (Agenda, Wilayah, Potensi, Galeri, Pengumuman). Yang dilakukan di bawah adalah **perbandingan struktur implementasi terhadap referensi**, bukan visual acceptance. Halaman belum dinyatakan PASS.
+Screenshot referensi di `docs/mockups/public/` berhasil diperiksa (Agenda, Wilayah, Potensi, Galeri, Pengumuman). Yang dilakukan di bawah adalah **perbandingan struktur implementasi terhadap referensi**, bukan visual acceptance. Halaman belum dinyatakan PASS.
 
 | Referensi | Elemen utama referensi | Yang diimplementasikan PR | Gap |
 |---|---|---|---|
@@ -234,7 +234,7 @@ Untuk menyelesaikan acceptance, diperlukan environment dengan database test disp
 
 Semua PR berbasis pada commit yang sama dan tidak ada dependensi commit antar-PR. Yang ada hanya tabrakan file dan gap integrasi:
 
-- Tabrakan file: #50 ↔ #52 (`docs/design/PUBLIC-VISUAL-AUDIT-2026-11-15.md`).
+- Tabrakan file: #50 ↔ #52 (`docs/reports/05-ui-audit/archive/PUBLIC-VISUAL-AUDIT-2026-11-15.md`).
 - Gap integrasi: #51 (tab Pengumuman disabled) ↔ #56 (route `/pengumuman`).
 - File kode lain terpisah per PR.
 
@@ -324,8 +324,8 @@ Kode dan konteks (bukan hanya diff):
 - `src/features/publik/application/konten-publik.ts`, `src/features/publik/infrastructure/content-repository.ts`
 - `src/features/konten/dokumen-publik.integration.test.ts`
 - `.github/workflows/ci.yml` (main, #50, #56)
-- `docs/design/PUBLIC-VISUAL-AUDIT-2026-11-15.md` (kedua versi PR)
-- `docs/public/{Agenda Kegiatan,Wilayah,Potensi,Galeri,Pengumuman} …png` (referensi)
+- `docs/reports/05-ui-audit/archive/PUBLIC-VISUAL-AUDIT-2026-11-15.md` (kedua versi PR)
+- `docs/mockups/public/{Agenda Kegiatan,Wilayah,Potensi,Galeri,Pengumuman} …png` (referensi)
 - `package.json`, `vitest.config.mts`, `vitest.integration.config.mts`
 
 ## File yang diubah
@@ -352,7 +352,7 @@ Bagian A–F di atas adalah catatan audit pada 15 November 2026 dan sengaja dipe
 
 | ID | Status setelah merge | Bukti |
 |---|---|---|
-| F-01 | **Selesai** — satu dokumen kanonik | PR #52 ditutup tanpa merge (isinya versi ringkas dari dokumen `main` hasil #50); #50 tetap menjadi sumber kebenaran `docs/design/PUBLIC-VISUAL-AUDIT-2026-11-15.md` |
+| F-01 | **Selesai** — satu dokumen kanonik | PR #52 ditutup tanpa merge (isinya versi ringkas dari dokumen `main` hasil #50); #50 tetap menjadi sumber kebenaran `docs/reports/05-ui-audit/archive/PUBLIC-VISUAL-AUDIT-2026-11-15.md` |
 | F-02 | **Selesai** — capture CI berjalan | PR #50 di-merge (`e371d11`) setelah step `Capture public pages` diperbaiki; seluruh check PR hijau |
 | F-03 | **Selesai** — format PR #56 | PR #56 di-merge (`cda1684`) dengan perbaikan Prettier `3020138`; check PR hijau |
 | F-04, F-05 | **Selesai** — navigasi agenda dibatasi | PR #57 di-merge (`f6ac8db`): arsip bulan dimuat dan navigasi dibatasi |

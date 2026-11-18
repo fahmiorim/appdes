@@ -8,7 +8,7 @@ Head saat audit awal: `d33e61909cb6be52738b0bbeda683cd606ad08cd`
 
 PR ini **belum boleh dinyatakan selesai secara visual**. Implementasi route dan pemanggilan data sudah ada, tetapi bukti browser yang tersedia belum menguji halaman-halaman publik yang ditambahkan. CI Visual QA saat ini hanya membuka dan mengambil screenshot `/masuk` pada desktop dan mobile.
 
-Screenshot referensi di `docs/public/` dan matriks `SCREENSHOT-IMPLEMENTATION-MATRIX.md` tetap menjadi sumber kebenaran. Status `implemented` tidak sama dengan `visually reviewed` atau `accepted`.
+Screenshot referensi di `docs/mockups/public/` dan matriks `SCREENSHOT-IMPLEMENTATION-MATRIX.md` tetap menjadi sumber kebenaran. Status `implemented` tidak sama dengan `visually reviewed` atau `accepted`.
 
 ## Temuan
 

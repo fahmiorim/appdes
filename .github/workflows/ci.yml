@@ -26,6 +26,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       code: ${{ steps.filter.outputs.code }}
+      docs: ${{ steps.filter.outputs.docs }}
       integration: ${{ steps.filter.outputs.integration }}
       build: ${{ steps.filter.outputs.build }}
     steps:
@@ -78,6 +79,7 @@ jobs:
         run: npm run format:check
 
       - name: Validasi peta integration test
+        if: needs.changes.outputs.code == 'true' || needs.changes.outputs.integration == 'true'
         run: node scripts/integration-test-map.mjs --check
 
       - name: Typecheck
@@ -95,7 +97,7 @@ jobs:
       - name: Catat quality test dilewati
         if: needs.changes.outputs.code != 'true'
         run: |
-          echo "Dependency, format, typecheck, lint, dan unit test tidak dijalankan: tidak ada perubahan kode. Validasi peta integration tetap dijalankan." >> "$GITHUB_STEP_SUMMARY"
+          echo "Dependency, format, typecheck, lint, unit test, dan validasi peta integration tidak dijalankan: tidak ada perubahan kode." >> "$GITHUB_STEP_SUMMARY"
 
   integration:
     name: Integration test (MySQL 8)
@@ -209,7 +211,7 @@ jobs:
           if [ "$CODE_CHANGED" = "true" ]; then
             QUALITY_MODE="dijalankan"
           else
-            QUALITY_MODE="validasi peta saja"
+            QUALITY_MODE="dilewati (tidak ada perubahan kode)"
           fi
           if [ "$INTEGRATION_CHANGED" = "true" ]; then
             INTEGRATION_MODE="dijalankan"
@@ -229,6 +231,7 @@ jobs:
             echo "|---|---|---|"
             echo "| Deteksi perubahan | ${{ needs.changes.result }} | - |"
             echo "| Unit/quality | ${{ needs.quality.result }} | $QUALITY_MODE |"
+            echo "| Dokumentasi | - | ${{ needs.changes.outputs.docs == 'true' && 'terdeteksi, tanpa job berat' || 'tidak berubah' }} |"
             echo "| Integration | ${{ needs.integration.result }} | $INTEGRATION_MODE |"
             echo "| Build | ${{ needs.build.result }} | $BUILD_MODE |"
             echo ""

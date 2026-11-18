@@ -1,6 +1,6 @@
 # Audit Kesesuaian Desain: Mockup vs UI Appdes SID
 
-> **Status: draft, digantikan oleh [`UI-MOCKUP-AUDIT-FINAL-2026-11-18.md`](./UI-MOCKUP-AUDIT-FINAL-2026-11-18.md).** Draft ini memuat klaim detail pengumuman dan beberapa status visual yang belum terverifikasi; gunakan laporan final sebagai acuan.
+> **Status: draft, digantikan oleh [`UI-MOCKUP-AUDIT-FINAL-2026-11-18.md`](../UI-MOCKUP-AUDIT-FINAL-2026-11-18.md).** Draft ini memuat klaim detail pengumuman dan beberapa status visual yang belum terverifikasi; gunakan laporan final sebagai acuan.
 
 - **Tanggal:** 18 November 2026
 - **Branch:** `main` @ `12fbc25` (laporan belum di-commit)

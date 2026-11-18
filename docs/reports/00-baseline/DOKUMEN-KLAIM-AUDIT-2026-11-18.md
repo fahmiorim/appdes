@@ -66,7 +66,7 @@ Klaim yang diperiksa dan **sengaja tidak diubah** karena masih sesuai kode: inva
 
 ## 4. File yang diperiksa
 
-- `docs/MASTER_ROADMAP.md`, `docs/SID_FEATURE_MAP.md`, `docs/TECHNICAL_AUDIT.md`, `docs/architecture/MODULE-INVENTORY.md`, `docs/architecture/FLEXIDESA-MULTI-TENANT-DOMAIN-ARCHITECTURE.md`, `docs/design/SCREENSHOT-IMPLEMENTATION-MATRIX.md`.
+- `docs/MASTER_ROADMAP.md`, `docs/SID_FEATURE_MAP.md`, `docs/TECHNICAL_AUDIT.md`, `docs/architecture/MODULE-INVENTORY.md`, `docs/architecture/FLEXIDESA-MULTI-TENANT-DOMAIN-ARCHITECTURE.md`, `docs/reports/05-ui-audit/archive/SCREENSHOT-IMPLEMENTATION-MATRIX.md`.
 - `docs/reports/00-baseline/FEATURE-MAP-ROADMAP-audit-2026-11-18.md`, `docs/reports/01-security/PHASE-1-CLOSURE-2026-11-17.md`, `docs/reports/02-super-admin/PHASE-2-DOKUMEN-STATUS-2026-11-18.md`.
 - Kode: `src/features/desa/{domain/tenant.ts,application/resolve-village.ts,application/platform-host.ts}`, `src/app/api/webhooks/email/route.ts`, `src/app/page.tsx`, `src/lib/env.ts`, `src/lib/auth.ts`, `src/lib/request-origin.ts`, `src/features/{rbac,penduduk,keluarga,rumah-tangga,layanan-mandiri,kesehatan,keuangan,publik,surat,multi-desa,navigation}`, `src/db/schema`, `src/db/migrations`.
 

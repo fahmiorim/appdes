@@ -104,7 +104,7 @@ Verifikasi HTTP memakai dev server milik pengguna yang sedang berjalan; tidak ad
 
 ## 7. Risiko dan hal yang belum diverifikasi
 
-- Landing page saat ini **belum mengikuti mockup** `docs/landing page/FlexiDesa.id Modern Village Dashboard.png` (hero dengan tangkapan layar produk, empat statistik, delapan fitur unggulan, CTA bergambar). Mockup memuat aset gambar dan klaim angka yang belum ada di repo (mis. "100+ desa", "99,9% uptime", halaman Harga/Demo/Dokumentasi), sehingga penerapannya perlu keputusan produk dan aset.
+- Landing page saat ini **belum mengikuti mockup** `docs/mockups/platform/landing/FlexiDesa.id Modern Village Dashboard.png` (hero dengan tangkapan layar produk, empat statistik, delapan fitur unggulan, CTA bergambar). Mockup memuat aset gambar dan klaim angka yang belum ada di repo (mis. "100+ desa", "99,9% uptime", halaman Harga/Demo/Dokumentasi), sehingga penerapannya perlu keputusan produk dan aset.
 - Jika `PLATFORM_HOSTS` kosong, host platform mengikuti `APP_URL`. Deployment yang mengubah `APP_URL` ke localhost tanpa mengisi `PLATFORM_HOSTS` akan kehilangan landing di domain publik.
 - Jalur API publik (media, statistik) pada host platform belum diuji; route tersebut memakai resolver tenant yang sama sehingga berperilaku 404, tetapi belum diverifikasi per endpoint.
 - `AppError` dari `resolveVillageByHost` untuk host tak dikenal pada instalasi multi-desa masih dipetakan sebagai 500 karena repo belum punya `error.tsx`/`not-found.tsx`; hanya cabang host platform yang memakai `notFound()` Next. Ini masalah lama, bukan regresi dari perubahan ini.

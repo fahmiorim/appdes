@@ -118,7 +118,7 @@ Untuk setiap baris:
 
 ## Referensi
 
-- [Inventaris screenshot](./SCREENSHOT-INVENTORY.md)
-- [Design System](./DESIGN-SYSTEM.md)
-- [Peta fitur SID](../SID_FEATURE_MAP.md)
-- [Master roadmap](../MASTER_ROADMAP.md)
+- [Katalog mockup](../../../mockups/README.md)
+- [Design System](../../../design/DESIGN-SYSTEM.md)
+- [Peta fitur SID](../../../SID_FEATURE_MAP.md)
+- [Master roadmap](../../../MASTER_ROADMAP.md)
