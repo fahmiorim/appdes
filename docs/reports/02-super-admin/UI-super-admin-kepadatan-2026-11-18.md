@@ -62,7 +62,7 @@ Informasi yang berulang atau tidak membantu operator:
 | `src/features/multi-desa/presentation/dialog-daftar-desa.tsx` | Tombol “Daftarkan desa” + dialog native `<dialog>` berisi form; memanggil Server Action yang sama dan me-refresh daftar setelah sukses. |
 | `src/features/multi-desa/presentation/tenant-console.tsx` | `FormBuatDesa` dan `GalatField` dihapus; konsol hanya berisi filter, tabel, dan panel detail. |
 | `src/app/(admin)/super-admin/tenant/page.tsx` | Tombol pendaftaran dipasang di aksi kepala kartu; action `buat` tidak lagi diteruskan ke konsol. |
-| `src/app/globals.css` | Netralkan dekorasi ganda baris perhatian, perbaiki jarak ganda panel/toolbar/pagination, rapatkan padding halaman dan kartu, rapatkan jarak logo → label menu platform. |
+| `src/app/globals.css` | Netralkan dekorasi ganda baris perhatian, perbaiki jarak ganda panel/toolbar/pagination, rapatkan padding halaman dan kartu, rapatkan jarak logo → label menu platform, lalu gabungkan dua lapis `.platform-*` menjadi satu blok (lihat bagian 4a). |
 | `src/app/(admin)/super-admin/page.test.ts` | Test regresi: baris perhatian bernilai nol tidak dirender. |
 
 ## 4. Perubahan
@@ -80,6 +80,29 @@ Informasi yang berulang atau tidak membantu operator:
 - Sidebar platform tidak lagi menampilkan catatan pengantar dan footer; menu, tautan, dan penanda halaman aktif tidak berubah. Sidebar desa tetap memakai catatan “Segera” dan footer seperti sebelumnya.
 - Tidak ada perubahan otorisasi, query, use case, Server Action, atau skema data.
 
+## 4a. Konsolidasi CSS `.platform-*`
+
+Dua lapis `.platform-*` (blok lama mulai `:1866` dan blok “Super Admin console refresh” mulai `:2237`) digabung menjadi **satu blok** `/* --- Konsol platform Super Admin */` di akhir `globals.css`.
+
+Hasil terukur pada blok itu:
+
+| Ukuran | Sebelum | Sesudah |
+|---|---|---|
+| Rule (selector, termasuk yang digabung) | 171 | 132 |
+| Deklarasi | 522 | 411 |
+| Blok `@media` | 9 | 9 |
+| Kelas yang tidak dipakai di `src/` | 2 (`platform-code`, `platform-stats-grid`) | 0 |
+| Panjang file | 2.789 baris | 2.565 baris |
+
+Cara kerja konsolidasi:
+
+1. Selector gabungan dipecah; kelas yang tidak lagi ada di `src/` (`platform-code`, `platform-stats-grid`) dibuang.
+2. Rule dengan selector + media yang sama digabung; untuk properti yang sama, deklarasi terakhir menang — persis hasil cascade sebelumnya.
+3. Urutan rule mengikuti kemunculan terakhirnya, dan blok `@media` tetap di posisi cascade aslinya (tidak dipindah ke akhir), sehingga tidak ada deklarasi yang naik melewati aturan yang seharusnya menimpanya.
+4. Header blok diberi catatan singkat bahwa ini satu-satunya sumber gaya konsol.
+
+Sifat perubahan: **tanpa perubahan tampilan**. Tidak ada nilai properti yang diubah, hanya duplikasi yang dibuang.
+
 ## 5. Security/tenant
 
 - Tidak ada perubahan pada guard `pastikanSuperAdmin()`, `requireSuperAdmin`, Server Action, maupun query tenant.
@@ -94,7 +117,9 @@ Informasi yang berulang atau tidak membantu operator:
 | `npx prettier --write` pada 8 file yang diubah | PASS |
 | `npm run check` (typecheck + lint + format:check + unit test), dijalankan setelah seluruh perubahan termasuk pemindahan header ke top bar | PASS — 216 file test, 1893 test lulus |
 | `node node_modules/vitest/vitest.mjs run "src/app/(admin)/super-admin/page.test.ts" --config vitest.config.mts` | PASS — 4 test |
-| Pemeriksaan visual di browser (desktop/mobile, dark mode) | SKIPPED — tidak ada sesi browser pada lingkungan ini dan integration/browser test butuh database lokal yang sedang tidak berjalan (`ECONNREFUSED 127.0.0.1:3306`) |
+| Verifikasi kesetaraan CSS statis (PostCSS): resolusi deklarasi tiap selector dibandingkan dengan `git show HEAD:src/app/globals.css` pada 11 breakpoint (1600, 1440, 1180, 1179, 1100, 860, 760, 700, 620, 560, 400) | PASS — 522 → 411 deklarasi, 0 perbedaan nilai, 0 selector hilang |
+| Verifikasi render CSS di Chrome headless: fixture berisi seluruh kelas konsol (kartu, statistik, toolbar, tabel, dialog `open`, `details[open]`, sidebar, top bar), `getComputedStyle` 50 properti untuk setiap node, dibandingkan antara CSS sebelum dan sesudah konsolidasi pada 8 lebar (1440, 1180, 1100, 860, 760, 620, 560, 400) | PASS — 0 perbedaan computed style |
+| Pemeriksaan visual halaman aplikasi sungguhan (desktop/mobile, dark mode) | SKIPPED — tidak ada sesi aplikasi berjalan; MySQL lokal nonaktif (`ECONNREFUSED 127.0.0.1:3306`) sehingga halaman `/super-admin` tidak dapat dirender. Verifikasi memakai fixture statis, bukan halaman asli |
 | `npm run build` | SKIPPED — diverifikasi oleh job build di CI |
 
 ## 7. Risiko dan keterbatasan
@@ -104,7 +129,9 @@ Informasi yang berulang atau tidak membantu operator:
 - Dialog pendaftaran desa belum dijalankan di browser: pembukaan lewat `showModal()`, penutupan dengan Escape/klik latar, dan refresh daftar setelah sukses belum disaksikan. Elemen `<dialog>` membutuhkan browser modern, yang dipenuhi semua browser target proyek.
 - `tenant-create`/`tenant-create-grid` CSS hanya dipakai form lama sehingga ikut dihapus; dialog memakai kelas `platform-dialog*` dan `platform-form-grid` yang baru.
 
-- Perubahan CSS belum dilihat pada render nyata. Dua lapis `.platform-*` masih ada; perbaikan dilakukan dengan menimpa deklarasi yang bertabrakan, bukan dengan menggabungkan seluruh blok. Penggabungan menyeluruh (menghapus blok lama) perlu port media query dan kelas yang hanya didefinisikan di blok lama, sehingga sengaja tidak dilakukan dalam task ini.
+- Verifikasi render memakai fixture statis, bukan halaman `/super-admin` sungguhan. Fixture menutup seluruh kelas blok platform, tetapi keadaan `:hover`, `:focus`, `:focus-visible`, `:active`, dan `::backdrop` tidak diuji karena tidak bisa dipicu lewat `getComputedStyle` tanpa interaksi; aturan untuk keadaan itu ikut terkonsolidasi tanpa perubahan nilai (terverifikasi statis).
+- Ada dua blok `@media (max-width: 560px)` terpisah karena aturan aslinya berada di dua posisi cascade berbeda. Keduanya sengaja tidak disatukan: menggabungkannya akan memindahkan deklarasi melewati aturan lain dan berpotensi mengubah hasil.
+- Kelas lama `platform-section-heading` dan `platform-tenant-section` (di luar blok yang dikonsolidasikan, sejak sebelum task ini) masih ada di CSS dan tidak dipakai di `src/`. Tidak dihapus agar perubahan tetap satu area; kandidat pembersihan berikutnya.
 - `PlatformStat` memakai markup `Card` + `StatIcon` yang sudah ada, tanpa kelas baru, sehingga tidak perlu aturan CSS tambahan.
 - Test regresi memakai `renderToStaticMarkup` pada pohon hasil resolve; `Card` dimock `null` di test, jadi isi kartu statistik tidak diuji, hanya struktur panel perhatian dan keadaan kosongnya.
 - Pemangkasan kolom "Aksi" mengasumsikan operator memakai tombol tingkat halaman atau membuka konsol tenant; belum ada deep-link per baris sejak awal.
@@ -112,5 +139,5 @@ Informasi yang berulang atau tidak membantu operator:
 ## 8. Rekomendasi berikutnya
 
 1. Walkthrough browser di staging: bandingkan jarak antarseksi, bentuk kartu statistik, baris perhatian, dan jarak logo → menu sidebar pada 1440 px, 1024 px, dan 360 px.
-2. Setelah tampilan disetujui, gabungkan dua lapis CSS `.platform-*` menjadi satu blok dengan media query yang dipindahkan, agar tidak ada lagi deklarasi yang saling menimpa.
+2. Hapus sisa kelas mati di luar blok platform (`platform-section-heading`, `platform-tenant-section`) setelah dipastikan tidak dipakai halaman lain.
 3. Pertimbangkan filter status pada konsol tenant lewat query param supaya tautan "desa nonaktif" / "siap purge" bisa langsung memfilter daftar.
