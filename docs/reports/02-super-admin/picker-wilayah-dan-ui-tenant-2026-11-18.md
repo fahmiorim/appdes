@@ -4,7 +4,8 @@
 - **Tanggal:** 2026-11-18.
 - **Branch:** `fix/ui-routing-review`.
 - **Base commit:** `c8d4b4d` (`feat(404): halaman 404 global`), HEAD ketika perubahan task ini mulai.
-- **Commit hasil:** `3983954` (`feat: add Indonesian village region picker`), sudah di-push ke `origin/fix/ui-routing-review`.
+- **Commit hasil:** `3983954` (`feat: add Indonesian village region picker`), `abf7c93` (pencatatan SHA di laporan), dan `d02fbff` (perapian format `PublicShell`); sudah di-push ke `origin/fix/ui-routing-review`.
+- **Pull request:** #150, https://github.com/fahmiorim/appdes/pull/150 (terbuka, belum di-merge).
 
 ## Kondisi awal dan analisis
 
@@ -39,17 +40,17 @@ Dataset berasal dari dump `db/wilayah.sql` di `https://github.com/cahyadsn/wilay
 - **PASS** — `npm run typecheck` (`next typegen && tsc --noEmit`).
 - **PASS** — ESLint untuk file wilayah, route API, dialog, panel tenant, provisioning, dan sidebar.
 - **PASS** — Prettier pada semua file sumber yang disentuh; `git diff --cached --check` sebelum penambahan laporan.
+- **PASS (tindak lanjut)** — `npm run format:check` untuk seluruh repo setelah `src/app/public-shell.tsx` dirapikan pada commit `d02fbff`; pemeriksaan ini sebelumnya gagal pada file tersebut meski tidak diubah dalam task ini.
 - **PASS** — `npx vitest run src/features/wilayah/domain/data-wilayah.test.ts src/features/multi-desa/domain/desa-baru.test.ts "src/app/(admin)/super-admin/tenant/page.test.ts" src/features/multi-desa/application/provisioning-use-cases.test.ts` (4 file, 28 test).
 - **PASS** — `npm run build`; route `/api/wilayah` tercantum. Build mencatat dua warning Turbopack tracing filesystem yang sudah ada pada skrip ekspor kedaluwarsa dan integrasi WhatsApp.
 - **PASS** — Uji runtime dev dan production pada endpoint provinsi/kabupaten/kecamatan/desa; induk hilang atau tingkat tak dikenal ditolak dengan HTTP 400.
-- **FAIL (di luar file task)** — `npm run format:check` menemukan `src/app/public-shell.tsx` tidak terformat; file tersebut tidak diubah dalam task ini.
 
 ## Risiko dan keterbatasan
 
 - Dataset statis berukuran sekitar 2,5 MB; pembaruan kode wilayah memerlukan regenerasi dari sumber yang lebih baru.
 - Dataset tidak berisi nama kepala desa, NIP, alamat kantor, telepon, atau website.
 - Picker dipasang pada pendaftaran tenant; belum menambahkan form edit identitas untuk tenant yang sudah ada.
-- Branch sudah di-push, tetapi belum di-merge; menunggu review maintainer.
+- Branch sudah di-push dan PR #150 terbuka, tetapi belum di-merge; menunggu review maintainer.
 
 ## Kesimpulan
 
