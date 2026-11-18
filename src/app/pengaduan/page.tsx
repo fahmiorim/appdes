@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { listPengaduanPublikData } from "@/features/pengaduan/application/use-cases";
 import { labelKategori, labelStatus } from "@/features/pengaduan/domain/pengaduan";
+import { getNavPublik } from "@/features/publik/application/nav-publik";
 
 import styles from "../informasi-publik.module.css";
 import { PublicShell } from "../public-shell";
@@ -31,12 +32,7 @@ export default async function PengaduanPage() {
     <PublicShell
       villageName={desa.namaDesa ?? "Pemerintah Desa"}
       brandLabel="Pengaduan Masyarakat"
-      navigation={[
-        { href: "/", label: "Beranda" },
-        { href: "/profil", label: "Profil Desa" },
-        { href: "/berita", label: "Berita" },
-        { href: "/kontak", label: "Kontak" },
-      ]}
+      navigation={await getNavPublik(desa.id)}
     >
       <section className={styles.hero}>
         <div className={styles.container}>

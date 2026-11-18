@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { profilDesaPublik } from "@/features/publik/application/konten-publik";
+import { getNavPublik } from "@/features/publik/application/nav-publik";
 
 import styles from "../informasi-publik.module.css";
 import { PublicShell } from "../public-shell";
@@ -30,12 +31,7 @@ export default async function SejarahPage() {
     <PublicShell
       villageName={desa.namaDesa ?? "Pemerintah Desa"}
       brandLabel="Sejarah Desa"
-      navigation={[
-        { href: "/", label: "Beranda" },
-        { href: "/profil", label: "Profil Desa" },
-        { href: "/profil/visi-misi", label: "Visi & Misi" },
-        { href: "/berita", label: "Berita" },
-      ]}
+      navigation={await getNavPublik(desa.id)}
     >
       <section className={styles.hero}>
         <div className={styles.container}>

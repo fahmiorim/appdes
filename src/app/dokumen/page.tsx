@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { daftarDokumenPublik } from "@/features/publik/application/dokumen-publik";
+import { getNavPublik } from "@/features/publik/application/nav-publik";
 import {
   DOKUMEN_KATEGORI_FILTERS,
   isSafeDocumentLink,
@@ -49,12 +50,7 @@ export default async function DokumenPage({ searchParams }: Props) {
     <PublicShell
       villageName={desa.namaDesa ?? "Pemerintah Desa"}
       brandLabel="Dokumen & Informasi Publik"
-      navigation={[
-        { href: "/", label: "Beranda" },
-        { href: "/profil", label: "Profil Desa" },
-        { href: "/berita", label: "Berita" },
-        { href: "/kontak", label: "Kontak" },
-      ]}
+      navigation={await getNavPublik(desa.id)}
     >
       <section className={styles.hero}>
         <div className={styles.container}>

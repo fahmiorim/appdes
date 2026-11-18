@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { halamanStatisPublik } from "@/features/publik/application/konten-publik";
+import { getNavPublik } from "@/features/publik/application/nav-publik";
 import { sanitasiHtml } from "@/lib/sanitize";
 
 import styles from "../informasi-publik.module.css";
@@ -18,12 +19,7 @@ export default async function PotensiPage() {
     <PublicShell
       villageName={desa.namaDesa ?? "Pemerintah Desa"}
       brandLabel="Potensi Desa"
-      navigation={[
-        { href: "/", label: "Beranda" },
-        { href: "/profil", label: "Profil Desa" },
-        { href: "/wilayah", label: "Wilayah" },
-        { href: "/kontak", label: "Kontak" },
-      ]}
+      navigation={await getNavPublik(desa.id)}
       showMark={false}
     >
       <section className={styles.hero}>

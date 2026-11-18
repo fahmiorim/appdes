@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
+import { getNavPublik } from "@/features/publik/application/nav-publik";
 import { listJenisSuratPublik } from "@/features/surat/application/surat-publik-use-cases";
 
 import styles from "../../informasi-publik.module.css";
@@ -16,11 +17,7 @@ export default async function LayananSuratPage() {
     <PublicShell
       villageName={desa.namaDesa ?? "Pemerintah Desa"}
       brandLabel="Katalog Layanan Surat"
-      navigation={[
-        { href: "/", label: "Beranda" },
-        { href: "/layanan", label: "Semua layanan" },
-        { href: "/kontak", label: "Kontak" },
-      ]}
+      navigation={await getNavPublik(desa.id)}
       showMark={false}
     >
       <section className={styles.hero}>

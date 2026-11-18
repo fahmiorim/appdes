@@ -43,6 +43,22 @@ describe("PublicShell", () => {
     expect(markup).toContain("Isi halaman");
   });
 
+  it("renders data-driven external links as plain anchors", () => {
+    const markup = renderToStaticMarkup(
+      createElement(PublicShell, {
+        villageName: "Desa Contoh",
+        brandLabel: "Informasi Publik",
+        navigation: [
+          { href: "/", label: "Beranda" },
+          { href: "https://contoh.id/kanal", label: "Kanal Desa", eksternal: true },
+        ],
+      }),
+    );
+
+    expect(markup).toContain('href="https://contoh.id/kanal" target="_blank" rel="noreferrer"');
+    expect(markup).toContain("Kanal Desa");
+  });
+
   it("omits the brand mark for pages that do not render it today", () => {
     const markup = renderToStaticMarkup(
       createElement(PublicShell, {
