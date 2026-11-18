@@ -19,6 +19,7 @@ import {
   villageDomains,
   villages,
 } from "@/db/schema";
+import { TENANT_TEMPLATE } from "@/db/templates/tenant-template";
 import { parseTemplateTenant } from "@/features/multi-desa/domain/template-tenant";
 import { provisionDesa } from "@/features/multi-desa/infrastructure/provisioning-repository";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
@@ -70,37 +71,8 @@ beforeAll(async () => {
         .limit(1)
     )[0]?.slug ?? "";
 
-  // Konfigurasi tambahan supaya ekspor punya modul, akses, dan menu.
-  const [modul] = await db
-    .insert(modules)
-    .values({
-      villageId: hasil.id,
-      slug: "beranda",
-      name: "Beranda",
-      url: "/beranda",
-      sortOrder: 0,
-      parentId: 0,
-    })
-    .$returningId();
-  const [roleAdmin] = await db
-    .select({ id: roles.id })
-    .from(roles)
-    .where(eq(roles.villageId, hasil.id))
-    .limit(1);
-  if (!modul || !roleAdmin) throw new Error("Seed uji ekspor gagal.");
-
-  await db
-    .insert(rolePermissions)
-    .values({ roleId: roleAdmin.id, moduleId: modul.id, access: "manage" });
-  await db.insert(menuPublik).values({
-    villageId: hasil.id,
-    nama: "Beranda",
-    link: "/",
-    linkTipe: "internal",
-    aktif: true,
-    urut: 0,
-  });
-
+  // Modul, grant, dan menu tidak disisipkan manual: `provisionDesa` sekarang
+  // menyemai `TENANT_TEMPLATE`, jadi desa referensi sudah membawa katalog awal.
   folderSementara = mkdtempSync(path.join(tmpdir(), "appdes-ekspor-"));
 });
 
@@ -143,12 +115,16 @@ describe("alat ekspor template tenant", () => {
     expect(template.sumber).toMatchObject({ jenis: "ekspor", villageId });
     expect(template.roles.map((role) => role.slug)).toContain("administrator");
     expect(template.modules.map((modul) => modul.slug)).toEqual(["beranda"]);
-    expect(template.akses).toEqual([
-      { roleSlug: "administrator", moduleSlug: "beranda", access: "manage" },
-    ]);
-    expect(template.menuPublik).toEqual([
-      { nama: "Beranda", link: "/", linkTipe: "internal", aktif: true, urut: 0 },
-    ]);
+    expect(template.akses).toHaveLength(TENANT_TEMPLATE.akses.length);
+    expect(template.akses).toContainEqual({
+      roleSlug: "administrator",
+      moduleSlug: "beranda",
+      access: "manage",
+    });
+    expect(template.menuPublik).toHaveLength(TENANT_TEMPLATE.menuPublik.length);
+    expect(template.menuPublik.map((menu) => menu.link)).toEqual(
+      TENANT_TEMPLATE.menuPublik.map((menu) => menu.link),
+    );
     expect(template.tema?.slug).toBe("esensi");
   });
 
@@ -161,8 +137,8 @@ describe("alat ekspor template tenant", () => {
 
     expect(ringkasan.ok).toBe(true);
     expect(ringkasan.out).toBe(tujuan);
-    expect(ringkasan.modules).toBe(1);
-    expect(ringkasan.akses).toBe(1);
+    expect(ringkasan.modules).toBe(TENANT_TEMPLATE.modules.length);
+    expect(ringkasan.akses).toBe(TENANT_TEMPLATE.akses.length);
     expect(existsSync(tujuan)).toBe(true);
     parseTemplateTenant(JSON.parse(readFileSync(tujuan, "utf8")));
 
