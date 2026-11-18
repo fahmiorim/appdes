@@ -39,7 +39,11 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
         isPlatformAdmin={isPlatformAdmin}
         villageName={villageName ?? ""}
       />
-      <div className="admin-main" data-konsol={isPlatformAdmin ? "platform" : undefined}>
+      <div
+        className="admin-main"
+        data-konsol={isPlatformAdmin ? "platform" : undefined}
+        data-desa={isPlatformAdmin ? undefined : "true"}
+      >
         <AdminTopbar isPlatformAdmin={isPlatformAdmin} name={user.name} />
         <main className="admin-content">{children}</main>
       </div>

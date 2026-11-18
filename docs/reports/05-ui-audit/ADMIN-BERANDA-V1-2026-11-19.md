@@ -93,3 +93,76 @@ Catatan kegagalan yang ditemukan dan diperbaiki: test `susunTrenBulanan` awalnya
 Beranda Admin Desa kini tidak memakai placeholder: empat KPI, donut gender, tren enam bulan, permohonan terbaru, dan feed aktivitas semuanya berasal dari data desa aktif. Tidak ada bagian yang ditunda ke task berikutnya.
 
 Langkah berikutnya yang disarankan: verifikasi visual di browser dengan data desa uji, lalu integration test query dashboard pada database test disposable. Keputusan push/PR menunggu instruksi maintainer.
+
+---
+
+## 9. Revisi visual dan enam akses cepat (lanjutan)
+
+- **Tanggal:** 19 November 2026
+- **Branch:** `task/admin-desa-beranda`
+- **Status:** siap review, belum di-push
+
+### 9.1 Kondisi awal revisi
+
+Beranda v1 masih berbeda jauh dari mockup: hanya tiga kartu, tidak ada 4 KPI berikon, donut, grafik garis-area, timeline aktivitas, kartu profil desa, dan enam akses cepat masih berlabel “Segera” tanpa tujuan. Pengguna meminta tampilan benar-benar mengikuti mockup dan tidak ada tile dummy.
+
+### 9.2 Perubahan
+
+| File | Perubahan |
+|---|---|
+| `src/app/(admin)/beranda/page.tsx` | Ditulis ulang mengikuti mockup: header “Dashboard Admin Desa” + tanggal, 4 KPI horizontal berikon dan chip, kartu statistik bertab, grafik tren 6 bulan, daftar permohonan berikon + waktu relatif, timeline aktivitas, akses cepat, kartu profil desa gradien ungu. |
+| `src/app/(admin)/beranda/statistik-penduduk.tsx` (baru) | Tab gender/dusun/kelompok umur dengan donut `conic-gradient`; tidak menambah dependency chart. |
+| `src/app/(admin)/beranda/tren-layanan-surat.tsx` (baru) | Grafik garis-area SVG murni dari data permohonan enam bulan. |
+| `src/features/dashboard/domain/waktu-relatif.ts` + test (baru) | “baru saja”, “N menit lalu”, dan seterusnya; fungsi murni teruji. |
+| `src/app/(admin)/layout.tsx` | `data-desa="true"` hanya pada shell persona desa. |
+| `src/app/globals.css` | Kanvas `#F3F4FB`, seluruh kelas `.beranda-*`, token aksi ungu, dan kelas `.modul-*` untuk halaman daftar. |
+| `src/app/(admin)/penduduk/page.tsx` (baru) | Daftar 25 penduduk pertama dari `listPenduduk`, NIK disamarkan, total desa, status kependudukan. |
+| `src/app/(admin)/persuratan/surat/page.tsx` (baru) | Daftar surat dari `listSuratWithMeta` (nomor, jenis, pemohon, tanggal, status). |
+| `src/app/(admin)/pengaduan-admin/page.tsx` (baru) | Daftar pengaduan dari `listPengaduanData` beserta jumlah yang belum ditangani. |
+| `src/app/(admin)/keuangan/page.tsx` (baru) | Seluruh baris APBDes tahun berjalan dari `listKeuangan`, anggaran dan realisasi berformat rupiah. |
+| `src/app/(admin)/konten/berita/page.tsx` (baru) | Daftar berita desa dari use case baru; judul, kategori, tanggal terbit. |
+| `src/app/(admin)/konten/galeri/page.tsx` (baru) | Daftar album dan jumlah foto dari use case baru. |
+| `src/features/publik/application/konten-admin.ts` (baru) | `listBeritaAdminData` dan `listGaleriAdminData`: cek izin baca `berita`/`galeri`, lalu batasi tenant dari sesi. |
+| `src/features/navigation/domain/menu-tampil.ts` + test | Enam rute nyata didaftarkan; ekspektasi test diperbarui, bukan dilemahkan. |
+| `src/features/dashboard/application/dashboard-use-cases.ts`, `infrastructure/dashboard-repository.ts`, `src/features/desa/application/use-cases.ts` | Query statistik umur, KPI tambahan, identitas desa. |
+
+Enam pintasan kini berupa `Link` dan hanya dirender bila pengguna memiliki izin baca modulnya. Tidak ada lagi badge “Segera”, `aria-disabled`, atau tujuan 404.
+
+### 9.3 Pemilihan rute
+
+Rute publik sudah memakai `/berita`, `/galeri`, dan `/pengaduan`, sehingga halaman admin tidak boleh memakai path yang sama. Rute admin yang dipakai:
+
+| Pintasan | Rute | Alasan |
+|---|---|---|
+| Data Penduduk | `/penduduk` | Belum dipakai halaman publik; konsisten dengan ekspor `/penduduk/*`. |
+| Arsip Surat | `/persuratan/surat` | Mengikuti namespace `(admin)/persuratan/surat` yang sudah ada. |
+| Pengaduan Warga | `/pengaduan-admin` | `/pengaduan` milik halaman publik. |
+| Keuangan Desa | `/keuangan` | Konsisten dengan modul keuangan dan route ekspor. |
+| Berita Desa | `/konten/berita` | `/berita` milik halaman publik. |
+| Galeri Desa | `/konten/galeri` | `/galeri` milik halaman publik. |
+
+### 9.4 Security dan tenant
+
+- Setiap halaman memakai use case yang sudah ada (`requirePermission` + `resolveVillageId`); tidak ada `villageId` dari URL, query, atau body.
+- Berita/galeri sebelumnya hanya dibaca lewat halaman publik; use case admin baru menambahkan pemeriksaan izin baca sebelum query, tetap dibatasi `village_id` sesi.
+- Pintasan disembunyikan berdasarkan izin efektif pengguna, tetapi otorisasi tetap ditegakkan di server oleh masing-masing use case.
+- NIK disamarkan pada daftar penduduk; laporan dan fixture tidak memuat data pribadi.
+- Tidak ada perubahan pada konsol Platform Super Admin.
+
+### 9.5 Validasi
+
+| Perintah | Hasil |
+|---|---|
+| `npm run typecheck` (`next typegen && tsc --noEmit`) | **PASS** — exit 0 |
+| `npx eslint "src/app/(admin)" src/features/publik/application/konten-admin.ts src/features/navigation/domain/menu-tampil.ts` | **PASS** — tanpa output, exit 0 |
+| `npx vitest run --config vitest.config.mts src/features/navigation/domain/menu-tampil.test.ts src/features/multi-desa/domain/template-tenant.test.ts src/features/dashboard/domain` | **PASS** — 5 file, 33 test |
+| `npm run build` | **PASS** — keenam rute muncul di `.next/routes-manifest.json`; tidak ada benturan dengan rute publik |
+| Inspeksi browser | **SKIPPED** — tidak diminta dan tidak dijalankan |
+
+### 9.6 Risiko tersisa
+
+1. Halaman daftar baru menampilkan halaman pertama (penduduk 25 baris, surat 20 baris) tanpa kontrol paginasi; total desa tetap ditampilkan.
+2. Halaman berita/galeri bersifat baca saja karena belum ada use case tulis berita/galeri; pintasan tidak menjanjikan tambah data.
+3. Rute `pengaduan-admin`, `konten/berita`, dan `konten/galeri` belum tentu sama dengan `modules.url` di database, sehingga item sidebar untuk modul tersebut masih dapat tampil belum tersedia; pintasan beranda sudah menuju halaman nyata.
+4. Tampilan belum diverifikasi di browser dengan data desa uji.
+5. Perubahan belum di-push dan belum ada PR.

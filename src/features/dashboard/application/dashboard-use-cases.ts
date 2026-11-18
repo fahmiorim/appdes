@@ -3,11 +3,13 @@ import "server-only";
 import { susunTrenBulanan, type TitikTrenBulanan } from "@/features/dashboard/domain/tren-bulanan";
 import {
   getDashboardStats,
+  getStatistikUmur,
   getTrenPermohonan,
   listAktivitasTerbaru,
   listPermohonanTerbaru,
   type AktivitasRingkas,
   type DashboardStats,
+  type KelompokUmur,
   type PermohonanTerbaru,
 } from "@/features/dashboard/infrastructure/dashboard-repository";
 
@@ -31,6 +33,11 @@ export async function dashboardPermohonanTerbaru(
   limit = 5,
 ): Promise<PermohonanTerbaru[]> {
   return listPermohonanTerbaru(villageId, limit);
+}
+
+/** Sebaran umur penduduk untuk tab statistik beranda. */
+export async function dashboardStatistikUmur(villageId: number): Promise<KelompokUmur[]> {
+  return getStatistikUmur(villageId);
 }
 
 /** Aktivitas terbaru desa untuk feed beranda. */
