@@ -10,6 +10,8 @@
 
 Status di bawah menunjukkan keberadaan struktur/kode yang teridentifikasi pada repository. Status ini **bukan jaminan bahwa seluruh alur siap dipakai di produksi**.
 
+**Cakupan UI admin (18 November 2026):** UI pengelolaan modul SID **belum tersedia**. Halaman admin yang ada hanya delapan path di `RUTE_ADMIN_TERSEDIA`: `/beranda` dan tujuh halaman konsol platform (`/super-admin`, `tenant`, `domain`, `pengguna`, `audit`, `template`, `pengaturan`). Modul SID lain hanya memiliki route handler ekspor, PDF, atau berkas. Halaman publik yang ada adalah situs desa, bukan UI pengelolaan.
+
 | Kategori | Definisi |
 |---|---|
 | **Core** | Wajib untuk layanan inti SID dan operasi harian desa. |
@@ -22,9 +24,9 @@ Status di bawah menunjukkan keberadaan struktur/kode yang teridentifikasi pada r
 
 | Area | Folder/fitur | Fungsi utama | Status bukti | Prioritas | Catatan lanjutan |
 |---|---|---|---|---|---|
-| Platform multi-desa | `multi-desa`, `desa`, `pelanggan` | Provisioning, domain, status, kuota, akun admin, retensi dan purge | Bootstrap CLI, template platform, konsol platform tujuh halaman (`/super-admin`, tenant, domain, pengguna, audit, template, pengaturan), pengelolaan domain alias, ekspor tenant, purge, cleanup ekspor, pengelolaan akun platform, serta filter dan ekspor audit tersedia di `main` | Core platform | Walkthrough konsol dan bootstrap di staging; halaman template/pengaturan masih baca-saja; MFA dan undangan anggota tim belum ada; tinjau template bawaan minimal; pasang dan verifikasi timer cleanup. |
+| Platform multi-desa | `multi-desa`, `desa`, `pelanggan` | Provisioning, domain, status, kuota, akun admin, retensi dan purge | Landing page platform dengan pemisahan host (`PLATFORM_HOSTS`), bootstrap CLI, template platform, konsol platform tujuh halaman (`/super-admin`, tenant, domain, pengguna, audit, template, pengaturan), pengelolaan domain alias, ekspor tenant, purge, cleanup ekspor, pengelolaan akun platform, serta filter dan ekspor audit tersedia di `main` | Core platform | Walkthrough konsol dan bootstrap di staging; halaman template/pengaturan masih baca-saja; MFA dan undangan anggota tim belum ada; tinjau template bawaan minimal; pasang dan verifikasi timer cleanup; `demo` dan host reserved belum ada. |
 | Auth & RBAC | `auth`, `rbac` | Login, sesi, role, permission | Struktur dan use case tersedia | Core | Validasi role ownership dan invalidasi sesi. |
-| Website desa | `publik`, `konten`, `navigation` | Profil, konten, menu, tema, media | Implementasi luas teridentifikasi | Core | Backup media, signature validation, SEO/editor regression. |
+| Website desa | `publik`, `konten`, `navigation` | Profil, konten, menu, media | Konten publik, galeri, pengumuman, dan media teridentifikasi | Core | `navigation` membangun menu **admin** dari modul dan izin RBAC; menu situs publik ada di `publik/nav-publik`. Pemilihan tema belum ada UI: tabel `theme` hanya diisi seed provisioning dan `src/themes/registry.ts` yang dirujuk schema belum ada. Backup media, signature validation, SEO/editor regression. |
 | Profil & wilayah | `wilayah`, `desa`, `gis` | Identitas desa, wilayah, peta | Struktur fitur teridentifikasi | Core | Validasi relasi wilayah pada tenant yang sama. |
 | Penduduk | `penduduk`, `warga` | Data penduduk, pencarian, mutasi, katalog | Use case/repository tersedia | Core | Validasi family/region/katalog lintas tenant; test import. |
 | Keluarga | `keluarga` | Kartu keluarga, kepala dan anggota keluarga | Implementasi teridentifikasi | Core | Tenant filter pada join/agregasi dan regionId. |
@@ -37,19 +39,21 @@ Status di bawah menunjukkan keberadaan struktur/kode yang teridentifikasi pada r
 | Pembangunan | `pembangunan` | Kegiatan dan dokumentasi pembangunan | Use case teridentifikasi | Important | Pastikan update/delete tenant-scoped dan cleanup file. |
 | Keuangan / APBDes | `keuangan` | APBDes, impor spreadsheet, nilai dan laporan | Import dan batch upsert teridentifikasi | Important | Perbaiki race condition agregasi; validasi file. |
 | Kesehatan / KIA | `kesehatan` | Posyandu, KIA, ibu hamil, pemantauan anak | Schema/use case/repository/ekspor teridentifikasi | Important | Validasi relasi tenant; data sangat sensitif. |
-| Kehadiran | `kehadiran` | Kehadiran perangkat desa | Repository dan test isolasi terbatas | Important | Perluas test tenant isolation dan alur absensi. |
-| Arsip | `arsip` | Arsip dan berkas desa | Repository dan test isolasi terbatas | Important | Backup berkas dan kontrol akses unduhan. |
+| Kehadiran | `kehadiran` | Kehadiran perangkat desa | Repository dan integration test isolasi tenant tersedia | Important | Perluas cakupan test tenant dan alur absensi. |
+| Arsip | `arsip` | Arsip dan berkas desa | Repository dan test domain tersedia; belum ada integration test isolasi | Important | Tambah integration test lintas tenant, backup berkas, dan kontrol akses unduhan. |
 | Pengaduan & umpan balik | `pengaduan`, `umpan-balik`, `pendapat` | Masukan warga, pengaduan, survei/pendapat | Struktur fitur teridentifikasi; workflow perlu validasi | Important | Moderasi, SLA, privasi, notifikasi. |
 | Notifikasi & pesan | `notifikasi`, `pesan-warga` | Notifikasi aplikasi dan komunikasi | Struktur teridentifikasi | Optional | Tenant binding webhook, antrean, monitoring. |
 | API eksternal/publik | `api-eksternal`, `api-publik` | Integrasi API dan API key | Hash key dan rate limit pada endpoint yang ditinjau | Optional | Scope per key, rotasi, audit, rate limit menyeluruh. |
 | TTE | `surat` / domain TTE | Tanda tangan elektronik provider | Backend teridentifikasi | Deferred / Needs validation | Jangan aktifkan produksi sebelum SSRF/TLS ditangani. |
 | WhatsApp | integrasi notifikasi / Baileys | Notifikasi WhatsApp | Dependensi dan penyimpanan auth teridentifikasi; deployment belum diverifikasi | Deferred | Worker persisten, retry, secret storage, monitoring. |
 | GIS lanjutan | `gis` | Pemetaan dan visualisasi wilayah | Struktur fitur teridentifikasi | Optional | Sumber data, privasi titik penduduk, performa. |
-| Anjungan | `anjungan` | Kiosk layanan mandiri | Repository dan test isolasi terbatas | Important | Device binding dan resident ownership. |
+| Anjungan | `anjungan` | Kiosk layanan mandiri | Repository dan test domain/use case tersedia; belum ada integration test isolasi | Important | Device binding, resident ownership, dan integration test lintas tenant. |
 | Lapak / BUMDes | `lapak`, `bumindes` | Lapak produk dan administrasi BUMDes | Fitur dan sebagian test teridentifikasi | Optional | Tentukan kebutuhan desa dan model operasional. |
 | Modul pendukung | `agenda`, `statistik`, `analisis`, `survey`, `kontak`, `buku-tamu`, `plugin`, dll. | Fitur pelengkap SID | Tingkat implementasi bervariasi | Optional / Needs validation | Prioritaskan berdasar kebutuhan dan biaya pemeliharaan. |
 
 ## 3. Modul inti MVP yang disarankan
+
+Daftar ini adalah target modul, bukan bukti UI tersedia. UI pengelolaan modul SID belum dibuat; yang ada baru konsol platform dan situs desa (lihat §1).
 
 1. **Platform:** provisioning tenant, domain, status tenant, akun Admin Desa, dashboard Super Admin.
 2. **Akses:** login, RBAC, manajemen akun, audit trail.
