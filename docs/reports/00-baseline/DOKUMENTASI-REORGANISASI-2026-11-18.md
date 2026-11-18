@@ -5,6 +5,7 @@
 - **Branch:** `docs/reorganize-docs`.
 - **Base commit:** `178cf9d` (`main`, PR #153).
 - **Jenis perubahan:** dokumentasi, pemindahan aset, dan penyesuaian path workflow Visual QA. Tidak ada perubahan perilaku aplikasi, schema, migration, atau data.
+- **Commit hasil:** `a8dcc92` (perbaikan CI); commit reorganisasi `67d653e`.
 - **Pull request:** https://github.com/fahmiorim/appdes/pull/154
 
 ## 1. Kondisi awal
@@ -125,11 +126,13 @@ Isi temuan laporan historis tidak diubah; hanya path dan rujukan yang disesuaika
 | Matriks klasifikasi `ci-changes` | **PASS** — docs/workflow/script/source/DB/test menghasilkan output yang diharapkan |
 | `npx prettier --check` pada workflow dan skrip | **PASS** — seluruh berkas sesuai gaya Prettier |
 | `git diff --check` | **PASS** — tidak ada whitespace error |
-| Typecheck/lint/unit test/build | **SKIPPED** — tidak ada perubahan logika aplikasi; klasifikasi CI diuji langsung |
+| Typecheck/lint/unit test/build | **PASS** — CI run `44360453349`; dijalankan karena PR mengubah skrip dan CSS |
+| Integration test | **SKIPPED** — `integration=false`, tidak ada perubahan DB |
+| Visual QA login | **PASS** — run `44360452899`, 4m34s |
 
 ### 7.1 Perbaikan CI
 
-CI run pertama PR #154 gagal pada job `Visual QA login (desktop/mobile)` karena workflow masih menyalin `docs/public/*.png` dan `docs/account/...` setelah folder lama dipindahkan. Path pada `.github/workflows/visual-qa.yml` dan `scripts/visual-qa/capture.mjs` diperbarui ke `docs/mockups/public/` dan `docs/mockups/account/`.
+CI run pertama PR #154 gagal pada job `Visual QA login (desktop/mobile)` karena workflow masih menyalin `docs/public/*.png` dan `docs/account/...` setelah folder lama dipindahkan. Path pada `.github/workflows/visual-qa.yml` dan `scripts/visual-qa/capture.mjs` diperbarui ke `docs/mockups/public/` dan `docs/mockups/account/`. Workflow dijalankan ulang pada run `44360452899` dan **PASS** (4m34s), termasuk capture desktop/mobile serta penyalinan referensi publik.
 
 ### 7.2 Kalibrasi trigger CI
 
@@ -148,7 +151,9 @@ Contoh hasil klasifikasi:
 | `src/db/schema.ts` | true | false | true | true |
 | `src/components/x.test.tsx` | true | false | false | false |
 
-Validasi peta integration test kini hanya berjalan bila kode atau integration berubah, bukan pada PR dokumentasi. Workflow Visual QA perlu dijalankan ulang setelah commit perbaikan untuk memastikan path baru dan trigger barunya valid.
+Validasi peta integration test kini hanya berjalan bila kode atau integration berubah, bukan pada PR dokumentasi. Workflow Visual QA sudah dijalankan ulang setelah commit perbaikan dan **PASS**.
+
+Run CI `44360453349` juga **PASS**. Karena PR ini mengubah skrip dan CSS, klasifikasi aktualnya `code=true`, `docs=true`, `integration=false`, `build=true`; quality dan build memang relevan. Untuk PR yang hanya menyentuh `docs/**`, matriks di atas menghasilkan `code=false`, `docs=true`, `integration=false`, `build=false`, sehingga tidak ada job berat yang dijalankan.
 
 ## 8. Risiko dan keterbatasan
 
@@ -156,7 +161,9 @@ Validasi peta integration test kini hanya berjalan bila kode atau integration be
 - Laporan arsip masih menyebut kondisi pada tanggalnya; pembaca harus memakai `docs/reports/README.md` dan audit final untuk status terbaru.
 - Katalog mockup menggunakan tautan ber-URL-encoding untuk nama file berspasi; sudah diverifikasi dapat di-resolve.
 - Pemindahan file dapat memengaruhi bookmark lokal atau tautan eksternal ke path lama; path baru didokumentasikan di indeks.
+- PR ini tetap menjalankan quality dan build karena mengubah `scripts/**` dan `globals.css`; penghematan berlaku untuk PR yang benar-benar hanya mengubah dokumentasi.
+- Klasifikasi CI berbasis path tidak membaca isi perubahan; perubahan kode yang tidak terdeteksi tetap dapat melewati job tertentu.
 
 ## 9. Kesimpulan
 
-Dokumentasi kini dipisahkan berdasarkan fungsi: acuan aktif di root dan folder domain, mockup di `docs/mockups/`, panduan pengujian di `docs/testing/`, serta laporan dan arsip di `docs/reports/`. Referensi workflow dan harness Visual QA sudah mengikuti path baru. Trigger CI juga dikalibrasi agar PR dokumentasi tidak menjalankan browser QA, integration MySQL, atau build yang tidak relevan. Tidak ada laporan historis yang dihapus. Perubahan siap direview pada branch `docs/reorganize-docs`.
+Dokumentasi kini dipisahkan berdasarkan fungsi: acuan aktif di root dan folder domain, mockup di `docs/mockups/`, panduan pengujian di `docs/testing/`, serta laporan dan arsip di `docs/reports/`. Referensi workflow dan harness Visual QA sudah mengikuti path baru. Trigger CI juga dikalibrasi agar PR dokumentasi tidak menjalankan browser QA, integration MySQL, atau build yang tidak relevan. Tidak ada laporan historis yang dihapus. Seluruh check PR #154 **PASS** pada 18 November 2026. Perubahan siap direview pada branch `docs/reorganize-docs`.
