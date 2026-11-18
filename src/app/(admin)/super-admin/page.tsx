@@ -77,7 +77,7 @@ export default async function SuperAdminPage() {
       kunci: "nonaktif",
       judul: `${angka.format(nonaktif.length)} desa nonaktif`,
       keterangan: "Masa tenggang retensi berjalan otomatis; data dapat di-purge setelah selesai.",
-      href: "/super-admin/tenant",
+      href: "/super-admin/tenant?status=nonaktif",
       aksi: "Tinjau tenant",
     });
   }
@@ -86,7 +86,7 @@ export default async function SuperAdminPage() {
       kunci: "purge",
       judul: `${angka.format(siapPurge.length)} desa siap purge`,
       keterangan: "Pastikan ekspor data masih berlaku sebelum menjalankan purge permanen.",
-      href: "/super-admin/tenant",
+      href: "/super-admin/tenant?status=siap-purge",
       aksi: "Buka konsol tenant",
     });
   }

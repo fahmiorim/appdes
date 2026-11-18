@@ -142,4 +142,40 @@ describe("SuperAdminPage", () => {
     expect(state.daftarPenggunaPlatform).toHaveBeenCalledOnce();
     expect(state.ambilAuditPlatform).toHaveBeenCalledOnce();
   });
+
+  it("menautkan desa nonaktif dan siap purge ke daftar tenant yang sudah terfilter", async () => {
+    state.requireSuperAdmin.mockResolvedValue({ id: "platform-1", villageId: null });
+    state.daftarDesaSuperAdmin.mockResolvedValue([
+      desa[0],
+      {
+        ...desa[0],
+        id: 2,
+        name: "Desa Tertunda",
+        active: false,
+        nonaktifSejak: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      },
+      {
+        ...desa[0],
+        id: 3,
+        name: "Desa Siap Purge",
+        active: false,
+        nonaktifSejak: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000),
+      },
+    ]);
+    state.daftarSemuaDomain.mockResolvedValue([]);
+    state.daftarPenggunaPlatform.mockResolvedValue([]);
+    state.ambilAuditPlatform.mockResolvedValue({
+      rows: [],
+      total: 0,
+      page: 1,
+      pageSize: 25,
+      pageCount: 1,
+    });
+    const { default: SuperAdminPage } = await import("./page");
+
+    const html = renderToStaticMarkup(await SuperAdminPage());
+
+    expect(html).toContain('href="/super-admin/tenant?status=nonaktif"');
+    expect(html).toContain('href="/super-admin/tenant?status=siap-purge"');
+  });
 });
