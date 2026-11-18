@@ -4,7 +4,7 @@
 - **Tanggal:** 2026-11-18.
 - **Branch:** `fix/ui-routing-review`.
 - **Base commit:** `c8d4b4d` (`feat(404): halaman 404 global`), HEAD ketika perubahan task ini mulai.
-- **Commit hasil:** disertakan dalam commit task pada branch ini; SHA dicatat pada ringkasan serah-terima setelah commit.
+- **Commit hasil:** `3983954` (`feat: add Indonesian village region picker`), sudah di-push ke `origin/fix/ui-routing-review`.
 
 ## Kondisi awal dan analisis
 
@@ -49,7 +49,7 @@ Dataset berasal dari dump `db/wilayah.sql` di `https://github.com/cahyadsn/wilay
 - Dataset statis berukuran sekitar 2,5 MB; pembaruan kode wilayah memerlukan regenerasi dari sumber yang lebih baru.
 - Dataset tidak berisi nama kepala desa, NIP, alamat kantor, telepon, atau website.
 - Picker dipasang pada pendaftaran tenant; belum menambahkan form edit identitas untuk tenant yang sudah ada.
-- Belum ada commit/push saat laporan ditulis.
+- Branch sudah di-push, tetapi belum di-merge; menunggu review maintainer.
 
 ## Kesimpulan
 
