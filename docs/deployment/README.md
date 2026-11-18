@@ -83,10 +83,11 @@ Karakteristik yang memengaruhi deployment:
   berlaku 7 hari, dan diperpanjang setelah dipakai.
 - **Media** disimpan di disk lokal, bukan object storage. Direktori harus
   persisten dan tidak boleh hilang saat redeploy.
-- **Tenant publik** ditentukan dari `Host`/`X-Forwarded-Host`, lalu dicocokkan
-  dengan `villages.domain`, `village_domains`, dan slug wildcard
-  `<slug>.<DESA_BASE_DOMAIN>`. Host yang tidak dikenal menghasilkan 404 pada
-  instalasi multi-desa.
+- **Tenant publik** ditentukan dari header `Host` saja, lalu dicocokkan dengan
+  `villages.domain`, `village_domains`, dan slug wildcard
+  `<slug>.<DESA_BASE_DOMAIN>`. `X-Forwarded-Host` tidak dipakai memilih tenant;
+  reverse proxy wajib mempertahankan `Host` asli. Host yang tidak dikenal
+  menghasilkan 404 pada instalasi multi-desa.
 - **WhatsApp** memakai Baileys dan membutuhkan proses Node yang hidup terus.
   Koneksi dibuka saat pengiriman pertama; QR muncul di log server.
 - **Backup/restore database** tersedia sebagai route handler khusus platform
@@ -221,7 +222,8 @@ TRUST_PROXY=true
   `openssl rand -hex 32`.
 - `DATABASE_URL` harus URL-encode karakter khusus pada password.
 - `TRUST_PROXY=true` hanya boleh dipakai bila reverse proxy benar-benar
-  menimpa `X-Forwarded-For`, `X-Real-IP`, dan `X-Forwarded-Host`.
+  menimpa `X-Forwarded-For` dan `X-Real-IP` (identitas IP klien). Pemilihan
+  tenant tidak bergantung pada nilai itu: aplikasi hanya membaca `Host`.
 - `NEXT_PUBLIC_APP_NAME` di-inline saat build; mengubahnya memerlukan build
   ulang.
 
@@ -398,9 +400,11 @@ server {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
 
-        # Tenant ditentukan dari host. Proxy harus menimpa header ini,
-        # bukan meneruskan nilai yang dikirim klien.
+        # Tenant hanya ditentukan dari Host. Header ini wajib diisi proxy dari
+        # host asli, bukan nilai kiriman klien.
         proxy_set_header Host $host;
+        # X-Forwarded-Host tidak memilih tenant, tetapi dipakai menyusun URL
+        # absolut (mis. tautan verifikasi surat); jangan teruskan nilai klien.
         proxy_set_header X-Forwarded-Host $host;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Real-IP $remote_addr;
@@ -418,10 +422,15 @@ Persyaratan keamanan:
 
 - Aktifkan HTTPS sebelum memakai login. Cookie sesi dan reset sandi tidak boleh
   berjalan di HTTP publik.
-- `X-Forwarded-Host` **wajib ditimpa** oleh proxy. Resolver tenant membaca
-  header ini lebih dulu daripada `Host`; jika klien dapat mengirim nilainya
-  sendiri, tenant dapat salah ditentukan. Ini berlaku meskipun
-  `TRUST_PROXY=false`.
+- **`Host` wajib berisi host asli** permintaan. Resolver tenant hanya membaca
+  `Host`; `X-Forwarded-Host` diabaikan untuk pemilihan tenant. Jika proxy
+  menulis ulang `Host` menjadi hostname upstream atau membiarkan klien
+  mengirimnya, tenant akan salah ditentukan atau tidak ditemukan. Ini berlaku
+  meskipun `TRUST_PROXY=false`.
+- `X-Forwarded-Host` tetap harus ditimpa proxy karena `getRequestOrigin()`
+  memakainya (setelah `Host`) untuk URL absolut seperti tautan verifikasi
+  surat. Header forwarded yang berasal dari klien dapat menyisipkan host lain
+  ke dokumen surat.
 - Jangan mengekspos port 3000 ke internet. `TRUST_PROXY=true` hanya berguna
   bila tidak ada jalur yang melewati proxy.
 - Batas `client_max_body_size` harus cukup untuk unggahan aplikasi dan restore
@@ -531,7 +540,7 @@ Jangan menandai deployment production selesai hanya karena service menyala.
 | `Konfigurasi environment tidak valid` | Variabel wajib dan format URL | Isi `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`; jangan mengosongkan secret |
 | `ECONNREFUSED` ke MySQL | `systemctl status mysql`, port, user/host grant | Nyalakan MySQL; pastikan host `127.0.0.1` dan grant sesuai |
 | `Access denied for user` | User, host, password, URL-encoding | Perbaiki grant/password; uji dengan `mysql` |
-| Domain mengembalikan 404 | `Host`/`X-Forwarded-Host`, data `village_domains`, status desa | Pastikan desa aktif, domain cocok, proxy menimpa header |
+| Domain mengembalikan 404 | `Host` yang diterima aplikasi, data `village_domains`, status desa | Pastikan desa aktif, domain cocok, proxy mempertahankan `Host` asli |
 | Domain desa A menampilkan desa B | Header proxy, domain duplikat, fallback satu-desa | Perbaiki konfigurasi proxy dan data domain; jangan mengandalkan fallback |
 | Media 404 | `storage/media/<villageId>/...`, permission, kategori | Pastikan direktori persisten dan proses dapat membaca |
 | Upload gagal/413 | Batas proxy, ukuran berkas, kuota desa | Sesuaikan `client_max_body_size`; cek batas media 1–20 MB dan kuota |

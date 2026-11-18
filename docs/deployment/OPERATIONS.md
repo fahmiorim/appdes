@@ -185,7 +185,8 @@ Periksa:
 - `village_domains` dan `villages.domain`;
 - `villages.active` (desa nonaktif tidak dipetakan);
 - `DESA_BASE_DOMAIN` dan DNS wildcard;
-- reverse proxy menimpa `X-Forwarded-Host` dengan host asli;
+- reverse proxy mempertahankan `Host` asli permintaan (tenant hanya ditentukan
+  dari `Host`; `X-Forwarded-Host` tidak dipakai memilih tenant);
 - tidak ada domain duplikat;
 - fallback satu-desa tidak dipakai secara tidak sengaja pada instalasi
   multi-desa.
@@ -387,7 +388,8 @@ mengklaim rilis tanpa jendela pemeliharaan bila perubahan schema berisiko.
 ### Tenant/domain salah
 
 1. Hentikan akses bila data lintas tenant terlihat.
-2. Periksa `X-Forwarded-Host`, konfigurasi proxy, DNS, dan data domain.
+2. Periksa `Host` yang diterima aplikasi, konfigurasi proxy (harus
+   mempertahankan `Host` asli), DNS, dan data domain.
 3. Jangan mengubah domain production tanpa backup.
 4. Setelah perbaikan, uji dua tenant dan host asing.
 5. Catat sebagai insiden keamanan bila data tenant lain terekspos.
