@@ -2288,12 +2288,15 @@ input:focus-visible {
   background: radial-gradient(ellipse at 92% 0%, rgb(225 232 255 / 48%), transparent 34%), #f5f7fc;
 }
 .admin-main:has(.platform-page-head) .admin-topbar {
+  min-height: 54px;
+  justify-content: flex-end;
+  padding: 8px clamp(20px, 3vw, 40px);
   border-bottom-color: #e7ecf5;
   background: rgb(255 255 255 / 88%);
 }
 .admin-main:has(.platform-page-head) .admin-content {
   max-width: 1480px;
-  padding: 30px clamp(20px, 3vw, 40px) 44px;
+  padding: 14px clamp(20px, 3vw, 40px) 44px;
 }
 .platform-page-head {
   display: flex;

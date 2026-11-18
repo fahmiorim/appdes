@@ -27,6 +27,7 @@ Informasi yang berulang atau tidak membantu operator:
 - Tabel "Tenant terbaru" punya kolom "Aksi" berisi tautan "Kelola" yang identik untuk semua baris dan menduplikasi tombol "Kelola semua tenant" di kepala kartu.
 - `Domain` menampilkan empat kartu statistik untuk tiga angka (satu kartu, "Domain utama", hanya mengulang isi kolom "Jenis" pada tabel), plus kolom aksi yang tautannya sama untuk setiap baris.
 - `Template tenant` menampilkan path source (`src/db/templates/tenant-template.ts`) dan perintah CLI `npm run platform:export-template` di antarmuka operator.
+- Topbar platform menampilkan dua baris konteks “Ruang kerja administrasi” + “Super Admin Platform” di atas judul halaman, sehingga judul baru muncul setelah 72 px topbar + 30 px padding konten. Teks itu mengulang halaman yang sedang dibuka.
 - Sidebar platform: brand ber-`margin-bottom: 28px` ditambah label menu ber-`margin-top: 22px`, sehingga jarak logo ke tulisan “Platform” ±50 px. Di bawah menu ada paragraf pengantar dan footer “Sistem Informasi Desa / Konsol Super Admin” yang mengulang subjudul brand di bagian atas sidebar.
 
 ## 2. File yang diperiksa
@@ -50,6 +51,8 @@ Informasi yang berulang atau tidak membantu operator:
 | `src/app/(admin)/super-admin/template/page.tsx` | Pakai `PlatformStat`; buang path source dan instruksi CLI dari antarmuka, ganti dengan satu kalimat status baca-saja. |
 | `src/app/(admin)/super-admin/pengaturan/page.tsx` | Pakai `PlatformStat` untuk tiga kartu retensi. |
 | `src/components/shell/admin-sidebar.tsx` | Hapus paragraf pengantar dan footer duplikat pada sidebar platform; sidebar desa tidak berubah. |
+| `src/components/shell/admin-topbar.tsx` | Topbar tidak lagi merender konteks “Ruang kerja administrasi / Super Admin Platform” untuk akun platform. |
+| `src/app/(admin)/layout.tsx` | Meneruskan `isPlatformAdmin` ke topbar dan berhenti mengisi `villageName` dengan label platform. |
 | `src/app/globals.css` | Netralkan dekorasi ganda baris perhatian, perbaiki jarak ganda panel/toolbar/pagination, rapatkan padding halaman dan kartu, rapatkan jarak logo → label menu platform. |
 | `src/app/(admin)/super-admin/page.test.ts` | Test regresi: baris perhatian bernilai nol tidak dirender. |
 
@@ -60,6 +63,7 @@ Informasi yang berulang atau tidak membantu operator:
 - Tindakan purge kini menautkan ke `/super-admin/tenant` (tempat aksinya), bukan halaman audit.
 - Kolom aksi yang identik untuk semua baris dihapus dari tabel ringkasan dan domain; aksi tingkat halaman tetap ada di kepala kartu.
 - Jarak vertikal: padding konten `34/64px` → `30/44px`, judul halaman `28px` → `22px`, grid statistik `22px` → `18px`, kepala kartu `20px 22px` → `16px 20px`, badan kartu `20px 22px` → `18px 20px`, panel kanan tidak lagi mendapat margin ganda.
+- Topbar konsol platform menjadi satu baris tipis (54 px) berisi identitas pengguna dan tombol Keluar saja, sehingga judul halaman menjadi elemen pertama area konten (padding atas 30 px → 14 px). Topbar admin desa tidak berubah.
 - Sidebar platform tidak lagi menampilkan catatan pengantar dan footer; menu, tautan, dan penanda halaman aktif tidak berubah. Sidebar desa tetap memakai catatan “Segera” dan footer seperti sebelumnya.
 - Tidak ada perubahan otorisasi, query, use case, Server Action, atau skema data.
 
@@ -81,6 +85,8 @@ Informasi yang berulang atau tidak membantu operator:
 | `npm run build` | SKIPPED — diverifikasi oleh job build di CI |
 
 ## 7. Risiko dan keterbatasan
+
+- Judul halaman tidak dipindahkan secara literal ke dalam bar topbar: di Next.js, layout bersama tidak menerima judul milik halaman. Yang dilakukan adalah menghapus konteks duplikat dari topbar dan menaikkan judul halaman ke posisi paling atas area konten. Bila judul harus benar-benar sebaris dengan tombol Keluar, perlu perubahan struktur (mis. judul per halaman dirender lewat slot/parallel route).
 
 - Perubahan CSS belum dilihat pada render nyata. Dua lapis `.platform-*` masih ada; perbaikan dilakukan dengan menimpa deklarasi yang bertabrakan, bukan dengan menggabungkan seluruh blok. Penggabungan menyeluruh (menghapus blok lama) perlu port media query dan kelas yang hanya didefinisikan di blok lama, sehingga sengaja tidak dilakukan dalam task ini.
 - `PlatformStat` memakai markup `Card` + `StatIcon` yang sudah ada, tanpa kelas baru, sehingga tidak perlu aturan CSS tambahan.

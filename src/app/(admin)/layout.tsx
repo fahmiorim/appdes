@@ -40,8 +40,9 @@ export default async function AdminLayout({ children }: Readonly<{ children: Rea
       />
       <div className="admin-main">
         <AdminTopbar
+          isPlatformAdmin={isPlatformAdmin}
           name={user.name}
-          villageName={isPlatformAdmin ? "Super Admin Platform" : (villageName ?? "")}
+          villageName={villageName ?? ""}
         />
         <main className="admin-content">{children}</main>
       </div>

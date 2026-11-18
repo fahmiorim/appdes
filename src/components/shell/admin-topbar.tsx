@@ -6,7 +6,16 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
-export function AdminTopbar({ name, villageName }: { name: string; villageName: string }) {
+export function AdminTopbar({
+  name,
+  villageName,
+  isPlatformAdmin = false,
+}: {
+  name: string;
+  villageName: string;
+  /** Konsol platform memakai judul halamannya sendiri, bukan label ruang kerja. */
+  isPlatformAdmin?: boolean;
+}) {
   const router = useRouter();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -30,10 +39,12 @@ export function AdminTopbar({ name, villageName }: { name: string; villageName: 
 
   return (
     <header className="admin-topbar">
-      <div className="admin-topbar-context">
-        <span className="admin-topbar-title">Ruang kerja administrasi</span>
-        <strong>{villageName || "Administrasi Platform"}</strong>
-      </div>
+      {isPlatformAdmin ? null : (
+        <div className="admin-topbar-context">
+          <span className="admin-topbar-title">Ruang kerja administrasi</span>
+          <strong>{villageName || "Administrasi Platform"}</strong>
+        </div>
+      )}
       <div className="admin-topbar-user">
         <span className="admin-user-chip">
           <span className="avatar" aria-hidden="true">
