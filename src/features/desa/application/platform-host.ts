@@ -14,3 +14,12 @@ import { env } from "@/lib/env";
 export const hostPlatform: readonly string[] = normalisasiDaftarHost(
   env.PLATFORM_HOSTS ?? env.APP_URL,
 );
+
+/**
+ * Host platform yang diisi eksplisit lewat `PLATFORM_HOSTS` saja.
+ *
+ * Dipakai untuk keputusan yang tidak boleh menebak, mis. mengalihkan `/masuk`
+ * ke login administrator. Tanpa `PLATFORM_HOSTS`, deployment satu-domain tetap
+ * memakai `/masuk` sebagai satu-satunya jalan masuk staf desa.
+ */
+export const hostPlatformEksplisit: readonly string[] = normalisasiDaftarHost(env.PLATFORM_HOSTS);
