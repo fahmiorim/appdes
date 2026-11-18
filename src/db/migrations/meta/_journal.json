@@ -106,6 +106,13 @@
       "when": 1795106163264,
       "tag": "0014_menu_pengguna_grup_akses",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "5",
+      "when": 1795192563264,
+      "tag": "0015_menu_penduduk",
+      "breakpoints": true
     }
   ]
 }

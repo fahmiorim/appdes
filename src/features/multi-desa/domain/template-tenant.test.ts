@@ -89,6 +89,27 @@ describe("template bawaan yang dikirim", () => {
     expect([...pemegangManage]).toEqual([ROLE_ADMINISTRATOR]);
   });
 
+  it("menyediakan menu penduduk dengan akses baca untuk role non-admin", () => {
+    const penduduk = template.modules.find((modul) => modul.slug === "penduduk");
+    expect(penduduk).toMatchObject({
+      name: "Data Penduduk",
+      url: "/penduduk",
+      isActive: true,
+      parentSlug: null,
+    });
+
+    const akses = template.akses
+      .filter((grant) => grant.moduleSlug === "penduduk")
+      .map((grant) => `${grant.roleSlug}:${grant.access}`)
+      .sort();
+    expect(akses).toEqual([
+      "administrator:manage",
+      "kepala-desa:read",
+      "operator:read",
+      "sekretaris:read",
+    ]);
+  });
+
   it("hanya menautkan modul aktif ke rute admin yang sudah tersedia", () => {
     for (const modul of template.modules) {
       if (modul.url === null || !modul.isActive) continue;

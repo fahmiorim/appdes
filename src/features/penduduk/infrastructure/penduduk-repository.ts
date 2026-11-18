@@ -227,6 +227,39 @@ export async function listPenduduk(params: ListPendudukParams): Promise<Penduduk
   };
 }
 
+export interface RingkasanPenduduk {
+  total: number;
+  lakiLaki: number;
+  perempuan: number;
+  keluarga: number;
+}
+
+/**
+ * Angka ringkas untuk kartu KPI halaman penduduk.
+ *
+ * Satu query agregat, bukan beberapa pemanggilan `listPenduduk`; semua hitungan
+ * dibatasi desa pemanggil. `total` mencakup seluruh status agar angkanya sama
+ * dengan jumlah baris tabel saat filter kosong.
+ */
+export async function getRingkasanPenduduk(villageId: number): Promise<RingkasanPenduduk> {
+  const [row] = await db
+    .select({
+      total: count(),
+      lakiLaki: sql<number>`COALESCE(SUM(CASE WHEN ${residents.gender} = 'male' THEN 1 ELSE 0 END), 0)`,
+      perempuan: sql<number>`COALESCE(SUM(CASE WHEN ${residents.gender} = 'female' THEN 1 ELSE 0 END), 0)`,
+      keluarga: sql<number>`COUNT(DISTINCT ${residents.familyId})`,
+    })
+    .from(residents)
+    .where(eq(residents.villageId, villageId));
+
+  return {
+    total: Number(row?.total ?? 0),
+    lakiLaki: Number(row?.lakiLaki ?? 0),
+    perempuan: Number(row?.perempuan ?? 0),
+    keluarga: Number(row?.keluarga ?? 0),
+  };
+}
+
 export async function findPendudukById(villageId: number, id: number): Promise<PendudukDTO | null> {
   const [row] = await db
     .select()

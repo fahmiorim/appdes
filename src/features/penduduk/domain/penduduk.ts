@@ -316,6 +316,17 @@ export function calculateAge(birthDate: string | null, today: Date = new Date())
   return age;
 }
 
+/**
+ * Samarkan NIK agar layar admin tidak memaparkan nomor identitas penuh.
+ * Enam digit awal dan dua digit akhir dipertahankan untuk membantu pencocokan
+ * manual tanpa membuka data pribadi secara utuh.
+ */
+export function samarkanNik(nik: string | null): string {
+  if (!nik) return "—";
+  if (nik.length < 8) return "••••••••";
+  return `${nik.slice(0, 6)}••••••${nik.slice(-2)}`;
+}
+
 /** Label ringkas penduduk untuk judul dialog konfirmasi. */
 export function pendudukLabel(row: Pick<PendudukDTO, "name" | "nationalId">): string {
   return row.nationalId ? `${row.name} (NIK ${row.nationalId})` : row.name;
