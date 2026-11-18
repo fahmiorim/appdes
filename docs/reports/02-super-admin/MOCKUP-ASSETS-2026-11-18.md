@@ -361,3 +361,100 @@ Daftar bernomor pada inventaris publik adalah **21 file**, yaitu nomor 19 sampai
 - [ ] Implementasi gap yang tercatat.
 
 **Kesimpulan:** dari tujuh mockup pendukung, fondasi UI/route yang jelas sudah ada untuk 403 dan 404, serta pencarian berita parsial. Sitemap, halaman syarat dan ketentuan, kebijakan privasi, halaman maintenance, dan pencarian global belum ditemukan sebagai implementasi pada source tree yang diperiksa. Schema konten desa dan pengaduan sudah ada, tetapi tidak ada dasar untuk menyimpulkan bahwa seluruh kebutuhan mockup pendukung memerlukan tabel baru. Audit ini tidak menyatakan tampilan runtime sudah cocok; screenshot pembanding aplikasi masih diperlukan.
+
+
+---
+
+## Audit visual dan backend — 11 mockup kategori Account
+
+**Tanggal pemeriksaan:** 18 November 2026  
+**Sumber visual:** 11 PNG kategori account yang diunggah pada sesi audit; PNG Login Super Admin yang ikut terunggah merupakan duplikat mockup utama dan tidak dihitung sebagai mockup account tambahan.  
+**Basis kode:** recursive Git tree `main` (tree SHA `12fbc25f9d3f557a53ae461265aa31250fa0e4da`) dan pembacaan implementasi/schema pada branch `main`.  
+**Batas:** audit visual mengacu pada PNG referensi dan inspeksi source code/schema. Belum dilakukan screenshot runtime/browser atau perbandingan pixel terhadap aplikasi yang berjalan.
+
+### 1. Inventaris visual yang diperiksa
+
+| No. | Mockup | Isi utama yang terbaca | Catatan UI/UX |
+|---:|---|---|---|
+| 1 | Login Warga | Hero kantor desa, form email/NIK dan password, remember me, forgot password, Google sign-in, registrasi, benefit strip. | Source login saat ini meminta username/password, bukan email/NIK; belum ada tombol Google, remember me, forgot password, atau CTA registrasi pada form. |
+| 2 | Pengaturan Keamanan Akun | Ubah password, toggle 2FA, email/WhatsApp terverifikasi, riwayat login, perangkat terhubung, notifikasi keamanan. | Ini adalah halaman sensitif; data sesi/perangkat harus berasal dari session store, bukan data contoh. Toggle 2FA harus mencerminkan faktor yang benar-benar aktif. |
+| 3 | Reset Kata Sandi (permintaan) | Email/NIK, kirim tautan/kode reset, panduan keamanan dan alur reset. | Hindari membocorkan apakah akun terdaftar; respons harus generik, diberi rate limit, dan token harus sekali pakai/berumur pendek. |
+| 4 | Riwayat Pengajuan Layanan | Ringkasan status, filter, tabel riwayat, detail permohonan, lampiran, timeline proses. | Schema permohonan mendukung data dasar dan status, tetapi timeline peristiwa dan daftar lampiran yang terlihat perlu dibuktikan terpisah. |
+| 5 | Pengaturan Notifikasi | Kanal email/WhatsApp/in-app, jenis notifikasi, ringkasan berkala, jam kirim, preferensi. | Log pengiriman bukan preferensi pengguna. Jangan tampilkan kontrol yang tidak tersimpan atau tidak dihormati worker pengiriman. |
+| 6 | Verifikasi OTP Akun | OTP enam digit, tujuan email/WhatsApp tersamarkan, countdown, resend, ubah kontak, tahap aktivasi. | Schema verifikasi kontak dan OTP login tersedia, tetapi keduanya memiliki tujuan berbeda; jangan menyamakan OTP login dengan aktivasi akun. |
+| 7 | Registrasi Akun Warga | NIK, nama, email opsional, WhatsApp, password, konfirmasi, persetujuan legal, alur aktivasi. | Schema registrasi warga saat ini hanya menyimpan desa, NIK, nama, nomor HP, status, dan waktu; belum mencakup seluruh field/alur form ini. |
+| 8 | Reset Kata Sandi (atur sandi baru) | Password baru, konfirmasi, indikator kekuatan, simpan, kembali ke login. | Better Auth memiliki mekanisme reset token dan callback, tetapi route UI reset khusus belum ditemukan di tree yang diperiksa. |
+| 9 | Akun Terverifikasi | Konfirmasi berhasil, tanggal/waktu verifikasi, CTA login dan lengkapi profil. | Tidak ditemukan halaman hasil aktivasi khusus pada route tree. State verifikasi harus berasal dari hasil proses server, bukan timestamp hard-coded. |
+| 10 | Profil Akun Warga | Identitas, NIK, domisili, kontak terverifikasi, status akun, dokumen terkait. | Data penduduk dan akun tersedia di schema; halaman profil warga khusus belum ditemukan pada tree. |
+| 11 | Edit Profil Warga | Foto, data pribadi, domisili, kontak, unggah/hapus dokumen pendukung. | Schema penduduk memuat banyak field profil, tetapi belum ditemukan route/form edit profil warga yang sesuai mockup. Perubahan NIK harus dibatasi dan diaudit. |
+
+### 2. Pemetaan route/UI pada source tree
+
+| Mockup | Bukti implementasi yang ditemukan | Status |
+|---|---|---|
+| Login Warga | `src/app/(auth)/masuk/page.tsx`, `login-form.tsx` | **Ada, tetapi gap UI/kontrak login** |
+| Pengaturan Keamanan | Tidak ditemukan page route account-security | **Belum ditemukan** |
+| Reset password — request | Konfigurasi Better Auth `sendResetPassword` tersedia di `src/lib/auth.ts`; route UI request reset tidak ditemukan | **Backend sebagian; UI belum ditemukan** |
+| Riwayat Pengajuan | Halaman dashboard `src/app/(warga)/layanan-mandiri/page.tsx` menampilkan daftar permohonan dasar; route riwayat/detail khusus seperti mockup tidak ditemukan | **Fitur dasar ada; UI belum setara** |
+| Pengaturan Notifikasi | Tidak ditemukan page route preferensi notifikasi warga | **Belum ditemukan** |
+| Verifikasi OTP Akun | Use case OTP login dan verifikasi kontak tersedia; route UI aktivasi akun/OTP tidak ditemukan | **Backend parsial; UI belum ditemukan** |
+| Registrasi Warga | Schema `registrasi_warga` tersedia; route/page registrasi warga tidak ditemukan | **Schema parsial; alur UI belum ditemukan** |
+| Reset password — new password | Better Auth reset callback/token tersedia; route UI `/reset-sandi` tidak ditemukan dalam tree | **Backend sebagian; UI belum ditemukan** |
+| Akun Terverifikasi | Tidak ditemukan route hasil aktivasi | **Belum ditemukan** |
+| Profil Akun | Dashboard layanan mandiri membaca profil dasar; halaman profil terpisah tidak ditemukan | **Data dasar ada; UI belum setara** |
+| Edit Profil | Tidak ditemukan route/form edit profil warga | **Belum ditemukan** |
+
+### 3. Temuan schema/database dan backend
+
+#### A. Fondasi yang sudah tersedia
+
+- **Identitas dan sesi:** `src/db/schema/auth.ts` mendefinisikan `users`, `sessions`, `accounts`, dan `verifications`. Sesi menyimpan token, masa berlaku, IP address, user-agent, user ID, serta waktu pembuatan/perubahan. User memiliki `villageId`, `residentId`, status aktif, dan `lastLoginAt`.
+- **Autentikasi:** `src/lib/auth.ts` mengaktifkan email/password Better Auth, username plugin, rate limit, masa sesi 7 hari, dan pencabutan sesi saat reset password. Email reset dikirim melalui Resend bila konfigurasi tersedia; tanpa konfigurasi production, kode hanya mencatat error dan email tidak terkirim.
+- **Login warga:** halaman `/masuk` memanggil `authClient.signIn.username`. Form menerima username dan password. Tidak ada implementasi pada form ini untuk login Google, login dengan NIK/email, remember me, atau link lupa password/registrasi seperti referensi.
+- **OTP login:** `src/db/schema/login-otp.ts` menyimpan hash OTP, kanal, target, kedaluwarsa, jumlah percobaan, dan waktu pemakaian. Use case `src/features/auth/application/login-otp-use-cases.ts` menerapkan pesan generik, rate limit 3 permintaan per 5 menit per akun, masa berlaku 10 menit, hash OTP, batas percobaan, serta penandaan sekali pakai yang diklaim secara atomik. Ini adalah OTP faktor kedua login, bukan otomatis OTP registrasi.
+- **Verifikasi kontak:** `src/db/schema/verifikasi-kontak.ts` menyimpan village/resident, target, kanal email/WhatsApp, hash kode, kedaluwarsa, dan waktu verifikasi. Schema ini mendukung verifikasi kontak penduduk; route aktivasi akun dan UI OTP belum ditemukan.
+- **Registrasi:** `src/db/schema/registrasi-warga.ts` hanya memuat villageId, NIK, nama, nomor HP, status, dan createdAt. Ini belum menyimpan seluruh data form mockup (email, password, persetujuan legal, state token/OTP, dan metadata proses).
+- **Data profil:** `src/db/schema/resident.ts` memuat NIK, nama, gender, tempat/tanggal lahir, keluarga, domisili/region, alamat, telepon, pekerjaan, pendidikan, status hidup/domisili, dan referensi terkait. NIK unik per desa dan tenant relation memakai composite foreign key.
+- **Dokumen warga:** schema `dokumen-warga` tersedia dalam source tree. Dashboard layanan mandiri menampilkan dokumen pribadi dari penyimpanan privat dengan tautan unduh berdasarkan ID.
+- **Riwayat permohonan:** `src/db/schema/permohonan-surat.ts` menyimpan residentId, jenis surat, nomor antrean, status, isian form, syarat, nomor HP, keterangan, alasan, serta timestamp. Ada index tenant/status dan tenant/createdAt serta composite FK tenant untuk penduduk dan jenis surat. Status yang didokumentasikan: belum lengkap, diperiksa, menunggu tanda tangan, siap diambil, diambil, dibatalkan.
+- **Notifikasi:** schema `notifikasi-terkirim` dan `bukti-pengiriman-notifikasi` tersedia sebagai bukti/log pengiriman. Belum ditemukan schema preferensi kanal/jenis notifikasi per user, ringkasan berkala, atau rentang jam pengiriman.
+- **Audit:** schema audit tersedia untuk jejak aktivitas, tetapi tidak dengan sendirinya membuktikan UI riwayat login/perangkat yang dapat dikelola warga.
+
+#### B. Gap penting dan risiko
+
+1. **Jangan klaim Google sign-in tersedia:** pada login form yang diperiksa hanya ada username/password. Integrasi provider Google belum dibuktikan.
+2. **Reset password backend belum end-to-end siap produksi hanya dari callback:** email membutuhkan `RESEND_API_KEY` dan `RESEND_FROM`; route request/reset UI belum ditemukan. Perlu uji token kedaluwarsa, penggunaan ulang token, enumeration, rate limit, serta pencabutan sesi.
+3. **2FA mockup lebih luas daripada bukti implementasi:** yang ditemukan adalah OTP login berbasis kanal email/WhatsApp dan flag `otpLoginAktif`; belum ditemukan TOTP authenticator, recovery codes, pengelolaan faktor, atau UI pengaturan 2FA.
+4. **Perangkat terhubung/riwayat login:** tabel sessions menyediakan IP dan user-agent, tetapi halaman warga untuk melihat/mencabut sesi tidak ditemukan. Jangan tampilkan perangkat dan lokasi yang direka.
+5. **Preferensi notifikasi belum memiliki bukti persistence:** log notifikasi terkirim bukan pengganti tabel preferensi pengguna. Toggle dan jadwal pada mockup belum dapat dianggap berfungsi.
+6. **Registrasi dan verifikasi aktivasi belum lengkap:** tabel registrasi yang ada hanya menyimpan data minimum dan status. Perlu tetapkan apakah warga mendaftar mandiri atau melalui verifikasi operator, bagaimana pencocokan NIK per tenant dilakukan, dan kapan akun Better Auth ditautkan ke resident.
+7. **Edit profil perlu aturan field:** NIK dan village ownership tidak boleh dapat diubah bebas oleh pengguna; perubahan identitas/domisili perlu validasi, otorisasi, audit, dan tenant scoping. Upload dokumen wajib memakai validasi MIME/magic bytes dan penyimpanan privat.
+8. **Riwayat status belum sama dengan timeline:** permohonan menyimpan status saat ini dan alasan, tetapi schema yang diperiksa belum membuktikan tabel event timeline lengkap seperti panel riwayat proses pada mockup. Lampiran permohonan juga perlu diverifikasi dari schema syarat/berkas dan route terkait.
+
+### 4. Keputusan implementasi yang direkomendasikan
+
+| Prioritas | Pekerjaan | Kriteria selesai |
+|---|---|---|
+| P0 | Selaraskan login warga | Putuskan username vs email/NIK; UI tidak menawarkan Google/remember me/forgot/register sebelum backend dan policy siap. |
+| P0 | Lengkapi alur reset sandi | Request + token reset + form sandi baru, email production, respons anti-enumeration, rate limit, audit, dan session revocation teruji. |
+| P0 | Rancang registrasi dan verifikasi warga | Validasi NIK tenant-scoped, persetujuan legal, tautkan user-resident secara aman, OTP kontak sekali pakai, expiry dan retry limit. |
+| P1 | Profil dan edit profil | Read/update data resident dengan tenant scope, field allowlist, verifikasi kontak, audit perubahan, upload dokumen privat. |
+| P1 | Riwayat pengajuan | Daftar terfilter dan detail permohonan; timeline hanya bila event log tersedia/dibangun; lampiran memakai route privat dan authorization pemilik. |
+| P1 | Preferensi notifikasi | Model preferensi per user/tenant dan kanal/jenis; worker menghormati opt-in dan jadwal; notifikasi keamanan kritis memiliki policy terpisah. |
+| P1 | Keamanan akun | UI sesi/perangkat dari tabel sessions; revoke sesi per perangkat; jelaskan OTP login berbeda dari TOTP; implementasikan faktor tambahan hanya setelah threat model dan recovery flow disepakati. |
+| P2 | Halaman hasil aktivasi | Hanya menampilkan sukses setelah transaksi verifikasi benar-benar committed; jangan gunakan data tanggal statis. |
+
+**Keputusan database:** beberapa kebutuhan dapat memakai schema yang sudah ada (profil penduduk, sesi, OTP login, verifikasi kontak, permohonan, dokumen, log notifikasi). Namun preferensi notifikasi dan timeline status permohonan belum terbukti tersedia. Registrasi mandiri penuh mungkin membutuhkan perluasan model/workflow; jangan menambah tabel sebelum alur bisnis dan kepemilikan data disepakati.
+
+### 5. Status batch account
+
+- [x] 11 mockup account diperiksa secara visual dari unggahan.
+- [x] Satu mockup Login Super Admin yang ikut terunggah dikenali sebagai duplikat mockup utama dan tidak dihitung ulang.
+- [x] Recursive route tree `main` diperiksa untuk halaman autentikasi dan warga.
+- [x] Schema auth, sesi, OTP login, verifikasi kontak, registrasi warga, penduduk, permohonan surat, dan notifikasi dibaca.
+- [x] Login form warga, konfigurasi Better Auth, use case/repository OTP login, dan dashboard layanan mandiri diperiksa.
+- [ ] Screenshot runtime aplikasi dibandingkan dengan 11 PNG pada desktop/mobile.
+- [ ] Uji end-to-end browser untuk registrasi, OTP, reset password, profil, notifikasi, perangkat, dan riwayat.
+- [ ] Implementasi gap yang dicatat di atas.
+
+**Kesimpulan:** dari 11 mockup account, route login warga dan dashboard layanan mandiri tersedia tetapi belum setara referensi. Fondasi backend untuk identitas, sesi, OTP login, verifikasi kontak, profil penduduk, dokumen, permohonan surat, dan log notifikasi sudah ada. Halaman registrasi, aktivasi, reset password UI, profil/edit profil, pengaturan keamanan, pengaturan preferensi notifikasi, serta riwayat/detail pengajuan sesuai mockup belum ditemukan pada route tree yang diperiksa. Tidak semua kebutuhan memerlukan tabel baru; gap utama adalah route/UI, alur use case, preferensi notifikasi, dan bukti timeline. Audit ini bukan klaim bahwa screenshot runtime telah lulus visual QA.
