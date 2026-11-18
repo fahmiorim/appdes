@@ -7,6 +7,8 @@ import styles from "./informasi-publik.module.css";
 type PublicNavigationItem = {
   href: string;
   label: string;
+  /** Tautan keluar dirender sebagai `<a>`, bukan navigasi klien Next. */
+  eksternal?: boolean;
 };
 
 type PublicShellProps = {
@@ -38,11 +40,17 @@ export function PublicShell({
             </span>
           </Link>
           <nav className={styles.nav} aria-label="Navigasi utama">
-            {navigation.map((item) => (
-              <Link key={item.href} href={item.href}>
-                {item.label}
-              </Link>
-            ))}
+            {navigation.map((item) =>
+              item.eksternal ? (
+                <a key={item.href} href={item.href} target="_blank" rel="noreferrer">
+                  {item.label}
+                </a>
+              ) : (
+                <Link key={item.href} href={item.href}>
+                  {item.label}
+                </Link>
+              ),
+            )}
           </nav>
           <Link href="/masuk" className={styles.login}>
             Masuk ↗

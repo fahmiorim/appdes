@@ -4,6 +4,7 @@ import { getIdentitasFromRequest } from "@/features/desa/application/resolve-vil
 import { listLaporanDokumenApbdesPublik } from "@/features/keuangan/application/laporan-dokumen-publik-use-cases";
 import { getLaporanApbdesPublik } from "@/features/keuangan/application/laporan-publik-use-cases";
 import { formatRupiah } from "@/features/keuangan/domain/keuangan";
+import { getNavPublik } from "@/features/publik/application/nav-publik";
 
 import styles from "../../informasi-publik.module.css";
 import { PublicShell } from "../../public-shell";
@@ -34,12 +35,7 @@ export default async function ApbdesPublikPage({ searchParams }: Props) {
     <PublicShell
       villageName={desa.namaDesa ?? "Pemerintah Desa"}
       brandLabel="Transparansi Anggaran"
-      navigation={[
-        { href: "/", label: "Beranda" },
-        { href: "/profil", label: "Profil Desa" },
-        { href: "/dokumen", label: "Dokumen" },
-        { href: "/kontak", label: "Kontak" },
-      ]}
+      navigation={await getNavPublik(desa.id)}
       showMark={false}
     >
       <section className={styles.hero}>
