@@ -31,9 +31,7 @@ export function PublicShell({
       <header className={styles.header}>
         <div className={styles.container + " " + styles.headerInner}>
           <Link href="/" className={styles.brand}>
-            {showMark ? (
-              <Image src="/images/logo.png" alt="" width={42} height={42} />
-            ) : null}
+            {showMark ? <Image src="/images/logo.png" alt="" width={42} height={42} /> : null}
             <span>
               <strong>{villageName}</strong>
               <small>{brandLabel}</small>
