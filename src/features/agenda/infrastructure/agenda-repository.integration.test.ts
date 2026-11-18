@@ -46,6 +46,10 @@ beforeAll(async () => {
     judul: `Arsip ${RUN}`,
     mulai: "2024-03-10",
     selesai: null,
+    jamMulai: null,
+    jamSelesai: null,
+    kategori: "umum",
+    status: "selesai",
     lokasi: null,
     deskripsi: null,
     tayang: true,
@@ -54,6 +58,10 @@ beforeAll(async () => {
     judul: `Kegiatan November ${RUN}`,
     mulai: "2026-11-20",
     selesai: null,
+    jamMulai: "09:00",
+    jamSelesai: "12:00",
+    kategori: "pemerintahan",
+    status: "berlangsung",
     lokasi: "Balai Desa",
     deskripsi: null,
     tayang: true,
@@ -62,6 +70,10 @@ beforeAll(async () => {
     judul: `Draf ${RUN}`,
     mulai: "2026-11-21",
     selesai: null,
+    jamMulai: null,
+    jamSelesai: null,
+    kategori: "umum",
+    status: "rencana",
     lokasi: null,
     deskripsi: null,
     tayang: false,
@@ -70,6 +82,10 @@ beforeAll(async () => {
     judul: `Kegiatan Desa B ${RUN}`,
     mulai: "2026-11-20",
     selesai: null,
+    jamMulai: null,
+    jamSelesai: null,
+    kategori: "umum",
+    status: "rencana",
     lokasi: null,
     deskripsi: null,
     tayang: true,
@@ -113,5 +129,18 @@ describe("repository agenda: arsip publik", () => {
 
     const rows = await listAgendaPublik(fixture.desaA, 20, "2026-11-01");
     expect(rows.map((row) => row.judul)).toEqual([`Kegiatan November ${RUN}`]);
+  });
+
+  it("menyimpan jam, kategori, dan status agenda", async () => {
+    if (!fixture) throw new Error("Fixture integrasi tidak siap.");
+
+    const rows = await listAgendaPublikRentang(fixture.desaA, "2026-11-01", "2026-12-01");
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      jamMulai: "09:00:00",
+      jamSelesai: "12:00:00",
+      kategori: "pemerintahan",
+      status: "berlangsung",
+    });
   });
 });

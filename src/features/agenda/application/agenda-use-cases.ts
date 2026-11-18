@@ -40,6 +40,10 @@ export async function simpanAgenda(input: AgendaFormInput, id?: number): Promise
     judul: input.judul,
     mulai: input.mulai,
     selesai: input.selesai,
+    jamMulai: input.jamMulai,
+    jamSelesai: input.jamSelesai,
+    kategori: input.kategori,
+    status: input.status,
     lokasi: input.lokasi || null,
     deskripsi: input.deskripsi || null,
     tayang: input.tayang,
@@ -71,10 +75,25 @@ function keAgendaPublik({
   judul,
   mulai,
   selesai,
+  jamMulai,
+  jamSelesai,
+  kategori,
+  status,
   lokasi,
   deskripsi,
 }: AgendaRow): AgendaPublikRow {
-  return { id, judul, mulai, selesai, lokasi, deskripsi };
+  return {
+    id,
+    judul,
+    mulai,
+    selesai,
+    jamMulai,
+    jamSelesai,
+    kategori,
+    status,
+    lokasi,
+    deskripsi,
+  };
 }
 
 /** Agenda mendatang untuk situs publik; hanya baris yang ditayangkan. */

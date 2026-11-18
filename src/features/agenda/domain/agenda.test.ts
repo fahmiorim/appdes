@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   agendaFormSchema,
+  agendaJamLabel,
   agendaLabelTanggal,
   bulanAgendaDalamRentang,
   geserBulanAgenda,
@@ -49,6 +50,132 @@ describe("agendaFormSchema", () => {
     const hasil = agendaFormSchema.safeParse({ judul: "Rapat", mulai: "2026-11-20" });
     expect(hasil.success).toBe(true);
     if (hasil.success) expect(hasil.data.tayang).toBe(false);
+  });
+
+  it("menerima jam, kategori, dan status kegiatan", () => {
+    const hasil = agendaFormSchema.safeParse({
+      judul: "Posyandu Balita",
+      mulai: "2026-11-21",
+      jamMulai: "08:00",
+      jamSelesai: "11:30",
+      kategori: "kesehatan",
+      status: "berlangsung",
+    });
+
+    expect(hasil.success).toBe(true);
+    if (hasil.success) {
+      expect(hasil.data.jamMulai).toBe("08:00");
+      expect(hasil.data.jamSelesai).toBe("11:30");
+      expect(hasil.data.kategori).toBe("kesehatan");
+      expect(hasil.data.status).toBe("berlangsung");
+    }
+  });
+
+  it("memberi default kategori umum dan status rencana", () => {
+    const hasil = agendaFormSchema.safeParse({ judul: "Rapat", mulai: "2026-11-20" });
+
+    expect(hasil.success).toBe(true);
+    if (hasil.success) {
+      expect(hasil.data.kategori).toBe("umum");
+      expect(hasil.data.status).toBe("rencana");
+      expect(hasil.data.jamMulai).toBeNull();
+      expect(hasil.data.jamSelesai).toBeNull();
+    }
+  });
+
+  it("menerima jam berdetik dari database dan menormalkannya", () => {
+    const hasil = agendaFormSchema.safeParse({
+      judul: "Rapat",
+      mulai: "2026-11-20",
+      jamMulai: "09:00:00",
+      jamSelesai: "12:30:00",
+    });
+
+    expect(hasil.success).toBe(true);
+    if (hasil.success) {
+      expect(hasil.data.jamMulai).toBe("09:00");
+      expect(hasil.data.jamSelesai).toBe("12:30");
+    }
+  });
+
+  it("menolak format jam yang tidak valid", () => {
+    const hasil = agendaFormSchema.safeParse({
+      judul: "Rapat",
+      mulai: "2026-11-20",
+      jamMulai: "25:00",
+    });
+
+    expect(hasil.success).toBe(false);
+    if (!hasil.success) {
+      expect(hasil.error.issues.map((issue) => issue.path.join("."))).toContain("jamMulai");
+    }
+  });
+
+  it("menolak jam selesai tanpa jam mulai", () => {
+    const hasil = agendaFormSchema.safeParse({
+      judul: "Rapat",
+      mulai: "2026-11-20",
+      jamSelesai: "12:00",
+    });
+
+    expect(hasil.success).toBe(false);
+    if (!hasil.success) {
+      expect(hasil.error.issues.map((issue) => issue.path.join("."))).toContain("jamMulai");
+    }
+  });
+
+  it("menolak jam selesai yang mendahului jam mulai pada hari yang sama", () => {
+    const hasil = agendaFormSchema.safeParse({
+      judul: "Rapat",
+      mulai: "2026-11-20",
+      jamMulai: "13:00",
+      jamSelesai: "09:00",
+    });
+
+    expect(hasil.success).toBe(false);
+    if (!hasil.success) {
+      expect(hasil.error.issues.map((issue) => issue.path.join("."))).toContain("jamSelesai");
+    }
+  });
+
+  it("mengizinkan jam lebih awal pada kegiatan lintas hari", () => {
+    const hasil = agendaFormSchema.safeParse({
+      judul: "Kemah Bakti",
+      mulai: "2026-11-20",
+      selesai: "2026-11-21",
+      jamMulai: "19:00",
+      jamSelesai: "06:00",
+    });
+
+    expect(hasil.success).toBe(true);
+  });
+
+  it("menolak status agenda di luar daftar", () => {
+    const hasil = agendaFormSchema.safeParse({
+      judul: "Rapat",
+      mulai: "2026-11-20",
+      status: "dibatalkan",
+    });
+
+    expect(hasil.success).toBe(false);
+    if (!hasil.success) {
+      expect(hasil.error.issues.map((issue) => issue.path.join("."))).toContain("status");
+    }
+  });
+});
+
+describe("agendaJamLabel", () => {
+  it("merangkai rentang jam dan membuang detik", () => {
+    expect(agendaJamLabel("09:00:00", "12:00:00")).toBe("09.00–12.00");
+  });
+
+  it("menampilkan satu jam bila selesai kosong atau sama", () => {
+    expect(agendaJamLabel("09:00", null)).toBe("09.00");
+    expect(agendaJamLabel("09:00", "09:00")).toBe("09.00");
+  });
+
+  it("mengembalikan null bila jam mulai belum diisi", () => {
+    expect(agendaJamLabel(null, null)).toBeNull();
   });
 });
 

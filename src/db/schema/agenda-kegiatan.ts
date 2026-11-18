@@ -3,8 +3,10 @@ import {
   date,
   index,
   int,
+  mysqlEnum,
   mysqlTable,
   text,
+  time,
   timestamp,
   varchar,
 } from "drizzle-orm/mysql-core";
@@ -28,6 +30,13 @@ export const agendaKegiatan = mysqlTable(
     judul: varchar("judul", { length: 200 }).notNull(),
     mulai: date("mulai", { mode: "string" }).notNull(),
     selesai: date("selesai", { mode: "string" }),
+    /** Jam mulai dalam zona waktu desa; `null` berarti waktu belum diisi. */
+    jamMulai: time("jam_mulai"),
+    jamSelesai: time("jam_selesai"),
+    /** Kategori kegiatan untuk filter publik, mis. "pemerintahan". */
+    kategori: varchar("kategori", { length: 50 }).notNull().default("umum"),
+    /** Status editorial: rencana, berlangsung, atau selesai. */
+    status: mysqlEnum("status", ["rencana", "berlangsung", "selesai"]).notNull().default("rencana"),
     lokasi: varchar("lokasi", { length: 200 }),
     deskripsi: text("deskripsi"),
     tayang: boolean("tayang").notNull().default(false),
