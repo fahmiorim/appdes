@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
 
+/**
+ * Domain induk pengembangan (mis. `flexidesa.test`). Dipakai untuk mengizinkan
+ * host tenant `<slug>.<domain>` mengambil aset dev.
+ */
+const domainDev = (process.env.DESA_BASE_DOMAIN ?? "").trim();
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
@@ -31,6 +37,14 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+
+  /**
+   * Next dev hanya mengizinkan aset dev (HMR dan boot client) dari origin
+   * server. Tanpa daftar ini, membuka aplikasi lewat host tenant
+   * `<slug>.flexidesa.test` membuat React tidak pernah hydrate: HTML tampil
+   * tetapi seluruh tombol dan form mati. Hanya berlaku saat `next dev`.
+   */
+  allowedDevOrigins: domainDev ? [domainDev, `*.${domainDev}`] : [],
 
   /**
    * Baileys adalah paket Node murni (soket, fs, crypto). Jangan di-bundle;

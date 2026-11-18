@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 
-import { Card } from "@/components/ui/card";
 import { getTemplateTenantPlatform } from "@/features/multi-desa/application/platform-info-use-cases";
 import {
   PlatformCard,
   PlatformEmpty,
-  PlatformPageHeader,
+  PlatformStat,
   PlatformStatus,
 } from "@/features/multi-desa/presentation/platform-ui";
 
@@ -30,38 +29,54 @@ export default async function SuperAdminTemplatePage() {
 
   return (
     <>
-      <PlatformPageHeader
-        description="Fondasi yang disalin ke setiap desa baru: role, modul, matriks akses, tema, dan menu publik. Katalog surat dan data master desa sengaja tidak termasuk."
-        eyebrow="Konsol platform"
-        title="Template tenant"
-      />
-
       <div className="platform-stat-grid">
-        <Card>
-          <div className="stat-card-label">Versi template</div>
-          <div className="stat-card-value">{template.versi}</div>
-          <div className="stat-card-note">
-            Sumber: {template.sumber.jenis} · {template.sumber.dibuatPada}
-          </div>
-        </Card>
-        <Card>
-          <div className="stat-card-label">Role</div>
-          <div className="stat-card-value">{angka.format(template.roles.length)}</div>
-          <div className="stat-card-note">Dibuat ulang untuk setiap tenant</div>
-        </Card>
-        <Card>
-          <div className="stat-card-label">Modul</div>
-          <div className="stat-card-value">{angka.format(template.modules.length)}</div>
-          <div className="stat-card-note">
-            {angka.format(template.modules.filter((modul) => modul.isGroup).length)} grup,{" "}
-            {angka.format(template.modules.filter((modul) => !modul.isGroup).length)} item
-          </div>
-        </Card>
-        <Card>
-          <div className="stat-card-label">Aturan akses</div>
-          <div className="stat-card-value">{angka.format(template.akses.length)}</div>
-          <div className="stat-card-note">Pasangan role × modul</div>
-        </Card>
+        <PlatformStat
+          icon={
+            <>
+              <path d="M6 3.8h9.2L19 7.6v12.6H6z" />
+              <path d="M14.6 3.8v4h4" />
+            </>
+          }
+          label="Versi template"
+          note={`Sumber: ${template.sumber.jenis} · ${template.sumber.dibuatPada}`}
+          value={template.versi}
+        />
+        <PlatformStat
+          icon={
+            <>
+              <circle cx="12" cy="8.4" r="3.4" />
+              <path d="M5.4 20a6.6 6.6 0 0 1 13.2 0" />
+            </>
+          }
+          label="Role"
+          note="Dibuat ulang untuk setiap tenant"
+          value={angka.format(template.roles.length)}
+        />
+        <PlatformStat
+          icon={
+            <>
+              <rect height="6" rx="1.6" width="7" x="3.5" y="4" />
+              <rect height="6" rx="1.6" width="7" x="13.5" y="4" />
+              <rect height="6" rx="1.6" width="7" x="3.5" y="14" />
+              <rect height="6" rx="1.6" width="7" x="13.5" y="14" />
+            </>
+          }
+          label="Modul"
+          note={`${angka.format(template.modules.filter((modul) => modul.isGroup).length)} grup, ${angka.format(template.modules.filter((modul) => !modul.isGroup).length)} item`}
+          value={angka.format(template.modules.length)}
+        />
+        <PlatformStat
+          icon={
+            <>
+              <path d="M4.5 7.5h15" />
+              <path d="M4.5 12h15" />
+              <path d="M4.5 16.5h9" />
+            </>
+          }
+          label="Aturan akses"
+          note="Pasangan role × modul"
+          value={angka.format(template.akses.length)}
+        />
       </div>
 
       <PlatformCard
@@ -156,10 +171,7 @@ export default async function SuperAdminTemplatePage() {
       >
         <dl className="platform-def">
           <div className="platform-def-row">
-            <dt>
-              Tema bawaan
-              <span>src/db/templates/tenant-template.ts</span>
-            </dt>
+            <dt>Tema bawaan</dt>
             <dd>
               {template.tema ? (
                 <>
@@ -183,9 +195,8 @@ export default async function SuperAdminTemplatePage() {
         </dl>
 
         <p className="form-help">
-          Template dibaca dari <code>src/db/templates/tenant-template.ts</code> dan divalidasi saat
-          provisioning. Untuk mengubahnya, gunakan <code>npm run platform:export-template</code>{" "}
-          lalu review perubahan di repository — bukan lewat konsol ini.
+          Template bersifat baca-saja di konsol dan diperbarui lewat rilis aplikasi, bukan dari
+          halaman ini.
         </p>
       </PlatformCard>
     </>
