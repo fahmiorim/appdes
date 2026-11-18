@@ -275,3 +275,89 @@ Daftar bernomor pada inventaris publik adalah **21 file**, yaitu nomor 19 sampai
 - [ ] Pemetaan backend per mockup sampai schema, query/use case, API, serta fixture.
 
 **Kesimpulan addendum:** laporan sekarang mencatat 21 mockup publik (bukan 20), route kandidat, bukti audit visual terdahulu, dan kandidat gap halaman. Ini adalah pembaruan dokumentasi berbasis source tree dan audit CI terdahulu; bukan klaim bahwa semua 21 PNG sudah diperiksa ulang secara visual atau bahwa semua halaman sudah sesuai.
+
+
+---
+
+## Audit visual dan backend — 7 mockup halaman pendukung
+
+**Tanggal pemeriksaan:** 18 November 2026  
+**Sumber visual:** tujuh PNG yang diunggah langsung pada sesi audit ini.  
+**Basis kode/backend:** branch `main` yang diperiksa melalui recursive Git tree dan pembacaan file sumber.  
+**Batas:** audit ini memeriksa desain referensi dan bukti implementasi source code/schema. Ini bukan screenshot runtime atau uji browser terhadap deployment.
+
+### 1. Hasil inspeksi visual mockup
+
+| Mockup | Struktur dan elemen yang terbaca | Catatan UI/UX |
+|---|---|---|
+| Sitemap | Hero dengan breadcrumb/judul/deskripsi; kelompok tautan dalam kartu tiga kolom; kategori beranda, profil, pemerintahan, layanan, informasi, data/transparansi, galeri, pengaduan, dan tautan lain; footer global. | Hierarki kategori mudah dipindai. Pastikan semua tautan benar-benar menuju route aktif; jangan tampilkan item yang belum tersedia. Pada layar kecil, tiga kolom harus berubah menjadi satu kolom dengan urutan yang logis. |
+| Syarat dan Ketentuan | Hero; kartu dokumen utama; tanggal pembaruan; enam bagian bernomor; daftar isi di sidebar; kartu komitmen dan bantuan; footer. | Layout dua kolom cocok untuk dokumen panjang. Daftar isi idealnya memakai anchor yang dapat difokuskan keyboard dan sidebar berubah menjadi blok di atas/bawah konten pada mobile. Tanggal dan isi harus berasal dari dokumen resmi, bukan teks contoh. |
+| Akses Ditolak (403) | Ilustrasi kode 403; judul dan penjelasan; panel kemungkinan penyebab; tombol kembali dan masuk; catatan menghubungi administrator; footer. | Pesan jelas dan memberi jalan keluar. Teks mockup menyebut pengguna mungkin belum login, sedangkan implementasi 403 saat ini secara eksplisit untuk pengguna yang sudah login tetapi tidak berhak; kondisi belum login harus tetap ditangani sebagai 401/redirect login, bukan disatukan ke 403. |
+| Kebijakan Privasi | Hero; dokumen utama dengan tanggal; enam bagian (data dikumpulkan, penggunaan, penyimpanan/keamanan, berbagi, hak pengguna, perubahan); panel informasi terkait dan komitmen; footer. | Struktur mudah dibaca, tetapi pernyataan seperti data yang dikumpulkan, retensi, pembagian, dan hak pengguna wajib mencerminkan praktik aktual aplikasi dan kebijakan pemerintah desa. Jangan memublikasikan klaim keamanan/privasi yang belum didukung prosedur nyata. |
+| 404 | Ilustrasi 404; judul; keterangan; tombol beranda dan cari halaman; tautan populer; footer. | Desain memberi lebih banyak jalan keluar daripada implementasi saat ini. Link pencarian dan tautan populer belum ada pada komponen 404 yang diperiksa. |
+| Maintenance | Ilustrasi pemeliharaan; pesan; estimasi selesai berupa tanggal dan jam; pesan terima kasih; tombol beranda dan kontak; footer. | Estimasi selesai harus opsional dan bersumber dari konfigurasi/status operasional. Jangan menampilkan tanggal statis yang sudah kedaluwarsa. Halaman maintenance harus bisa diaktifkan tanpa membuat aplikasi gagal boot atau mengunci akses operator. |
+| Hasil Pencarian | Hero dan query; input pencarian; sidebar filter kategori dan rentang waktu; pengurutan relevansi; kartu hasil dengan gambar, kategori, tanggal, jumlah dibaca; pagination. | Ini mockup dengan kebutuhan interaksi/data paling tinggi. Filter kategori/tanggal, sorting, jumlah hasil, pagination, metadata tanggal/hit, dan empty state perlu benar-benar berfungsi. Input dan filter harus mempertahankan query ketika berpindah halaman. |
+
+**Konsistensi visual:** ketujuh mockup memakai identitas yang sama: header navigasi putih, biru–ungu pada hero/aksen, latar konten terang, kartu putih dengan border/shadow lembut, serta footer navy. 403/404/maintenance memakai layout khusus yang lebih terpusat. Ada perbedaan ukuran sumber: empat mockup konten menggunakan 1199×1312 dan tiga mockup state menggunakan 1536×1024; ini tidak boleh dianggap sebagai ukuran viewport final tanpa spesifikasi desain responsif.
+
+### 2. Pemetaan route dan kesiapan UI
+
+| Mockup | Bukti pada `main` | Status |
+|---|---|---|
+| Sitemap | Tidak ditemukan page route atau file sitemap pada recursive tree yang diperiksa. | **Belum tersedia / perlu implementasi** |
+| Syarat dan Ketentuan | Tidak ditemukan route/page atau sumber konten khusus syarat dan ketentuan pada tree yang diperiksa. | **Belum tersedia / perlu keputusan konten** |
+| 403 | `src/app/forbidden.tsx` tersedia. Menggunakan judul, pesan akses khusus pengelola platform, link `/beranda` dan `/masuk`. | **Fondasi tersedia; UI belum setara mockup** |
+| Kebijakan Privasi | Tidak ditemukan route/page atau sumber konten kebijakan privasi pada tree yang diperiksa. | **Belum tersedia / perlu keputusan konten** |
+| 404 | `src/app/not-found.tsx` dan `src/app/not-found.module.css` tersedia. Ada judul, deskripsi, link beranda dan masuk. | **Fondasi tersedia; UI belum setara mockup** |
+| Maintenance | Tidak ditemukan route/page atau mekanisme maintenance page pada recursive tree yang diperiksa. | **Belum ditemukan** |
+| Hasil Pencarian | Tidak ditemukan halaman pencarian global. `src/app/berita/page.tsx` menerima query `q` dan `kategori` untuk pencarian/penyaringan berita saja. | **Pencarian parsial; bukan halaman hasil pencarian global seperti mockup** |
+
+### 3. Temuan backend, schema, dan database
+
+#### A. Komponen yang sudah punya fondasi
+
+- **403:** laporan implementasi `docs/reports/02-super-admin/B-03c-forbidden-page.md` mendokumentasikan penggunaan Next `forbidden()`, `src/app/forbidden.tsx`, guard server-side, dan test regresi. Pengguna yang sudah login tetapi tidak berhak menerima 403; pengguna tanpa sesi tetap diarahkan ke login. Task tersebut tidak mengubah schema atau migration.
+- **404:** `src/app/not-found.tsx` adalah global not-found page, metadata `noindex`, dan tidak memuat data tenant. CSS responsif tersedia pada `src/app/not-found.module.css`. Implementasi saat ini tidak memuat tombol pencarian, tautan populer, header, atau footer seperti mockup.
+- **Pencarian berita:** `src/app/berita/page.tsx` membaca `q` dan `kategori`, membatasi query ke 100 karakter, lalu memanggil `daftarBerita(desa.id, ...)` dan `daftarKategoriBerita(desa.id)`. Hasilnya berupa listing berita dengan kategori dan form pencarian berita. Ini belum membuktikan adanya pencarian lintas berita, pengumuman, dokumen, dan halaman.
+- **Normalisasi pencarian:** `src/features/publik/domain/pencarian.ts` menyediakan `normalisasiKataKunci` (merapikan spasi dan batas panjang 100 karakter) serta `polaLike` (escape karakter `%`, `_`, dan backslash). Unit test domain tersedia di `pencarian.test.ts`. Keberadaan helper dan test tidak dengan sendirinya membuktikan seluruh UI mockup pencarian telah terhubung.
+- **Konten publik:** `src/db/schema/content.ts` memuat tabel tenant-scoped untuk profil desa, jabatan/perangkat, kategori berita, dan berita. Kunci tenant menggunakan `village_id`; slug berita unik per desa. Ini mendukung konten berita/profil yang sudah ada, bukan otomatis seluruh jenis hasil pencarian pada mockup.
+- **API informasi:** `src/app/api/publik/informasi/route.ts` menyediakan profil desa, berita, dan dokumen publik dengan paginasi dokumen. API ini bukan endpoint pencarian umum; parameter yang didokumentasikan adalah `page` dan `pageSize`.
+- **Pengaduan:** schema `src/db/schema/pengaduan.ts` sudah ada. Tabel `pengaduan` menyimpan `village_id`, nomor tiket unik per desa, kategori, judul/isi, identitas kontak pelapor, lampiran, status, tanggapan, petugas, dan flag publik. Ini bukan dependensi langsung untuk tujuh mockup ini kecuali tautan kontak/pengaduan pada footer/CTA diarahkan ke fitur pengaduan.
+
+#### B. Kebutuhan yang belum ditemukan atau belum terbukti
+
+| Kebutuhan mockup | Hasil pemeriksaan |
+|---|---|
+| Tabel/schema sitemap | Tidak diperlukan bila sitemap dibangun dari daftar route statis; belum ditemukan route/komponen sitemap. Jika tautan dikelola admin, barulah perlu model menu/tautan yang sesuai. |
+| Penyimpanan syarat dan ketentuan | Tidak ditemukan model dokumen legal khusus. Bisa dimulai sebagai konten statis terversi; schema baru hanya diperlukan bila admin perlu mengelola versi/publikasi melalui aplikasi. |
+| Penyimpanan kebijakan privasi | Tidak ditemukan model dokumen legal khusus. Kontennya harus disahkan dan diselaraskan dengan alur pemrosesan data yang nyata. |
+| Mode maintenance | Tidak ditemukan flag/config dan middleware/guard maintenance yang mengalihkan halaman publik. Perlu desain kontrol operasional, bypass operator, dan perilaku API sebelum dibangun. |
+| Pencarian global lintas konten | Belum ditemukan route UI atau API pencarian global dengan kategori, rentang tanggal, sorting relevansi, dan pagination seperti mockup. Helper normalisasi/LIKE dan pencarian berita adalah fondasi parsial saja. |
+| Metadata pencarian | Tabel berita memiliki tanggal publikasi dan hit; dokumen/berita dapat dicari dari use case yang tersedia. Belum terbukti satu kontrak hasil pencarian yang menormalisasi tipe, thumbnail, tanggal, hit, kategori, dan URL untuk semua sumber. |
+| Daftar isi legal | Bisa dibuat dari heading konten tanpa tabel tambahan. Anchor dan navigasi keyboard merupakan pekerjaan UI. |
+
+**Keputusan database:** jangan membuat tabel baru hanya untuk meniru bentuk mockup. Sitemap, 403, 404, dan maintenance pada dasarnya adalah halaman/state sistem; syarat dan ketentuan serta kebijakan privasi bisa berupa dokumen statis berversi. Schema baru baru dibutuhkan bila produk menghendaki pengelolaan konten legal, jadwal maintenance, atau indeks pencarian persisten dari dashboard.
+
+### 4. Gap dan prioritas implementasi
+
+| Prioritas | Pekerjaan | Kriteria selesai |
+|---|---|---|
+| P0 | Selaraskan 403 dengan aturan autentikasi | 401/tanpa sesi tetap menuju login; 403 hanya untuk sesi valid yang tidak berhak; tidak membocorkan role/tenant. |
+| P0 | Bangun pencarian global | Route dan API tenant-scoped; pencarian minimal berita, pengumuman, dokumen/halaman yang memang dapat dicari; validasi query, escaping LIKE, filter, sorting, pagination, empty state, dan test isolasi tenant. |
+| P1 | Implementasi Sitemap | Route publik; tautan hanya ke route yang tersedia; kelompok kategori sesuai mockup; responsif dan aksesibel. |
+| P1 | Halaman Kebijakan Privasi dan Syarat & Ketentuan | Konten disetujui pemilik layanan; tanggal versi; heading/anchor; metadata; tautan silang. |
+| P1 | Upgrade UI 404 dan 403 | Samakan shell, ilustrasi, footer, CTA, dan responsive layout dengan mockup; 404 punya pencarian/tautan populer hanya setelah targetnya valid. |
+| P2 | Maintenance mode | Konfigurasi yang aman, pesan/estimasi opsional, bypass operator, logging, health/API policy, serta uji agar operator tetap dapat memulihkan layanan. |
+
+### 5. Status audit batch pendukung
+
+- [x] Membaca dan menginspeksi visual 7 PNG yang diunggah.
+- [x] Mengidentifikasi struktur konten, komponen, dan interaksi yang digambarkan.
+- [x] Memeriksa route/page terkait pada recursive source tree `main`.
+- [x] Membaca implementasi 403, 404, listing berita, API informasi, helper pencarian, dan schema konten/pengaduan.
+- [ ] Membandingkan screenshot runtime aplikasi dengan ketujuh PNG pada desktop/mobile.
+- [ ] Menjalankan test/build/CI khusus perubahan implementasi (tidak ada perubahan kode dalam audit dokumentasi ini).
+- [ ] Memverifikasi isi legal dengan pemilik kebijakan dan praktik pemrosesan data aktual.
+- [ ] Implementasi gap yang tercatat.
+
+**Kesimpulan:** dari tujuh mockup pendukung, fondasi UI/route yang jelas sudah ada untuk 403 dan 404, serta pencarian berita parsial. Sitemap, halaman syarat dan ketentuan, kebijakan privasi, halaman maintenance, dan pencarian global belum ditemukan sebagai implementasi pada source tree yang diperiksa. Schema konten desa dan pengaduan sudah ada, tetapi tidak ada dasar untuk menyimpulkan bahwa seluruh kebutuhan mockup pendukung memerlukan tabel baru. Audit ini tidak menyatakan tampilan runtime sudah cocok; screenshot pembanding aplikasi masih diperlukan.
