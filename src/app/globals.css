@@ -2226,7 +2226,6 @@ input:focus-visible {
   text-decoration: underline;
 }
 
-
 /* Super Admin console refresh — platform-only visual layer */
 .admin-sidebar:has(.admin-nav-link[href^="/super-admin"]) {
   background: linear-gradient(180deg, #fff 0%, #f8faff 100%);
@@ -2239,7 +2238,7 @@ input:focus-visible {
   margin: 22px 12px 9px;
   color: #8a96ad;
   font-size: 10px;
-  letter-spacing: .13em;
+  letter-spacing: 0.13em;
 }
 .admin-sidebar:has(.admin-nav-link[href^="/super-admin"]) .admin-nav-link {
   min-height: 44px;
@@ -2262,7 +2261,8 @@ input:focus-visible {
   color: #245bd7;
   box-shadow: 0 4px 12px rgb(38 88 180 / 6%);
 }
-.admin-sidebar:has(.admin-nav-link[href^="/super-admin"]) .admin-nav-link[aria-current="page"]::before {
+.admin-sidebar:has(.admin-nav-link[href^="/super-admin"])
+  .admin-nav-link[aria-current="page"]::before {
   left: -1px;
   width: 3px;
   height: 22px;
@@ -2275,7 +2275,9 @@ input:focus-visible {
   color: #70809e;
   font-size: 15px;
 }
-.admin-sidebar:has(.admin-nav-link[href^="/super-admin"]) .admin-nav-link[aria-current="page"] .admin-nav-icon {
+.admin-sidebar:has(.admin-nav-link[href^="/super-admin"])
+  .admin-nav-link[aria-current="page"]
+  .admin-nav-icon {
   background: #dce8ff;
   color: #245bd7;
 }
@@ -2291,9 +2293,7 @@ input:focus-visible {
   background: #fff;
 }
 .admin-main:has(.platform-page-head) {
-  background:
-    radial-gradient(ellipse at 92% 0%, rgb(225 232 255 / 48%), transparent 34%),
-    #f5f7fc;
+  background: radial-gradient(ellipse at 92% 0%, rgb(225 232 255 / 48%), transparent 34%), #f5f7fc;
 }
 .admin-main:has(.platform-page-head) .admin-topbar {
   border-bottom-color: #e7ecf5;
@@ -2316,7 +2316,7 @@ input:focus-visible {
   font-family: var(--font-display);
   font-size: clamp(27px, 3vw, 34px);
   font-weight: 800;
-  letter-spacing: -.055em;
+  letter-spacing: -0.055em;
   line-height: 1.12;
 }
 .platform-page-head p {
@@ -2336,7 +2336,7 @@ input:focus-visible {
   background: #eff4ff;
   color: #3868c8;
   font-size: 9px;
-  letter-spacing: .12em;
+  letter-spacing: 0.12em;
 }
 .platform-head-actions {
   display: flex;
@@ -2401,7 +2401,7 @@ input:focus-visible {
   font-family: var(--font-display);
   font-size: 15px;
   font-weight: 800;
-  letter-spacing: -.02em;
+  letter-spacing: -0.02em;
 }
 .platform-card-head p {
   margin: 5px 0 0;
@@ -2425,7 +2425,7 @@ input:focus-visible {
   background: #f7f9fd;
   color: #77839b;
   font-size: 10px;
-  letter-spacing: .07em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 .platform-card .tenant-table td {
@@ -2549,7 +2549,7 @@ input:focus-visible {
 }
 .platform-def-row {
   display: grid;
-  grid-template-columns: minmax(160px, .7fr) minmax(0, 1.5fr) auto;
+  grid-template-columns: minmax(160px, 0.7fr) minmax(0, 1.5fr) auto;
   align-items: center;
   gap: 16px;
   padding: 16px 0;
