@@ -4,7 +4,8 @@ import { daftarSemuaDomain } from "@/features/multi-desa/application/kelola-desa
 import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisioning-use-cases";
 import { hariMenujuPurge, statusRetensi } from "@/features/multi-desa/domain/lifecycle-tenant";
 import { parseStatusTenantFilter } from "@/features/multi-desa/domain/status-tenant-filter";
-import { PlatformCard, PlatformPageHeader } from "@/features/multi-desa/presentation/platform-ui";
+import { DialogDaftarDesa } from "@/features/multi-desa/presentation/dialog-daftar-desa";
+import { PlatformCard } from "@/features/multi-desa/presentation/platform-ui";
 import { TenantConsole } from "@/features/multi-desa/presentation/tenant-console";
 
 import {
@@ -43,14 +44,9 @@ export default async function SuperAdminTenantPage({ searchParams }: Props) {
 
   return (
     <>
-      <PlatformPageHeader
-        description={`${angka.format(rows.length)} desa terdaftar. Kelola status, kuota media, domain, akses administrator, ekspor, dan purge dari satu meja kerja.`}
-        eyebrow="Konsol platform"
-        title="Tenant desa"
-      />
-
       <PlatformCard
-        description="Setiap baris dapat dibuka untuk mengubah pengaturan desa. Purge bersifat permanen dan hanya tersedia setelah ekspor berlaku."
+        actions={<DialogDaftarDesa aksi={buatDesaAction} />}
+        description={`${angka.format(rows.length)} desa terdaftar. Setiap baris dapat dibuka untuk mengubah pengaturan desa; purge bersifat permanen dan hanya tersedia setelah ekspor berlaku.`}
         flush
         title="Daftar tenant"
       >
@@ -61,7 +57,6 @@ export default async function SuperAdminTenantPage({ searchParams }: Props) {
             domain={domain}
             statusAwal={statusAwal}
             aksi={{
-              buat: buatDesaAction,
               status: ubahStatusAction,
               kuota: ubahKuotaAction,
               reset: resetAdminAction,

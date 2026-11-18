@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Card } from "@/components/ui/card";
 import { daftarSemuaDomain } from "@/features/multi-desa/application/kelola-desa-use-cases";
 import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisioning-use-cases";
 import {
   PlatformCard,
   PlatformEmpty,
-  PlatformPageHeader,
+  PlatformStat,
   PlatformStatus,
 } from "@/features/multi-desa/presentation/platform-ui";
 
@@ -28,7 +27,7 @@ export default async function SuperAdminDomainPage() {
   const namaDesa = new Map(desa.map((item) => [item.id, item.name ?? `Desa #${item.id}`]));
   const slugDesa = new Map(desa.map((item) => [item.id, item.slug]));
   const desaBerdomain = new Set(domain.map((item) => item.villageId)).size;
-  const domainUtama = domain.filter((item) => item.isPrimary).length;
+  const desaTanpaDomain = desa.length - desaBerdomain;
 
   const urut = [...domain].sort(
     (a, b) =>
@@ -39,38 +38,44 @@ export default async function SuperAdminDomainPage() {
 
   return (
     <>
-      <PlatformPageHeader
-        actions={
-          <Link className="button button-secondary" href="/super-admin/tenant">
-            Buka konsol tenant
-          </Link>
-        }
-        description="Semua hostname yang mengarah ke desa. Domain utama dipakai untuk mengenali tenant dari host; alias lain mengarah ke desa yang sama."
-        eyebrow="Konsol platform"
-        title="Domain tenant"
-      />
-
       <div className="platform-stat-grid">
-        <Card>
-          <div className="stat-card-label">Total domain</div>
-          <div className="stat-card-value">{angka.format(domain.length)}</div>
-          <div className="stat-card-note">Domain utama dan alias</div>
-        </Card>
-        <Card>
-          <div className="stat-card-label">Domain utama</div>
-          <div className="stat-card-value">{angka.format(domainUtama)}</div>
-          <div className="stat-card-note">Satu domain utama per desa</div>
-        </Card>
-        <Card>
-          <div className="stat-card-label">Desa berdomain</div>
-          <div className="stat-card-value">{angka.format(desaBerdomain)}</div>
-          <div className="stat-card-note">Dari {angka.format(desa.length)} desa terdaftar</div>
-        </Card>
-        <Card>
-          <div className="stat-card-label">Desa tanpa domain</div>
-          <div className="stat-card-value">{angka.format(desa.length - desaBerdomain)}</div>
-          <div className="stat-card-note">Tambahkan dari panel tenant</div>
-        </Card>
+        <PlatformStat
+          icon={
+            <>
+              <circle cx="12" cy="12" r="8.4" />
+              <path d="M3.6 12h16.8" />
+              <path d="M12 3.6c2.4 2.4 3.6 5.2 3.6 8.4s-1.2 6-3.6 8.4c-2.4-2.4-3.6-5.2-3.6-8.4s1.2-6 3.6-8.4" />
+            </>
+          }
+          label="Total domain"
+          note="Domain utama dan alias"
+          value={angka.format(domain.length)}
+        />
+        <PlatformStat
+          icon={
+            <>
+              <path d="M3.5 20.5V9.2L9 6.3v14.2" />
+              <path d="M9 20.5h11.5V11l-6-3.2" />
+              <path d="M6 11.4h.01M6 14.8h.01M6 18.2h.01" />
+              <path d="M12.5 12.2h.01M12.5 15.4h.01M12.5 18.6h.01M16 12.2h.01" />
+            </>
+          }
+          label="Desa berdomain"
+          note={`Dari ${angka.format(desa.length)} desa terdaftar`}
+          value={angka.format(desaBerdomain)}
+        />
+        <PlatformStat
+          icon={
+            <>
+              <circle cx="12" cy="12" r="8.4" />
+              <path d="M12 7.6v5.2" />
+              <path d="M12 16.6h.01" />
+            </>
+          }
+          label="Desa tanpa domain"
+          note="Tambahkan dari panel tenant"
+          value={angka.format(desaTanpaDomain)}
+        />
       </div>
 
       <PlatformCard
@@ -86,7 +91,6 @@ export default async function SuperAdminDomainPage() {
                   <th scope="col">Domain</th>
                   <th scope="col">Desa</th>
                   <th scope="col">Jenis</th>
-                  <th scope="col">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -109,14 +113,6 @@ export default async function SuperAdminDomainPage() {
                       ) : (
                         <span className="platform-badge">Alias</span>
                       )}
-                    </td>
-                    <td>
-                      <Link
-                        className="button button-secondary platform-action-button"
-                        href="/super-admin/tenant"
-                      >
-                        Kelola desa
-                      </Link>
                     </td>
                   </tr>
                 ))}

@@ -97,6 +97,29 @@ describe("SuperAdminPage", () => {
     expect(state.daftarDesaSuperAdmin).not.toHaveBeenCalled();
   });
 
+  it("tidak menampilkan baris perhatian yang hitungannya nol", async () => {
+    state.requireSuperAdmin.mockResolvedValue({ id: "platform-1", villageId: null });
+    state.daftarDesaSuperAdmin.mockResolvedValue(desa);
+    state.daftarSemuaDomain.mockResolvedValue([
+      { id: 1, villageId: 1, domain: "sukamaju.localhost", isPrimary: true },
+    ]);
+    state.daftarPenggunaPlatform.mockResolvedValue([]);
+    state.ambilAuditPlatform.mockResolvedValue({
+      rows: [],
+      total: 0,
+      page: 1,
+      pageSize: 25,
+      pageCount: 1,
+    });
+    const { default: SuperAdminPage } = await import("./page");
+
+    // Halaman adalah async server component; render pohon yang sudah resolve.
+    const html = renderToStaticMarkup(await SuperAdminPage());
+
+    expect(html).not.toContain("desa tanpa domain");
+    expect(html).toContain("Tidak ada tindakan tertunda");
+  });
+
   it("memuat ringkasan tenant, domain, dan pengguna platform setelah guard lolos", async () => {
     state.requireSuperAdmin.mockResolvedValue({ id: "platform-1", villageId: null });
     state.daftarDesaSuperAdmin.mockResolvedValue(desa);

@@ -4,11 +4,7 @@ import Link from "next/link";
 import { AUDIT_EVENT_LABELS, type AuditEvent } from "@/features/audit/domain/audit";
 import { ambilAuditPlatform } from "@/features/multi-desa/application/audit-platform-use-cases";
 import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisioning-use-cases";
-import {
-  PlatformCard,
-  PlatformEmpty,
-  PlatformPageHeader,
-} from "@/features/multi-desa/presentation/platform-ui";
+import { PlatformCard, PlatformEmpty } from "@/features/multi-desa/presentation/platform-ui";
 
 import { pastikanSuperAdmin } from "../guard";
 
@@ -71,23 +67,17 @@ export default async function SuperAdminAuditPage({
 
   return (
     <>
-      <PlatformPageHeader
-        actions={
-          <a className="button button-secondary" download href={tautanEkspor}>
-            Unduh CSV
-          </a>
-        }
-        description="Rekaman aksi sensitif dari seluruh desa dan tingkat platform: aktor, waktu, alamat IP, dan sumber daya yang berubah."
-        eyebrow="Konsol platform"
-        title="Audit trail"
-      />
-
       <PlatformCard
         actions={
-          <span className="tenant-result-count">
-            {angka.format(data.total)} peristiwa · halaman {angka.format(data.page)}/
-            {angka.format(data.pageCount)}
-          </span>
+          <div className="platform-card-actions">
+            <span className="tenant-result-count">
+              {angka.format(data.total)} peristiwa · halaman {angka.format(data.page)}/
+              {angka.format(data.pageCount)}
+            </span>
+            <a className="button button-secondary" download href={tautanEkspor}>
+              Unduh CSV
+            </a>
+          </div>
         }
         description="Gunakan filter untuk mempersempit peristiwa sebelum mengekspor."
         flush

@@ -1,37 +1,16 @@
 import type { ReactNode } from "react";
 
+import { Card } from "@/components/ui/card";
+import { StatIcon } from "@/components/ui/stat-icon";
+
 /**
  * Kerangka visual konsol platform.
  *
- * Dipakai seluruh halaman `/super-admin` agar judul, deskripsi, dan kartu
- * section memiliki ritme yang sama. Navigasi antarhalaman cukup lewat sidebar
- * platform; menampilkannya lagi di dalam halaman hanya menduplikasi menu.
- * Komponen ini murni presentasi: otorisasi dan pengambilan data tetap di
- * halaman/use case.
+ * Judul halaman tidak lagi dirender di dalam konten: identitas halaman tampil
+ * di top bar (`PlatformTopbarHead`) agar konten tidak terdorong ke bawah.
+ * Navigasi antarhalaman cukup lewat sidebar platform. Komponen di sini murni
+ * presentasi: otorisasi dan pengambilan data tetap di halaman/use case.
  */
-
-export function PlatformPageHeader({
-  eyebrow,
-  title,
-  description,
-  actions,
-}: {
-  eyebrow: string;
-  title: string;
-  description: ReactNode;
-  actions?: ReactNode;
-}) {
-  return (
-    <div className="platform-page-head">
-      <div>
-        <span className="eyebrow">{eyebrow}</span>
-        <h1>{title}</h1>
-        <p>{description}</p>
-      </div>
-      {actions ? <div className="platform-head-actions">{actions}</div> : null}
-    </div>
-  );
-}
 
 export function PlatformCard({
   title,
@@ -60,6 +39,27 @@ export function PlatformCard({
       ) : null}
       <div className={flush ? "platform-card-body is-flush" : "platform-card-body"}>{children}</div>
     </section>
+  );
+}
+
+export function PlatformStat({
+  label,
+  value,
+  note,
+  icon,
+}: {
+  label: string;
+  value: ReactNode;
+  note: ReactNode;
+  icon: ReactNode;
+}) {
+  return (
+    <Card>
+      <StatIcon>{icon}</StatIcon>
+      <div className="stat-card-label">{label}</div>
+      <div className="stat-card-value">{value}</div>
+      <div className="stat-card-note">{note}</div>
+    </Card>
   );
 }
 

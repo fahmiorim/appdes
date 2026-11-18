@@ -186,16 +186,20 @@ export function AdminSidebar({
                 );
               })}
         </nav>
-        <div className="admin-nav-note">
-          {isPlatformAdmin
-            ? "Kelola tenant desa, domain, akses platform, dan telusuri audit lintas desa."
-            : "Menu mengikuti hak akses akun. Modul bertanda Segera belum memiliki halaman."}
-        </div>
-        <div className="admin-sidebar-footer">
-          Sistem Informasi Desa
-          <br />
-          {isPlatformAdmin ? "Konsol Super Admin" : "Platform FlexiDesa"}
-        </div>
+        {/* Sidebar platform cukup berisi menu: brand sudah menyebut produk dan
+            konsolnya, jadi catatan pengantar dan footer hanya mengulanginya. */}
+        {isPlatformAdmin ? null : (
+          <>
+            <div className="admin-nav-note">
+              Menu mengikuti hak akses akun. Modul bertanda Segera belum memiliki halaman.
+            </div>
+            <div className="admin-sidebar-footer">
+              Sistem Informasi Desa
+              <br />
+              Platform FlexiDesa
+            </div>
+          </>
+        )}
       </aside>
     </>
   );
