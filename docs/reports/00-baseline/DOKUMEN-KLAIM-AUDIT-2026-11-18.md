@@ -5,7 +5,8 @@
 - **Branch:** `task/design-mockup-assets`.
 - **Base commit:** `0e01ad1` (`docs: record design mockup handoff`); merge-base dengan `origin/main` = `7a119d1`, `origin/main` = `f5a6f42`.
 - **Jenis perubahan:** dokumentasi saja. Tidak ada perubahan source, schema, migration, konfigurasi, atau data.
-- **Status:** selesai — perubahan lokal, belum di-commit atau di-push.
+- **Commit hasil:** `7af622e` (`docs(audit): koreksi klaim usang dan berlebih pada dokumen status`), di-push ke `origin/task/design-mockup-assets`.
+- **Status:** selesai — siap review.
 
 ## 1. Kondisi awal
 
@@ -88,15 +89,14 @@ Klaim yang diperiksa dan **sengaja tidak diubah** karena masih sesuai kode: inva
 | `git ls-tree -r --name-only origin/main -- src/app \| grep -c '/page\.tsx$'` | **36** |
 | `git ls-tree ... \| grep -c '/route\.ts$'` | **81** |
 | `ls src/db/migrations/*.sql \| wc -l` | **13** |
+| `git diff --check` | **PASS** — tidak ada trailing whitespace pada diff |
 | Build/typecheck/unit/integration test | **SKIPPED** — hanya dokumentasi; tidak ada kode yang berubah |
-
-`git diff --check` dijalankan bersama pemeriksaan akhir; hasilnya dicatat di ringkasan penyerahan, bukan diulang di sini.
 
 ## 7. Risiko dan batasan
 
 - Koreksi berbasis pemeriksaan statis. Tidak ada uji browser, runtime, provider TTE, atau konfigurasi reverse proxy pada task ini.
 - Status "diperbaiki" berarti kode dan test terkait ada di `repository`; ia bukan bukti perilaku pada staging atau production.
-- Branch ini dibuat dari titik yang lebih lama dari `origin/main`; keempat berkas yang diubah identik antara `HEAD` dan `origin/main`, sehingga diff tidak menghapus pembaruan lain, tetapi merge tetap perlu review.
+- Branch ini dibuat dari titik yang lebih lama dari `origin/main`; keempat berkas yang diubah identik antara `HEAD` awal dan `origin/main`, sehingga diff tidak menghapus pembaruan lain, tetapi merge tetap perlu review.
 - `MODULE-INVENTORY.md` pada task ini hanya diberi delta. Regenerasi penuh dilakukan pada task lanjutan: [MODULE-INVENTORY-REGENERASI-2026-11-18.md](./MODULE-INVENTORY-REGENERASI-2026-11-18.md).
 - Laporan historis di `docs/reports/` tidak diubah karena berfungsi sebagai arsip snapshot.
 
@@ -104,4 +104,4 @@ Klaim yang diperiksa dan **sengaja tidak diubah** karena masih sesuai kode: inva
 
 Dokumen aktif kini memisahkan tiga hal: kondisi snapshot 12 November, status kode 18 November, dan validasi operasional yang belum dijalankan. Tidak ada lagi klaim bahwa webhook membaca `X-Forwarded-Host`, bahwa tema/menu situs sudah tersedia, atau bahwa modul SID punya UI pengelolaan. Temuan yang masih terbuka ditandai eksplisit, bukan dihapus.
 
-Langkah berikut: review diff, lalu walkthrough staging Fase 1/Fase 2 bila ingin menutup sisa klaim operasional. Regenerasi `MODULE-INVENTORY.md` sudah dikerjakan pada laporan terpisah.
+Langkah berikut: review diff di branch `task/design-mockup-assets`, lalu walkthrough staging Fase 1/Fase 2 bila ingin menutup sisa klaim operasional. Regenerasi `MODULE-INVENTORY.md` sudah dikerjakan pada laporan terpisah.
