@@ -13,10 +13,13 @@ export function AdminSidebar({
   menu,
   canReadDashboard,
   isPlatformAdmin = false,
+  villageName = "",
 }: {
   menu: readonly MenuNode[];
   canReadDashboard: boolean;
   isPlatformAdmin?: boolean;
+  /** Nama tenant desa yang ditampilkan sebagai identitas di kepala sidebar. */
+  villageName?: string;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -87,6 +90,7 @@ export function AdminSidebar({
       <aside
         className="admin-sidebar"
         data-open={open}
+        data-desa={isPlatformAdmin ? undefined : "true"}
         data-platform={isPlatformAdmin ? "true" : undefined}
         id="admin-sidebar-navigation"
         ref={drawerRef}
@@ -102,10 +106,14 @@ export function AdminSidebar({
             unoptimized
           />
           <span className="admin-brand-text">
-            <strong>
-              FlexiDesa<span className="admin-brand-domain">.id</span>
-            </strong>
-            <span>{isPlatformAdmin ? "Konsol Super Admin" : "Sistem Informasi Desa Modern"}</span>
+            {isPlatformAdmin ? (
+              <strong>
+                FlexiDesa<span className="admin-brand-domain">.id</span>
+              </strong>
+            ) : (
+              <strong>{villageName || "Desa"}</strong>
+            )}
+            <span>{isPlatformAdmin ? "Konsol Super Admin" : "Admin Desa"}</span>
           </span>
         </Link>
         <div className="admin-nav-label">

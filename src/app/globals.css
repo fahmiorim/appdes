@@ -479,27 +479,6 @@ input:focus-visible {
   backdrop-filter: blur(14px);
 }
 
-.admin-topbar-context {
-  display: grid;
-  min-width: 0;
-  gap: 2px;
-}
-
-.admin-topbar-title {
-  color: var(--color-text-muted);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.admin-topbar-context strong {
-  font-family: var(--font-display);
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
 .admin-topbar-user {
   display: flex;
   align-items: center;
@@ -777,10 +756,6 @@ input:focus-visible {
   .admin-topbar {
     min-height: 66px;
     padding-inline: 16px;
-  }
-
-  .admin-topbar-title {
-    display: none;
   }
 
   .admin-user-chip {
@@ -3378,5 +3353,165 @@ input:focus-visible {
   .platform-welcome p {
     max-width: 34ch;
     font-size: 10px;
+  }
+}
+
+/* --- Shell Admin Desa mengikuti mockup docs/mockups/village/ ---------------
+ * Sidebar navy dengan identitas desa dan topbar breadcrumb. Aturan ini hanya
+ * berlaku untuk `data-desa`, sehingga konsol platform (data-platform) tetap
+ * memakai sistem visualnya sendiri. */
+
+.admin-sidebar[data-desa="true"] {
+  border-right: 0;
+  background:
+    radial-gradient(circle at 0 0, rgb(83 123 232 / 18%), transparent 38%),
+    linear-gradient(180deg, #0b1c3b 0%, #0a1730 100%);
+  color: #ffffff;
+  box-shadow: 12px 0 34px rgb(11 28 59 / 10%);
+}
+
+.admin-sidebar[data-desa="true"] .admin-sidebar-brand {
+  margin-bottom: 10px;
+  padding: 2px 8px 18px;
+  border-bottom: 1px solid rgb(255 255 255 / 11%);
+  color: #ffffff;
+}
+
+.admin-sidebar[data-desa="true"] .admin-brand-logo {
+  padding: 3px;
+  border-radius: 12px;
+  background: rgb(255 255 255 / 10%);
+  object-fit: contain;
+}
+
+.admin-sidebar[data-desa="true"] .admin-brand-text strong {
+  color: #ffffff;
+  font-size: 15px;
+  line-height: 1.25;
+}
+
+.admin-sidebar[data-desa="true"] .admin-brand-text span {
+  color: #a9b8d8;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+}
+
+.admin-sidebar[data-desa="true"] .admin-nav-label {
+  color: #8394b8;
+}
+
+.admin-sidebar[data-desa="true"] .admin-nav-link {
+  color: #c3cee6;
+}
+
+.admin-sidebar[data-desa="true"] .admin-nav-link:hover {
+  background: rgb(255 255 255 / 8%);
+  color: #ffffff;
+}
+
+.admin-sidebar[data-desa="true"] .admin-nav-link[aria-current="page"] {
+  background: linear-gradient(100deg, #7a20f0 0%, #8b3dff 100%);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgb(8 14 40 / 24%);
+}
+
+.admin-sidebar[data-desa="true"] .admin-nav-link[aria-current="page"]::before {
+  display: none;
+}
+
+.admin-sidebar[data-desa="true"] .admin-nav-icon {
+  color: #8fa0c2;
+}
+
+.admin-sidebar[data-desa="true"] .admin-nav-link:hover .admin-nav-icon,
+.admin-sidebar[data-desa="true"] .admin-nav-link[aria-current="page"] .admin-nav-icon {
+  color: #ffffff;
+}
+
+.admin-sidebar[data-desa="true"] .admin-nav-pending {
+  color: #93a3c4;
+  opacity: 0.75;
+}
+
+.admin-sidebar[data-desa="true"] .admin-nav-badge {
+  background: rgb(255 255 255 / 12%);
+  color: #cbd6ec;
+}
+
+.admin-sidebar[data-desa="true"] .admin-nav-note {
+  color: #93a3c4;
+}
+
+.admin-sidebar[data-desa="true"] .admin-sidebar-footer {
+  border-color: rgb(255 255 255 / 12%);
+  background: rgb(255 255 255 / 6%);
+  color: #aab8d4;
+}
+
+/* Fokus keyboard harus tetap terlihat di atas latar navy. */
+.admin-sidebar[data-desa="true"] a:focus-visible,
+.admin-sidebar[data-desa="true"] button:focus-visible {
+  outline: 3px solid rgb(255 255 255 / 60%);
+  outline-offset: 2px;
+}
+
+.admin-breadcrumb {
+  min-width: 0;
+}
+
+.admin-breadcrumb ol {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+
+.admin-breadcrumb li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.admin-breadcrumb li + li::before {
+  color: #9aa7bf;
+  content: "›";
+  font-size: 14px;
+  line-height: 1;
+}
+
+.admin-breadcrumb a {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.admin-breadcrumb a:hover {
+  color: var(--color-brand-strong);
+}
+
+.admin-breadcrumb [aria-current="page"] {
+  overflow: hidden;
+  color: var(--color-text);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .admin-breadcrumb ol {
+    font-size: 11px;
+  }
+
+  /* Layar sempit: sisakan halaman aktif agar chip pengguna tetap muat. */
+  .admin-breadcrumb li:not(:last-child) {
+    display: none;
+  }
+
+  .admin-breadcrumb li::before {
+    display: none;
   }
 }
