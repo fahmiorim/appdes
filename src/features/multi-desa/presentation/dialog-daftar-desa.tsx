@@ -1,8 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect, useId, useRef } from "react";
+import { useActionState, useEffect, useId, useRef, useState } from "react";
 
+import type { Wilayah } from "@/features/wilayah/domain/data-wilayah";
+import { PickerWilayah } from "@/features/wilayah/presentation/picker-wilayah";
 import { createIdleActionState, type ActionState } from "@/lib/action-state";
 
 import { GalatField, PesanDialog } from "./dialog-bagian";
@@ -30,6 +32,27 @@ export function DialogDaftarDesa({ aksi }: { aksi: AksiBuatDesa }) {
     createIdleActionState<{ id: number }>(),
   );
   const fieldErrors = state.status === "error" ? (state.fieldErrors ?? {}) : {};
+
+  // Nama dan kode desa diisi dari picker wilayah, tetapi tetap dapat diubah
+  // manual. `otomatis` mencatat nilai hasil picker agar pergantian wilayah
+  // hanya membersihkan isian yang belum diedit pengguna.
+  const [namaDesa, setNamaDesa] = useState("");
+  const [kodeDesa, setKodeDesa] = useState("");
+  const otomatis = useRef<Wilayah | null>(null);
+
+  function terapkanDesa(desa: Wilayah | null) {
+    const sebelumnya = otomatis.current;
+    otomatis.current = desa;
+
+    if (desa) {
+      setNamaDesa(desa.nama);
+      setKodeDesa(desa.kode);
+      return;
+    }
+
+    if (sebelumnya && namaDesa === sebelumnya.nama) setNamaDesa("");
+    if (sebelumnya && kodeDesa === sebelumnya.kode) setKodeDesa("");
+  }
 
   // Desa baru harus langsung terlihat pada daftar di belakang dialog.
   useEffect(() => {
@@ -76,9 +99,18 @@ export function DialogDaftarDesa({ aksi }: { aksi: AksiBuatDesa }) {
 
         <form action={formAction} className="platform-dialog-form form-stack">
           <div className="platform-form-grid">
+            <PickerWilayah onPilihDesa={terapkanDesa} />
             <label className="form-field">
               <span className="form-label">Nama desa</span>
-              <input className="form-input" name="name" required minLength={3} maxLength={100} />
+              <input
+                className="form-input"
+                name="name"
+                required
+                minLength={3}
+                maxLength={100}
+                value={namaDesa}
+                onChange={(event) => setNamaDesa(event.target.value)}
+              />
               <GalatField pesan={fieldErrors.name?.[0]} />
             </label>
             <label className="form-field">
@@ -90,6 +122,8 @@ export function DialogDaftarDesa({ aksi }: { aksi: AksiBuatDesa }) {
                 inputMode="numeric"
                 pattern="\d{10}"
                 maxLength={10}
+                value={kodeDesa}
+                onChange={(event) => setKodeDesa(event.target.value)}
               />
               <GalatField pesan={fieldErrors.code?.[0]} />
             </label>

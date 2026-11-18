@@ -105,7 +105,7 @@ export function AdminSidebar({
             <strong>
               FlexiDesa<span className="admin-brand-domain">.id</span>
             </strong>
-            <span>Sistem Informasi Desa Terpadu</span>
+            <span>{isPlatformAdmin ? "Konsol Super Admin" : "Sistem Informasi Desa Modern"}</span>
           </span>
         </Link>
         <div className="admin-nav-label">

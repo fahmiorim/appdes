@@ -24,6 +24,24 @@ export const KUOTA_MEDIA_MIN_MB = 1;
 export const KUOTA_MEDIA_MAX_MB = 1024 * 1024;
 
 /**
+ * Kode wilayah administratif (Kemendagri).
+ *
+ * Picker mengirim kode bertitik (`11.01.01`), sedangkan kolom `villages`
+ * menyimpan digit saja (2/4/6 digit). String kosong berarti tidak diisi.
+ */
+function kodeWilayah(panjang: 2 | 4 | 6) {
+  return z
+    .string()
+    .trim()
+    .transform((nilai) => nilai.replaceAll(".", ""))
+    .refine((nilai) => nilai === "" || new RegExp(`^\\d{${panjang}}$`).test(nilai), {
+      message: `Kode wilayah harus ${panjang} digit angka.`,
+    })
+    .transform((nilai) => (nilai === "" ? undefined : nilai))
+    .optional();
+}
+
+/**
  * Skema form pembuatan desa.
  *
  * `code` mengikuti panjang kode desa/kemendagri (10 digit). Domain opsional,
@@ -45,8 +63,11 @@ export const desaBaruSchema = z.object({
       "Format domain tidak valid (contoh: desa-sukamaju.id).",
     ),
   district: z.string().trim().max(100).optional(),
+  districtCode: kodeWilayah(6),
   regency: z.string().trim().max(100).optional(),
+  regencyCode: kodeWilayah(4),
   province: z.string().trim().max(100).optional(),
+  provinceCode: kodeWilayah(2),
   headName: z.string().trim().max(100).optional(),
   adminName: z.string().trim().min(3, "Nama admin minimal 3 karakter.").max(255),
   adminUsername: z

@@ -38,6 +38,27 @@ describe("desaBaruSchema", () => {
     expect(() => desaBaruSchema.parse({ ...dasar, code: "123" })).toThrow();
   });
 
+  it("menyimpan kode wilayah picker sebagai digit sesuai panjang kolom", () => {
+    const hasil = desaBaruSchema.parse({
+      ...dasar,
+      domain: "",
+      provinceCode: "11",
+      regencyCode: "11.01",
+      districtCode: "11.01.01",
+    });
+
+    expect(hasil.provinceCode).toBe("11");
+    expect(hasil.regencyCode).toBe("1101");
+    expect(hasil.districtCode).toBe("110101");
+  });
+
+  it("menerima kode wilayah kosong dan menolak panjang yang salah", () => {
+    expect(
+      desaBaruSchema.parse({ ...dasar, domain: "", provinceCode: "" }).provinceCode,
+    ).toBeUndefined();
+    expect(() => desaBaruSchema.parse({ ...dasar, domain: "", provinceCode: "111" })).toThrow();
+  });
+
   it("menolak domain dengan protokol yang tersisa setelah normalisasi", () => {
     expect(() => desaBaruSchema.parse({ ...dasar, domain: "bukan domain" })).toThrow();
   });
