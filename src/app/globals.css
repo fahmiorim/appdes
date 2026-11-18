@@ -1216,6 +1216,18 @@ input:focus-visible {
   min-width: 140px;
 }
 
+/* Aksi panel yang memakai dialog: tombol tetap sebaris dengan keterangannya. */
+.tenant-panel-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tenant-panel-actions .form-help {
+  flex: 1 1 220px;
+}
+
 .tenant-secret {
   margin: 0;
   padding: 10px 12px;
