@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import type { ReactNode } from "react";
 
 import { Card } from "@/components/ui/card";
 import { StatIcon } from "@/components/ui/stat-icon";
@@ -12,23 +11,6 @@ import { verifySession } from "@/lib/dal";
 export const metadata: Metadata = {
   title: "Beranda",
 };
-
-function StatIcon({ children }: { children: ReactNode }) {
-  return (
-    <div className="stat-icon" aria-hidden="true">
-      <svg
-        fill="none"
-        stroke="currentColor"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={1.7}
-        viewBox="0 0 24 24"
-      >
-        {children}
-      </svg>
-    </div>
-  );
-}
 
 export default async function AdminHomePage() {
   const user = await verifySession();
