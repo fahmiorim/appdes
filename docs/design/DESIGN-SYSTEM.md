@@ -1,7 +1,7 @@
 # FlexiDesa Design System
 
-> Status: **Draft v0.3 — referensi visual 51 mockup telah diinventarisasi; 39 di antaranya ditinjau melalui contact sheet, login diperiksa pada resolusi penuh, sembilan mockup Admin Desa ditinjau pada 19 November 2026, dan token awal diturunkan dari bukti visual.**
-> Sumber referensi: 51 mockup di `docs/mockups/public/`, `docs/mockups/account/`, `docs/mockups/support/`, `docs/mockups/platform/`, dan `docs/mockups/village/`.
+> Status: **Draft v0.3 — referensi visual 52 mockup telah diinventarisasi; 39 di antaranya ditinjau melalui contact sheet, login diperiksa pada resolusi penuh, sepuluh mockup Admin Desa ditinjau pada 19 November 2026, dan token awal diturunkan dari bukti visual.**
+> Sumber referensi: 52 mockup di `docs/mockups/public/`, `docs/mockups/account/`, `docs/mockups/support/`, `docs/mockups/platform/`, dan `docs/mockups/village/`.
 
 ## 1. Tujuan dan aturan sumber kebenaran
 
@@ -222,13 +222,13 @@ Sebelum mengubah status dokumen menjadi stable:
 
 | Area | Status |
 |---|---|
-| Inventaris mockup | 51 file terdaftar: 21 publik, 12 akun, 7 pendukung, 9 Admin Desa, 2 platform |
+| Inventaris mockup | 52 file terdaftar: 21 publik, 12 akun, 7 pendukung, 10 Admin Desa, 2 platform |
 | Audit struktur repository | Dilakukan pada `main` `681753b`; halaman UI aktif: `/masuk`, `/beranda`, `/super-admin` |
 | Audit visual referensi | Contact sheet 39 PNG halaman desa/akun/pendukung ditinjau; login, beranda publik, dan 404 diperiksa pada resolusi penuh. Tiga mockup platform belum melalui audit visual yang sama |
 | Prinsip dan semantik token | Draft; dapat dipakai sebagai kontrak semantik |
 | Baseline warna | Draft v0.3 diturunkan dari sampel visual; perlu contrast check dan browser comparison |
 | Komponen bersama | Spesifikasi awal; perlu visual review dan konsolidasi |
-| Admin Desa | Memiliki 9 referensi sejak 19 November 2026 di `docs/mockups/village/`; selisih dengan implementasi dicatat di [review mockup Admin Desa](../reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md) |
+| Admin Desa | Memiliki 10 referensi sejak 19 November 2026 di `docs/mockups/village/`; selisih dengan implementasi dicatat di [review mockup Admin Desa](../reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md) |
 | Super Admin | Tidak memiliki screenshot khusus; perlu keputusan produk yang dicatat terpisah dari referensi screenshot |
 | Responsive rules final | Belum diverifikasi pada viewport desktop/mobile |
 | Visual regression baseline | Belum dibuat; perlu runtime browser dan fixture sintetis |
@@ -245,6 +245,6 @@ Sebelum mengubah status dokumen menjadi stable:
 2. Audit minimal tiga referensi representatif per kelompok serta seluruh pola unik.
 3. Revisi token hanya berdasarkan hasil inspeksi; sertakan nilai dan bukti referensi.
 4. Bandingkan `/masuk` dengan screenshot login pada ukuran viewport yang sama.
-5. Selaraskan spesifikasi visual Admin Desa dengan sembilan referensi di `docs/mockups/village/`, dan buat spesifikasi Super Admin sebagai keputusan produk baru karena belum ada screenshot khusus.
+5. Selaraskan spesifikasi visual Admin Desa dengan sepuluh referensi di `docs/mockups/village/`, dan buat spesifikasi Super Admin sebagai keputusan produk baru karena belum ada screenshot khusus.
 6. Jalankan aplikasi pada browser, ambil screenshot desktop dan mobile, lalu lakukan visual comparison.
 7. Perbarui matriks dengan status `implemented`, `visually reviewed`, atau `accepted` hanya jika bukti tersedia.

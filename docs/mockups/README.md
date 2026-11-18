@@ -13,10 +13,10 @@ Diperbarui: 19 November 2026. Status implementasi per mockup ada di [audit final
 | Halaman pendukung | 7 | [`support/`](./support/) |
 | Landing platform | 1 | [`platform/landing/`](./platform/landing/) |
 | Dashboard Super Admin | 1 | [`platform/super-admin/`](./platform/super-admin/) |
-| Dashboard Admin Desa | 9 | [`village/`](./village/) |
-| **Total** | **51** | |
+| Dashboard Admin Desa | 10 | [`village/`](./village/) |
+| **Total** | **52** | |
 
-Folder `account/` memuat 11 referensi akun warga dan 1 referensi login Super Admin. Folder `village/` memuat sembilan layar kerja Admin Desa untuk satu tenant contoh (Desa Suka Maju). Angka dan nama di dalamnya adalah data contoh; perlakukan sebagai data sensitif dan jangan dipakai sebagai fixture.
+Folder `account/` memuat 11 referensi akun warga dan 1 referensi login Super Admin. Folder `village/` memuat sepuluh layar kerja Admin Desa untuk satu tenant contoh (Desa Suka Maju). Angka dan nama di dalamnya adalah data contoh; perlakukan sebagai data sensitif dan jangan dipakai sebagai fixture.
 
 ## A. Website publik desa — 21
 
@@ -80,7 +80,7 @@ Folder `account/` memuat 11 referensi akun warga dan 1 referensi login Super Adm
 | 1 | [`FlexiDesa.id Modern Village Dashboard.png`](./platform/landing/FlexiDesa.id%20Modern%20Village%20Dashboard.png) | Landing platform |
 | 2 | [`FlexiDesa Super Admin Dashboard.png`](./platform/super-admin/FlexiDesa%20Super%20Admin%20Dashboard.png) | Dashboard Super Admin |
 
-## E. Dashboard Admin Desa — 9
+## E. Dashboard Admin Desa — 10
 
 Ditambahkan 19 November 2026. Seluruh file berukuran 1536 × 1024 dan hanya tersedia dalam satu varian desktop.
 
@@ -95,6 +95,7 @@ Ditambahkan 19 November 2026. Seluruh file berukuran 1536 × 1024 dan hanya ters
 | 7 | [`Transparansi APBDes Desa Suka Maju.png`](./village/Transparansi%20APBDes%20Desa%20Suka%20Maju.png) | Transparansi APBDes |
 | 8 | [`Village Complaints Dashboard Overview.png`](./village/Village%20Complaints%20Dashboard%20Overview.png) | Pengaduan masyarakat |
 | 9 | [`Pengaturan Desa Suka Maju Dashboard.png`](./village/Pengaturan%20Desa%20Suka%20Maju%20Dashboard.png) | Pengaturan desa |
+| 10 | [`User Management & Access Dashboard.png`](./village/User%20Management%20%26%20Access%20Dashboard.png) | Manajemen pengguna dan hak akses (ditambahkan 19 November 2026) |
 
 ## Aturan penggunaan
 
