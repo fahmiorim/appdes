@@ -24,7 +24,7 @@ Form pendaftaran tenant meminta kode desa 10 digit dan nama secara manual. Schem
 
 ## Perubahan
 
-- Menambahkan picker berjenjang provinsi → kabupaten/kota → kecamatan → desa/kelurahan dengan API server `/api/wilayah`; klien hanya menerima satu tingkat per permintaan.
+- Menambahkan picker berjenjang provinsi → kabupaten/kota → kecamatan → desa/kelurahan dengan API server `/api/wilayah`; klien hanya menerima satu tingkat per permintaan. Route memanggil use case `wilayahAdministratif` di lapisan `application`, bukan repository, agar guard `lapisan-publik.test.ts` (route `src/app` tidak boleh mengimpor infrastructure) tetap lulus.
 - Membundel JSON hasil generator berisi 38 provinsi, 514 kabupaten/kota, 7.285 kecamatan, dan 83.762 desa/kelurahan. Kode desa di dataset disimpan sebagai 10 digit tanpa titik.
 - Memilih desa mengisi otomatis nama dan kode desa, serta mengirim nama dan kode provinsi/kabupaten/kecamatan. Nilai kode wilayah divalidasi dan dinormalisasi ke format digit sebelum disimpan.
 - Menambahkan generator `scripts/wilayah/generate-wilayah.mjs` dan provenance di `src/features/wilayah/data/README.md`.
@@ -41,6 +41,7 @@ Dataset berasal dari dump `db/wilayah.sql` di `https://github.com/cahyadsn/wilay
 - **PASS** — ESLint untuk file wilayah, route API, dialog, panel tenant, provisioning, dan sidebar.
 - **PASS** — Prettier pada semua file sumber yang disentuh; `git diff --cached --check` sebelum penambahan laporan.
 - **PASS (tindak lanjut)** — `npm run format:check` untuk seluruh repo setelah `src/app/public-shell.tsx` dirapikan pada commit `d02fbff`; pemeriksaan ini sebelumnya gagal pada file tersebut meski tidak diubah dalam task ini.
+- **PASS (perbaikan CI)** — `npm run check` (typecheck, ESLint, format:check, unit test) setelah route `/api/wilayah` dipindahkan ke use case: 223 file test, 1.943 test lulus. CI sebelumnya gagal pada guard `lapisan-publik.test.ts` karena route mengimpor `data-wilayah-repository` langsung.
 - **PASS** — `npx vitest run src/features/wilayah/domain/data-wilayah.test.ts src/features/multi-desa/domain/desa-baru.test.ts "src/app/(admin)/super-admin/tenant/page.test.ts" src/features/multi-desa/application/provisioning-use-cases.test.ts` (4 file, 28 test).
 - **PASS** — `npm run build`; route `/api/wilayah` tercantum. Build mencatat dua warning Turbopack tracing filesystem yang sudah ada pada skrip ekspor kedaluwarsa dan integrasi WhatsApp.
 - **PASS** — Uji runtime dev dan production pada endpoint provinsi/kabupaten/kecamatan/desa; induk hilang atau tingkat tak dikenal ditolak dengan HTTP 400.

@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
 
 import {
-  indukValid,
-  isTingkatWilayah,
-  TINGKAT_WILAYAH,
-} from "@/features/wilayah/domain/data-wilayah";
-import { daftarWilayah } from "@/features/wilayah/infrastructure/data-wilayah-repository";
+  PESAN_INDUK_TIDAK_VALID,
+  PESAN_TINGKAT_TIDAK_VALID,
+  wilayahAdministratif,
+} from "@/features/wilayah/application/data-wilayah";
 
 /**
  * Referensi wilayah administratif Kepmendagri untuk picker desa.
@@ -23,19 +22,18 @@ export async function GET(request: Request) {
   const tingkat = parameter.get("tingkat");
   const induk = parameter.get("induk");
 
-  if (!isTingkatWilayah(tingkat)) {
-    return NextResponse.json(
-      { error: `Parameter tingkat harus salah satu: ${TINGKAT_WILAYAH.join(", ")}.` },
-      { status: 400 },
-    );
+  const hasil = wilayahAdministratif(tingkat, induk);
+
+  if (hasil.status === "tingkat-tidak-valid") {
+    return NextResponse.json({ error: PESAN_TINGKAT_TIDAK_VALID }, { status: 400 });
   }
 
-  if (!indukValid(tingkat, induk)) {
-    return NextResponse.json({ error: "Kode induk wilayah tidak valid." }, { status: 400 });
+  if (hasil.status === "induk-tidak-valid") {
+    return NextResponse.json({ error: PESAN_INDUK_TIDAK_VALID }, { status: 400 });
   }
 
   return NextResponse.json(
-    { data: daftarWilayah(tingkat, induk) },
+    { data: hasil.data },
     { headers: { "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800" } },
   );
 }
