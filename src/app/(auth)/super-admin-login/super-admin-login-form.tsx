@@ -78,7 +78,13 @@ export function SuperAdminLoginForm({ nextPath }: { nextPath: string }) {
         </span>
       </label>
       <button className={styles.submit} type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Memeriksa akun..." : <>Masuk ke Konsol <span aria-hidden="true">→</span></>}
+        {isSubmitting ? (
+          "Memeriksa akun..."
+        ) : (
+          <>
+            Masuk ke Konsol <span aria-hidden="true">→</span>
+          </>
+        )}
       </button>
     </form>
   );

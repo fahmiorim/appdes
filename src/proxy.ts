@@ -20,7 +20,10 @@ export function proxy(request: NextRequest) {
   const sessionCookie = getSessionCookie(request);
 
   if (!isPublicPath(pathname) && !sessionCookie) {
-    const tujuanMasuk = pathname === "/super-admin" || pathname.startsWith("/super-admin/") ? "/super-admin-login" : "/masuk";
+    const tujuanMasuk =
+      pathname === "/super-admin" || pathname.startsWith("/super-admin/")
+        ? "/super-admin-login"
+        : "/masuk";
     const url = new URL(tujuanMasuk, request.url);
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
