@@ -4,8 +4,9 @@
 - **Tanggal:** 18 November 2026.
 - **Branch:** `task/agenda-waktu-kategori-status`.
 - **Base commit:** `12fbc25`.
-- **Commit hasil:** commit terakhir pada branch task (belum di-push).
-- **Status:** siap review; migration belum dijalankan ke database mana pun.
+- **Commit hasil:** `2eb55bd` (backend agenda) dan `3a0f0f4` (laporan audit).
+- **Pull request:** https://github.com/fahmiorim/appdes/pull/152
+- **Status:** siap review; branch sudah di-push, migration belum dijalankan ke database mana pun.
 
 ## 1. Kondisi awal
 
@@ -92,4 +93,4 @@ Schema `agenda_kegiatan` hanya menyimpan `judul`, `mulai`, `selesai`, `lokasi`, 
 
 ## 10. Status
 
-Siap review sebagai perubahan backend terfokus. Sudah di-commit pada branch `task/agenda-waktu-kategori-status`, belum di-push; keputusan push/merge menunggu reviewer.
+Siap review sebagai perubahan backend terfokus. Sudah di-commit dan di-push pada branch `task/agenda-waktu-kategori-status`; PR: https://github.com/fahmiorim/appdes/pull/152. Keputusan merge menunggu reviewer.
