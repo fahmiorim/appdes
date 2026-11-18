@@ -64,7 +64,7 @@ export const resolveVillageByHost = cache(
       if (desa) return desa;
     }
 
-    throw notFound("Desa untuk domain ini tidak ditemukan.");
+    halamanTidakDitemukan();
   },
 );
 
