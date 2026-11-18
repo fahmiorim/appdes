@@ -106,9 +106,17 @@ artefak backup yang tidak terenkripsi.
 - **Contoh aman:** `true` **hanya** di belakang reverse proxy yang menimpa
   header.
 - **Catatan keamanan:** jika `false`, header IP diabaikan untuk audit/rate
-  limit. Namun resolver tenant tetap membaca `X-Forwarded-Host` lebih dulu,
-  sehingga proxy **wajib** menimpa header tersebut. Jangan setel `true` bila
-  port aplikasi dapat diakses langsung.
+  limit. Flag ini **tidak** memengaruhi pemilihan tenant: tenant hanya
+  ditentukan dari header `Host` (`resolve-village.ts`), sedangkan
+  `X-Forwarded-Host` diabaikan. Karena itu reverse proxy wajib
+  **mempertahankan `Host` asli** permintaan; menulis ulang `Host` menjadi
+  hostname upstream membuat tenant salah atau tidak ditemukan. Jangan setel
+  `true` bila port aplikasi dapat diakses langsung.
+- **Pengecualian yang diketahui:** `getRequestOrigin()`
+  (`src/lib/request-origin.ts`) memakai `X-Forwarded-Host` bila ada, lalu
+  `Host`, untuk menyusun URL absolut seperti tautan verifikasi surat. Proxy
+  tetap harus menimpa header ini agar nilainya tidak berasal dari klien,
+  meskipun nilainya tidak menentukan tenant.
 
 ### `DESA_BASE_DOMAIN`
 
@@ -156,8 +164,10 @@ artefak backup yang tidak terenkripsi.
 - **Contoh aman:** `GANTI_TOKEN_WEBHOOK_ACAK_MINIMAL_32_KARAKTER`.
 - **Catatan keamanan:**
   - Minimal 32 karakter bila diisi; nilai lebih pendek ditolak saat validasi.
-  - Token tidak menentukan tenant. Tenant ditentukan dari host permintaan;
-    reverse proxy harus menimpa `X-Forwarded-Host`.
+  - Token tidak menentukan tenant. Tenant ditentukan dari header `Host`;
+    `X-Forwarded-Host` diabaikan, jadi reverse proxy harus mempertahankan
+    `Host` asli dan menimpa header forwarded agar signature tidak dapat
+    dipalsukan.
   - Gunakan token unik dan rotasi bila diduga bocor.
 
 ## 4. Integrasi TTE/BSrE (opsional)
