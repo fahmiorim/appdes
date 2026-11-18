@@ -50,21 +50,30 @@ const VIEWPORT = {
 };
 
 const REFERENSI = [
-  ["docs/account/Modern Indonesian Village Login Portal.png", "reference/login.png"],
-  ["docs/public/Agenda Kegiatan Desa Suka Maju.png", "reference/agenda.png"],
-  ["docs/public/Suka Maju Village Gallery Dashboard.png", "reference/galeri.png"],
-  ["docs/public/Desa Suka Maju Photo Gallery.png", "reference/galeri-detail.png"],
-  ["docs/public/Data Statistik Desa Suka Maju Dashboard.png", "reference/statistik.png"],
-  ["docs/public/Pemerintahan Desa Suka Maju Dashboard.png", "reference/pemerintahan.png"],
-  ["docs/public/Wilayah Desa Suka Maju.png", "reference/wilayah.png"],
-  ["docs/public/Sejarah Desa Suka Maju_ Jejak Perjalanan Desa.png", "reference/sejarah.png"],
-  ["docs/public/Visi & Misi Desa Suka Maju.png", "reference/visi-misi.png"],
-  ["docs/public/Potensi Desa Suka Maju Dashboard.png", "reference/potensi.png"],
-  ["docs/public/Desa Suka Maju APBDes Dashboard.png", "reference/apbdes.png"],
-  ["docs/public/Desa Sukamaju Online Services.png", "reference/layanan.png"],
-  ["docs/public/Suka Maju Online Letter Services Dashboard.png", "reference/layanan-surat.png"],
-  ["docs/public/Kontak & Pengaduan Desa Suka Maju.png", "reference/kontak-pengaduan.png"],
-  ["docs/public/Profil Desa Suka Maju_ Informasi dan Potensi Desa.png", "reference/profil.png"],
+  ["docs/mockups/account/Modern Indonesian Village Login Portal.png", "reference/login.png"],
+  ["docs/mockups/public/Agenda Kegiatan Desa Suka Maju.png", "reference/agenda.png"],
+  ["docs/mockups/public/Suka Maju Village Gallery Dashboard.png", "reference/galeri.png"],
+  ["docs/mockups/public/Desa Suka Maju Photo Gallery.png", "reference/galeri-detail.png"],
+  ["docs/mockups/public/Data Statistik Desa Suka Maju Dashboard.png", "reference/statistik.png"],
+  ["docs/mockups/public/Pemerintahan Desa Suka Maju Dashboard.png", "reference/pemerintahan.png"],
+  ["docs/mockups/public/Wilayah Desa Suka Maju.png", "reference/wilayah.png"],
+  [
+    "docs/mockups/public/Sejarah Desa Suka Maju_ Jejak Perjalanan Desa.png",
+    "reference/sejarah.png",
+  ],
+  ["docs/mockups/public/Visi & Misi Desa Suka Maju.png", "reference/visi-misi.png"],
+  ["docs/mockups/public/Potensi Desa Suka Maju Dashboard.png", "reference/potensi.png"],
+  ["docs/mockups/public/Desa Suka Maju APBDes Dashboard.png", "reference/apbdes.png"],
+  ["docs/mockups/public/Desa Sukamaju Online Services.png", "reference/layanan.png"],
+  [
+    "docs/mockups/public/Suka Maju Online Letter Services Dashboard.png",
+    "reference/layanan-surat.png",
+  ],
+  ["docs/mockups/public/Kontak & Pengaduan Desa Suka Maju.png", "reference/kontak-pengaduan.png"],
+  [
+    "docs/mockups/public/Profil Desa Suka Maju_ Informasi dan Potensi Desa.png",
+    "reference/profil.png",
+  ],
 ];
 
 function bacaAppUrl(sumber = process.env) {

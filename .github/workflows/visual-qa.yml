@@ -13,8 +13,9 @@ on:
       - "src/features/**/presentation/**"
       - "src/styles/**"
       - "public/**"
-      - "docs/public/*.png"
-      - "docs/account/Modern Indonesian Village Login Portal.png"
+      # Mockup di docs/ adalah referensi desain, bukan kode yang dirender.
+      # Perubahan referensi saja tidak memicu browser QA; gunakan
+      # workflow_dispatch bila ingin membandingkan ulang secara manual.
       - "package.json"
       - "package-lock.json"
       - "next.config.*"
@@ -149,13 +150,13 @@ jobs:
         if: always()
         run: |
           mkdir -p artifacts
-          cp "docs/account/Modern Indonesian Village Login Portal.png" artifacts/reference-login.png
+          cp "docs/mockups/account/Modern Indonesian Village Login Portal.png" artifacts/reference-login.png
 
       - name: Include public design references
         if: always()
         run: |
           mkdir -p artifacts/reference/public
-          cp docs/public/*.png artifacts/reference/public/
+          cp docs/mockups/public/*.png artifacts/reference/public/
 
       - name: Upload visual evidence
         if: always()
