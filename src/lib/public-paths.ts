@@ -10,6 +10,7 @@
 export const PUBLIC_PATHS = [
   "/desa",
   "/masuk",
+  "/super-admin-login",
   // Alur pemulihan kata sandi harus dapat dibuka tanpa sesi.
   "/lupa-sandi",
   "/reset-sandi",
