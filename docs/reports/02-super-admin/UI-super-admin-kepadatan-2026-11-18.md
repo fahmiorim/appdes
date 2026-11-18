@@ -113,6 +113,18 @@ Penambahan pengguna platform sebelumnya memakai tombol "+ Tambah pengguna platfo
 - CSS mati ikut dihapus: `.platform-create`, `.platform-create-form`, `.platform-create-form .form-input` (+`:focus`), dan `.platform-form-actions` (58 baris).
 - Teks keadaan kosong disesuaikan: "...lewat tombol di atas."
 
+## 4c. Hidrasi klien di host `flexidesa.test`
+
+Tombol di konsol tidak bereaksi sama sekali saat aplikasi dibuka lewat `*.flexidesa.test`. Penyebabnya bukan komponen dialog, melainkan Next 16 yang menolak aset dev (HMR dan boot klien) dari origin selain origin server; akibatnya React tidak pernah hydrate dan seluruh tombol/form mati. Perbaikan: `allowedDevOrigins` di `next.config.ts` diisi dari `DESA_BASE_DOMAIN` beserta wildcard subdomainnya (hanya berlaku saat `next dev`).
+
+Bukti di Chrome headless + CDP dengan klik mouse sungguhan pada `flexidesa.test:3000`, sesudah perbaikan dan restart dev server:
+
+| Tombol | Hidrasi | Hasil klik |
+|---|---|---|
+| “Daftarkan desa” | ya | dialog “Daftarkan desa baru” terbuka sebagai modal |
+| “Tambah pengguna platform” | ya | dialog “Tambah pengguna platform” terbuka sebagai modal |
+| “Lihat” sandi di `/masuk` (kontrol, tanpa auth) | ya | input `password` → `text` |
+
 ## 5. Security/tenant
 
 - Tidak ada perubahan pada guard `pastikanSuperAdmin()`, `requireSuperAdmin`, Server Action, maupun query tenant.
@@ -133,6 +145,7 @@ Penambahan pengguna platform sebelumnya memakai tombol "+ Tambah pengguna platfo
 | `npm run build` | SKIPPED — diverifikasi oleh job build di CI |
 | Test halaman pengguna platform (guard 403 dan penempatan dialog) | PASS — 3 test |
 | `npm run check` setelah dialog tambah pengguna | PASS — 217 file test, 1896 test lulus |
+| Uji klik di browser (`flexidesa.test:3000`, Chrome headless + CDP) untuk kedua dialog | PASS — keduanya ter-hydrate dan membuka dialog modal |
 
 ## 7. Risiko dan keterbatasan
 
@@ -140,7 +153,8 @@ Penambahan pengguna platform sebelumnya memakai tombol "+ Tambah pengguna platfo
 - Top bar kini setinggi judul + deskripsi (±66 px di desktop, ±54 px di mobile karena deskripsi disembunyikan). Belum ada pengukuran render nyata.
 - Dialog pendaftaran desa belum dijalankan di browser: pembukaan lewat `showModal()`, penutupan dengan Escape/klik latar, dan refresh daftar setelah sukses belum disaksikan. Elemen `<dialog>` membutuhkan browser modern, yang dipenuhi semua browser target proyek.
 - `tenant-create`/`tenant-create-grid` CSS hanya dipakai form lama sehingga ikut dihapus; dialog memakai kelas `platform-dialog*` dan `platform-form-grid` yang baru.
-- Dialog tambah pengguna platform belum dijalankan di browser; yang terverifikasi adalah pola dialog yang sama (pendaftaran desa) membuka `showModal()` dengan benar setelah hidrasi klien berjalan, plus markup dan strukturnya lewat test render statis.
+- Kedua dialog terverifikasi di browser lewat halaman probe sementara (tanpa sesi), bukan halaman `/super-admin` yang sesungguhnya; alur kirim form ke Server Action dan refresh daftar setelah sukses belum diuji.
+- `allowedDevOrigins` hanya berlaku saat `next dev`; build dan produksi tidak berubah. Perlu restart `npm run dev` setelah konfigurasi diubah.
 
 - Verifikasi render memakai fixture statis, bukan halaman `/super-admin` sungguhan. Fixture menutup seluruh kelas blok platform, tetapi keadaan `:hover`, `:focus`, `:focus-visible`, `:active`, dan `::backdrop` tidak diuji karena tidak bisa dipicu lewat `getComputedStyle` tanpa interaksi; aturan untuk keadaan itu ikut terkonsolidasi tanpa perubahan nilai (terverifikasi statis).
 - Ada dua blok `@media (max-width: 560px)` terpisah karena aturan aslinya berada di dua posisi cascade berbeda. Keduanya sengaja tidak disatukan: menggabungkannya akan memindahkan deklarasi melewati aturan lain dan berpotensi mengubah hasil.
