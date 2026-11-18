@@ -25,7 +25,7 @@ export default async function SuperAdminLoginPage({
   const user = await getCurrentUser();
   const params = await searchParams;
   const requestedPath = safeNextPath(params.next);
-  const nextPath = requestedPath.startsWith("/super-admin") ? requestedPath : "/super-admin";
+  const nextPath = (requestedPath === "/super-admin" || requestedPath.startsWith("/super-admin/")) ? requestedPath : "/super-admin";
 
   if (user) {
     if (await isSuperAdminUser(user)) redirect(nextPath);
