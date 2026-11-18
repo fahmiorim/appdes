@@ -8,11 +8,15 @@ import type { TemplateTenant } from "@/features/multi-desa/domain/template-tenan
  * produk yang direview lewat repository: ubah isinya bersama test di
  * `src/features/multi-desa/domain/template-tenant.test.ts`.
  *
- * Isi saat ini sengaja minimal karena katalog admin di aplikasi baru memuat
- * `/beranda`; halaman admin lain belum ada. Setelah menambah halaman admin,
- * tambahkan modulnya di sini (dan slug-nya pada matriks `akses`). Instalasi yang
- * sudah berjalan dapat mengekspor katalognya sendiri lalu mengganti isi berkas
- * ini dengan hasil ekspor yang sudah direview.
+ * Aturan isi:
+ * - Modul hanya disemai bila halamannya benar-benar ada dan path-nya terdaftar
+ *   di `RUTE_ADMIN_TERSEDIA`; kalau tidak, sidebar menampilkan label "Segera"
+ *   atau tautan mati. Tambah modul bersamaan dengan halamannya.
+ * - Slug modul sama dengan slug pada `src/features/rbac/domain/resources.ts`,
+ *   karena itulah kunci yang diperiksa `hasPermission`.
+ * - `manage` (termasuk hapus) hanya untuk role `administrator`; role lain
+ *   mengikuti least privilege.
+ * - Menu publik berisi tautan yang sudah memiliki halaman di `src/app/`.
  *
  * Yang tidak boleh dimasukkan: katalog surat, buku bumindes, dan kategori
  * inventaris. Ketiganya data master milik desa, bukan fondasi tenant.
@@ -22,16 +26,47 @@ export const TENANT_TEMPLATE = {
   sumber: {
     jenis: "bawaan",
     villageId: null,
-    dibuatPada: "2026-11-17",
+    dibuatPada: "2026-11-18",
   },
-  roles: [{ slug: "administrator", name: "Administrator", isSystem: true }],
-  modules: [],
-  akses: [],
+  roles: [
+    { slug: "administrator", name: "Administrator", isSystem: true },
+    { slug: "sekretaris", name: "Sekretaris Desa", isSystem: false },
+    { slug: "operator", name: "Operator", isSystem: false },
+    { slug: "kepala-desa", name: "Kepala Desa", isSystem: false },
+  ],
+  modules: [
+    {
+      slug: "beranda",
+      name: "Beranda",
+      url: "/beranda",
+      icon: "⌂",
+      isGroup: false,
+      isHidden: false,
+      isActive: true,
+      sortOrder: 1,
+      parentSlug: null,
+    },
+  ],
+  akses: [
+    { roleSlug: "administrator", moduleSlug: "beranda", access: "manage" },
+    { roleSlug: "sekretaris", moduleSlug: "beranda", access: "read" },
+    { roleSlug: "operator", moduleSlug: "beranda", access: "read" },
+    { roleSlug: "kepala-desa", moduleSlug: "beranda", access: "read" },
+  ],
   tema: {
     slug: "esensi",
     nama: "Esensi",
     versi: "1.0.0",
     opsi: null,
   },
-  menuPublik: [],
+  menuPublik: [
+    { nama: "Beranda", link: "/", linkTipe: "internal", aktif: true, urut: 1 },
+    { nama: "Profil Desa", link: "/profil", linkTipe: "internal", aktif: true, urut: 2 },
+    { nama: "Pemerintahan", link: "/pemerintahan", linkTipe: "internal", aktif: true, urut: 3 },
+    { nama: "Layanan", link: "/layanan", linkTipe: "internal", aktif: true, urut: 4 },
+    { nama: "Berita", link: "/berita", linkTipe: "internal", aktif: true, urut: 5 },
+    { nama: "Agenda", link: "/agenda", linkTipe: "internal", aktif: true, urut: 6 },
+    { nama: "Statistik", link: "/statistik", linkTipe: "internal", aktif: true, urut: 7 },
+    { nama: "Kontak", link: "/kontak", linkTipe: "internal", aktif: true, urut: 8 },
+  ],
 } satisfies TemplateTenant;

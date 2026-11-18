@@ -1,8 +1,12 @@
 # Template Tenant Bawaan — Desain Isi v1
 
-> Status: **proposal desain**, 18 November 2026. Dokumen ini **belum diterapkan**:
-> `src/db/templates/tenant-template.ts` masih memakai isi minimal (satu role,
-> tanpa modul, tanpa menu publik). Penerapan menunggu keputusan maintainer pada §9.
+> Status: **diterapkan**, 18 November 2026. Isi v1 sudah ada di
+> `src/db/templates/tenant-template.ts` dan dijaga unit test di
+> `src/features/multi-desa/domain/template-tenant.test.ts` serta integration test
+> `src/features/multi-desa/provisioning-template.integration.test.ts`.
+> Keputusan yang semula terbuka (§9) sudah diambil seperti tercatat di sana.
+> Navigasi publik **belum** membaca `menu_publik`; peralihan itu dikerjakan
+> sebagai task terpisah agar diff tetap terfokus.
 
 ## 1. Tujuan
 
@@ -92,7 +96,8 @@ export const TENANT_TEMPLATE = {
 } satisfies TemplateTenant;
 ```
 
-Payload di atas sudah diuji lolos `parseTemplateTenant` (lihat §8).
+Payload di atas adalah isi yang sekarang dikirim `provisionDesa`, dan dijaga test
+(lihat §8).
 
 ### 4.1 Role
 
@@ -135,10 +140,10 @@ di template.
 
 Menyemai sekarang bermanfaat meski belum dirender: tenant baru tidak lagi memiliki
 menu publik kosong ketika halaman pengelolaan menu dibuat, dan situs publik dapat
-beralih ke menu berbasis data tanpa backfill per desa. Konsekuensinya, sampai
-peralihan itu terjadi, daftar ini **belum** memengaruhi navigasi publik dan bisa
-menyimpang dari daftar hardcoded per halaman — perbedaan itu harus diselesaikan
-saat nav publik dipindahkan ke data.
+beralih ke menu berbasis data tanpa backfill per desa. Selama peralihan itu belum
+selesai, daftar ini **belum** memengaruhi navigasi publik dan bisa menyimpang dari
+daftar hardcoded per halaman; peralihan nav publik ke data dikerjakan sebagai task
+terpisah.
 
 ## 5. Target v2 — matriks role × modul
 
@@ -215,33 +220,40 @@ itu keputusan yang disengaja karena desa boleh menyesuaikan role dan menunya.
 | Versi template | `versi` masih `1` karena struktur tidak berubah (masih daftar role/modul/akses/menu yang sama). Menaikkan versi hanya jika bentuk data berubah, misalnya menu publik berjenjang. |
 | Keamanan | Tidak ada akun, data pribadi, atau data master desa yang disemai. Semua grant tetap tunduk pada pemeriksaan server-side yang ada. |
 
-## 8. Pengujian yang harus menyertai penerapan
+## 8. Pengujian yang menyertai penerapan
 
-1. `parseTemplateTenant(TENANT_TEMPLATE)` lolos (sudah dibuktikan pada proposal ini:
-   1 unit test sementara, 1 test lulus, berkas uji dihapus setelah validasi).
-2. Setiap URL modul ada di `RUTE_ADMIN_TERSEDIA` **atau** modul ditandai
-   `isActive: false` — mencegah sidebar "Segera" yang tidak disengaja.
-3. Setiap role punya minimal satu grant; `administrator` memegang `manage`.
-4. Setiap menu publik bertipe `internal` menunjuk path yang benar-benar ada di
-   direktori publik (`/`, `/profil`, `/pemerintahan`, `/layanan`, `/berita`,
-   `/agenda`, `/statistik`, `/kontak`).
-5. Integration test provisioning: desa baru memiliki tepat 4 role, 1 modul,
-   8 baris menu publik, tema aktif tunggal, dan tidak membawa data dari desa lain.
-6. Unit test negatif: template dengan role tanpa grant atau modul dengan URL tak
-   terdaftar ditolak oleh pemeriksaan baru di (2) dan (3).
+Pemeriksaan isi template dijalankan sebagai **test guard**, bukan sebagai fungsi
+validasi produksi baru. Template adalah data yang diketik tangan; typecheck tidak
+menangkap modul yang menunjuk rute belum ada atau role yang tidak punya grant.
+Semua butir di bawah ini sudah dijalankan dan lulus.
 
-## 9. Keputusan yang menunggu maintainer
+1. `parseTemplateTenant(TENANT_TEMPLATE)` lolos.
+2. Setiap URL modul aktif ada di `RUTE_ADMIN_TERSEDIA` — mencegah sidebar
+   "Segera" atau tautan mati pada tenant baru.
+3. Setiap role punya minimal satu grant; hanya `administrator` memegang `manage`;
+   `administrator` satu-satunya role `isSystem`.
+4. Setiap menu publik bertipe `internal` menunjuk `src/app/**/page.tsx` yang
+   benar-benar ada; nama menu unik dan `urut` menaik.
+5. Integration test provisioning (`desa_test`): desa baru memiliki tepat 4 role,
+   1 modul (`beranda`), matriks grant yang diharapkan, 8 baris menu publik, satu
+   tema aktif `esensi`, dan tidak membawa role/modul desa sumber.
+6. Skema tetap menolak template tanpa role `administrator`, slug ganda, grant ke
+   role/modul di luar template, dan induk modul yang tidak ada.
 
-1. **Set role v1.** Usulan: `administrator`, `sekretaris`, `operator`,
-   `kepala-desa`. Alternatif konservatif: hanya `administrator` sampai matriks
-   v2 ditetapkan, lalu tambah tiga role lain sekaligus dengan grant-nya.
-2. **Nama tampilan role.** "Sekretaris Desa" dan "Kepala Desa" dipilih agar cocok
-   dengan istilah pemerintahan desa; nama ini unik per tenant dan tidak bisa
-   diduplikasi tanpa mengubah data.
-3. **Menu publik v1.** Usulan: semai delapan tautan sekarang. Alternatif: tetap
-   kosong sampai situs publik membaca `menu_publik`, agar tidak ada dua sumber
-   kebenaran navigasi.
-4. **Kapan v2 diterapkan.** Usulan: per kelompok modul setelah halaman dan
+Catatan: butir 2–4 tidak dapat ditulis sebagai aturan skema karena bergantung pada
+isi filesystem dan katalog RBAC, yang bukan urusan `templateTenantSchema`.
+
+## 9. Keputusan yang diambil saat penerapan
+
+1. **Set role v1:** `administrator`, `sekretaris`, `operator`, `kepala-desa`.
+   Alternatif konservatif (hanya `administrator`) ditolak karena membuat desa baru
+   bergantung pada operator yang harus membuat semua role sebelum bisa bekerja.
+2. **Nama tampilan role:** "Sekretaris Desa" dan "Kepala Desa", sesuai istilah
+   pemerintahan desa. Nama unik per tenant.
+3. **Menu publik v1:** delapan tautan disemai sekarang. Konsekuensinya situs publik
+   harus segera membaca `menu_publik` agar tidak ada dua sumber kebenaran; itu
+   task berikutnya, dan sampai selesai daftar ini belum memengaruhi navigasi.
+4. **Kapan v2 diterapkan:** per kelompok modul setelah halaman dan
    `RUTE_ADMIN_TERSEDIA` siap, dimulai dari Data Desa.
 
 ## 10. Rujukan
