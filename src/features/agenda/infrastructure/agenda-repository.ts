@@ -4,7 +4,7 @@ import { and, asc, eq, gte, lt } from "drizzle-orm";
 
 import { db } from "@/db";
 import { agendaKegiatan } from "@/db/schema";
-import type { AgendaRow } from "@/features/agenda/domain/agenda";
+import type { AgendaRow, AgendaStatus } from "@/features/agenda/domain/agenda";
 
 /**
  * Query agenda kegiatan desa.
@@ -19,6 +19,10 @@ const KOLOM = {
   judul: agendaKegiatan.judul,
   mulai: agendaKegiatan.mulai,
   selesai: agendaKegiatan.selesai,
+  jamMulai: agendaKegiatan.jamMulai,
+  jamSelesai: agendaKegiatan.jamSelesai,
+  kategori: agendaKegiatan.kategori,
+  status: agendaKegiatan.status,
   lokasi: agendaKegiatan.lokasi,
   deskripsi: agendaKegiatan.deskripsi,
 };
@@ -39,7 +43,7 @@ export async function listAgendaPublik(
         gte(agendaKegiatan.mulai, hariIni),
       ),
     )
-    .orderBy(asc(agendaKegiatan.mulai), asc(agendaKegiatan.id))
+    .orderBy(asc(agendaKegiatan.mulai), asc(agendaKegiatan.jamMulai), asc(agendaKegiatan.id))
     .limit(limit);
 
   return rows;
@@ -67,7 +71,7 @@ export async function listAgendaPublikRentang(
         lt(agendaKegiatan.mulai, selesai),
       ),
     )
-    .orderBy(asc(agendaKegiatan.mulai), asc(agendaKegiatan.id));
+    .orderBy(asc(agendaKegiatan.mulai), asc(agendaKegiatan.jamMulai), asc(agendaKegiatan.id));
 }
 
 /** Seluruh agenda desa untuk halaman admin, termasuk yang belum tayang. */
@@ -76,13 +80,17 @@ export async function listAgendaAdmin(villageId: number): Promise<AgendaRow[]> {
     .select({ ...KOLOM, tayang: agendaKegiatan.tayang })
     .from(agendaKegiatan)
     .where(eq(agendaKegiatan.villageId, villageId))
-    .orderBy(asc(agendaKegiatan.mulai), asc(agendaKegiatan.id));
+    .orderBy(asc(agendaKegiatan.mulai), asc(agendaKegiatan.jamMulai), asc(agendaKegiatan.id));
 }
 
 export interface AgendaInput {
   judul: string;
   mulai: string;
   selesai: string | null;
+  jamMulai: string | null;
+  jamSelesai: string | null;
+  kategori: string;
+  status: AgendaStatus;
   lokasi: string | null;
   deskripsi: string | null;
   tayang: boolean;
