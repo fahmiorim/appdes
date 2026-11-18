@@ -91,7 +91,7 @@ export default async function PublicHomePage() {
           <Link href="/" className={styles.brand} aria-label={`Beranda ${desa.namaDesa ?? "desa"}`}>
             {desa.logo ? (
               <Image
-                src={mediaUrl(desa.logo, desa.id) ?? "/images/flexidesa-mark.svg"}
+                src={mediaUrl(desa.logo, desa.id) ?? "/images/logo.png"}
                 alt=""
                 width={48}
                 height={48}

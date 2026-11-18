@@ -32,7 +32,7 @@ export function PublicShell({
         <div className={styles.container + " " + styles.headerInner}>
           <Link href="/" className={styles.brand}>
             {showMark ? (
-              <Image src="/images/flexidesa-mark.svg" alt="" width={42} height={42} />
+              <Image src="/images/logo.png" alt="" width={42} height={42} />
             ) : null}
             <span>
               <strong>{villageName}</strong>

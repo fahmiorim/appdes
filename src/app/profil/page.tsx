@@ -79,7 +79,7 @@ export default async function ProfilDesaPage() {
           <Link href="/" className={styles.brand}>
             {desa.logo ? (
               <Image
-                src={mediaUrl(desa.logo, desa.id) ?? "/images/flexidesa-mark.svg"}
+                src={mediaUrl(desa.logo, desa.id) ?? "/images/logo.png"}
                 alt=""
                 width={46}
                 height={46}
@@ -134,7 +134,7 @@ export default async function ProfilDesaPage() {
             <div className={styles.identityMark}>
               {desa.logo ? (
                 <Image
-                  src={mediaUrl(desa.logo, desa.id) ?? "/images/flexidesa-mark.svg"}
+                  src={mediaUrl(desa.logo, desa.id) ?? "/images/logo.png"}
                   alt={`Logo ${desa.namaDesa ?? "desa"}`}
                   width={92}
                   height={92}

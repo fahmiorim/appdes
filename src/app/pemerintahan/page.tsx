@@ -64,7 +64,7 @@ export default async function PemerintahanPage() {
       <header className={styles.header}>
         <div className={styles.container + " " + styles.headerInner}>
           <Link href="/" className={styles.brand}>
-            <Image src="/images/flexidesa-mark.svg" alt="" width={42} height={42} />
+            <Image src="/images/logo.png" alt="" width={42} height={42} />
             <span>
               <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
               <small>Struktur Pemerintahan</small>

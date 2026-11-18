@@ -15,7 +15,7 @@ describe("GalleryShell", () => {
     );
 
     expect(markup).toContain('aria-label="Navigasi utama"');
-    expect(markup).toContain('src="/images/flexidesa-mark.svg"');
+    expect(markup).toContain("url=%2Fimages%2Flogo.png");
     expect(markup).toContain("Desa Contoh");
     expect(markup).toContain('href="/profil"');
     expect(markup).toContain('href="/berita"');

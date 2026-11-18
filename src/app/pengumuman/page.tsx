@@ -85,7 +85,7 @@ export default async function PengumumanPage({ searchParams }: Props) {
           <Link href="/" className={styles.brand} aria-label={`Beranda ${desa.namaDesa ?? "desa"}`}>
             {desa.logo ? (
               <Image
-                src={mediaUrl(desa.logo, desa.id) ?? "/images/flexidesa-mark.svg"}
+                src={mediaUrl(desa.logo, desa.id) ?? "/images/logo.png"}
                 alt=""
                 width={46}
                 height={46}

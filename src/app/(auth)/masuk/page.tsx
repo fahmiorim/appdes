@@ -6,7 +6,6 @@ import { redirect } from "next/navigation";
 import { LoginForm } from "@/app/(auth)/masuk/login-form";
 import { hostPlatformEksplisit } from "@/features/desa/application/platform-host";
 import { adalahHostPlatform } from "@/features/desa/domain/host";
-import { APP_NAME } from "@/lib/app-config";
 import { getCurrentUser } from "@/lib/dal";
 import { safeNextPath } from "@/lib/safe-next-path";
 
@@ -40,7 +39,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
         <a className="login-brand" href="#top" aria-label="FlexiDesa, beranda">
           <Image
             className="login-brand-symbol"
-            src="/images/flexidesa-mark.svg"
+            src="/images/logo.png"
             alt=""
             width={42}
             height={42}
@@ -48,8 +47,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
             unoptimized
           />
           <span className="login-brand-copy">
-            <strong>FlexiDesa</strong>
-            <small>Sistem Informasi Desa</small>
+            <strong>FlexiDesa.id</strong>
+            <small>Sistem Informasi Desa Terpadu</small>
           </span>
         </a>
 
@@ -160,15 +159,15 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
           <div className="login-footer-brand">
             <Image
               className="login-brand-symbol"
-              src="/images/flexidesa-mark.svg"
+              src="/images/logo.png"
               alt=""
               width={42}
               height={42}
               unoptimized
             />
             <div>
-              <strong>FlexiDesa</strong>
-              <span>{APP_NAME}</span>
+              <strong>FlexiDesa.id</strong>
+              <span>Sistem Informasi Desa Terpadu</span>
             </div>
           </div>
           <div>

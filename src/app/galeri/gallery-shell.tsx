@@ -15,7 +15,7 @@ export function GalleryShell({ villageName, children }: GalleryShellProps) {
       <header className={styles.header}>
         <div className={styles.container + " " + styles.headerInner}>
           <Link href="/" className={styles.brand}>
-            <Image src="/images/flexidesa-mark.svg" alt="" width={42} height={42} />
+            <Image src="/images/logo.png" alt="" width={42} height={42} />
             <span>
               <strong>{villageName}</strong>
               <small>Galeri Desa</small>
