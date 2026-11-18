@@ -30,18 +30,18 @@ export function AdminTopbar({ name, villageName }: { name: string; villageName: 
 
   return (
     <header className="admin-topbar">
-      <div>
-        <div className="admin-topbar-title">Ruang kerja administrasi</div>
+      <div className="admin-topbar-context">
+        <span className="admin-topbar-title">Ruang kerja administrasi</span>
         <strong>{villageName || "Administrasi Platform"}</strong>
       </div>
       <div className="admin-topbar-user">
-        <span className="avatar" aria-hidden="true">
-          {initials || "U"}
-        </span>
-        <span>
-          <strong>{name}</strong>
-          <span className="form-help" style={{ display: "block" }}>
-            Pengguna aktif
+        <span className="admin-user-chip">
+          <span className="avatar" aria-hidden="true">
+            {initials || "U"}
+          </span>
+          <span className="admin-user-text">
+            <strong>{name}</strong>
+            <span>Pengguna aktif</span>
           </span>
         </span>
         <Button variant="secondary" onClick={handleSignOut} disabled={isSigningOut}>
