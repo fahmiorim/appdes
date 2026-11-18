@@ -104,7 +104,7 @@ diubah.
 
 Klaim berikut masih benar dan tidak diubah:
 
-- **Visual acceptance publik belum lulus.** `docs/design/PUBLIC-VISUAL-AUDIT-2026-11-15.md` mencatat
+- **Visual acceptance publik belum lulus.** `docs/reports/05-ui-audit/archive/PUBLIC-VISUAL-AUDIT-2026-11-15.md` mencatat
   0 dari 14 referensi PASS. Merge PR #49–#65 tidak mengubah penilaian itu.
 - **Migration belum dijalankan di lingkungan mana pun.** Migration `0005`/`0006` diuji pada database
   disposable; preflight dan backup untuk data nyata masih menjadi prasyarat deployment.

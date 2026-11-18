@@ -4,7 +4,7 @@
 - **Tanggal:** 18 November 2026.
 - **Branch:** `main`, base commit `12fbc25`.
 - **Status:** laporan selesai; **belum ada perubahan source code** dan belum di-commit.
-- **Menggantikan:** `UI-MOCKUP-AUDIT-2026-11-18.md` (draft). Draft lama memuat setidaknya dua klaim yang dikoreksi di sini (lihat §7).
+- **Menggantikan:** `docs/reports/05-ui-audit/archive/UI-MOCKUP-AUDIT-2026-11-18-draft.md`. Draft lama memuat setidaknya dua klaim yang dikoreksi di sini (lihat §7).
 
 ## 1. Tujuan dan batas
 
@@ -245,7 +245,7 @@ Sebaliknya, perbedaan berikut **tetap desain** meskipun data diisi: komposisi he
 
 ## Konsolidasi lintas-audit — 18 November 2026
 
-Bagian ini menyatukan laporan kesiapan tiga mockup utama dan inventaris awal di docs/reports/02-super-admin/MOCKUP-ASSETS-2026-11-18.md dengan audit final 42 mockup. Matriks audit final menjadi acuan utama untuk status seluruh mockup; laporan 02-super-admin tetap menjadi catatan khusus kesiapan landing platform, login Super Admin, dan dashboard Super Admin.
+Bagian ini menyatukan laporan kesiapan tiga mockup utama dan inventaris awal di [arsip MOCKUP-ASSETS](./archive/MOCKUP-ASSETS-2026-11-18.md) dengan audit final 42 mockup. Matriks audit final menjadi acuan utama untuk status seluruh mockup; laporan arsip tersebut tetap menjadi catatan khusus kesiapan landing platform, login Super Admin, dan dashboard Super Admin.
 
 ### 1. Cakupan gabungan dan bukti
 
@@ -313,4 +313,4 @@ Audit final mencatat jam, kategori, dan status agenda sebagai gap. PR #152 kemud
 6. Jalankan migration agenda di environment tujuan sebelum UI memakai field baru, lalu uji create/update/list/filter.
 7. Tutup gap satu per satu dengan acceptance criteria visual dan fungsional eksplisit.
 
-**Status konsolidasi:** dokumen ini menjadi sumber utama hasil audit mockup 18 November 2026. Laporan 02-super-admin dipertahankan sebagai riwayat inspeksi aset dan kesiapan tiga mockup utama; inventaris awalnya bukan lagi acuan tunggal untuk status 42 mockup. Tidak ada perubahan source aplikasi dalam konsolidasi dokumentasi ini.
+**Status konsolidasi:** dokumen ini menjadi sumber utama hasil audit mockup 18 November 2026. Laporan awal di `archive/` dipertahankan sebagai riwayat inspeksi aset dan kesiapan tiga mockup utama; inventaris awalnya bukan lagi acuan tunggal untuk status 42 mockup. Tidak ada perubahan source aplikasi dalam konsolidasi dokumentasi ini.

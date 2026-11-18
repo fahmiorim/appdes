@@ -20,7 +20,7 @@ menggambarkan kondisi sebelum pekerjaan itu:
 | `docs/TECHNICAL_AUDIT.md` | AUD-009 menyatakan Server Action pengelolaan tenant tidak ditemukan dan provisioning masih mengambil desa pertama; AUD-010 menyatakan purge belum ada |
 | `docs/deployment/README.md` | Menyebut 12 migrasi; menyatakan form pengelolaan domain belum ada di UI |
 | `docs/deployment/STAGING.md` | Menyebut bootstrap "belum tersedia sebagai perintah repository"; checklist memakai 12 migrasi |
-| `docs/design/SCREENSHOT-IMPLEMENTATION-MATRIX.md` | Menyebut manajemen tenant dan lifecycle tenant "belum ada UI lengkap" |
+| `docs/reports/05-ui-audit/archive/SCREENSHOT-IMPLEMENTATION-MATRIX.md` | Menyebut manajemen tenant dan lifecycle tenant "belum ada UI lengkap" |
 
 ## 2. Bukti yang dipakai
 
@@ -44,7 +44,7 @@ Klaim baru dicocokkan langsung dengan kode di `main`, bukan dari ingatan laporan
 | `docs/TECHNICAL_AUDIT.md` | Memperbarui AUD-009 dan AUD-010 agar mencerminkan kode sekarang, sekaligus mencatat validasi runtime yang belum terbukti |
 | `docs/deployment/README.md` | Memperbaiki jumlah migrasi menjadi 13, menyesuaikan prosedur bootstrap, dan memperbarui status pengelolaan domain |
 | `docs/deployment/STAGING.md` | Mengganti rujukan bootstrap yang usang dan memperluas checklist staging |
-| `docs/design/SCREENSHOT-IMPLEMENTATION-MATRIX.md` | Menandai UI manajemen dan lifecycle tenant tersedia, dengan visual review tetap pending |
+| `docs/reports/05-ui-audit/archive/SCREENSHOT-IMPLEMENTATION-MATRIX.md` | Menandai UI manajemen dan lifecycle tenant tersedia, dengan visual review tetap pending |
 
 ## 4. Perubahan
 
@@ -81,7 +81,7 @@ addendum.
 
 | Perintah | Hasil |
 |---|---|
-| `npx prettier --check docs/MASTER_ROADMAP.md docs/SID_FEATURE_MAP.md docs/TECHNICAL_AUDIT.md docs/deployment/README.md docs/deployment/STAGING.md docs/design/SCREENSHOT-IMPLEMENTATION-MATRIX.md` | **PASS** — semua berkas sesuai gaya Prettier |
+| `npx prettier --check docs/MASTER_ROADMAP.md docs/SID_FEATURE_MAP.md docs/TECHNICAL_AUDIT.md docs/deployment/README.md docs/deployment/STAGING.md docs/reports/05-ui-audit/archive/SCREENSHOT-IMPLEMENTATION-MATRIX.md` | **PASS** — semua berkas sesuai gaya Prettier |
 | `git ls-files 'src/db/migrations/*.sql' \| wc -l` | **13** — dasar klaim jumlah migrasi |
 | Pemeriksaan `package.json`, `audit.ts`, `super-admin/page.tsx`, `tenant-template.ts` | **PASS** — setiap klaim baru punya rujukan kode |
 | `npm run check` / `npm run build` | **SKIPPED** — hanya dokumentasi; tidak ada kode yang berubah |

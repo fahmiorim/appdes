@@ -18,6 +18,7 @@ Stack yang harus dipertahankan:
 Jangan mengganti stack, ORM, database, atau pola arsitektur utama tanpa keputusan eksplisit dari maintainer.
 
 Dokumen acuan:
+- `docs/README.md` — indeks dokumentasi, struktur folder, dan aturan arsip.
 - `docs/TECHNICAL_AUDIT.md` — temuan dan kontrol positif audit.
 - `docs/SID_FEATURE_MAP.md` — peta fitur dan cakupan modul.
 - `docs/MASTER_ROADMAP.md` — urutan fase, prioritas, dependensi, dan Definition of Done.

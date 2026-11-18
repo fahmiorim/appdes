@@ -13,9 +13,9 @@
 - 7 screenshot halaman pendukung.
 
 Tiga referensi diperiksa pada resolusi penuh:
-- Login: `docs/account/Modern Indonesian Village Login Portal.png`, 1199 × 1312.
-- Beranda publik: `docs/public/Sistem Informasi Desa Suka Maju.png`, 1024 × 1536.
-- Halaman 404: `docs/pendukung/SID Desa Sukamaju 404 Page.png`, 1536 × 1024.
+- Login: `docs/mockups/account/Modern Indonesian Village Login Portal.png`, 1199 × 1312.
+- Beranda publik: `docs/mockups/public/Sistem Informasi Desa Suka Maju.png`, 1024 × 1536.
+- Halaman 404: `docs/mockups/support/SID Desa Sukamaju 404 Page.png`, 1536 × 1024.
 
 ## 2. Pola visual yang teramati
 
