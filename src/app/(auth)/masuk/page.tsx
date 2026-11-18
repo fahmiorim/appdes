@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/app/(auth)/masuk/login-form";
+import { hostPlatformEksplisit } from "@/features/desa/application/platform-host";
+import { adalahHostPlatform } from "@/features/desa/domain/host";
 import { APP_NAME } from "@/lib/app-config";
 import { getCurrentUser } from "@/lib/dal";
 import { safeNextPath } from "@/lib/safe-next-path";
@@ -15,6 +18,14 @@ export const metadata: Metadata = {
 type SearchParams = Promise<{ next?: string | string[] }>;
 
 export default async function LoginPage({ searchParams }: { searchParams: SearchParams }) {
+  // Host platform tidak melayani tenant desa, sehingga login warga/desa di sini
+  // tidak punya tujuan. Administrator platform memakai halaman masuk khusus.
+  // Daftar eksplisit dipakai agar deployment satu-domain (tanpa PLATFORM_HOSTS)
+  // tetap dapat memakai `/masuk` sebagai jalan masuk staf desa.
+  if (adalahHostPlatform((await headers()).get("host"), hostPlatformEksplisit)) {
+    redirect("/super-admin-login");
+  }
+
   const user = await getCurrentUser();
   const params = await searchParams;
   const nextPath = safeNextPath(params.next);
