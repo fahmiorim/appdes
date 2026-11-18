@@ -180,7 +180,7 @@ Pemeriksaan ulang recursive repository tree pada 18 November 2026 menemukan **42
 | 17 | `docs/pendukung/Sitemap Desa Sukamaju Website.png` | Sitemap |
 | 18 | `docs/pendukung/Syarat dan Ketentuan SID Desa Sukamaju.png` | Syarat dan ketentuan |
 
-### C. Website publik desa — 20 mockup
+### C. Website publik desa — 21 mockup
 
 | No. | File | Area yang perlu dipetakan |
 |---:|---|---|
@@ -215,4 +215,63 @@ Pemeriksaan ulang recursive repository tree pada 18 November 2026 menemukan **42
 5. Beri status terpisah: **sesuai**, **perlu perbaikan UI**, **backend tersedia**, **perlu pengembangan backend**, atau **belum dapat dinilai**.
 6. Catat gap dan prioritas perbaikan tanpa menganggap nama file sebagai bukti bahwa halaman atau fiturnya telah selesai.
 
-**Kesimpulan inventaris:** jumlah aset gambar dalam `docs/` adalah 42: tiga mockup utama dan 39 mockup tambahan. Audit visual dan pemetaan implementasi atas 39 mockup tambahan masih merupakan pekerjaan terbuka; laporan ini tidak mengklaim 39 mockup tersebut telah diperiksa secara visual.
+**Kesimpulan inventaris:** jumlah aset gambar dalam `docs/` adalah 42: tiga mockup utama dan 39 mockup tambahan. Rincian 39 tambahan terdiri dari 11 account, 7 pendukung, dan 21 website publik (bukan 20). Audit visual dan pemetaan implementasi atas 39 mockup tambahan masih merupakan pekerjaan terbuka; laporan ini tidak mengklaim 39 mockup tersebut telah diperiksa secara visual.
+
+
+---
+
+## Addendum — pemetaan 21 mockup website publik ke route dan hasil audit yang tersedia
+
+**Tanggal pembaruan:** 18 November 2026  
+**Basis inventaris:** recursive tree repository `main` yang diperiksa pada pembaruan ini.  
+**Sumber audit visual terdahulu:** `docs/design/PUBLIC-VISUAL-AUDIT-2026-11-15.md`, yang mendokumentasikan screenshot CI dan perbandingan visual setelah PR #49.  
+**Catatan penting:** nama file dipakai untuk mengenali maksud halaman, bukan bukti bahwa isi gambarnya sudah diperiksa pada pembaruan ini. Connector GitHub yang tersedia mengembalikan file PNG sebagai data biner kosong, sehingga inspeksi ulang isi PNG satu per satu tidak dapat dilakukan dari sesi ini. Untuk itu, status visual di bawah hanya mengutip audit visual terdahulu jika ada; sisanya ditandai belum diverifikasi, bukan dianggap lulus.
+
+### Koreksi jumlah
+
+Daftar bernomor pada inventaris publik adalah **21 file**, yaitu nomor 19 sampai 39 secara inklusif. Dengan demikian total 39 mockup tambahan tetap benar: 11 account + 7 pendukung + 21 publik. Pernyataan sebelumnya yang menyebut folder publik berisi 20 mockup adalah salah hitung dan dikoreksi di addendum ini.
+
+### Matriks route dan status bukti
+
+| No. | Mockup publik | Route kandidat pada source tree saat ini | Bukti visual terdahulu / status |
+|---:|---|---|---|
+| 19 | Agenda Kegiatan Desa Suka Maju | `/agenda` | **FAIL — major visual gap** pada audit 15 Nov: kalender dasar ada, tetapi hero, kartu event berfoto, panel agenda, sidebar, unduh jadwal, dan pagination belum setara referensi. |
+| 20 | Berita Gotong Royong Desa Suka Maju | `/berita/[slug]` | Route detail berita ada di source tree; belum ada hasil screenshot/perbandingan khusus untuk mockup detail ini dalam audit terdahulu. |
+| 21 | Data Statistik Desa Suka Maju Dashboard | `/data/statistik` | **FAIL — major visual gap** pada audit 15 Nov: KPI, chart, breakdown, map, dan sidebar belum setara referensi. |
+| 22 | Desa Suka Maju APBDes Dashboard | `/transparansi/apbdes` | **FAIL — major visual gap** pada audit 15 Nov: ringkasan/progress ada, tetapi chart, komposisi anggaran, kategori, dokumen, dan sidebar belum setara. |
+| 23 | Desa Suka Maju Photo Gallery | `/galeri` | **FAIL — major visual gap** pada audit 15 Nov: listing album masih terlalu tipis dibanding kategori, grid, sidebar, dan CTA referensi. |
+| 24 | Desa Sukamaju Online Services | `/layanan` | **FAIL — major visual gap** pada audit 15 Nov untuk katalog layanan: kartu layanan, kategori, alur, syarat, dan CTA belum setara. |
+| 25 | Indonesian Village Finance Dashboard | `/transparansi/keuangan` (target semantik; route page belum ditemukan pada tree) | **Belum terverifikasi / kandidat gap route**. Jangan disamakan otomatis dengan halaman APBDes; perlu keputusan apakah halaman keuangan umum berbeda dari transparansi APBDes. |
+| 26 | Kontak & Pengaduan Desa Suka Maju | `/kontak` dan `/pengaduan` | **FAIL — major visual gap** pada audit 15 Nov: kontak/pengaduan belum menyatukan form, peta, kanal kontak, dan FAQ seperti referensi. |
+| 27 | Pemerintahan Desa Suka Maju Dashboard | `/pemerintahan` | **FAIL — major visual gap** pada audit 15 Nov: struktur dasar ada, tetapi profil perangkat, foto, daftar pejabat, dan panel pendukung belum setara. |
+| 28 | Pengumuman Musdes Desa Suka Maju | `/pengumuman` | Route UI belum ditemukan dalam audit visual terdahulu; source tree saat pembaruan menunjukkan route page tersedia. Screenshot acceptance untuk mockup ini belum terverifikasi. |
+| 29 | Potensi Desa Suka Maju Dashboard | `/potensi` | **FAIL — major visual gap** pada audit 15 Nov: konten masih ringkas; kartu kategori, foto, bagian unggulan, dan sidebar belum setara. |
+| 30 | Profil Desa Suka Maju — Informasi dan Potensi Desa | `/profil` | **FAIL — major visual gap** pada audit 15 Nov: section dasar ada, tetapi foto utama, peta, highlight potensi, dan komposisi referensi belum terwakili. |
+| 31 | Sejarah Desa Suka Maju — Jejak Perjalanan Desa | `/profil/sejarah` | **FAIL — major visual gap** pada audit 15 Nov: halaman masih dominan teks; timeline, foto arsip, dan panel pendukung belum setara. |
+| 32 | Sistem Informasi Desa Suka Maju | `/` | Route beranda tersedia di source tree; audit 15 Nov menyatakan belum masuk daftar capture. Visual acceptance belum terverifikasi. |
+| 33 | Suka Maju Online Letter Services Dashboard | `/layanan/surat` | **FAIL — major visual gap** pada audit 15 Nov: hanya dua row jenis surat; kartu layanan, kategori, langkah, syarat, dan panel belum setara. |
+| 34 | Suka Maju Village Gallery Dashboard | `/galeri` dan `/galeri/[slug]` | Audit 15 Nov: **FAIL — major visual gap** untuk listing galeri dan detail album/foto. Pastikan apakah file ini duplikat konsep dari mockup galeri lain atau state/halaman berbeda. |
+| 35 | Suka Maju Village Information Dashboard | `/informasi` (target semantik; route page belum ditemukan pada tree) | **Belum terverifikasi / kandidat gap route**. Source tree memiliki `/profil` dan `/dokumen`, tetapi belum ada bukti keduanya setara dengan halaman informasi desa yang dimaksud. |
+| 36 | Village News Dashboard — Desa Suka Maju | `/berita` | Route daftar berita tersedia di source tree; audit 15 Nov menyebut route belum masuk daftar capture. Visual acceptance belum terverifikasi. |
+| 37 | Village Official Profile Dashboard | `/pemerintahan` atau `/pemerintahan/perangkat/[slug]` | Audit 15 Nov menyebut route profil perangkat khusus belum ditemukan. Source tree saat pembaruan menunjukkan halaman pemerintahan, tetapi route detail perangkat belum terkonfirmasi. |
+| 38 | Visi & Misi Desa Suka Maju | `/visi-misi` atau `/profil/visi-misi` | **FAIL — major visual gap** pada audit 15 Nov: dua panel teks dasar belum setara dengan hero, ikon, section nilai/tujuan, dan CTA referensi. |
+| 39 | Wilayah Desa Suka Maju | `/wilayah` | **FAIL — major visual gap** pada audit 15 Nov: hierarki wilayah ada, tetapi peta berwarna, legenda, ringkasan, dan panel geografis belum tersedia; data koordinat tidak boleh direkayasa. |
+
+### Temuan dan keputusan audit
+
+1. **Bukti visual yang dapat dipakai:** audit visual 15 Nov mencatat 14 referensi halaman dengan hasil **0 visual PASS**. Status FAIL di matriks ini hanya dipakai pada halaman yang memang dibahas dalam laporan terdahulu; status tersebut adalah bukti historis dan perlu screenshot ulang terhadap `main` terbaru sebelum dianggap sebagai kondisi terkini.
+2. **Route tersedia bukan berarti desain selesai:** keberadaan `page.tsx` hanya membuktikan ada route UI. Itu tidak membuktikan konten, data, interaksi, responsive behavior, maupun kesesuaian visual sudah memenuhi mockup.
+3. **Route yang perlu keputusan produk:** `/transparansi/keuangan` dan `/informasi` belum ditemukan sebagai halaman tersendiri pada source tree yang diperiksa. Tentukan apakah keduanya halaman terpisah atau bagian dari halaman yang sudah ada sebelum implementasi.
+4. **Potensi tumpang tindih mockup:** dua mockup galeri, dua mockup berita (list/detail), serta dua mockup profil/informasi perlu diklasifikasikan sebagai halaman berbeda atau variasi tampilan sebelum pekerjaan UI dimulai.
+5. **Data yang berisiko direkayasa:** peta wilayah, statistik, APBDes/keuangan, dan profil perangkat harus memakai sumber data yang tersedia dan tervalidasi. Bila belum ada, tampilkan status kosong yang jujur atau buat kebutuhan backend terlebih dahulu; jangan mengisi angka/foto/koordinat fiktif.
+
+### Status pembaruan
+
+- [x] Inventaris file publik dan koreksi jumlah menjadi 21.
+- [x] Pemetaan awal 21 mockup ke route kandidat berdasarkan source tree.
+- [x] Mengaitkan halaman yang relevan dengan temuan audit visual terdahulu.
+- [ ] Inspeksi visual ulang isi 21 PNG pada sesi ini — terhalang akses binary PNG dari konektor GitHub.
+- [ ] Screenshot ulang current `main` pada desktop/mobile dan visual acceptance terhadap semua referensi.
+- [ ] Pemetaan backend per mockup sampai schema, query/use case, API, serta fixture.
+
+**Kesimpulan addendum:** laporan sekarang mencatat 21 mockup publik (bukan 20), route kandidat, bukti audit visual terdahulu, dan kandidat gap halaman. Ini adalah pembaruan dokumentasi berbasis source tree dan audit CI terdahulu; bukan klaim bahwa semua 21 PNG sudah diperiksa ulang secara visual atau bahwa semua halaman sudah sesuai.
