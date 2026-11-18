@@ -41,7 +41,10 @@ export function AdminSidebar({
           <span className="brand-mark" aria-hidden="true">
             ⌂
           </span>
-          <span>FlexiDesa</span>
+          <span className="admin-brand-text">
+            <strong>FlexiDesa</strong>
+            <span>Sistem Informasi Desa</span>
+          </span>
         </Link>
         <div className="admin-nav-label">{isPlatformAdmin ? "Platform" : "Menu utama"}</div>
         <nav className="admin-nav" aria-label="Navigasi administrasi">
