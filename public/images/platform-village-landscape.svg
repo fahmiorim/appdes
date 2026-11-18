@@ -1,7 +1,70 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 560" fill="none">
-<defs><linearGradient id="sky" x1="800" y1="0" x2="800" y2="560" gradientUnits="userSpaceOnUse"><stop stop-color="#B8D7FF"/><stop offset="1" stop-color="#EEF5FF"/></linearGradient><linearGradient id="field" x1="800" y1="250" x2="800" y2="560" gradientUnits="userSpaceOnUse"><stop stop-color="#8FCB79"/><stop offset="1" stop-color="#267C53"/></linearGradient></defs>
-<rect width="1600" height="560" fill="url(#sky)"/><circle cx="1300" cy="104" r="54" fill="#FFF3C4"/><path d="m0 350 240  -80 180 65 190-145 180 130 170-175 180 95 180-100 280 145V560H0Z" fill="#83A9CE" opacity=".45"/><path d="m350 390 310-270 270 270H350Z" fill="#7188A9"/><path d="m520 242 140-122 140 122-140-40-140 40Z" fill="#F7FAFF"/><path d="m610 164 50-44 54 48-53-18-51 14Z" fill="#DCEBFA"/><path d="M0 370c200-70 340-48 510 5s350 10 520-28 380-15 570 30v183H0V370Z" fill="#6FAE73"/><path d="M0 430c250-78 430-38 650 10s460-25 650-44 240 12 300 28v136H0V430Z" fill="url(#field)"/>
-<g fill="#F7F4EA" stroke="#A5B7C8" stroke-width="4"><path d="M130 332h118v88H130z"/><path d="m116 334 73-57 74 57H116Z" fill="#B95F55"/><path d="M290 358h130v92H290z"/><path d="m276 360 79-62 79 62H276Z" fill="#3C5C82"/><path d="M1050 340h140v98h-140z"/><path d="m1034 342 86-70 86 70h-172Z" fill="#B95F55"/><path d="M1240 365h120v85h-120z"/><path d="m1227 366 73-58 74 58h-147Z" fill="#3C5C82"/><path d="M1430 338h115v95h-115z"/><path d="m1417 340 70-60 70 60h-140Z" fill="#B95F55"/></g>
-<g fill="#4D8060"><path d="M70 410c-3-65 20-108 48-129 28 21 49 64 45 129H70Z"/><path d="M1360 418c-4-74 23-126 55-151 32 25 58 77 54 151h-109Z"/><path d="M940 415c-3-56 17-95 41-114 25 19 45 58 42 114h-83Z"/></g><g fill="#F8D67A"><path d="M0 502c280-65 450-44 700 4 220 43 510-40 900-8v62H0v-58Z" opacity=".6"/></g>
-<path d="M0 0h1600v560H0z" fill="#263A67" opacity=".08"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 820" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Pemandangan pedesaan Indonesia</title>
+  <desc id="desc">Ilustrasi desa dengan gunung, sawah hijau, rumah beratap merah, kantor desa, pohon kelapa, dan langit biru.</desc>
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#1594F8"/><stop offset=".68" stop-color="#8BD0FF"/><stop offset="1" stop-color="#D9F2FF"/></linearGradient>
+    <linearGradient id="mountain" x1=".2" y1="0" x2=".8" y2="1"><stop stop-color="#8DB8E8"/><stop offset=".5" stop-color="#568FC4"/><stop offset="1" stop-color="#315F8E"/></linearGradient>
+    <linearGradient id="field" x2="0" y2="1"><stop stop-color="#A7D957"/><stop offset=".55" stop-color="#59B82E"/><stop offset="1" stop-color="#25864C"/></linearGradient>
+    <linearGradient id="roof" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#E77E6D"/><stop offset="1" stop-color="#A8464D"/></linearGradient>
+    <linearGradient id="wave" x2="1" y2="0"><stop stop-color="#8753F2"/><stop offset=".52" stop-color="#514BE7"/><stop offset="1" stop-color="#2587F7"/></linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="12"/></filter>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h1600v820H0z"/>
+  <circle cx="1370" cy="118" r="76" fill="#FFF2B5" opacity=".95"/>
+  <g fill="#FFF" opacity=".78">
+    <path d="M90 190c22-35 73-42 103-12 34-23 81-5 89 34H69c-3-10 5-19 21-22Z"/>
+    <path d="M590 120c18-27 58-31 82-8 25-17 59-4 65 25H572c0-8 7-14 18-17Z"/>
+    <path d="M1120 235c24-36 75-40 105-10 35-21 79-2 85 35h-211c0-11 8-20 21-25Z"/>
+  </g>
+  <path d="m0 490 185-185 130 112L520 92l255 340 200-260 185 230 170-170 270 250v318H0V490Z" fill="url(#mountain)"/>
+  <path d="m400 318 120-226 150 199-88-48-60 40-62-24-60 59Z" fill="#D9E9F7" opacity=".86"/>
+  <path d="m790 410 185-238 185 230-112-56-75 42-76-27-107 49Z" fill="#B7D5ED" opacity=".48"/>
+  <path d="M0 485c190-72 358-78 520-17 180 68 330 63 505-22 205-100 386-79 575 22v352H0V485Z" fill="#367D55"/>
+  <path d="M0 540c180-67 355-53 530 17 180 72 329 72 500-6 200-91 380-68 570 13v256H0V540Z" fill="#58A84C"/>
+  <g fill="#246C4B">
+    <path d="M0 505c35-65 90-73 125-10 36-73 102-65 126 9 35-62 94-56 119 8H0Z"/>
+    <path d="M920 478c31-68 88-72 119-12 35-74 99-67 127 8 35-57 88-53 117 4H920Z"/>
+    <path d="M1300 465c35-76 99-77 132-7 38-63 95-58 124 10v38h-256Z"/>
+  </g>
+  <g fill="#F6E9D7">
+    <path d="M75 492h124v87H75z"/><path d="m60 500 77-62 78 62-13 15-65-51-64 51-13-15Z" fill="url(#roof)"/>
+    <path d="M230 470h145v100H230z"/><path d="m210 481 92-72 94 72-15 17-79-59-77 59-15-17Z" fill="url(#roof)"/>
+    <path d="M410 465h150v105H410z"/><path d="m390 476 95-74 96 74-15 18-81-61-80 61-15-18Z" fill="url(#roof)"/>
+    <path d="M590 455h170v116H590z"/><path d="m570 468 105-82 105 82-17 19-88-67-88 67-17-19Z" fill="url(#roof)"/>
+    <path d="M800 447h180v125H800z"/><path d="m778 461 112-86 113 86-18 20-95-70-94 70-18-20Z" fill="url(#roof)"/>
+  </g>
+  <g fill="#77BFD5" stroke="#FFF8E9" stroke-width="5">
+    <path d="M100 518h34v37h-34zM157 518h27v37h-27z"/>
+    <path d="M260 500h38v42h-38zM322 500h34v42h-34z"/>
+    <path d="M442 495h38v42h-38zM505 495h34v42h-34z"/>
+    <path d="M625 490h42v45h-42zM700 490h38v45h-38z"/>
+    <path d="M838 483h43v47h-43zM910 483h42v47h-42z"/>
+  </g>
+  <g>
+    <path d="M1110 397h360v194h-360z" fill="#F8F0E2"/>
+    <path d="m1070 414 220-164 220 164-27 29-193-140-193 140-27-29Z" fill="#A84E54"/>
+    <path d="m1100 410 190-137 190 137" stroke="#E68B77" stroke-width="10"/>
+    <path d="M1155 447h42v57h-42zM1230 447h42v57h-42zM1340 447h42v57h-42z" fill="#79C4D8" stroke="#FFF" stroke-width="6"/>
+    <path d="M1270 591v-104h55v104" fill="#B17A56"/>
+    <path d="M1270 487h55" stroke="#8C5B46" stroke-width="5"/>
+    <path d="M1424 267v-92" stroke="#5B6673" stroke-width="5"/>
+    <path d="M1429 177h74v43h-74z" fill="#FFF"/>
+    <path d="M1429 177h74v22h-74z" fill="#E43D42"/>
+    <rect x="1430" y="595" width="125" height="48" rx="4" fill="#FFF" stroke="#B5C6D7" stroke-width="4"/>
+    <text x="1492" y="615" text-anchor="middle" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#34445A">KANTOR</text>
+    <text x="1492" y="634" text-anchor="middle" font-family="Arial,sans-serif" font-size="17" font-weight="700" fill="#34445A">DESA</text>
+  </g>
+  <g fill="#176B4B">
+    <path d="M1035 490h16v128h-16z"/><path d="M1042 495c-95-16-102-91-90-99 38-8 82 29 90 99Z"/><path d="M1042 495c-15-92 35-137 53-126 17 38-6 94-53 126Z"/><path d="M1042 495c55-81 120-67 124-48-17 37-72 56-124 48Z"/>
+    <path d="M1540 460h18v160h-18z"/><path d="M1548 464c-106-18-113-101-100-110 42-8 91 32 100 110Z"/><path d="M1548 464c-17-102 39-153 59-140 19 42-7 105-59 140Z"/><path d="M1548 464c61-90 133-74 138-53-19 41-80 62-138 53Z"/>
+    <path d="M35 520h16v92H35z"/><path d="M43 522c-67-13-72-65-64-71 27-5 58 21 64 71Z"/><path d="M43 522c-11-66 25-99 38-91 12 27-5 68-38 91Z"/>
+  </g>
+  <path d="M0 610c210-52 377-34 555 35 183 71 337 72 515-1 190-77 355-61 530-7v183H0V610Z" fill="url(#field)"/>
+  <g stroke="#E7F5A8" stroke-width="5" opacity=".85">
+    <path d="M0 650c210-48 377-30 555 38 183 69 337 70 515-2 190-75 355-59 530-5"/>
+    <path d="M0 695c210-43 377-25 555 40 183 66 337 67 515-3 190-71 355-55 530-3"/>
+    <path d="M0 742c210-38 377-20 555 42 183 63 337 64 515-4 190-67 355-51 530-1"/>
+  </g>
+  <path d="M0 735c235-57 406-19 583 39 205 68 374 66 566-6 184-69 328-49 451-7v59H0v-85Z" fill="url(#wave)"/>
+  <path d="M0 781c225-54 404-13 584 42 205 63 375 61 566-8 183-66 329-44 450-4v9H0v-39Z" fill="#2B8CF6" opacity=".9"/>
 </svg>
