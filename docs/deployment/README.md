@@ -448,7 +448,9 @@ Resolver mencoba:
 1. domain/alias persis pada `villages.domain` dan `village_domains`;
 2. alias `www.` dari domain tersebut;
 3. wildcard `<slug>.<DESA_BASE_DOMAIN>` bila `DESA_BASE_DOMAIN` diisi;
-4. fallback ke desa pertama **hanya** bila instalasi berisi tepat satu desa.
+4. fallback ke desa pertama **hanya** bila
+   `TENANT_LEGACY_SINGLE_HOST_FALLBACK=true` **dan** instalasi berisi tepat
+   satu desa; default mati.
 
 Domain `www` diperlakukan sebagai alias dari domain tanpa `www`. Domain dengan
 subdomain bertingkat (`a.b.desa.id`) tidak dipetakan ke desa `a`.

@@ -109,18 +109,50 @@ describe("villageIdDariHost — wildcard subdomain", () => {
   });
 });
 
-describe("villageIdDariHost — fallback satu desa", () => {
-  it("memakai satu-satunya desa untuk host apa pun", () => {
-    const peta = susunPetaDesa([{ id: 7, domain: "desa-tunggal.desa.id" }]);
+describe("villageIdDariHost — fallback satu desa opt-in", () => {
+  const peta = susunPetaDesa([{ id: 7, domain: "desa-tunggal.desa.id" }]);
 
+  it("mati secara default: host tak dikenal tidak resolve ke desa", () => {
     expect(villageIdDariHost("desa-tunggal.desa.id", peta)).toBe(7);
-    expect(villageIdDariHost("localhost:3000", peta)).toBe(7);
-    expect(villageIdDariHost(null, peta)).toBe(7);
+    expect(villageIdDariHost("localhost:3000", peta)).toBeNull();
+    expect(villageIdDariHost("desa-lain.desa.id", peta)).toBeNull();
+    expect(villageIdDariHost(null, peta)).toBeNull();
+  });
+
+  it("aktif hanya bila fallbackSatuDesa diminta eksplisit", () => {
+    expect(villageIdDariHost("localhost:3000", peta, { fallbackSatuDesa: true })).toBe(7);
+    expect(villageIdDariHost(null, peta, { fallbackSatuDesa: true })).toBe(7);
+    expect(villageIdDariHost("desa-tunggal.desa.id", peta, { fallbackSatuDesa: true })).toBe(7);
   });
 
   it("tidak memakai fallback bila instalasi belum berisi desa", () => {
-    const peta = susunPetaDesa([]);
+    const kosong = susunPetaDesa([]);
 
-    expect(villageIdDariHost("localhost:3000", peta)).toBeNull();
+    expect(villageIdDariHost("localhost:3000", kosong, { fallbackSatuDesa: true })).toBeNull();
+  });
+
+  it("tidak memakai fallback pada instalasi multi-desa", () => {
+    expect(
+      villageIdDariHost("localhost:3000", susunPetaDesa(DUA_DESA), { fallbackSatuDesa: true }),
+    ).toBeNull();
+    expect(
+      villageIdDariHost("desa-c.desa.id", susunPetaDesa(DUA_DESA), { fallbackSatuDesa: true }),
+    ).toBeNull();
+  });
+
+  it("host platform tidak pernah resolve ke desa tunggal meski flag aktif", () => {
+    const opsi = { fallbackSatuDesa: true, hostPlatform: ["flexidesa.id"] };
+
+    expect(villageIdDariHost("flexidesa.id", peta, opsi)).toBeNull();
+    expect(villageIdDariHost("www.flexidesa.id", peta, opsi)).toBeNull();
+    expect(villageIdDariHost("FLEXIDESA.ID:3000", peta, opsi)).toBeNull();
+    // Domain desa tetap dipetakan normal saat flag aktif.
+    expect(villageIdDariHost("desa-tunggal.desa.id", peta, opsi)).toBe(7);
+  });
+
+  it("host mirip platform bukan host platform", () => {
+    const opsi = { fallbackSatuDesa: true, hostPlatform: ["flexidesa.id"] };
+
+    expect(villageIdDariHost("flexidesa.id.evil.example", peta, opsi)).toBe(7);
   });
 });

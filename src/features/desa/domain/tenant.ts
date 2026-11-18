@@ -1,4 +1,4 @@
-import { hostCandidates, normalizeBaseDomain, normalizeHost } from "./host";
+import { adalahHostPlatform, hostCandidates, normalizeBaseDomain, normalizeHost } from "./host";
 
 /**
  * Pemetaan tenant (desa) dari host permintaan.
@@ -66,15 +66,35 @@ export function susunPetaDesa(daftar: readonly BarisDesa[], baseDomain?: string 
   };
 }
 
+/** Opsi resolusi host; semua default bersifat fail closed. */
+export interface OpsiResolusiHost {
+  /** Host platform yang tidak pernah menjadi tenant (landing page). */
+  hostPlatform?: readonly string[];
+  /**
+   * Fallback legacy ke satu-satunya desa untuk host tak dikenal. Default
+   * `false`; hanya untuk development/instalasi mandiri yang disetujui.
+   */
+  fallbackSatuDesa?: boolean;
+}
+
 /**
  * Tentukan id desa dari host permintaan.
  *
- * Urutan: domain persis → alias `www` → fallback satu-desa. Fallback hanya
- * berlaku bila instalasi benar-benar berisi satu desa; pada instalasi
- * multi-desa, host tak dikenal menghasilkan `null` (pemanggil menerjemahkannya
- * menjadi 404) sehingga tenant tidak bocor.
+ * Urutan: host platform (selalu `null`) → domain persis → alias `www` →
+ * wildcard `*.baseDomain` → fallback satu-desa **bila diaktifkan**. Tanpa flag
+ * `fallbackSatuDesa`, host tak dikenal menghasilkan `null` (pemanggil
+ * menerjemahkannya menjadi 404) sehingga tenant tidak bocor meskipun instalasi
+ * hanya berisi satu desa.
  */
-export function villageIdDariHost(host: string | null | undefined, peta: PetaDesa): number | null {
+export function villageIdDariHost(
+  host: string | null | undefined,
+  peta: PetaDesa,
+  opsi: OpsiResolusiHost = {},
+): number | null {
+  // Host platform bukan tenant; jangan biarkan fallback satu-desa membuat
+  // domain platform menampilkan beranda desa tertentu.
+  if (adalahHostPlatform(host, opsi.hostPlatform ?? [])) return null;
+
   const kandidat = hostCandidates(host);
 
   // 1. Domain/alias terdaftar selalu menang.
@@ -96,6 +116,8 @@ export function villageIdDariHost(host: string | null | undefined, peta: PetaDes
       if (id !== undefined) return id;
     }
   }
+
+  if (!opsi.fallbackSatuDesa) return null;
 
   return peta.jumlahDesa === 1 ? peta.desaPertamaId : null;
 }

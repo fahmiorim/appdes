@@ -55,6 +55,17 @@ const envSchema = z
       .enum(["true", "false"])
       .default("false")
       .transform((value) => value === "true"),
+
+    /**
+     * Fallback legacy mode satu-desa: host tak dikenal dipetakan ke
+     * satu-satunya desa. Default mati (fail closed) agar host asing tidak
+     * pernah menampilkan data desa. Hanya untuk development atau instalasi
+     * mandiri yang disetujui; jangan aktifkan pada platform produksi.
+     */
+    TENANT_LEGACY_SINGLE_HOST_FALLBACK: z
+      .enum(["true", "false"])
+      .default("false")
+      .transform((value) => value === "true"),
     /** Kredensial pengiriman email Resend; opsional bila email belum diaktifkan. */
     RESEND_API_KEY: z
       .string()

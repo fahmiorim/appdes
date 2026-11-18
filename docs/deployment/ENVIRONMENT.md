@@ -139,6 +139,23 @@ artefak backup yang tidak terenkripsi.
   tidak pernah dipetakan ke tenant (landing page, bukan beranda desa), termasuk
   saat instalasi hanya berisi satu desa.
 
+### `TENANT_LEGACY_SINGLE_HOST_FALLBACK`
+
+- **Fungsi:** mengaktifkan fallback legacy: host yang tidak cocok dengan domain
+  desa mana pun dipetakan ke satu-satunya desa bila instalasi berisi tepat
+  satu desa.
+- **Wajib:** tidak; default `false` (fail closed).
+- **Nilai:** hanya string `true` atau `false` (case-sensitive).
+- **Contoh aman:** `false` untuk semua deployment platform; `true` hanya untuk
+  development atau instalasi mandiri yang disetujui pemilik deployment.
+- **Catatan keamanan:** saat `false`, host tak dikenal menghasilkan 404 dan
+  tidak pernah menampilkan data desa. Saat `true`, **semua** host asing (atau
+  permintaan tanpa `Host`) menampilkan desa tunggal tersebut, termasuk host
+  yang mirip domain platform. Host platform pada `PLATFORM_HOSTS` tetap tidak
+  pernah dipetakan ke desa, dan instalasi multi-desa tetap tidak memakai
+  fallback. Jangan aktifkan pada production FlexiDesa; perubahan nilai perlu
+  restart.
+
 ### `RESEND_API_KEY`
 
 - **Fungsi:** API key Resend untuk email keluar (reset sandi dan notifikasi).
