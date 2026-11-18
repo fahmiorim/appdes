@@ -6,6 +6,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
+import { PlatformTopbarHead } from "./platform-topbar-head";
+
 export function AdminTopbar({
   name,
   villageName,
@@ -39,7 +41,9 @@ export function AdminTopbar({
 
   return (
     <header className="admin-topbar">
-      {isPlatformAdmin ? null : (
+      {isPlatformAdmin ? (
+        <PlatformTopbarHead />
+      ) : (
         <div className="admin-topbar-context">
           <span className="admin-topbar-title">Ruang kerja administrasi</span>
           <strong>{villageName || "Administrasi Platform"}</strong>

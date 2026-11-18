@@ -10,7 +10,6 @@ import { hariMenujuPurge, statusRetensi } from "@/features/multi-desa/domain/lif
 import {
   PlatformCard,
   PlatformEmpty,
-  PlatformPageHeader,
   PlatformStat,
   PlatformStatus,
 } from "@/features/multi-desa/presentation/platform-ui";
@@ -94,12 +93,6 @@ export default async function SuperAdminPage() {
 
   return (
     <>
-      <PlatformPageHeader
-        description="Pantau tenant desa, domain, akses platform, dan retensi data dalam satu tempat."
-        eyebrow="Konsol platform"
-        title="Ringkasan platform"
-      />
-
       <div className="platform-stat-grid">
         <PlatformStat
           icon={

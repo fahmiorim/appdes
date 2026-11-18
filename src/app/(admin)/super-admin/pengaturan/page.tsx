@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { getKonfigurasiPlatform } from "@/features/multi-desa/application/platform-info-use-cases";
 import {
   PlatformCard,
-  PlatformPageHeader,
   PlatformStat,
   PlatformStatus,
 } from "@/features/multi-desa/presentation/platform-ui";
@@ -82,12 +81,6 @@ export default async function SuperAdminPengaturanPage() {
 
   return (
     <>
-      <PlatformPageHeader
-        description="Ringkasan konfigurasi aktif yang dibaca aplikasi. Nilai rahasia tidak pernah dibaca maupun ditampilkan di halaman ini."
-        eyebrow="Konsol platform"
-        title="Pengaturan platform"
-      />
-
       <PlatformCard
         description="Kebijakan retensi dijalankan oleh pekerjaan terjadwal platform."
         title="Kebijakan retensi"

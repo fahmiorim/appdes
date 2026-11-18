@@ -2,11 +2,7 @@ import type { Metadata } from "next";
 
 import { daftarPenggunaPlatform } from "@/features/multi-desa/application/pengguna-platform-use-cases";
 import { PenggunaPlatformConsole } from "@/features/multi-desa/presentation/pengguna-platform-console";
-import {
-  PlatformCard,
-  PlatformPageHeader,
-  PlatformStat,
-} from "@/features/multi-desa/presentation/platform-ui";
+import { PlatformCard, PlatformStat } from "@/features/multi-desa/presentation/platform-ui";
 
 import { pastikanSuperAdmin } from "../guard";
 import {
@@ -33,12 +29,6 @@ export default async function SuperAdminPenggunaPage() {
 
   return (
     <>
-      <PlatformPageHeader
-        description="Akun yang tidak terikat desa dan hanya mengelola platform. Akun administrator desa dikelola dari konsol tenant, bukan di sini."
-        eyebrow="Konsol platform"
-        title="Pengguna platform"
-      />
-
       <div className="platform-stat-grid">
         <PlatformStat
           icon={

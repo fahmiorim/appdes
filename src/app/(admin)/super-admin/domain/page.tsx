@@ -6,7 +6,6 @@ import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisio
 import {
   PlatformCard,
   PlatformEmpty,
-  PlatformPageHeader,
   PlatformStat,
   PlatformStatus,
 } from "@/features/multi-desa/presentation/platform-ui";
@@ -39,17 +38,6 @@ export default async function SuperAdminDomainPage() {
 
   return (
     <>
-      <PlatformPageHeader
-        actions={
-          <Link className="button button-secondary" href="/super-admin/tenant">
-            Buka konsol tenant
-          </Link>
-        }
-        description="Semua hostname yang mengarah ke desa. Domain utama dipakai untuk mengenali tenant dari host; alias lain mengarah ke desa yang sama."
-        eyebrow="Konsol platform"
-        title="Domain tenant"
-      />
-
       <div className="platform-stat-grid">
         <PlatformStat
           icon={

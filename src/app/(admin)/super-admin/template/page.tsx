@@ -4,7 +4,6 @@ import { getTemplateTenantPlatform } from "@/features/multi-desa/application/pla
 import {
   PlatformCard,
   PlatformEmpty,
-  PlatformPageHeader,
   PlatformStat,
   PlatformStatus,
 } from "@/features/multi-desa/presentation/platform-ui";
@@ -30,12 +29,6 @@ export default async function SuperAdminTemplatePage() {
 
   return (
     <>
-      <PlatformPageHeader
-        description="Fondasi yang disalin ke setiap desa baru: role, modul, matriks akses, tema, dan menu publik. Katalog surat dan data master desa sengaja tidak termasuk."
-        eyebrow="Konsol platform"
-        title="Template tenant"
-      />
-
       <div className="platform-stat-grid">
         <PlatformStat
           icon={
