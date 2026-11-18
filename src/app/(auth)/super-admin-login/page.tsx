@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { isSuperAdminUser } from "@/features/multi-desa/application/provisioning-use-cases";
@@ -120,9 +121,9 @@ export default async function SuperAdminLoginPage({
           <span className={styles.secureBadge}>
             <i /> AREA TERBATAS
           </span>
-          <a href="/" className={styles.backLink}>
+          <Link href="/" className={styles.backLink}>
             ← Kembali ke beranda
-          </a>
+          </Link>
         </div>
 
         <div className={styles.card}>
