@@ -93,6 +93,14 @@ export default async function SuperAdminPage() {
 
   return (
     <>
+      <section className="platform-welcome" aria-label="Selamat datang">
+        <div>
+          <span className="eyebrow">PUSAT KENDALI FLEXIDESA</span>
+          <h2>Selamat datang, Super Admin</h2>
+          <p>Pantau dan kelola seluruh tenant desa dari satu konsol terpusat.</p>
+        </div>
+        <span className="platform-welcome-mark" aria-hidden="true">✦</span>
+      </section>
       <div className="platform-stat-grid">
         <PlatformStat
           icon={
