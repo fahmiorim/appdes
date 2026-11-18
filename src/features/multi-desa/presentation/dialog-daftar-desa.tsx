@@ -5,6 +5,8 @@ import { useActionState, useEffect, useId, useRef } from "react";
 
 import { createIdleActionState, type ActionState } from "@/lib/action-state";
 
+import { GalatField, PesanDialog } from "./dialog-bagian";
+
 /**
  * Tombol + dialog pendaftaran desa baru.
  *
@@ -18,29 +20,6 @@ type AksiBuatDesa = (
   state: ActionState<{ id: number }>,
   formData: FormData,
 ) => Promise<ActionState<{ id: number }>>;
-
-function Pesan({ state }: { state: ActionState<unknown> }) {
-  if (state.status === "idle") return null;
-
-  const error = state.status === "error";
-  return (
-    <p
-      className={error ? "alert alert-error" : "alert alert-info"}
-      role={error ? "alert" : "status"}
-    >
-      {state.message}
-    </p>
-  );
-}
-
-function GalatField({ pesan }: { pesan?: string }) {
-  if (!pesan) return null;
-  return (
-    <span className="form-help" role="alert">
-      {pesan}
-    </span>
-  );
-}
 
 export function DialogDaftarDesa({ aksi }: { aksi: AksiBuatDesa }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -172,7 +151,7 @@ export function DialogDaftarDesa({ aksi }: { aksi: AksiBuatDesa }) {
             </label>
           </div>
 
-          <Pesan state={state} />
+          <PesanDialog state={state} />
 
           <div className="platform-dialog-actions">
             <button

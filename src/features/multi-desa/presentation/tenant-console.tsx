@@ -11,6 +11,8 @@ import {
 import type { HasilEkspor } from "@/features/multi-desa/infrastructure/lifecycle-tenant-repository";
 import { createIdleActionState, type ActionState } from "@/lib/action-state";
 
+import { DialogFormTenant } from "./dialog-form-tenant";
+
 /**
  * Konsol pengelolaan tenant Super Admin.
  *
@@ -137,10 +139,6 @@ function KelolaDomain({
   domain: DomainKonsolRow[];
   aksi: AksiKonsol;
 }) {
-  const [tambahState, tambahAction, tambahPending] = useActionState(
-    aksi.tambahDomain,
-    createIdleActionState<{ id: number }>(),
-  );
   const [hapusState, hapusAction, hapusPending] = useActionState(
     aksi.hapusDomain,
     createIdleActionState<null>(),
@@ -206,29 +204,36 @@ function KelolaDomain({
         </ul>
       )}
 
-      <form action={tambahAction} className="tenant-inline-form">
-        <input type="hidden" name="villageId" value={desa.id} />
-        <label className="form-field">
-          <span className="form-label">Tambah domain atau alias</span>
-          <input
-            className="form-input"
-            name="domain"
-            required
-            maxLength={255}
-            autoComplete="off"
-            placeholder="desa-sukamaju.id"
-            disabled={sudahPurge}
-          />
-        </label>
-        <button
-          className="button button-secondary"
-          type="submit"
-          disabled={tambahPending || sudahPurge}
+      <div className="tenant-panel-actions">
+        <DialogFormTenant
+          aksi={aksi.tambahDomain}
+          deskripsi="Domain baru langsung mengarah ke desa ini. Domain pertama otomatis menjadi utama."
+          judul="Tambah domain atau alias"
+          labelPending="Menambah..."
+          labelPemicu="Tambah domain"
+          labelSubmit="Tambah domain"
+          nonaktif={sudahPurge}
+          stateAwal={createIdleActionState<{ id: number }>()}
         >
-          {tambahPending ? "Menambah..." : "Tambah domain"}
-        </button>
-      </form>
-      <Pesan state={tambahState} />
+          <input type="hidden" name="villageId" value={desa.id} />
+          <label className="form-field">
+            <span className="form-label">Domain atau alias</span>
+            <input
+              className="form-input"
+              name="domain"
+              required
+              maxLength={255}
+              autoComplete="off"
+              placeholder="desa-sukamaju.id"
+            />
+          </label>
+        </DialogFormTenant>
+        <span className="form-help">
+          {sudahPurge
+            ? "Data desa sudah di-purge; domain hanya dapat dibaca."
+            : "Gunakan host tanpa protokol, misalnya desa-sukamaju.id."}
+        </span>
+      </div>
       <Pesan state={hapusState} />
       <Pesan state={utamaState} />
     </section>
@@ -249,10 +254,6 @@ function PanelKelola({
     aksi.status,
     createIdleActionState<{ active: boolean }>(),
   );
-  const [kuotaState, kuotaAction, kuotaPending] = useActionState(
-    aksi.kuota,
-    createIdleActionState<{ kuotaMediaMb: number | null }>(),
-  );
   const [resetState, resetAction, resetPending] = useActionState(
     aksi.reset,
     createIdleActionState<{ username: string | null; email: string; sandiSementara: string }>(),
@@ -260,14 +261,6 @@ function PanelKelola({
   const [eksporState, eksporAction, eksporPending] = useActionState(
     aksi.ekspor,
     createIdleActionState<HasilEkspor>(),
-  );
-  const [purgeState, purgeAction, purgePending] = useActionState(
-    aksi.purge,
-    createIdleActionState<{
-      jumlahBarisDihapus: number;
-      tabelDiproses: number;
-      mediaDihapus: boolean;
-    }>(),
   );
 
   const sudahPurge = desa.statusRetensi === "sudah-purge";
@@ -323,27 +316,38 @@ function PanelKelola({
 
         <section>
           <h4>Kuota media</h4>
-          <form action={kuotaAction} className="tenant-inline-form">
-            <input type="hidden" name="villageId" value={desa.id} />
-            <label className="form-field" htmlFor={`${id}-kuota`}>
-              <span className="form-label">Kuota (MB)</span>
-              <input
-                id={`${id}-kuota`}
-                className="form-input"
-                name="kuotaMediaMb"
-                type="number"
-                min={1}
-                step={1}
-                defaultValue={desa.kuotaMediaMb ?? ""}
-                placeholder="Tanpa batas"
-                disabled={sudahPurge}
-              />
-            </label>
-            <button className="button button-secondary" type="submit" disabled={kuotaPending}>
-              {kuotaPending ? "Menyimpan..." : "Simpan kuota"}
-            </button>
-          </form>
-          <Pesan state={kuotaState} />
+          <div className="tenant-panel-actions">
+            <DialogFormTenant
+              aksi={aksi.kuota}
+              deskripsi="Batas penyimpanan media desa. Kosongkan untuk tanpa batas."
+              judul="Kuota media"
+              labelPending="Menyimpan..."
+              labelPemicu="Ubah kuota"
+              labelSubmit="Simpan kuota"
+              nonaktif={sudahPurge}
+              stateAwal={createIdleActionState<{ kuotaMediaMb: number | null }>()}
+            >
+              <input type="hidden" name="villageId" value={desa.id} />
+              <label className="form-field" htmlFor={`${id}-kuota`}>
+                <span className="form-label">Kuota (MB)</span>
+                <input
+                  id={`${id}-kuota`}
+                  className="form-input"
+                  name="kuotaMediaMb"
+                  type="number"
+                  min={1}
+                  step={1}
+                  defaultValue={desa.kuotaMediaMb ?? ""}
+                  placeholder="Tanpa batas"
+                />
+              </label>
+            </DialogFormTenant>
+            <span className="form-help">
+              {desa.kuotaMediaMb === null
+                ? "Saat ini tanpa batas."
+                : `Saat ini ${angka.format(desa.kuotaMediaMb)} MB.`}
+            </span>
+          </div>
         </section>
 
         <section>
@@ -383,10 +387,39 @@ function PanelKelola({
               {desa.purgedAt ? ` pada ${tanggal.format(new Date(desa.purgedAt))}` : ""}.
             </p>
           ) : bolehPurge ? (
-            <form action={purgeAction} className="tenant-inline-form">
+            <DialogFormTenant
+              aksi={aksi.purge}
+              deskripsi={
+                <>
+                  Data desa, pengguna, penduduk, dan media akan dihapus permanen. Tindakan ini tidak
+                  dapat dibatalkan.
+                </>
+              }
+              judul="Purge data desa"
+              kelasPemicu="button tenant-danger"
+              kelasSubmit="button tenant-danger"
+              labelPending="Mem-purge..."
+              labelPemicu="Purge data desa"
+              labelSubmit="Purge permanen"
+              pesanSukses={(data) => (
+                <p className="form-help">
+                  {angka.format(data.jumlahBarisDihapus)} baris pada{" "}
+                  {angka.format(data.tabelDiproses)} tabel dihapus.
+                  {data.mediaDihapus
+                    ? " Media desa juga dihapus."
+                    : " Tidak ada media yang perlu dihapus."}
+                </p>
+              )}
+              tutupSetelahSukses={false}
+              stateAwal={createIdleActionState<{
+                jumlahBarisDihapus: number;
+                tabelDiproses: number;
+                mediaDihapus: boolean;
+              }>()}
+            >
               <input type="hidden" name="villageId" value={desa.id} />
               <label className="form-field">
-                <span className="form-label">Ketik slug desa: {desa.slug}</span>
+                <span className="form-label">Ketik slug desa: {desa.slug ?? "—"}</span>
                 <input
                   className="form-input"
                   name="konfirmasi"
@@ -395,10 +428,7 @@ function PanelKelola({
                   placeholder={desa.slug ?? ""}
                 />
               </label>
-              <button className="button tenant-danger" type="submit" disabled={purgePending}>
-                {purgePending ? "Mem-purge..." : "Purge data desa"}
-              </button>
-            </form>
+            </DialogFormTenant>
           ) : (
             <p className="form-help">
               {!desa.active && !desa.adaEksporBerlaku
@@ -412,7 +442,6 @@ function PanelKelola({
                     }.`}
             </p>
           )}
-          <Pesan state={purgeState} />
         </section>
       </div>
     </div>
