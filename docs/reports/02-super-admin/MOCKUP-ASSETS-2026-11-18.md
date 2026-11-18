@@ -458,3 +458,86 @@ Daftar bernomor pada inventaris publik adalah **21 file**, yaitu nomor 19 sampai
 - [ ] Implementasi gap yang dicatat di atas.
 
 **Kesimpulan:** dari 11 mockup account, route login warga dan dashboard layanan mandiri tersedia tetapi belum setara referensi. Fondasi backend untuk identitas, sesi, OTP login, verifikasi kontak, profil penduduk, dokumen, permohonan surat, dan log notifikasi sudah ada. Halaman registrasi, aktivasi, reset password UI, profil/edit profil, pengaturan keamanan, pengaturan preferensi notifikasi, serta riwayat/detail pengajuan sesuai mockup belum ditemukan pada route tree yang diperiksa. Tidak semua kebutuhan memerlukan tabel baru; gap utama adalah route/UI, alur use case, preferensi notifikasi, dan bukti timeline. Audit ini bukan klaim bahwa screenshot runtime telah lulus visual QA.
+
+---
+## Audit visual dan pemetaan implementasi — 20 dari 21 mockup publik
+
+**Tanggal:** 18 November 2026  
+**Sumber visual:** 20 PNG yang diunggah pada sesi ini; seluruh file berhasil dibuka. Sebanyak 19 file berukuran 1024 × 1536 dan satu file Desa Sukamaju Online Services berukuran 1199 × 1312.  
+**Basis kode:** recursive Git tree main SHA 12fbc25f9d3f557a53ae461265aa31250fa0e4da dan pembacaan 20 file route/page terkait.  
+**Batas:** inspeksi ini mencakup PNG referensi dan source code, bukan screenshot runtime. Belum ada halaman yang dapat dinyatakan visual implementation PASS.
+
+### 1. Temuan visual lintas mockup
+
+- Mayoritas desain konsisten: latar putih/biru muda, panel rounded, heading navy, aksen ungu/violet, ikon berwarna, hero biru berilustrasi desa, dan footer navy.
+- Pola navigasi, breadcrumb, hero, CTA, dan footer berulang cukup konsisten. Namun semua mockup utama berbentuk screenshot desktop panjang; breakpoint, menu mobile, urutan kolom, tabel/chart mobile, dan ukuran target sentuh belum dispesifikasikan.
+- **Inkonsistensi brand:** Desa Sukamaju Online Services memakai identitas “Desa Sukamaju”, lokasi “Kec. Maju Jaya, Kab. Sejahtera”, dan aksen biru. Mayoritas mockup memakai “Desa Suka Maju”, “Kec. Sei Balai, Kab. Batu Bara”, dan sistem biru-ungu. Putuskan apakah ini variasi desain lama/tenant contoh atau perlu diselaraskan. Jangan mencampur identitas contoh dengan data tenant Batu Bara.
+- **Data keuangan tidak konsisten:** mockup APBDes menampilkan pendapatan/belanja Rp1.865.000.000, sedangkan mockup laporan keuangan menampilkan pendapatan Rp1.500.000.000 dan belanja/realisasi Rp1.420.000.000. Tandai sebagai data demo dan rekonsiliasi sebelum dijadikan fixture atau screenshot acceptance.
+- Dua mockup galeri adalah overview dan detail album, bukan duplikat. Dua mockup layanan surat menunjukkan katalog layanan dan halaman pengajuan online; hubungan route/varian perlu ditentukan.
+
+### 2. Matriks 20 mockup
+
+| Mockup | Route pada main | Hasil pemeriksaan source |
+|---|---|---|
+| Sistem Informasi Desa Suka Maju | / — ada | Beranda memakai identitas desa, statistik, agenda, dan konten publik. Screenshot runtime belum dibandingkan dengan seluruh section mockup. |
+| Profil Desa — Informasi dan Potensi | /profil — ada | Menggunakan profilDesaPublik dan daftarPerangkatPublik; foto utama, peta, potensi, sarana perlu dicocokkan dengan runtime. |
+| Sejarah Desa | /sejarah dan /profil/sejarah — ada | Page memakai profil desa; timeline, foto arsip, dan kutipan perlu diverifikasi pada runtime. |
+| Visi & Misi | /visi-misi dan /profil/visi-misi — ada | Route tersedia; section tujuan, nilai dasar, dan arah kebijakan perlu dibandingkan dengan runtime. |
+| Wilayah Desa | /wilayah — ada | Menggunakan use case GIS/wilayah; peta, batas dusun, legenda, dan luas perlu diverifikasi. Mockup PNG belum diterima. |
+| Potensi Desa | /potensi — ada | Menggunakan konten statis publik; data sektor, angka potensi, galeri dan CTA perlu audit sumber data. |
+| Pemerintahan Desa | /pemerintahan — ada | Mengambil daftar perangkat publik; struktur organisasi, BPD, lembaga, tugas/fungsi, dan foto perlu dicocokkan. |
+| Village Official Profile Dashboard | /pemerintahan/perangkat/[slug] — tidak ditemukan | Mockup detail perangkat berisi biodata, kontak, masa jabatan, tugas, dokumen; daftar perangkat bukan pengganti route detail. |
+| Desa Sukamaju Online Services | /layanan — ada | Katalog layanan tersedia, tetapi brand/lokasi dan sistem visual berbeda dari mayoritas mockup. |
+| Suka Maju Online Letter Services Dashboard | /layanan/surat — ada | Memanggil listJenisSuratPublik. Akun, syarat, alur, FAQ, dan riwayat pada mockup belum otomatis terbukti berfungsi. |
+| Village News Dashboard | /berita — ada | Menggunakan daftar berita dan kategori; hero, pencarian, filter, populer, agenda perlu screenshot runtime. |
+| Berita Gotong Royong (detail) | /berita/[slug] — ada | Memakai detailBerita dan catatKunjunganBerita; galeri foto, penulis, berita terkait, komentar dan share perlu verifikasi terpisah. |
+| Pengumuman Musdes (detail) | /pengumuman — listing ada | Page menggunakan daftar berita/kategori; route detail pengumuman berbasis slug belum ditemukan. |
+| Agenda Kegiatan | /agenda — ada | Memakai use case agenda dan kalender; filter, statistik, agenda mendatang, unduh, notifikasi dan pagination perlu uji interaksi. |
+| Suka Maju Village Gallery Dashboard | /galeri — ada | Memakai daftarAlbumGaleri; kategori, pencarian, album, grid, video perlu screenshot runtime. |
+| Desa Suka Maju Photo Gallery (detail album) | /galeri/[slug] — ada | Memakai detailAlbumGaleri dan daftarFotoAlbum; ZIP, share, sorting dan pagination perlu verifikasi. |
+| Data Statistik Desa | /data/statistik dan alias /statistik — ada | Route alias ke page statistik; KPI, chart demografi/pendidikan/pekerjaan, rekap dusun dan peta belum dapat dianggap tersedia penuh tanpa audit data dan runtime. |
+| APBDes Dashboard | /transparansi/apbdes — ada | Memakai getLaporanApbdesPublik dan listLaporanDokumenApbdesPublik; chart, tab, komposisi dan angka perlu validasi data. |
+| Indonesian Village Finance Dashboard | /transparansi/keuangan — tidak ditemukan | Detail laporan keuangan dengan realisasi, triwulan, dokumen dan tahun anggaran. Route APBDes yang ada belum tentu menggantikan halaman ini. |
+| Kontak & Pengaduan | /kontak dan /pengaduan — ada | Dua route tersedia; mockup menggabungkan form, kanal kontak, jam layanan, peta, status tiket dan FAQ. Komposisi/pemisahan route perlu diputuskan. |
+
+### 3. Gap route yang terkonfirmasi
+
+1. Detail perangkat desa belum memiliki route dinamis tersendiri.
+2. Detail laporan keuangan belum memiliki route /transparansi/keuangan.
+3. Mockup pengumuman adalah detail, sedangkan /pengumuman yang ditemukan merupakan listing; route detail belum ditemukan.
+4. Route yang tersedia hanya membuktikan page file ada, bukan bahwa tampilan dan semua interaksi mockup selesai.
+
+### 4. Dukungan backend yang teridentifikasi dari source
+
+- Beranda: identitas desa, statistik, agenda mendatang.
+- Profil/pemerintahan/berita/pengumuman/galeri/potensi: use case konten publik; detail berita mencatat kunjungan.
+- Layanan surat: daftar jenis surat publik.
+- Agenda: agenda mendatang dan kalender/bulan agenda.
+- Wilayah: use case GIS dan daftar wilayah publik.
+- APBDes: use case laporan publik dan dokumen APBDes.
+- Pengaduan: use case pengaduan publik.
+- Untuk chart statistik rinci, agregasi keuangan per periode, komentar berita, unduh ZIP, notifikasi agenda, dan pencarian lintas-modul, pembacaan route saja belum cukup untuk menyatakan backend PASS. Perlu audit use case/schema/API dan uji runtime.
+
+### 5. Prioritas tindak lanjut
+
+| Prioritas | Pekerjaan |
+|---|---|
+| P0 | Selaraskan brand/identitas contoh dan rekonsiliasi angka demo keuangan. |
+| P0 | Putuskan route detail perangkat, laporan keuangan, dan pengumuman. |
+| P1 | Ambil screenshot runtime seluruh route pada desktop dan mobile, lalu bandingkan per section dengan PNG. |
+| P1 | Audit kontrak data/interaksi statistik, agenda, layanan, galeri, APBDes, pengaduan, komentar, share dan unduhan. |
+| P2 | Implementasikan gap terukur dan tambahkan visual regression serta interaction tests. |
+
+### 6. Status batch publik
+
+- [x] 20 PNG yang diunggah berhasil dibuka dan diinspeksi secara visual.
+- [x] Dimensi seluruh 20 PNG diperiksa.
+- [x] Recursive tree main diperiksa dan 20 file route/page terkait dibaca.
+- [x] Inkonsistensi brand dan angka contoh keuangan dicatat.
+- [x] Tiga kebutuhan detail tanpa route tersendiri diidentifikasi: perangkat, laporan keuangan, pengumuman.
+- [ ] Mockup publik ke-21 (Wilayah Desa Suka Maju.png) diterima dan diperiksa.
+- [ ] Screenshot runtime dibandingkan dengan 20 PNG.
+- [ ] Semua use case/schema/API pendukung diperiksa mendalam dan interaksi diuji.
+- [ ] Gap implementasi diselesaikan.
+
+**Kesimpulan:** 20 mockup publik sudah benar-benar diperiksa secara visual. Source tree memiliki fondasi route/use case yang cukup luas, tetapi tiga kebutuhan detail belum memiliki route terpisah dan beberapa interaksi/data belum dapat dinyatakan didukung hanya dari keberadaan page. Belum ada dasar menyatakan 20 halaman lulus visual acceptance; diperlukan screenshot runtime pada viewport yang sama.
