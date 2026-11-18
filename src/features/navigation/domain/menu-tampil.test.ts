@@ -29,6 +29,7 @@ describe("ruteTersedia", () => {
     expect(ruteTersedia("/beranda?tab=ringkasan")).toBe(true);
     expect(ruteTersedia("/penduduk")).toBe(true);
     expect(ruteTersedia("/konten/berita")).toBe(true);
+    expect(ruteTersedia("/pengaturan/pengguna")).toBe(true);
   });
 
   it("menolak rute yang belum punya halaman", () => {

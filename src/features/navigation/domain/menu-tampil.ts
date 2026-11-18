@@ -23,6 +23,8 @@ export const RUTE_ADMIN_TERSEDIA: readonly string[] = [
   "/keuangan",
   "/konten/berita",
   "/konten/galeri",
+  "/pengaturan/pengguna",
+  "/pengaturan/grup-akses",
   "/super-admin",
   "/super-admin/tenant",
   "/super-admin/domain",
