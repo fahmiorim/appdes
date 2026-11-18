@@ -42,10 +42,6 @@ export interface DomainKonsolRow {
 }
 
 interface AksiKonsol {
-  buat: (
-    state: ActionState<{ id: number }>,
-    formData: FormData,
-  ) => Promise<ActionState<{ id: number }>>;
   status: (
     state: ActionState<{ active: boolean }>,
     formData: FormData,
@@ -106,15 +102,6 @@ function Pesan({ state }: { state: ActionState<unknown> }) {
   );
 }
 
-function GalatField({ pesan }: { pesan?: string }) {
-  if (!pesan) return null;
-  return (
-    <span className="form-help" role="alert">
-      {pesan}
-    </span>
-  );
-}
-
 function RetensiBadge({ desa }: { desa: DesaKonsolRow }) {
   const kelas =
     desa.statusRetensi === "aktif"
@@ -135,97 +122,6 @@ function RetensiBadge({ desa }: { desa: DesaKonsolRow }) {
       <span aria-hidden="true" />
       {label}
     </span>
-  );
-}
-
-function FormBuatDesa({ aksi }: { aksi: AksiKonsol["buat"] }) {
-  const [state, formAction, pending] = useActionState(
-    aksi,
-    createIdleActionState<{ id: number }>(),
-  );
-  const fieldErrors = state.status === "error" ? (state.fieldErrors ?? {}) : {};
-
-  return (
-    <form action={formAction} className="tenant-create form-stack">
-      <div>
-        <h2>Daftarkan desa baru</h2>
-        <p className="form-help">
-          Fondasi tenant (role, modul, tema, menu publik) dibuat dari template platform, bukan dari
-          desa lain. Katalog surat dan data master desa tetap diisi administrator desa.
-        </p>
-      </div>
-
-      <div className="tenant-create-grid">
-        <label className="form-field">
-          <span className="form-label">Nama desa</span>
-          <input className="form-input" name="name" required minLength={3} maxLength={100} />
-          <GalatField pesan={fieldErrors.name?.[0]} />
-        </label>
-        <label className="form-field">
-          <span className="form-label">Kode desa (10 digit)</span>
-          <input
-            className="form-input"
-            name="code"
-            required
-            inputMode="numeric"
-            pattern="\d{10}"
-            maxLength={10}
-          />
-          <GalatField pesan={fieldErrors.code?.[0]} />
-        </label>
-        <label className="form-field">
-          <span className="form-label">Domain (opsional)</span>
-          <input className="form-input" name="domain" placeholder="desa-sukamaju.id" />
-          <GalatField pesan={fieldErrors.domain?.[0]} />
-        </label>
-        <label className="form-field">
-          <span className="form-label">Nama administrator</span>
-          <input className="form-input" name="adminName" required minLength={3} maxLength={255} />
-          <GalatField pesan={fieldErrors.adminName?.[0]} />
-        </label>
-        <label className="form-field">
-          <span className="form-label">Username administrator</span>
-          <input
-            className="form-input"
-            name="adminUsername"
-            required
-            minLength={3}
-            maxLength={50}
-          />
-          <GalatField pesan={fieldErrors.adminUsername?.[0]} />
-        </label>
-        <label className="form-field">
-          <span className="form-label">Email administrator</span>
-          <input className="form-input" name="adminEmail" type="email" required maxLength={255} />
-          <GalatField pesan={fieldErrors.adminEmail?.[0]} />
-        </label>
-        <label className="form-field">
-          <span className="form-label">Sandi awal administrator</span>
-          <input
-            className="form-input"
-            name="adminPassword"
-            type="password"
-            required
-            minLength={8}
-            maxLength={72}
-            autoComplete="new-password"
-          />
-          <GalatField pesan={fieldErrors.adminPassword?.[0]} />
-        </label>
-        <label className="form-field">
-          <span className="form-label">Kuota media (MB, kosong = tanpa batas)</span>
-          <input className="form-input" name="kuotaMediaMb" type="number" min={1} step={1} />
-          <GalatField pesan={fieldErrors.kuotaMediaMb?.[0]} />
-        </label>
-      </div>
-
-      <Pesan state={state} />
-      <div className="tenant-create-actions">
-        <button className="button button-primary" type="submit" disabled={pending}>
-          {pending ? "Membuat..." : "Buat desa"}
-        </button>
-      </div>
-    </form>
   );
 }
 
@@ -553,8 +449,6 @@ export function TenantConsole({
 
   return (
     <>
-      <FormBuatDesa aksi={aksi.buat} />
-
       <div className="tenant-toolbar">
         <label className="tenant-search">
           <span className="sr-only">Cari nama desa, kode, slug, atau domain</span>

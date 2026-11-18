@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { daftarSemuaDomain } from "@/features/multi-desa/application/kelola-desa-use-cases";
 import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisioning-use-cases";
 import { hariMenujuPurge, statusRetensi } from "@/features/multi-desa/domain/lifecycle-tenant";
+import { DialogDaftarDesa } from "@/features/multi-desa/presentation/dialog-daftar-desa";
 import { PlatformCard } from "@/features/multi-desa/presentation/platform-ui";
 import { TenantConsole } from "@/features/multi-desa/presentation/tenant-console";
 
@@ -39,6 +40,7 @@ export default async function SuperAdminTenantPage() {
   return (
     <>
       <PlatformCard
+        actions={<DialogDaftarDesa aksi={buatDesaAction} />}
         description={`${angka.format(rows.length)} desa terdaftar. Setiap baris dapat dibuka untuk mengubah pengaturan desa; purge bersifat permanen dan hanya tersedia setelah ekspor berlaku.`}
         flush
         title="Daftar tenant"
@@ -48,7 +50,6 @@ export default async function SuperAdminTenantPage() {
             desa={rows}
             domain={domain}
             aksi={{
-              buat: buatDesaAction,
               status: ubahStatusAction,
               kuota: ubahKuotaAction,
               reset: resetAdminAction,

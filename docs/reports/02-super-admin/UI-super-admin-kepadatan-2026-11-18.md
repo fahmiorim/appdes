@@ -27,6 +27,7 @@ Informasi yang berulang atau tidak membantu operator:
 - Tabel "Tenant terbaru" punya kolom "Aksi" berisi tautan "Kelola" yang identik untuk semua baris dan menduplikasi tombol "Kelola semua tenant" di kepala kartu.
 - `Domain` menampilkan empat kartu statistik untuk tiga angka (satu kartu, "Domain utama", hanya mengulang isi kolom "Jenis" pada tabel), plus kolom aksi yang tautannya sama untuk setiap baris.
 - `Template tenant` menampilkan path source (`src/db/templates/tenant-template.ts`) dan perintah CLI `npm run platform:export-template` di antarmuka operator.
+- Halaman Tenant desa membuka dengan formulir “Daftarkan desa baru” 8 kolom yang selalu terbuka, sehingga daftar tenant — isi utama halaman — terdorong ke bawah dan judul kartu “Daftar tenant” bertabrakan dengan isinya. Aksi sesekali ini memakan area paling menonjol.
 - Topbar platform menampilkan dua baris konteks “Ruang kerja administrasi” + “Super Admin Platform”, lalu judul halaman muncul terpisah di bawahnya. Blok judul (eyebrow + judul + deskripsi) memakan satu layar penuh sebelum data pertama terlihat.
 - Sidebar platform: brand ber-`margin-bottom: 28px` ditambah label menu ber-`margin-top: 22px`, sehingga jarak logo ke tulisan “Platform” ±50 px. Di bawah menu ada paragraf pengantar dan footer “Sistem Informasi Desa / Konsol Super Admin” yang mengulang subjudul brand di bagian atas sidebar.
 
@@ -58,6 +59,9 @@ Informasi yang berulang atau tidak membantu operator:
 | `src/app/(admin)/layout.tsx` | Meneruskan `isPlatformAdmin` ke topbar dan menandai `.admin-main` dengan `data-konsol="platform"`. |
 | Tujuh halaman `/super-admin/**` | Blok `PlatformPageHeader` dihapus; aksi header dipindah (Domain → top bar, Audit CSV → kepala kartu). |
 | `src/features/multi-desa/presentation/platform-ui.tsx` | `PlatformPageHeader` dihapus karena judul kini di top bar. |
+| `src/features/multi-desa/presentation/dialog-daftar-desa.tsx` | Tombol “Daftarkan desa” + dialog native `<dialog>` berisi form; memanggil Server Action yang sama dan me-refresh daftar setelah sukses. |
+| `src/features/multi-desa/presentation/tenant-console.tsx` | `FormBuatDesa` dan `GalatField` dihapus; konsol hanya berisi filter, tabel, dan panel detail. |
+| `src/app/(admin)/super-admin/tenant/page.tsx` | Tombol pendaftaran dipasang di aksi kepala kartu; action `buat` tidak lagi diteruskan ke konsol. |
 | `src/app/globals.css` | Netralkan dekorasi ganda baris perhatian, perbaiki jarak ganda panel/toolbar/pagination, rapatkan padding halaman dan kartu, rapatkan jarak logo → label menu platform. |
 | `src/app/(admin)/super-admin/page.test.ts` | Test regresi: baris perhatian bernilai nol tidak dirender. |
 
@@ -68,6 +72,7 @@ Informasi yang berulang atau tidak membantu operator:
 - Tindakan purge kini menautkan ke `/super-admin/tenant` (tempat aksinya), bukan halaman audit.
 - Kolom aksi yang identik untuk semua baris dihapus dari tabel ringkasan dan domain; aksi tingkat halaman tetap ada di kepala kartu.
 - Jarak vertikal: padding konten `34/64px` → `30/44px`, judul halaman `28px` → `22px`, grid statistik `22px` → `18px`, kepala kartu `20px 22px` → `16px 20px`, badan kartu `20px 22px` → `18px 20px`, panel kanan tidak lagi mendapat margin ganda.
+- Pendaftaran desa tidak lagi menetap di halaman. Tombol **Daftarkan desa** di kepala kartu membuka dialog berisi form yang sama (nama, kode, domain, admin, sandi awal, kuota). Dialog memakai `<dialog>` native: fokus terkurung, Escape dan klik latar menutup, tombol Batal/Tutup tersedia. Setelah sukses dialog menutup dan daftar di belakangnya di-refresh lewat `router.refresh()`.
 - Identitas halaman (eyebrow, judul, deskripsi) pindah ke top bar konsol: top bar membaca rute aktif lewat `usePathname()` dan memetakan header dari `headerPlatform()`. Konten halaman langsung dimulai dari kartu statistik/tabel. Topbar admin desa tetap memakai “Ruang kerja administrasi”.
 - Skala tipografi judul top bar 19 px (16 px di bawah 860 px, deskripsi disembunyikan) agar tidak memakan tinggi layar.
 - Aksi header yang tidak dinamis dipindah: “Buka konsol tenant” pada Domain kini di top bar; “Unduh CSV” pada Audit diletakkan di kepala kartu bersama penghitung peristiwa karena tautannya membawa filter aktif.
@@ -96,6 +101,8 @@ Informasi yang berulang atau tidak membantu operator:
 
 - Judul halaman kini berasal dari `header-platform.ts`, bukan dari JSX halaman. Bila judul/deskripsi halaman diubah, entri di file itu juga harus diperbarui; test hanya memastikan setiap menu punya entri dan nilainya terisi, bukan kesamaan teks dengan `metadata.title`.
 - Top bar kini setinggi judul + deskripsi (±66 px di desktop, ±54 px di mobile karena deskripsi disembunyikan). Belum ada pengukuran render nyata.
+- Dialog pendaftaran desa belum dijalankan di browser: pembukaan lewat `showModal()`, penutupan dengan Escape/klik latar, dan refresh daftar setelah sukses belum disaksikan. Elemen `<dialog>` membutuhkan browser modern, yang dipenuhi semua browser target proyek.
+- `tenant-create`/`tenant-create-grid` CSS hanya dipakai form lama sehingga ikut dihapus; dialog memakai kelas `platform-dialog*` dan `platform-form-grid` yang baru.
 
 - Perubahan CSS belum dilihat pada render nyata. Dua lapis `.platform-*` masih ada; perbaikan dilakukan dengan menimpa deklarasi yang bertabrakan, bukan dengan menggabungkan seluruh blok. Penggabungan menyeluruh (menghapus blok lama) perlu port media query dan kelas yang hanya didefinisikan di blok lama, sehingga sengaja tidak dilakukan dalam task ini.
 - `PlatformStat` memakai markup `Card` + `StatIcon` yang sudah ada, tanpa kelas baru, sehingga tidak perlu aturan CSS tambahan.

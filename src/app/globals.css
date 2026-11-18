@@ -1032,29 +1032,86 @@ input:focus-visible {
   text-align: center;
 }
 
-.tenant-create {
-  margin-bottom: 18px;
-  padding: 18px;
+.platform-dialog {
+  width: min(820px, calc(100vw - 32px));
+  max-height: 88vh;
+  overflow: auto;
+  padding: 0;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 16px;
   background: #fff;
+  color: #15213e;
+  box-shadow: 0 32px 80px -32px rgb(15 32 66 / 45%);
 }
 
-.tenant-create h2 {
-  margin: 0 0 4px;
+.platform-dialog::backdrop {
+  background: rgb(15 32 65 / 42%);
+}
+
+.platform-dialog-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px 0;
+}
+
+.platform-dialog-head h2 {
+  margin: 0;
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 
-.tenant-create-grid {
+.platform-dialog-head p {
+  max-width: 70ch;
+  margin: 6px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.platform-dialog-close {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.platform-dialog-close:hover {
+  background: #f4f7fc;
+  color: #15213e;
+}
+
+.platform-dialog-form {
+  padding: 16px 22px 20px;
+}
+
+.platform-form-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
 }
 
-.tenant-create-actions {
+.platform-dialog-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 620px) {
+  .platform-form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .tenant-status.is-grace {
@@ -1199,10 +1256,6 @@ input:focus-visible {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .tenant-create-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .tenant-panel-grid {
     grid-template-columns: 1fr;
   }
@@ -1218,10 +1271,6 @@ input:focus-visible {
 
 @media (max-width: 620px) {
   .platform-stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .tenant-create-grid {
     grid-template-columns: 1fr;
   }
 
