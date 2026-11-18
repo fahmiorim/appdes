@@ -460,10 +460,10 @@ Daftar bernomor pada inventaris publik adalah **21 file**, yaitu nomor 19 sampai
 **Kesimpulan:** dari 11 mockup account, route login warga dan dashboard layanan mandiri tersedia tetapi belum setara referensi. Fondasi backend untuk identitas, sesi, OTP login, verifikasi kontak, profil penduduk, dokumen, permohonan surat, dan log notifikasi sudah ada. Halaman registrasi, aktivasi, reset password UI, profil/edit profil, pengaturan keamanan, pengaturan preferensi notifikasi, serta riwayat/detail pengajuan sesuai mockup belum ditemukan pada route tree yang diperiksa. Tidak semua kebutuhan memerlukan tabel baru; gap utama adalah route/UI, alur use case, preferensi notifikasi, dan bukti timeline. Audit ini bukan klaim bahwa screenshot runtime telah lulus visual QA.
 
 ---
-## Audit visual dan pemetaan implementasi — 20 dari 21 mockup publik
+## Audit visual dan pemetaan implementasi — 21 dari 21 mockup publik
 
 **Tanggal:** 18 November 2026  
-**Sumber visual:** 20 PNG yang diunggah pada sesi ini; seluruh file berhasil dibuka. Sebanyak 19 file berukuran 1024 × 1536 dan satu file Desa Sukamaju Online Services berukuran 1199 × 1312.  
+**Sumber visual:** 21 PNG yang diunggah pada sesi ini; seluruh file berhasil dibuka. Sebanyak 20 file berukuran 1024 × 1536 dan satu file Desa Sukamaju Online Services berukuran 1199 × 1312.  
 **Basis kode:** recursive Git tree main SHA 12fbc25f9d3f557a53ae461265aa31250fa0e4da dan pembacaan 20 file route/page terkait.  
 **Batas:** inspeksi ini mencakup PNG referensi dan source code, bukan screenshot runtime. Belum ada halaman yang dapat dinyatakan visual implementation PASS.
 
@@ -483,7 +483,7 @@ Daftar bernomor pada inventaris publik adalah **21 file**, yaitu nomor 19 sampai
 | Profil Desa — Informasi dan Potensi | /profil — ada | Menggunakan profilDesaPublik dan daftarPerangkatPublik; foto utama, peta, potensi, sarana perlu dicocokkan dengan runtime. |
 | Sejarah Desa | /sejarah dan /profil/sejarah — ada | Page memakai profil desa; timeline, foto arsip, dan kutipan perlu diverifikasi pada runtime. |
 | Visi & Misi | /visi-misi dan /profil/visi-misi — ada | Route tersedia; section tujuan, nilai dasar, dan arah kebijakan perlu dibandingkan dengan runtime. |
-| Wilayah Desa | /wilayah — ada | Menggunakan use case GIS/wilayah; peta, batas dusun, legenda, dan luas perlu diverifikasi. Mockup PNG belum diterima. |
+| Wilayah Desa | /wilayah — ada | Menggunakan use case GIS/wilayah; PNG kini telah diperiksa. Peta, batas dusun, legenda, geometri, dan luas tetap perlu diverifikasi terhadap runtime dan sumber data. |
 | Potensi Desa | /potensi — ada | Menggunakan konten statis publik; data sektor, angka potensi, galeri dan CTA perlu audit sumber data. |
 | Pemerintahan Desa | /pemerintahan — ada | Mengambil daftar perangkat publik; struktur organisasi, BPD, lembaga, tugas/fungsi, dan foto perlu dicocokkan. |
 | Village Official Profile Dashboard | /pemerintahan/perangkat/[slug] — tidak ditemukan | Mockup detail perangkat berisi biodata, kontak, masa jabatan, tugas, dokumen; daftar perangkat bukan pengganti route detail. |
@@ -530,7 +530,7 @@ Daftar bernomor pada inventaris publik adalah **21 file**, yaitu nomor 19 sampai
 
 ### 6. Status batch publik
 
-- [x] 20 PNG yang diunggah berhasil dibuka dan diinspeksi secara visual.
+- [x] 21 PNG yang diunggah berhasil dibuka dan diinspeksi secara visual.
 - [x] Dimensi seluruh 20 PNG diperiksa.
 - [x] Recursive tree main diperiksa dan 20 file route/page terkait dibaca.
 - [x] Inkonsistensi brand dan angka contoh keuangan dicatat.
@@ -566,7 +566,6 @@ Daftar bernomor pada inventaris publik adalah **21 file**, yaitu nomor 19 sampai
 - Jumlah RT 3 + 3 + 3 + 3 = **12 RT**, sesuai panel informasi.
 - Jumlah KK 420 + 398 + 445 + 487 = **1.750 KK**, sesuai total tabel.
 - Jumlah penduduk pada empat baris adalah 1.312 + 1.249 + 1.398 + 1.486 = **5.445 jiwa**, sesuai total tabel.
-- Namun total 5.445 jiwa tidak sama dengan jumlah dari angka per dusun yang tampak jika dibaca sebagai 1.312 + 1.249 + 1.398 + 1.486? **Angka tersebut berjumlah 5.445**; tidak ditemukan selisih aritmetika pada total penduduk.
 - Panel informasi menampilkan **4 dusun**, sesuai tabel dan empat area peta.
 - Batas administratif yang ditampilkan adalah Utara: Desa Tanjung Gading; Selatan: Desa Sumber Rejo; Timur: Desa Sei Balai; Barat: Desa Pematang Panjang.
 
