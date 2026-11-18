@@ -157,8 +157,10 @@ function KelolaDomain({
     <section className="tenant-panel-wide">
       <h4>Domain dan alias</h4>
       <p className="form-help">
-        Domain utama dipakai untuk mengenali tenant dari host. Domain pertama otomatis menjadi
-        utama; alias lain hanya mengarah ke desa yang sama.
+        Domain utama dipakai untuk mengenali tenant dari host dan tidak dapat dihapus langsung.
+        Untuk menggantinya: tambahkan domain baru, klik <strong>Ganti domain utama</strong> pada
+        domain tersebut, lalu hapus domain lama yang sudah menjadi alias. Alias lain hanya mengarah
+        ke desa yang sama.
       </p>
 
       {daftar.length === 0 ? (
@@ -169,9 +171,12 @@ function KelolaDomain({
             <li key={item.id} className="tenant-domain-item">
               <span className="tenant-domain-name">{item.domain}</span>
               {item.isPrimary ? (
-                <span className="tenant-status is-active">
-                  <span aria-hidden="true" />
-                  Utama
+                <span className="tenant-domain-actions">
+                  <span className="tenant-status is-active">
+                    <span aria-hidden="true" />
+                    Utama
+                  </span>
+                  <span className="form-help">Host aktif desa ini</span>
                 </span>
               ) : (
                 <span className="tenant-domain-actions">
@@ -179,11 +184,12 @@ function KelolaDomain({
                     <input type="hidden" name="villageId" value={desa.id} />
                     <input type="hidden" name="domainId" value={item.id} />
                     <button
+                      aria-label={`Ganti domain utama ke ${item.domain}`}
                       className="button button-secondary tenant-expand"
                       type="submit"
                       disabled={utamaPending || sudahPurge}
                     >
-                      Jadikan utama
+                      Ganti domain utama
                     </button>
                   </form>
                   <form action={hapusAction}>
@@ -203,6 +209,13 @@ function KelolaDomain({
           ))}
         </ul>
       )}
+
+      {daftar.length === 1 && !sudahPurge ? (
+        <p className="form-help">
+          Desa ini baru memiliki satu domain. Tambahkan domain pengganti lebih dulu untuk bisa
+          memindahkan status utama tanpa menghapus domain yang sekarang.
+        </p>
+      ) : null}
 
       <div className="tenant-panel-actions">
         <DialogFormTenant

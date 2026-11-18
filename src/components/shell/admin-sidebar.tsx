@@ -94,7 +94,7 @@ export function AdminSidebar({
         <Link className="admin-sidebar-brand" href={homeHref} onClick={() => setOpen(false)}>
           <Image
             className="admin-brand-logo"
-            src="/images/flexidesa-mark.svg"
+            src="/images/logo.png"
             alt=""
             width={44}
             height={44}
@@ -105,7 +105,7 @@ export function AdminSidebar({
             <strong>
               FlexiDesa<span className="admin-brand-domain">.id</span>
             </strong>
-            <span>{isPlatformAdmin ? "Konsol Super Admin" : "Sistem Informasi Desa"}</span>
+            <span>{isPlatformAdmin ? "Konsol Super Admin" : "Sistem Informasi Desa Modern"}</span>
           </span>
         </Link>
         <div className="admin-nav-label">

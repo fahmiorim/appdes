@@ -26,7 +26,7 @@ describe("PublicShell", () => {
     );
 
     expect(markup).toContain('aria-label="Navigasi utama"');
-    expect(markup).toContain('src="/images/flexidesa-mark.svg"');
+    expect(markup).toContain("url=%2Fimages%2Flogo.png");
     expect(markup).toContain("Desa Contoh");
     expect(markup).toContain("Dokumen &amp; Informasi Publik");
 
@@ -69,7 +69,7 @@ describe("PublicShell", () => {
       }),
     );
 
-    expect(markup).not.toContain("/images/flexidesa-mark.svg");
+    expect(markup).not.toContain("logo.png");
     expect(markup).toContain("Transparansi Anggaran");
   });
 });

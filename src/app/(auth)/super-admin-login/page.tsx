@@ -41,19 +41,12 @@ export default async function SuperAdminLoginPage({
       <section className={styles.visual} aria-label="FlexiDesa, platform pengelolaan desa">
         <div className={styles.visualGlow} />
         <header className={styles.brand}>
-          <Image
-            src="/images/flexidesa-mark.svg"
-            alt=""
-            width={44}
-            height={44}
-            priority
-            unoptimized
-          />
+          <Image src="/images/logo.png" alt="" width={44} height={44} priority unoptimized />
           <span>
             <strong>
               FlexiDesa<span>.id</span>
             </strong>
-            <small>PLATFORM SISTEM INFORMASI DESA</small>
+            <small>Sistem Informasi Desa Terpadu</small>
           </span>
         </header>
 

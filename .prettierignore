@@ -11,3 +11,5 @@ docs
 package-lock.json
 *.md
 src/db/migrations
+# Dataset wilayah hasil generator (minified, lihat scripts/wilayah).
+src/features/wilayah/data/*.json

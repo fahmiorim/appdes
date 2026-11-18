@@ -95,7 +95,7 @@ export function PlatformLanding() {
         <div className={styles.container + " " + styles.headerInner}>
           <Link className={styles.brand} href="/" aria-label="FlexiDesa beranda">
             <Image
-              src="/images/flexidesa-mark.svg"
+              src="/images/logo.png"
               alt=""
               width={46}
               height={46}
@@ -106,7 +106,7 @@ export function PlatformLanding() {
               <strong>
                 FlexiDesa<span>.id</span>
               </strong>
-              <small>Sistem Informasi Desa Modern</small>
+              <small>Sistem Informasi Desa Terpadu</small>
             </span>
           </Link>
 
@@ -363,12 +363,12 @@ export function PlatformLanding() {
           <div className={styles.footerMain}>
             <div className={styles.footerBrand}>
               <Link className={styles.brand} href="/">
-                <Image src="/images/flexidesa-mark.svg" alt="" width={40} height={40} />
+                <Image src="/images/logo.png" alt="" width={40} height={40} />
                 <span className={styles.brandCopy}>
                   <strong>
                     FlexiDesa<span>.id</span>
                   </strong>
-                  <small>Sistem Informasi Desa Modern</small>
+                  <small>Sistem Informasi Desa Terpadu</small>
                 </span>
               </Link>
               <p>Teknologi untuk mendukung pelayanan publik dan tata kelola pemerintahan desa.</p>
