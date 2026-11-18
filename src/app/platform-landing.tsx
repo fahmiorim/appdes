@@ -232,7 +232,7 @@ export function PlatformLanding() {
             <div className={styles.accessCards}>
               <article><span>♙</span><h3>Warga desa</h3><p>Ajukan layanan dan pantau pengajuan.</p><Link href="/masuk">Masuk layanan warga ↗</Link></article>
               <article><span>▦</span><h3>Operator desa</h3><p>Kelola data dan administrasi desa.</p><Link href="/masuk">Masuk staf desa ↗</Link></article>
-              <article><span>⬡</span><h3>Pengelola platform</h3><p>Kelola tenant dan domain desa.</p><Link href="/super-admin">Masuk Super Admin ↗</Link></article>
+              <article><span>⬡</span><h3>Pengelola platform</h3><p>Kelola tenant dan domain desa.</p><Link href="/super-admin-login">Masuk Super Admin ↗</Link></article>
             </div>
           </div>
         </div>
@@ -267,7 +267,7 @@ export function PlatformLanding() {
               <p>Teknologi untuk mendukung pelayanan publik dan tata kelola pemerintahan desa.</p>
             </div>
             <div className={styles.footerLinks}><strong>Jelajahi</strong><a href="#pilar">Solusi</a><a href="#fitur">Fitur</a><a href="#akses">Akses pengguna</a></div>
-            <div className={styles.footerLinks}><strong>Akses</strong><Link href="/masuk">Login</Link><Link href="/super-admin">Super Admin</Link></div>
+            <div className={styles.footerLinks}><strong>Akses</strong><Link href="/masuk">Login</Link><Link href="/super-admin-login">Super Admin</Link></div>
           </div>
           <div className={styles.footerBottom}><span>© {new Date().getFullYear()} FlexiDesa. Seluruh hak cipta dilindungi.</span><span>Platform Sistem Informasi Desa</span></div>
         </div>
