@@ -239,3 +239,78 @@ Sebaliknya, perbedaan berikut **tetap desain** meskipun data diisi: komposisi he
 - **Validasi:** pembacaan 42 mockup, 25 tangkapan layar, route `src/app`, schema, dan use case terkait. Tidak ada typecheck/test karena tidak ada perubahan kode.
 - **Risiko tersisa:** lima route belum dinilai visual; data tenant kosong; bukti tangkapan tidak masuk repository.
 - **Status:** siap review sebagai audit. Belum di-commit; branch masih `main`, sehingga sebelum commit pekerjaan ini harus dipindahkan ke branch task sesuai `AGENTS.md`.
+
+
+---
+
+## Konsolidasi lintas-audit — 18 November 2026
+
+Bagian ini menyatukan laporan kesiapan tiga mockup utama dan inventaris awal di docs/reports/02-super-admin/MOCKUP-ASSETS-2026-11-18.md dengan audit final 42 mockup. Matriks audit final menjadi acuan utama untuk status seluruh mockup; laporan 02-super-admin tetap menjadi catatan khusus kesiapan landing platform, login Super Admin, dan dashboard Super Admin.
+
+### 1. Cakupan gabungan dan bukti
+
+| Kelompok | Cakupan | Status bukti |
+|---|---:|---|
+| Website publik | 21 | Seluruh PNG diperiksa langsung; route dan source terkait dipetakan. |
+| Account/autentikasi | 12 dalam matriks final | Termasuk login warga dan login Super Admin; satu aset login Super Admin yang muncul kembali ditandai sebagai duplikasi, bukan kebutuhan halaman baru. |
+| Pendukung | 7 | Termasuk dalam inspeksi 42 mockup. |
+| Landing platform | 1 | Kebutuhan frontend/backend ditinjau; screenshot runtime belum diverifikasi. |
+| Dashboard Super Admin | 1 | Kebutuhan frontend/backend ditinjau; screenshot runtime belum diverifikasi. |
+
+Inventaris awal membagi tiga mockup utama dan 39 aset tambahan. Matriks final mengelompokkan 42 mockup berdasarkan area. Angka 42 adalah jumlah aset dalam cakupan audit, bukan jumlah route yang selesai.
+
+### 2. Kesimpulan gabungan
+
+- Hanya dua halaman yang dinilai mendekati struktur referensi: login warga dan login Super Admin.
+- 17 halaman berbeda material, 5 route ada tetapi belum diverifikasi visual, dan 18 kebutuhan halaman belum memiliki halaman pasangan.
+- Audit menggunakan PNG referensi dan screenshot aplikasi terdahulu (21 desktop, 4 mobile), bukan 42 screenshot runtime baru.
+- Belum ada halaman yang dinyatakan lulus visual acceptance menyeluruh. Perbandingan screenshot runtime terbaru pada viewport sepadan masih terbuka.
+- Backend memiliki fondasi data/use case yang relatif lebih siap daripada UI, tetapi masih ada gap agregasi, field, alur publik, dan halaman/fitur.
+
+### 3. Rekonsiliasi perbedaan laporan
+
+1. Pengumuman: gunakan koreksi audit final. /pengumuman adalah halaman daftar; detail konten pengumuman menggunakan route berita berbasis slug /berita/[slug].
+2. Village Official Profile Dashboard adalah detail perangkat desa, bukan profil desa. Route dinamis /pemerintahan/perangkat/[slug] belum ditemukan.
+3. Inventaris awal mencatat 11 file account tambahan. Matriks final menghitung halaman account beserta login warga dan login Super Admin; duplikasi login Super Admin harus ditandai dan tidak dihitung sebagai kebutuhan halaman baru.
+4. Jumlah mockup publik yang benar adalah 21, bukan 20.
+5. Inspeksi PNG referensi bukan screenshot acceptance UI runtime. Screenshot terdahulu hanya mendukung status route dan viewport yang memang tercakup.
+6. Empty state dan angka nol pada tenant pengujian yang kosong bukan otomatis kesalahan desain. Namun section, komposisi, grafik, sidebar, dan komponen yang memang tidak ada tetap merupakan gap UI.
+
+### 4. Perubahan backend setelah audit
+
+Audit final mencatat jam, kategori, dan status agenda sebagai gap. PR #152 kemudian menambahkan kolom jam_mulai, jam_selesai, kategori, dan status secara aditif, beserta validasi waktu, pemetaan use case/repository, helper label jam, dan 21 unit test agenda. Typecheck, ESLint scoped, dan Prettier dilaporkan PASS. Integration test dilewati karena konfigurasi database uji tidak tersedia; migration belum dijalankan pada database. UI admin/publik belum merender field baru. Jalankan migration sebelum aplikasi memakai kolom baru. PR: https://github.com/fahmiorim/appdes/pull/152
+
+### 5. Daftar gap gabungan
+
+**P0 — alur/fitur kritis**
+- Registrasi dan verifikasi akun warga end-to-end.
+- Pencarian global lintas konten.
+- Pengiriman pengaduan publik dan pengecekan status tiket.
+- Putuskan kontrak visual publik dan konsistensi identitas/brand mockup.
+
+**P1 — kecukupan data dan interaksi**
+- Agregasi statistik usia, pendidikan, pekerjaan, agama, dan status perkawinan.
+- Metadata APBDes (Perdes, tanggal/status penetapan, dasar hukum).
+- Galeri video/kategori, hit, unduh ZIP dan relasi album.
+- Wilayah geografis: luas, batas, ketinggian, topografi, iklim, geometri GIS dan unduhan PDF.
+- Potensi desa terstruktur.
+- Layanan: FAQ, estimasi, biaya, kategori dan ikon.
+- Akun warga: preferensi notifikasi, pengelolaan sesi/perangkat, timeline permohonan dan aturan verifikasi dokumen.
+- Dashboard Super Admin: agregasi pertumbuhan, peta tenant, paket/langganan bila dibutuhkan, serta monitoring runtime bila indikator kesehatan ditampilkan.
+
+**P2 — halaman dan penyempurnaan**
+- Detail perangkat desa dan halaman laporan keuangan terpisah.
+- Halaman maintenance, pencarian, sitemap, privasi, syarat, serta halaman akun warga yang belum ada.
+- Penyempurnaan 404, detail konten, dan komponen responsif.
+
+### 6. Rencana validasi akhir
+
+1. Ambil screenshot runtime baru untuk semua route tersedia pada desktop 1440 dan mobile 390, menggunakan tenant berisi fixture konsisten.
+2. Simpan artefak screenshot di lokasi yang dapat diakses reviewer, bukan hanya folder yang di-ignore Git.
+3. Bandingkan per section dengan PNG referensi; catat gap layout, tipografi, warna, aset, konten, dan interaksi.
+4. Untuk halaman tanpa route, tetapkan keputusan produk: implementasi, gabungkan dengan halaman lain, atau keluarkan dari scope.
+5. Verifikasi backend lewat schema, use case, route/API dan integration test; jangan menyimpulkan kesiapan dari keberadaan page atau tabel saja.
+6. Jalankan migration agenda di environment tujuan sebelum UI memakai field baru, lalu uji create/update/list/filter.
+7. Tutup gap satu per satu dengan acceptance criteria visual dan fungsional eksplisit.
+
+**Status konsolidasi:** dokumen ini menjadi sumber utama hasil audit mockup 18 November 2026. Laporan 02-super-admin dipertahankan sebagai riwayat inspeksi aset dan kesiapan tiga mockup utama; inventaris awalnya bukan lagi acuan tunggal untuk status 42 mockup. Tidak ada perubahan source aplikasi dalam konsolidasi dokumentasi ini.
