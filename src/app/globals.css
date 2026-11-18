@@ -2232,10 +2232,10 @@ input:focus-visible {
   border-right-color: #e3eaf6;
 }
 .admin-sidebar:has(.admin-nav-link[href^="/super-admin"]) .admin-sidebar-brand {
-  margin-bottom: 28px;
+  margin-bottom: 10px;
 }
 .admin-sidebar:has(.admin-nav-link[href^="/super-admin"]) .admin-nav-label {
-  margin: 22px 12px 9px;
+  margin: 4px 12px 8px;
   color: #8a96ad;
   font-size: 10px;
   letter-spacing: 0.13em;
@@ -2281,14 +2281,6 @@ input:focus-visible {
   background: #dce8ff;
   color: #245bd7;
 }
-.admin-sidebar:has(.admin-nav-link[href^="/super-admin"]) .admin-nav-note {
-  margin-top: auto;
-  padding: 14px;
-  border: 1px solid #e5ebf6;
-  border-radius: 13px;
-  background: #f7f9fd;
-  font-size: 11px;
-}
 .admin-sidebar:has(.admin-nav-link[href^="/super-admin"]) .admin-sidebar-footer {
   background: #fff;
 }
@@ -2301,14 +2293,14 @@ input:focus-visible {
 }
 .admin-main:has(.platform-page-head) .admin-content {
   max-width: 1480px;
-  padding: 34px clamp(22px, 3vw, 42px) 64px;
+  padding: 30px clamp(20px, 3vw, 40px) 44px;
 }
 .platform-page-head {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  margin-bottom: 28px;
+  margin-bottom: 22px;
 }
 .platform-page-head h1 {
   margin: 7px 0 0;
@@ -2352,8 +2344,8 @@ input:focus-visible {
 .platform-stats-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 15px;
-  margin-bottom: 22px;
+  gap: 14px;
+  margin-bottom: 18px;
 }
 .platform-stat-grid > *,
 .platform-stats-grid > * {
@@ -2392,7 +2384,7 @@ input:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 18px;
-  padding: 20px 22px;
+  padding: 16px 20px;
   border-bottom: 1px solid #edf0f6;
 }
 .platform-card-head h2 {
@@ -2411,7 +2403,7 @@ input:focus-visible {
 }
 .platform-card-body {
   min-width: 0;
-  padding: 20px 22px;
+  padding: 18px 20px;
 }
 .platform-card-body.is-flush {
   padding: 0;
@@ -2449,7 +2441,8 @@ input:focus-visible {
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 16px 18px;
+  margin-bottom: 0;
+  padding: 14px 16px;
   border-bottom: 1px solid #edf0f6;
   background: #fbfcfe;
 }
@@ -2498,9 +2491,10 @@ input:focus-visible {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 18px;
   align-items: start;
+  margin-top: 18px;
 }
 .platform-split .platform-card {
-  margin-top: 20px;
+  margin-top: 0;
 }
 .platform-create {
   margin-bottom: 18px;
@@ -2539,7 +2533,8 @@ input:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 12px;
-  padding: 18px;
+  margin-top: 0;
+  padding: 14px;
   border-top: 1px solid #edf0f6;
 }
 .platform-def {
@@ -2609,7 +2604,10 @@ input:focus-visible {
   justify-content: space-between;
   gap: 12px;
   padding: 14px 0;
+  /* Lapisan lama menggambar kotak berbingkai; di sini cukup garis pemisah. */
+  border: 0;
   border-bottom: 1px solid #edf0f6;
+  border-radius: 0;
 }
 .platform-attention-list li:first-child,
 .platform-activity li:first-child {

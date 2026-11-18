@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
 
+import { Card } from "@/components/ui/card";
+import { StatIcon } from "@/components/ui/stat-icon";
+
 /**
  * Kerangka visual konsol platform.
  *
@@ -60,6 +63,27 @@ export function PlatformCard({
       ) : null}
       <div className={flush ? "platform-card-body is-flush" : "platform-card-body"}>{children}</div>
     </section>
+  );
+}
+
+export function PlatformStat({
+  label,
+  value,
+  note,
+  icon,
+}: {
+  label: string;
+  value: ReactNode;
+  note: ReactNode;
+  icon: ReactNode;
+}) {
+  return (
+    <Card>
+      <StatIcon>{icon}</StatIcon>
+      <div className="stat-card-label">{label}</div>
+      <div className="stat-card-value">{value}</div>
+      <div className="stat-card-note">{note}</div>
+    </Card>
   );
 }
 

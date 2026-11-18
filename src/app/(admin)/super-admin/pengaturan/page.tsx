@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 
-import { Card } from "@/components/ui/card";
 import { getKonfigurasiPlatform } from "@/features/multi-desa/application/platform-info-use-cases";
 import {
   PlatformCard,
   PlatformPageHeader,
+  PlatformStat,
   PlatformStatus,
 } from "@/features/multi-desa/presentation/platform-ui";
 
@@ -93,27 +93,42 @@ export default async function SuperAdminPengaturanPage() {
         title="Kebijakan retensi"
       >
         <div className="platform-stat-grid">
-          <Card>
-            <div className="stat-card-label">Masa tenggang retensi</div>
-            <div className="stat-card-value">
-              {angka.format(konfigurasi.retensi.masaTenggangHari)}
-            </div>
-            <div className="stat-card-note">Hari sebelum data desa nonaktif boleh di-purge</div>
-          </Card>
-          <Card>
-            <div className="stat-card-label">Masa berlaku ekspor</div>
-            <div className="stat-card-value">
-              {angka.format(konfigurasi.retensi.umurEksporHari)}
-            </div>
-            <div className="stat-card-note">Hari sebelum berkas ekspor dibersihkan</div>
-          </Card>
-          <Card>
-            <div className="stat-card-label">Retensi audit</div>
-            <div className="stat-card-value">
-              {angka.format(konfigurasi.retensi.retensiAuditBulan)}
-            </div>
-            <div className="stat-card-note">Bulan penyimpanan audit, termasuk desa ter-purge</div>
-          </Card>
+          <PlatformStat
+            icon={
+              <>
+                <rect height="16" rx="2" width="16" x="4" y="5" />
+                <path d="M4 10h16" />
+                <path d="M9 3.5v3M15 3.5v3" />
+              </>
+            }
+            label="Masa tenggang retensi"
+            note="Hari sebelum data desa nonaktif boleh di-purge"
+            value={angka.format(konfigurasi.retensi.masaTenggangHari)}
+          />
+          <PlatformStat
+            icon={
+              <>
+                <circle cx="12" cy="13" r="7.6" />
+                <path d="M12 9.4V13l2.6 1.6" />
+                <path d="M9.4 3.6h5.2" />
+              </>
+            }
+            label="Masa berlaku ekspor"
+            note="Hari sebelum berkas ekspor dibersihkan"
+            value={angka.format(konfigurasi.retensi.umurEksporHari)}
+          />
+          <PlatformStat
+            icon={
+              <>
+                <rect height="5" rx="1.4" width="16" x="4" y="4" />
+                <path d="M5.5 9v9.4a1.6 1.6 0 0 0 1.6 1.6h9.8a1.6 1.6 0 0 0 1.6-1.6V9" />
+                <path d="M10 13h4" />
+              </>
+            }
+            label="Retensi audit"
+            note="Bulan penyimpanan audit, termasuk desa ter-purge"
+            value={angka.format(konfigurasi.retensi.retensiAuditBulan)}
+          />
         </div>
 
         <p className="form-help">
