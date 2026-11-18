@@ -78,8 +78,14 @@ Referensi yang diperiksa: `docs/mockups/account/Modern Indonesian Village Login 
 | Main text | `#111A3B` | Heading dan teks utama |
 | Muted text | `#58688B` | Deskripsi dan metadata |
 | Border | `#DCE4F5` | Outline input, divider, card |
+| Action purple (Admin Desa) | `#7A20F0` | Tab aktif, tombol, CTA, dan grafik pada persona desa sesuai `docs/mockups/village/` |
+| Action purple strong | `#6512CF` | Hover/pressed aksi desa |
+| Action purple soft | `#EDE1FF` | Latar chip/ikon aksi dan segmen donut sekunder |
+| Action purple border | `#DCC6FF` | Outline ikon dan chip aksi |
 
 Nilai tersebut adalah token baseline v0.3; tetap lakukan contrast check dan screenshot comparison sebelum status stable.
+
+Warna aksi ungu hanya berlaku untuk persona Admin Desa (shell `data-desa="true"` dan halaman desa). Konsol Platform Super Admin tetap memakai `--color-brand` biru; tautan, status informasi, dan warna status semantik tidak ikut berubah.
 
 ### 4.1.2 Aset visual reusable
 

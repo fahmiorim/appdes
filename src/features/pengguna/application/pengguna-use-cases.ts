@@ -1,5 +1,7 @@
 import "server-only";
 
+import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
+import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import {
   fallbackEmail,
@@ -106,6 +108,15 @@ export async function createPenggunaData(input: PenggunaCreateInput): Promise<{ 
     password: input.password,
   });
 
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.penggunaCreate,
+    resource: PENGGUNA_RESOURCE,
+    resourceId: created.id,
+    details: { roleId: input.roleId, active: input.active },
+  });
+
   return { id: created.id };
 }
 
@@ -136,6 +147,20 @@ export async function updatePenggunaData(id: string, input: PenggunaUpdateInput)
     active: input.active,
     password: input.password,
   });
+
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.penggunaUpdate,
+    resource: PENGGUNA_RESOURCE,
+    resourceId: id,
+    details: {
+      roleId: input.roleId,
+      active: input.active,
+      roleBerubah: input.roleId !== target.roleId,
+      kataSandiDireset: input.password !== null,
+    },
+  });
 }
 
 export async function deletePenggunaData(id: string): Promise<void> {
@@ -146,4 +171,12 @@ export async function deletePenggunaData(id: string): Promise<void> {
 
   await getScopedPengguna(id, villageId);
   await deletePengguna(id);
+
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.penggunaDelete,
+    resource: PENGGUNA_RESOURCE,
+    resourceId: id,
+  });
 }
