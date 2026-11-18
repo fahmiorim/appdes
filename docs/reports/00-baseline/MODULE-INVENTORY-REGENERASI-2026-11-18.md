@@ -22,7 +22,7 @@ Dokumen digenerate ulang dari tree `origin/main` (`f5a6f42`), bukan dari isi dok
 - `git grep -l "use server" origin/main -- src` untuk Server Action.
 - `src/features/*/application/*.ts` non-test dan `src/features/*/infrastructure/**/*-repository.ts` non-test untuk tabel modul dan daftar file.
 
-Sejak task ini generator tersedia permanen sebagai `npm run docs:inventory` (`scripts/generate-module-inventory.mjs`). Perintah itu default membaca `origin/main` dan menerima ref lain sebagai argumen, misalnya `npm run docs:inventory -- HEAD`.
+Sejak task ini generator tersedia permanen sebagai `npm run docs:inventory` (`scripts/generate-module-inventory.mjs`). Perintah itu default membaca `origin/main` dan menerima ref lain sebagai argumen, misalnya `npm run docs:inventory -- HEAD`. Setelah rebase ke `f5a6f42`, pekerjaan dipindahkan ke branch `task/audit-claims-inventory-2026-11-18` karena branch lama adalah head PR yang sudah di-squash-merge.
 
 ## 3. Hasil
 
@@ -70,7 +70,7 @@ Rincian yang berubah:
 | `sort \| uniq -d` pada baris route | Kosong — tidak ada path duplikat |
 | `npx prettier --check docs/architecture/MODULE-INVENTORY.md` | **PASS** |
 | `git diff --check` | **PASS** — tidak ada trailing whitespace |
-| `git push origin task/design-mockup-assets` | **PASS** — `0e01ad1..eea0fd8` |
+| `git push -u origin task/audit-claims-inventory-2026-11-18` | **PASS** — branch baru untuk PR #148; branch lama tidak di-force-push karena AGENTS.md melarangnya |
 | `git ls-tree -r --name-only HEAD -- src/app \| grep -cE '/(page\.tsx|route\.ts)$'` | **117** — himpunan route `HEAD` dan `origin/main` identik, tidak ada berkas main yang hilang dari branch |
 | Build/typecheck/unit/integration test | **SKIPPED** — hanya dokumentasi |
 
