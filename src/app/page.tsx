@@ -1,16 +1,20 @@
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 
 import { agendaMendatang } from "@/features/agenda/application/agenda-use-cases";
 import { agendaTanggalPanjang } from "@/features/agenda/domain/agenda";
+import { hostPlatform } from "@/features/desa/application/platform-host";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { getStatistikDesa } from "@/features/desa/application/statistik-desa";
+import { adalahHostPlatform } from "@/features/desa/domain/host";
 import {
   daftarBerita,
   daftarSliderBeranda,
   profilDesaPublik,
 } from "@/features/publik/application/konten-publik";
 
+import { PlatformLanding } from "./platform-landing";
 import styles from "./public-home.module.css";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +49,13 @@ function locationLabel(desa: {
 }
 
 export default async function PublicHomePage() {
+  // Host platform menampilkan landing page, bukan beranda desa. Tanpa
+  // pemisahan ini host apex ikut memakai fallback satu-desa dan pengunjung
+  // melihat data desa tertentu seolah-olah itu situs platform.
+  if (adalahHostPlatform((await headers()).get("host"), hostPlatform)) {
+    return <PlatformLanding />;
+  }
+
   const desa = await getIdentitasFromRequest();
   const [profil, berita, slider, statistik, agenda] = await Promise.all([
     profilDesaPublik(desa.id),

@@ -1,8 +1,11 @@
 import "server-only";
 
 import { headers } from "next/headers";
+import { notFound as halamanTidakDitemukan } from "next/navigation";
 import { cache } from "react";
 
+import { hostPlatform } from "@/features/desa/application/platform-host";
+import { adalahHostPlatform } from "@/features/desa/domain/host";
 import { susunPetaDesa, villageIdDariHost } from "@/features/desa/domain/tenant";
 import {
   getFirstVillageId,
@@ -43,6 +46,13 @@ export async function resolveVillageId(user: CurrentUser): Promise<number> {
  */
 export const resolveVillageByHost = cache(
   async (host: string | null | undefined): Promise<IdentitasDesa> => {
+    // Host platform bukan tenant: jangan biarkan fallback satu-desa membuat
+    // domain platform menampilkan data desa tertentu. Memakai `notFound()` dari
+    // Next agar pengunjung mendapat 404, bukan halaman galat 500.
+    if (adalahHostPlatform(host, hostPlatform)) {
+      halamanTidakDitemukan();
+    }
+
     const peta = susunPetaDesa(await listVillageDomains(), env.DESA_BASE_DOMAIN ?? null);
     const villageId = villageIdDariHost(host, peta);
 

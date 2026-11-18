@@ -29,6 +29,18 @@ const envSchema = z
       .optional()
       .transform((value) => value || undefined),
 
+    /**
+     * Host platform (landing page produk), dipisah koma. Terpisah dari
+     * `DESA_BASE_DOMAIN` karena domain desa dapat memakai induk lain, mis.
+     * produksi: platform `flexidesa.id`, desa `kwalagunung.desa.id`.
+     * Kosong = host platform diturunkan dari host `APP_URL`.
+     */
+    PLATFORM_HOSTS: z
+      .string()
+      .trim()
+      .optional()
+      .transform((value) => value || undefined),
+
     /** DSN MySQL/MariaDB: mysql://user:pass@host:port/database */
     DATABASE_URL: z.string().min(1, "DATABASE_URL wajib diisi."),
 

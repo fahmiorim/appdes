@@ -119,6 +119,18 @@ artefak backup yang tidak terenkripsi.
 - **Catatan:** isi tanpa `https://`, path, atau port. Perubahan nilai
   memengaruhi resolusi host dan perlu restart.
 
+### `PLATFORM_HOSTS`
+
+- **Fungsi:** host milik platform (landing page produk), dipisah koma.
+- **Wajib:** tidak. Kosong berarti host platform diturunkan dari host
+  `APP_URL`.
+- **Contoh aman:** `flexidesa.id` (produksi), `flexidesa.test` (dev).
+- **Catatan:** sengaja terpisah dari `DESA_BASE_DOMAIN` karena domain desa
+  dapat memakai induk lain. Contoh produksi: platform `flexidesa.id`, desa
+  `kwalagunung.desa.id` dengan `DESA_BASE_DOMAIN=desa.id`. Host di daftar ini
+  tidak pernah dipetakan ke tenant (landing page, bukan beranda desa), termasuk
+  saat instalasi hanya berisi satu desa.
+
 ### `RESEND_API_KEY`
 
 - **Fungsi:** API key Resend untuk email keluar (reset sandi dan notifikasi).
@@ -230,6 +242,9 @@ TRUST_PROXY=true
 
 # Opsional: multi-desa wildcard
 # DESA_BASE_DOMAIN=desa.example.go.id
+
+# Opsional: host platform (landing page). Kosong = diambil dari APP_URL
+# PLATFORM_HOSTS=flexidesa.id
 
 # Opsional: TTE (jangan aktifkan sebelum hardening selesai)
 # TTE_MODE=nonaktif
