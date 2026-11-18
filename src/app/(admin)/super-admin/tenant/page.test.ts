@@ -1,3 +1,4 @@
+import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { forbidden as buatKesalahanForbidden } from "@/lib/errors";
@@ -17,6 +18,7 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
   forbidden: state.forbidden,
   usePathname: () => "/super-admin/tenant",
+  useRouter: () => ({ replace: vi.fn() }),
 }));
 
 vi.mock("@/features/multi-desa/application/provisioning-use-cases", () => ({
@@ -42,6 +44,38 @@ vi.mock("../actions", () => ({
   ubahStatusAction: vi.fn(),
 }));
 
+const desaDasar = {
+  slug: "desa",
+  code: "1207012001",
+  domain: "desa.localhost",
+  kuotaMediaMb: null,
+  tema: null,
+  pengguna: 1,
+  penduduk: 10,
+  jenisSurat: 0,
+  createdAt: new Date("2026-01-01"),
+};
+
+const desaAktif = {
+  ...desaDasar,
+  id: 1,
+  name: "Desa Aktif",
+  active: true,
+  nonaktifSejak: null,
+  purgedAt: null,
+  adaEksporBerlaku: false,
+};
+
+const desaSiapPurge = {
+  ...desaDasar,
+  id: 2,
+  name: "Desa Siap Purge",
+  active: false,
+  nonaktifSejak: new Date(Date.now() - 120 * 24 * 60 * 60 * 1000),
+  purgedAt: null,
+  adaEksporBerlaku: true,
+};
+
 describe("SuperAdminTenantPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -53,7 +87,9 @@ describe("SuperAdminTenantPage", () => {
     );
     const { default: Page } = await import("./page");
 
-    await expect(Page()).rejects.toThrow("NEXT_HTTP_ERROR_FALLBACK;403");
+    await expect(Page({ searchParams: Promise.resolve({}) })).rejects.toThrow(
+      "NEXT_HTTP_ERROR_FALLBACK;403",
+    );
     expect(state.daftarDesaSuperAdmin).not.toHaveBeenCalled();
     expect(state.daftarSemuaDomain).not.toHaveBeenCalled();
   });
@@ -82,8 +118,34 @@ describe("SuperAdminTenantPage", () => {
     state.daftarSemuaDomain.mockResolvedValue([]);
     const { default: Page } = await import("./page");
 
-    await expect(Page()).resolves.toBeDefined();
+    await expect(Page({ searchParams: Promise.resolve({}) })).resolves.toBeDefined();
     expect(state.daftarDesaSuperAdmin).toHaveBeenCalledOnce();
     expect(state.daftarSemuaDomain).toHaveBeenCalledOnce();
+  });
+
+  it("memfilter daftar sesuai status pada query param", async () => {
+    state.requireSuperAdmin.mockResolvedValue({ id: "platform-1", villageId: null });
+    state.daftarDesaSuperAdmin.mockResolvedValue([desaAktif, desaSiapPurge]);
+    state.daftarSemuaDomain.mockResolvedValue([]);
+    const { default: Page } = await import("./page");
+
+    const html = renderToStaticMarkup(
+      await Page({ searchParams: Promise.resolve({ status: "siap-purge" }) }),
+    );
+
+    expect(html).toContain("Menampilkan 1 dari 2 desa");
+  });
+
+  it("menampilkan semua desa saat status tidak dikenal", async () => {
+    state.requireSuperAdmin.mockResolvedValue({ id: "platform-1", villageId: null });
+    state.daftarDesaSuperAdmin.mockResolvedValue([desaAktif, desaSiapPurge]);
+    state.daftarSemuaDomain.mockResolvedValue([]);
+    const { default: Page } = await import("./page");
+
+    const html = renderToStaticMarkup(
+      await Page({ searchParams: Promise.resolve({ status: "arsip" }) }),
+    );
+
+    expect(html).toContain("Menampilkan 2 dari 2 desa");
   });
 });

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { daftarSemuaDomain } from "@/features/multi-desa/application/kelola-desa-use-cases";
 import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisioning-use-cases";
 import { hariMenujuPurge, statusRetensi } from "@/features/multi-desa/domain/lifecycle-tenant";
+import { parseStatusTenantFilter } from "@/features/multi-desa/domain/status-tenant-filter";
 import { PlatformCard, PlatformPageHeader } from "@/features/multi-desa/presentation/platform-ui";
 import { TenantConsole } from "@/features/multi-desa/presentation/tenant-console";
 
@@ -26,8 +27,12 @@ export const metadata: Metadata = {
 
 const angka = new Intl.NumberFormat("id-ID");
 
-export default async function SuperAdminTenantPage() {
+type Props = { searchParams: Promise<{ status?: string | string[] }> };
+
+export default async function SuperAdminTenantPage({ searchParams }: Props) {
   await pastikanSuperAdmin();
+
+  const statusAwal = parseStatusTenantFilter((await searchParams).status);
 
   const [desa, domain] = await Promise.all([daftarDesaSuperAdmin(), daftarSemuaDomain()]);
   const rows = desa.map((item) => ({
@@ -51,8 +56,10 @@ export default async function SuperAdminTenantPage() {
       >
         <div className="platform-tenant-console">
           <TenantConsole
+            key={statusAwal}
             desa={rows}
             domain={domain}
+            statusAwal={statusAwal}
             aksi={{
               buat: buatDesaAction,
               status: ubahStatusAction,

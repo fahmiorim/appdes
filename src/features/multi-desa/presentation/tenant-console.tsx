@@ -1,8 +1,13 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
 import { useActionState, useId, useMemo, useState } from "react";
 
 import type { StatusRetensi } from "@/features/multi-desa/domain/lifecycle-tenant";
+import {
+  cocokStatusTenant,
+  type StatusTenantFilter,
+} from "@/features/multi-desa/domain/status-tenant-filter";
 import type { HasilEkspor } from "@/features/multi-desa/infrastructure/lifecycle-tenant-repository";
 import { createIdleActionState, type ActionState } from "@/lib/action-state";
 
@@ -79,8 +84,6 @@ interface AksiKonsol {
   hapusDomain: (state: ActionState<null>, formData: FormData) => Promise<ActionState<null>>;
   jadikanUtama: (state: ActionState<null>, formData: FormData) => Promise<ActionState<null>>;
 }
-
-type StatusFilter = "semua" | "aktif" | "nonaktif" | "siap-purge";
 
 const tanggal = new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" });
 const angka = new Intl.NumberFormat("id-ID");
@@ -523,31 +526,40 @@ function PanelKelola({
 export function TenantConsole({
   desa,
   domain,
+  statusAwal,
   aksi,
 }: {
   desa: DesaKonsolRow[];
   domain: DomainKonsolRow[];
+  /** Nilai awal dari query param; halaman memberi `key={statusAwal}` agar URL menang. */
+  statusAwal: StatusTenantFilter;
   aksi: AksiKonsol;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<StatusFilter>("semua");
+  const [status, setStatus] = useState<StatusTenantFilter>(statusAwal);
   const [terbuka, setTerbuka] = useState<number | null>(null);
+
+  const pilihStatus = (nilai: StatusTenantFilter) => {
+    setStatus(nilai);
+    // Simpan filter di URL agar bisa dibagikan dan tahan refresh.
+    router.replace(nilai === "semua" ? pathname : `${pathname}?status=${nilai}`, { scroll: false });
+  };
 
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("id-ID");
 
     return desa.filter((item) => {
-      const cocokStatus =
-        status === "semua" ||
-        (status === "aktif" && item.active && item.statusRetensi !== "sudah-purge") ||
-        (status === "nonaktif" && !item.active && item.statusRetensi !== "sudah-purge") ||
-        (status === "siap-purge" && item.statusRetensi === "siap-purge");
       const searchable = [item.name, item.code, item.domain, item.slug]
         .filter(Boolean)
         .join(" ")
         .toLocaleLowerCase("id-ID");
 
-      return cocokStatus && (!normalizedQuery || searchable.includes(normalizedQuery));
+      return (
+        cocokStatusTenant(item, status) &&
+        (!normalizedQuery || searchable.includes(normalizedQuery))
+      );
     });
   }, [desa, query, status]);
 
@@ -571,7 +583,7 @@ export function TenantConsole({
           <select
             className="form-input"
             value={status}
-            onChange={(event) => setStatus(event.target.value as StatusFilter)}
+            onChange={(event) => pilihStatus(event.target.value as StatusTenantFilter)}
           >
             <option value="semua">Semua status</option>
             <option value="aktif">Aktif</option>

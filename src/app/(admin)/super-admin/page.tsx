@@ -201,7 +201,7 @@ export default async function SuperAdminPage() {
                 <strong>{angka.format(nonaktif.length)} desa nonaktif</strong>
                 <p>Masa tenggang retensi berjalan otomatis; data dapat di-purge setelah selesai.</p>
               </div>
-              <Link className="button button-secondary" href="/super-admin/tenant">
+              <Link className="button button-secondary" href="/super-admin/tenant?status=nonaktif">
                 Tinjau tenant
               </Link>
             </li>
@@ -210,8 +210,11 @@ export default async function SuperAdminPage() {
                 <strong>{angka.format(siapPurge.length)} desa siap purge</strong>
                 <p>Pastikan ekspor data masih berlaku sebelum menjalankan purge permanen.</p>
               </div>
-              <Link className="button button-secondary" href="/super-admin/audit">
-                Lihat audit
+              <Link
+                className="button button-secondary"
+                href="/super-admin/tenant?status=siap-purge"
+              >
+                Buka konsol tenant
               </Link>
             </li>
           </ul>
