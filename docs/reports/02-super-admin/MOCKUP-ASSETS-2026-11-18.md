@@ -535,9 +535,57 @@ Daftar bernomor pada inventaris publik adalah **21 file**, yaitu nomor 19 sampai
 - [x] Recursive tree main diperiksa dan 20 file route/page terkait dibaca.
 - [x] Inkonsistensi brand dan angka contoh keuangan dicatat.
 - [x] Tiga kebutuhan detail tanpa route tersendiri diidentifikasi: perangkat, laporan keuangan, pengumuman.
-- [ ] Mockup publik ke-21 (Wilayah Desa Suka Maju.png) diterima dan diperiksa.
+- [x] Mockup publik ke-21 (Wilayah Desa Suka Maju) diterima dan diperiksa pada 18 Nov 2026.
 - [ ] Screenshot runtime dibandingkan dengan 20 PNG.
 - [ ] Semua use case/schema/API pendukung diperiksa mendalam dan interaksi diuji.
 - [ ] Gap implementasi diselesaikan.
 
-**Kesimpulan:** 20 mockup publik sudah benar-benar diperiksa secara visual. Source tree memiliki fondasi route/use case yang cukup luas, tetapi tiga kebutuhan detail belum memiliki route terpisah dan beberapa interaksi/data belum dapat dinyatakan didukung hanya dari keberadaan page. Belum ada dasar menyatakan 20 halaman lulus visual acceptance; diperlukan screenshot runtime pada viewport yang sama.
+**Kesimpulan:** 21 mockup publik sudah benar-benar diperiksa secara visual. Source tree memiliki fondasi route/use case yang cukup luas, tetapi tiga kebutuhan detail belum memiliki route terpisah dan beberapa interaksi/data belum dapat dinyatakan didukung hanya dari keberadaan page. Belum ada dasar menyatakan 20 halaman lulus visual acceptance; diperlukan screenshot runtime pada viewport yang sama.
+
+
+---
+## Addendum — inspeksi mockup Wilayah Desa (21/21)
+
+**Tanggal:** 18 November 2026  
+**Sumber:** PNG `Wilayah Desa Suka Maju(2).png`, unggahan terakhir pengguna, 1024 × 1536.  
+**Route kandidat pada source tree yang sudah dipetakan:** `/wilayah`. Pada inventaris source sebelumnya route ini tercatat tersedia dan memakai use case GIS/wilayah publik. Pemeriksaan ini menutup inspeksi visual PNG ke-21; belum merupakan visual acceptance runtime.
+
+### Elemen yang tampak pada mockup
+
+- Hero halaman “Wilayah Desa” dengan breadcrumb dan navigasi profil desa.
+- Peta utama berbasis citra satelit, batas desa berwarna, empat poligon dusun, label nama dusun, pin lokasi desa, kompas, skala, zoom, serta kontrol tampilan peta.
+- Panel informasi wilayah: luas, jumlah dusun, RT/RW, ketinggian, suhu, curah hujan, dan topografi.
+- Tabel pembagian dusun yang memuat luas wilayah, jumlah RT, KK, dan penduduk.
+- Batas wilayah administratif untuk arah utara, selatan, timur, dan barat.
+- Ringkasan kondisi geografis dengan foto lanskap.
+- Tombol unduh peta, batas wilayah, dan data dusun dalam PDF.
+
+### Temuan validasi data pada mockup
+
+- Luas dusun 2,50 + 2,00 + 2,70 + 2,80 = **10,00 km²**, sesuai angka luas wilayah pada panel.
+- Jumlah RT 3 + 3 + 3 + 3 = **12 RT**, sesuai panel informasi.
+- Jumlah KK 420 + 398 + 445 + 487 = **1.750 KK**, sesuai total tabel.
+- Jumlah penduduk pada empat baris adalah 1.312 + 1.249 + 1.398 + 1.486 = **5.445 jiwa**, sesuai total tabel.
+- Namun total 5.445 jiwa tidak sama dengan jumlah dari angka per dusun yang tampak jika dibaca sebagai 1.312 + 1.249 + 1.398 + 1.486? **Angka tersebut berjumlah 5.445**; tidak ditemukan selisih aritmetika pada total penduduk.
+- Panel informasi menampilkan **4 dusun**, sesuai tabel dan empat area peta.
+- Batas administratif yang ditampilkan adalah Utara: Desa Tanjung Gading; Selatan: Desa Sumber Rejo; Timur: Desa Sei Balai; Barat: Desa Pematang Panjang.
+
+### Kebutuhan backend/data yang perlu dibuktikan
+
+1. Geometri batas desa dan batas dusun harus berasal dari data GIS yang benar, bukan polygon ilustratif atau koordinat contoh.
+2. Layer peta satelit, label dusun, marker, skala, dan zoom perlu diuji pada runtime; keberadaan use case GIS saja belum membuktikan semua kontrol peta sudah diimplementasikan.
+3. Statistik luas, RT/RW, KK, penduduk, kondisi geografis, dan batas administratif harus tenant-scoped serta konsisten dengan sumber data resmi.
+4. Tiga unduhan PDF harus menghasilkan dokumen yang benar dan terotorisasi, bukan tombol dekoratif.
+5. Verifikasi apakah data suhu, curah hujan, ketinggian, dan topografi tersedia sebagai data desa yang terkelola; jangan mengisi nilai contoh seolah-olah data resmi.
+
+### Status mockup publik ke-21
+
+- [x] PNG diterima, dapat dibuka, dan diperiksa secara visual.
+- [x] Dimensi 1024 × 1536 dicatat.
+- [x] Elemen peta, informasi, tabel dusun, kondisi geografis, dan unduhan diinventarisasi.
+- [x] Konsistensi aritmetika angka luas, RT, KK, dan penduduk diperiksa.
+- [x] Route kandidat `/wilayah` sudah tercatat tersedia pada source tree sebelumnya.
+- [ ] Screenshot runtime `/wilayah` dibandingkan dengan PNG pada viewport yang sama.
+- [ ] Geometri GIS, kontrak data, tenant scoping, dan keluaran PDF diverifikasi melalui use case/API serta pengujian.
+
+**Kesimpulan:** seluruh **21/21 mockup publik** kini telah diperiksa secara visual dari PNG referensi. Belum ada klaim bahwa halaman runtime `/wilayah` atau keseluruhan website telah lulus visual QA; langkah berikutnya tetap screenshot comparison dan verifikasi data GIS/unduhan.
