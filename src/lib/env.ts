@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { normalisasiDaftarHost } from "@/features/desa/domain/host";
+
 /**
  * Skema variabel lingkungan (environment variables).
  *
@@ -115,15 +117,41 @@ const envSchema = z
         message: "EMAIL_WEBHOOK_TOKEN minimal 32 karakter.",
       }),
   })
-  .superRefine(({ RESEND_API_KEY, RESEND_FROM }, context) => {
-    if (RESEND_API_KEY && !RESEND_FROM) {
-      context.addIssue({
-        code: "custom",
-        path: ["RESEND_FROM"],
-        message: "RESEND_FROM wajib diisi saat RESEND_API_KEY dikonfigurasi.",
-      });
-    }
-  });
+  .superRefine(
+    (
+      {
+        NODE_ENV,
+        APP_URL,
+        PLATFORM_HOSTS,
+        TENANT_LEGACY_SINGLE_HOST_FALLBACK,
+        RESEND_API_KEY,
+        RESEND_FROM,
+      },
+      context,
+    ) => {
+      if (RESEND_API_KEY && !RESEND_FROM) {
+        context.addIssue({
+          code: "custom",
+          path: ["RESEND_FROM"],
+          message: "RESEND_FROM wajib diisi saat RESEND_API_KEY dikonfigurasi.",
+        });
+      }
+
+      const hostPlatform = normalisasiDaftarHost(PLATFORM_HOSTS ?? APP_URL);
+      const flexiDesaProduction =
+        NODE_ENV === "production" &&
+        hostPlatform.some((host) => host === "flexidesa.id" || host === "www.flexidesa.id");
+
+      if (flexiDesaProduction && TENANT_LEGACY_SINGLE_HOST_FALLBACK) {
+        context.addIssue({
+          code: "custom",
+          path: ["TENANT_LEGACY_SINGLE_HOST_FALLBACK"],
+          message:
+            "TENANT_LEGACY_SINGLE_HOST_FALLBACK tidak boleh aktif pada production FlexiDesa.",
+        });
+      }
+    },
+  );
 
 export type Env = z.infer<typeof envSchema>;
 

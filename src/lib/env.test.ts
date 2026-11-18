@@ -71,6 +71,45 @@ describe("parseEnv", () => {
     );
   });
 
+  it("menolak fallback aktif pada production FlexiDesa", () => {
+    expect(() =>
+      parseEnv({
+        NODE_ENV: "production",
+        APP_URL: "https://flexidesa.id",
+        DATABASE_URL: "mysql://x",
+        BETTER_AUTH_SECRET: SECRET,
+        TENANT_LEGACY_SINGLE_HOST_FALLBACK: "true",
+      }),
+    ).toThrow(/TENANT_LEGACY_SINGLE_HOST_FALLBACK tidak boleh aktif pada production FlexiDesa/);
+  });
+
+  it("menolak fallback aktif bila PLATFORM_HOSTS memuat host FlexiDesa", () => {
+    expect(() =>
+      parseEnv({
+        NODE_ENV: "production",
+        APP_URL: "https://sid.example.go.id",
+        PLATFORM_HOSTS: "flexidesa.id, app.example.test",
+        DATABASE_URL: "mysql://x",
+        BETTER_AUTH_SECRET: SECRET,
+        TENANT_LEGACY_SINGLE_HOST_FALLBACK: "true",
+      }),
+    ).toThrow(/TENANT_LEGACY_SINGLE_HOST_FALLBACK tidak boleh aktif pada production FlexiDesa/);
+  });
+
+  it("tetap mengizinkan fallback di development dan production mandiri", () => {
+    const dasar = {
+      DATABASE_URL: "mysql://x",
+      BETTER_AUTH_SECRET: SECRET,
+      TENANT_LEGACY_SINGLE_HOST_FALLBACK: "true",
+    };
+
+    expect(parseEnv(dasar).TENANT_LEGACY_SINGLE_HOST_FALLBACK).toBe(true);
+    expect(
+      parseEnv({ ...dasar, NODE_ENV: "production", APP_URL: "https://sid.example.go.id" })
+        .TENANT_LEGACY_SINGLE_HOST_FALLBACK,
+    ).toBe(true);
+  });
+
   it("menerima token webhook email yang kuat", () => {
     const env = parseEnv({
       DATABASE_URL: "mysql://x",

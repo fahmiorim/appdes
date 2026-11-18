@@ -145,8 +145,14 @@ artefak backup yang tidak terenkripsi.
   permintaan tanpa `Host`) menampilkan desa tunggal tersebut, termasuk host
   yang mirip domain platform. Host platform pada `PLATFORM_HOSTS` tetap tidak
   pernah dipetakan ke desa, dan instalasi multi-desa tetap tidak memakai
-  fallback. Jangan aktifkan pada production FlexiDesa; perubahan nilai perlu
-  restart.
+  fallback.
+- **Enforcement production FlexiDesa:** validasi environment menolak startup
+  bila `NODE_ENV=production`, fallback bernilai `true`, dan host platform
+  efektif memuat `flexidesa.id` atau `www.flexidesa.id`. Host efektif berasal
+  dari `PLATFORM_HOSTS`, atau dari host `APP_URL` bila `PLATFORM_HOSTS` kosong.
+  Deployment production mandiri dengan host platform lain tetap dapat
+  menggunakan fallback bila pemilik deployment menyetujuinya. Perubahan nilai
+  memerlukan restart.
 
 ### `RESEND_API_KEY`
 
@@ -260,8 +266,14 @@ TRUST_PROXY=true
 # Opsional: multi-desa wildcard
 # DESA_BASE_DOMAIN=desa.example.go.id
 
-# Opsional: host platform (landing page). Kosong = diambil dari APP_URL
+# Opsional: host platform (landing page). Kosong = diambil dari APP_URL.
+# Jika host efektif memuat flexidesa.id / www.flexidesa.id, validasi menolak
+# TENANT_LEGACY_SINGLE_HOST_FALLBACK=true saat NODE_ENV=production.
 # PLATFORM_HOSTS=flexidesa.id
+
+# Fallback legacy hanya untuk development atau instalasi mandiri yang disetujui.
+# Default false; startup production FlexiDesa menolak nilai true.
+# TENANT_LEGACY_SINGLE_HOST_FALLBACK=false
 
 # Opsional: TTE (jangan aktifkan sebelum hardening selesai)
 # TTE_MODE=nonaktif
