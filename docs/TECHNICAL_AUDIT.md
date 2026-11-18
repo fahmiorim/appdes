@@ -4,6 +4,8 @@
 > **Branch yang diperiksa:** `main`  
 > **Tanggal pemeriksaan:** 12 November 2026  
 > **Metode:** audit statis source code, schema, route, konfigurasi, dan test.
+>
+> **Catatan pembaruan (18 November 2026):** isi temuan dipertahankan sebagai snapshot audit awal. Status kode terkini untuk setiap temuan yang sudah diremediasi dicatat pada tabel di awal §5 dan pada temuan yang buktinya berubah (AUD-021, AUD-029).
 
 ## 1. Ringkasan eksekutif
 
@@ -34,8 +36,8 @@ Inventaris statis yang teridentifikasi:
 - Sekitar 52 prefix fitur (sekitar 51 direktori fitur aktual).
 - Sekitar 191 file test.
 - 78 file schema TypeScript di `src/db/schema/`.
-- Satu baseline SQL migration: `src/db/migrations/0000_baseline.sql`.
-- Sekitar 91 page/API route.
+- Satu baseline SQL migration saat audit: `src/db/migrations/0000_baseline.sql` (per 18 November 2026 sudah 13 migrasi, `0000`–`0012`).
+- Sekitar 91 page/API route (per 18 November 2026: 36 halaman `page.tsx` dan 81 route handler; 274 berkas test; 79 berkas schema).
 - Stack utama: Next.js 16.4.2, React 19.3.0, TypeScript, MySQL, Drizzle ORM, Better Auth, Zod, Vitest.
 
 Tidak dilakukan:
@@ -59,11 +61,11 @@ Karena itu, temuan yang berasal dari source code dibedakan dari risiko yang masi
 | Migrasi | `src/db/migrations/`, Drizzle journal |
 | Script kualitas | `check` menjalankan typecheck, lint, format check, dan test |
 
-Route group yang teridentifikasi: `(admin)`, `(public)`, `(warga)`, dan `api`. Group khusus `(super-admin)` tidak ditemukan pada pemeriksaan tree statis.
+Route group yang teridentifikasi: `(admin)`, `(public)`, `(warga)`, dan `api`. Pada pemeriksaan 12 November 2026 group khusus `(super-admin)` tidak ditemukan; per 18 November 2026 konsol Super Admin tersedia di `src/app/(admin)/super-admin/` dengan tujuh halaman.
 
 ## 4. Kontrol positif yang teridentifikasi
 
-1. Resolusi tenant menggunakan exact host, alias, wildcard subdomain, dan fallback single-tenant hanya jika tepat satu desa. Host yang tidak dikenal pada konfigurasi multi-tenant tidak diarahkan ke tenant sembarang.
+1. Resolusi tenant menggunakan exact host, alias, dan wildcard subdomain. Fallback satu desa bersifat opt-in (`TENANT_LEGACY_SINGLE_HOST_FALLBACK`, default mati), host platform selalu menghasilkan `null`, dan host tak dikenal menjadi 404. Pada production dengan host platform `flexidesa.id`, konfigurasi fallback aktif ditolak.
 2. `getCurrentUser()` pada `src/lib/dal.ts` membaca ulang status aktif, villageId, roleId, dan status desa dari database.
 3. Backup dan restore database memerlukan Super Admin. Restore membatasi ukuran upload, menerima satu file SQL/SQL.GZ, dan melakukan verifikasi tabel wajib setelah restore.
 4. API key eksternal disimpan dalam bentuk hash, mendukung status aktif/kedaluwarsa, dan mencatat last-used.
@@ -79,6 +81,34 @@ Prioritas:
 - **P2:** menengah; masukkan ke sprint hardening awal.
 - **Positif:** kontrol yang sudah terlihat dan perlu dipertahankan.
 - **Perlu validasi:** belum dapat dinyatakan sebagai kerentanan terkonfirmasi tanpa pemeriksaan runtime/deployment.
+
+Status temuan sudah berubah sejak audit awal. Tabel berikut adalah ringkasan verifikasi kode per 18 November 2026; temuan yang sudah diperbaiki tetap disimpan di bawah sebagai jejak audit.
+
+| Temuan | Status kode 18 November 2026 | Bukti |
+|---|---|---|
+| AUD-001 | Diperbaiki | `src/features/rbac/application/authorization.ts:40-49` memvalidasi `villageId` role dan pengecualian platform `villageId === null`. |
+| AUD-002 | Diperbaiki | Migration `0001`–`0011`; `src/db/tenant-composite-fk.integration.test.ts` mengharapkan 68 constraint `%_tenant_fk`. Dicatat lulus pada MySQL disposable di `PHASE-1-CLOSURE-2026-11-17.md`; belum dijalankan pada staging/production. |
+| AUD-003 | Diperbaiki | `validatePendudukTenantReferences` di `src/features/penduduk/application/use-cases.ts:104,141`; validasi family/region ber-`villageId` di repository. |
+| AUD-004 | Diperbaiki | `validateKeluargaRegion` di `src/features/keluarga/application/use-cases.ts:172,199`. |
+| AUD-005 | Diperbaiki | `validateRumahTanggaRegion` di `src/features/rumah-tangga/application/use-cases.ts:182,196`. |
+| AUD-006 | Diperbaiki di kode; jalur kiosk belum diuji runtime | `src/features/layanan-mandiri/application/ajukan-surat.ts:65-71` memakai `findPendudukById(villageId, residentId)` dan `getSuratUntukWarga(villageId, letterTypeId)`; penyimpanan dalam transaksi. |
+| AUD-007 | Diperbaiki | `src/lib/auth.ts:69` menetapkan `revokeSessionsOnPasswordReset: true`. |
+| AUD-008 | Diperbaiki | `provisioning-repository.ts:103-104,161-191` memakai template platform `src/db/templates/tenant-template.ts`, bukan desa pertama. |
+| AUD-011 | Diperbaiki | Join kepala keluarga, wilayah, dan agregasi anggota memakai `villageId` (`keluarga-repository.ts:123-147`). |
+| AUD-012 | Diperbaiki | Join keluarga dan wilayah pada daftar penduduk memakai `villageId` (`penduduk-repository.ts:193-205`). |
+| AUD-013 | Diperbaiki | `saveKeuanganNilai` berjalan dalam `db.transaction` (`keuangan-repository.ts:119`). |
+| AUD-014 | Diperbaiki | Pemeriksaan kuota dan penulisan berkas dijalankan di bawah kunci (`media-storage.ts:187`). |
+| AUD-016 | Diperbaiki | Transisi status dalam `db.transaction` dan memeriksa `affectedRows` (`layanan-mandiri-repository.ts:258,339,358`). |
+| AUD-017 | Diperbaiki | `validasiIsiMedia` memeriksa magic bytes, bukan MIME klien (`src/features/publik/domain/media.ts:104-126`). |
+| AUD-019 | Diperbaiki di kode; provider nyata belum diuji | Allowlist `TTE_ALLOWED_HOSTS` dan validasi host provider (`src/features/surat/domain/tte.ts:255-277`, `src/lib/env.ts`). |
+| AUD-020 | Diperbaiki | `TTE_SSL` dihapus dari environment; verifikasi TLS tidak dapat dimatikan lewat environment maupun konfigurasi desa (`src/lib/env.ts`). |
+| AUD-021 | Diperbaiki | `src/app/api/webhooks/email/route.ts` hanya membaca `Host`; signature HMAC mengikat `host` dan `eventId`. |
+| AUD-025 | Diperbaiki | `konteksKia` mengambil `villageId` dari sesi dan seluruh operasi KIA memakainya (`kia-use-cases.ts:52-97`). |
+| AUD-029 | Sebagian: kode tertutup, konfigurasi proxy belum diverifikasi | `resolve-village.ts:38-40` hanya memakai `Host`; host tak dikenal menjadi 404 (PR #137); `getRequestOrigin()` masih memakai `X-Forwarded-Host` untuk URL absolut. |
+| AUD-030 | Sebagian | Test repository kini mengassert filter `villageId` (`kesehatan-repository.test.ts:66`); integration test dua tenant belum ada. |
+| AUD-031 | Sebagian | 11 integration test isolasi per modul plus `isolasi-village.integration.test.ts`; belum mencakup seluruh modul. |
+
+Temuan AUD-009 dan AUD-010 sudah diperbarui langsung pada bagiannya. AUD-015 (backup media), AUD-022 (matriks endpoint publik), dan AUD-028 (regression test XSS) tetap terbuka.
 
 ### AUD-001 — Kepemilikan role terhadap tenant belum dibuktikan
 
@@ -303,11 +333,13 @@ Role slug `administrator` memberi hak penuh dalam konteks aplikasi desa dan buka
 **Prioritas:** P1 — Tinggi  
 **Status:** risiko konfigurasi deployment.
 
-**Bukti:** `src/app/api/webhooks/email/route.ts` mengambil host dari `x-forwarded-host` atau `host` untuk resolusi tenant. Token webhook divalidasi secara terpisah.
+**Status kode (18 November 2026): tertutup.** Route hanya membaca header `Host`, mengabaikan `X-Forwarded-Host` secara eksplisit, dan memakai signature HMAC bertimestamp yang mengikat `host`, `eventId`, dan body; replay dibatasi per `host`+`eventId`. Test `route.test.ts:130` memastikan header palsu tidak mengubah tenant. Risiko tersisa: `EMAIL_WEBHOOK_TOKEN` masih satu credential global, sehingga pengikatan credential per tenant belum ada.
 
-**Dampak:** jika reverse proxy tidak menimpa header forwarding, pemanggil berpotensi memengaruhi resolusi tenant.
+**Bukti awal:** `src/app/api/webhooks/email/route.ts` mengambil host dari `x-forwarded-host` atau `host` untuk resolusi tenant. Token webhook divalidasi secara terpisah.
 
-**Rekomendasi:** reverse proxy harus overwrite dan allowlist host; pertimbangkan credential webhook unik per tenant.
+**Dampak awal:** jika reverse proxy tidak menimpa header forwarding, pemanggil berpotensi memengaruhi resolusi tenant.
+
+**Rekomendasi:** pertahankan pembacaan `Host` saja dan jangan hidupkan kembali `X-Forwarded-Host` sebagai penentu tenant; pertimbangkan credential webhook unik per tenant.
 
 ### AUD-022 — Kontrol API publik perlu diverifikasi per endpoint
 
@@ -360,11 +392,13 @@ Role slug `administrator` memberi hak penuh dalam konteks aplikasi desa dan buka
 **Prioritas:** P1 — Tinggi  
 **Status:** perlu verifikasi lingkungan.
 
-**Bukti:** resolusi tenant memakai host; webhook email juga membaca `X-Forwarded-Host`/Host.
+**Status kode (18 November 2026): sebagian tertutup.** Resolver halaman hanya memakai `Host`, host tak dikenal menjadi 404, dan webhook email tidak membaca `X-Forwarded-Host`. `getRequestOrigin()` masih memakai `x-forwarded-host ?? host` untuk URL absolut seperti tautan verifikasi surat, sehingga header itu tetap harus ditimpa proxy meski bukan penentu tenant. Konfigurasi proxy, DNS, dan TLS nyata belum diverifikasi.
 
-**Dampak:** host forwarding yang tidak tepercaya dapat menyebabkan salah resolusi tenant.
+**Bukti:** resolusi tenant memakai `Host`; webhook email memakai `Host` saja.
 
-**Rekomendasi:** proxy harus menimpa header, allowlist host, dan uji spoofing dari koneksi langsung.
+**Dampak:** host forwarding yang tidak tepercaya atau proxy yang mengubah `Host` dapat menyebabkan salah resolusi tenant.
+
+**Rekomendasi:** proxy harus mempertahankan `Host` asli, menimpa `X-Forwarded-Host` untuk URL absolut, dan uji spoofing dari koneksi langsung.
 
 ### AUD-030 — Test kesehatan belum memverifikasi filter tenant secara eksplisit
 

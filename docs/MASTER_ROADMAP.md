@@ -39,7 +39,9 @@ Pekerjaan domain dilakukan setelah hardening isolasi tenant prioritas P0/P1. Uru
 
 Invarian: host platform/reserved/unknown tidak boleh jatuh ke tenant; tidak ada fallback single-tenant implisit pada production FlexiDesa; hostname bukan autentikasi; sesi default host-only; seluruh operasi privat tetap memeriksa session, permission, dan tenant di server.
 
-**Catatan baseline:** tenant resolver, wildcard slug, domain alias, provisioning desa, dan host-only cookie sudah ditemukan pada audit statis. Proxy belum menjadi classifier domain platform, Better Auth masih memakai satu `BETTER_AUTH_URL`, custom domain verification belum ditemukan, dan DNS/TLS/reverse proxy belum diverifikasi.
+**Penegakan invarian di kode (18 November 2026):** fallback satu desa kini opt-in lewat `TENANT_LEGACY_SINGLE_HOST_FALLBACK` dan default mati, host tak dikenal di halaman menghasilkan 404, serta konfigurasi ditolak bila host platform `flexidesa.id` dipakai pada production dengan fallback aktif (PR #135, #137, #138). Host platform dipisah dari `DESA_BASE_DOMAIN` lewat `PLATFORM_HOSTS`; `/` menampilkan landing page platform untuk host tersebut (PR #130).
+
+**Catatan baseline:** tenant resolver, wildcard slug, domain alias, provisioning desa, dan host-only cookie sudah ditemukan pada audit statis. Landing page platform sudah ada, tetapi produsen host lain belum: `demo.flexidesa.id`, host reserved, dan classifier domain di proxy belum tersedia. Better Auth masih memakai satu `BETTER_AUTH_URL`, custom domain verification belum ditemukan, dan DNS/TLS/reverse proxy belum diverifikasi.
 
 ## 3. Rincian fase
 
@@ -80,7 +82,7 @@ Pekerjaan:
 - Tambahkan composite unique dan composite FK untuk relasi tenant-scoped yang relevan.
 - Perbaiki join/agregasi keluarga dan penduduk agar menyertakan villageId.
 - Amankan TTE: origin allowlist, tolak URL absolut eksternal yang tidak disetujui, kontrol redirect, blok IP private/link-local, dan wajibkan TLS.
-- Amankan webhook email: reverse proxy harus menimpa forwarded host atau tenant diikat ke credential webhook.
+- Amankan webhook email: tenant hanya ditentukan dari `Host` yang dipertahankan proxy; `X-Forwarded-Host` diabaikan karena dapat dipalsukan klien. Signature HMAC bertimestamp mengikat `host` dan `eventId`, sedangkan credential per tenant masih menjadi pekerjaan terbuka.
 - Cabut seluruh sesi admin desa ketika password di-reset.
 - Tambahkan test dua tenant untuk jalur baca, tulis, import, dan export.
 
@@ -89,6 +91,8 @@ Pekerjaan:
 - TTE tidak mengirim Authorization ke host yang tidak disetujui.
 - Reset password membatalkan sesi lama.
 - Test isolasi tenant lulus untuk modul prioritas.
+
+**Status per 18 November 2026: selesai di repository, belum ditutup secara operasional.** Seluruh deliverable kode dan schema sudah merged: validasi kepemilikan role, composite FK lewat migration `0001`–`0011`, validasi foreign reference penduduk/keluarga/rumah tangga/KIA/permohonan surat, join ber-`villageId`, hardening TTE (allowlist origin, TLS wajib), hardening webhook email, dan pencabutan sesi saat reset password. Rincian bukti ada pada `docs/reports/01-security/PHASE-1-CLOSURE-2026-11-17.md` dan laporan AUD terkait. Fase ini **belum boleh ditandai selesai** karena migration belum dijalankan pada staging atau production, provider TTE serta reverse proxy nyata belum diverifikasi, dan `users.role_id` beserta empat tabel anak tanpa `village_id` masih dijaga di application layer.
 
 ### Fase 2 — Super Admin dan lifecycle tenant
 
@@ -152,7 +156,7 @@ Pekerjaan:
 - Lakukan restore drill berkala di staging; catat RPO/RTO aktual.
 - Tambahkan monitoring disk, database, worker/queue, proses WhatsApp, sertifikat TLS, dan domain.
 - Sediakan log terpusat, alert, prosedur insiden, dan SOP operasional.
-- Perbaiki race condition agregasi keuangan, kuota media, dan transisi status surat.
+- Perbaiki race condition agregasi keuangan, kuota media, dan transisi status surat. (Ketiganya sudah memakai transaksi atau lock di repository per 18 November 2026; validasi beban nyata belum dilakukan.)
 
 **Kriteria selesai:**
 - Restore DB dan media berhasil pada lingkungan bersih.
@@ -186,6 +190,8 @@ Pekerjaan:
 | WhatsApp otomatis | Worker persisten dan observability | SOP deployment/reconnect tersedia |
 
 ## 5. Backlog prioritas awal
+
+Butir 1–4 sudah memiliki implementasi kode dan laporan di `main`. Kolom bukti selesai di bawah adalah acceptance yang masih harus diverifikasi, bukan tanda pekerjaan dimulai dari nol.
 
 | Urutan | Pekerjaan | Bukti selesai |
 |---|---|---|
