@@ -6,7 +6,7 @@
 - **Base commit:** `12fbc25`.
 - **Commit hasil:** `2eb55bd` (backend agenda) dan `3a0f0f4` (laporan audit).
 - **Pull request:** https://github.com/fahmiorim/appdes/pull/152
-- **Status:** siap review; branch sudah di-push, migration belum dijalankan ke database mana pun.
+- **Status:** siap review; branch sudah di-push dan migration sudah diterapkan di database dev lokal (`127.0.0.1:3306/desa_dev`).
 
 ## 1. Kondisi awal
 
@@ -74,11 +74,11 @@ Schema `agenda_kegiatan` hanya menyimpan `judul`, `mulai`, `selesai`, `lokasi`, 
 | Lint scoped | `npx eslint src/features/agenda src/db/schema/agenda-kegiatan.ts` | **PASS** |
 | Format | `npx prettier --check src/features/agenda src/db/schema/agenda-kegiatan.ts` | **PASS** |
 | Integration test | `npm run test:integration` | **SKIPPED** — `TEST_DATABASE_URL` dan `TEST_DATABASE_ACK` belum diisi; tidak ada database uji disposable yang disentuh |
-| Migration ke database | — | **TIDAK DIJALANKAN** — tidak ada database uji/production yang dipakai |
+| Migration ke database dev | `npm run db:migrate` pada `127.0.0.1:3306/desa_dev` | **PASS** — migration diterapkan; kolom `jam_mulai`, `jam_selesai`, `kategori`, dan `status` terverifikasi |
 
 ## 8. Risiko dan keterbatasan
 
-- Integration test round-trip field baru belum terbukti berjalan; perlu database MySQL disposable untuk menjalankannya.
+- Integration test round-trip field baru belum terbukti berjalan; perlu database MySQL disposable untuk menjalankannya. Migration sudah diterapkan di database dev lokal, bukan database uji disposable.
 - Status bersifat editorial, sehingga dapat tertinggal dari tanggal kegiatan bila tidak diperbarui. Jika diinginkan status otomatis, perlu aturan turunan dari tanggal/jam.
 - Kategori berupa teks bebas; variasi penulisan dapat memecah filter. Tabel kategori tenant dapat ditambahkan bila filter publik mulai dipakai.
 - Jam disimpan sebagai wall-clock tanpa zona waktu. Label "WIB/WITA/WIT" belum ditangani.
