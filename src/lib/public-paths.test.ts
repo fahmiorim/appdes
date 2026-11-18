@@ -50,6 +50,7 @@ describe("rute publik", () => {
 
   it("website desa dan seluruh halaman publik baru dapat diakses tanpa sesi", () => {
     const rutePublik = [
+      "/super-admin-login",
       "/agenda",
       "/pengumuman",
       "/galeri",
