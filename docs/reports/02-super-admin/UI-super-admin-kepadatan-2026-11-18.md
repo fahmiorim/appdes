@@ -103,6 +103,16 @@ Cara kerja konsolidasi:
 
 Sifat perubahan: **tanpa perubahan tampilan**. Tidak ada nilai properti yang diubah, hanya duplikasi yang dibuang.
 
+## 4b. Dialog tambah pengguna platform
+
+Penambahan pengguna platform sebelumnya memakai tombol "+ Tambah pengguna platform" yang membuka form inline di dalam kartu, sehingga form menetap dan mendorong tabel ke bawah. Sekarang polanya sama dengan pendaftaran desa:
+
+- Tombol **Tambah pengguna platform** berada di kepala kartu "Akun pengelola platform".
+- Form (nama, email, username, sandi awal) tampil di dialog `<dialog>` native dengan kelas `platform-dialog*`; Escape, tombol ✕, dan klik latar menutup dialog; setelah sukses dialog ditutup dan daftar di-refresh.
+- `pengguna-platform-console.tsx` tidak lagi memuat form tambah; `buat` dihapus dari `AksiPengguna` sehingga Server Action hanya dipakai dialog di kepala kartu.
+- CSS mati ikut dihapus: `.platform-create`, `.platform-create-form`, `.platform-create-form .form-input` (+`:focus`), dan `.platform-form-actions` (58 baris).
+- Teks keadaan kosong disesuaikan: "...lewat tombol di atas."
+
 ## 5. Security/tenant
 
 - Tidak ada perubahan pada guard `pastikanSuperAdmin()`, `requireSuperAdmin`, Server Action, maupun query tenant.
@@ -121,6 +131,8 @@ Sifat perubahan: **tanpa perubahan tampilan**. Tidak ada nilai properti yang diu
 | Verifikasi render CSS di Chrome headless: fixture berisi seluruh kelas konsol (kartu, statistik, toolbar, tabel, dialog `open`, `details[open]`, sidebar, top bar), `getComputedStyle` 50 properti untuk setiap node, dibandingkan antara CSS sebelum dan sesudah konsolidasi pada 8 lebar (1440, 1180, 1100, 860, 760, 620, 560, 400) | PASS — 0 perbedaan computed style |
 | Pemeriksaan visual halaman aplikasi sungguhan (desktop/mobile, dark mode) | SKIPPED — tidak ada sesi aplikasi berjalan; MySQL lokal nonaktif (`ECONNREFUSED 127.0.0.1:3306`) sehingga halaman `/super-admin` tidak dapat dirender. Verifikasi memakai fixture statis, bukan halaman asli |
 | `npm run build` | SKIPPED — diverifikasi oleh job build di CI |
+| Test halaman pengguna platform (guard 403 dan penempatan dialog) | PASS — 3 test |
+| `npm run check` setelah dialog tambah pengguna | PASS — 217 file test, 1896 test lulus |
 
 ## 7. Risiko dan keterbatasan
 
@@ -128,6 +140,7 @@ Sifat perubahan: **tanpa perubahan tampilan**. Tidak ada nilai properti yang diu
 - Top bar kini setinggi judul + deskripsi (±66 px di desktop, ±54 px di mobile karena deskripsi disembunyikan). Belum ada pengukuran render nyata.
 - Dialog pendaftaran desa belum dijalankan di browser: pembukaan lewat `showModal()`, penutupan dengan Escape/klik latar, dan refresh daftar setelah sukses belum disaksikan. Elemen `<dialog>` membutuhkan browser modern, yang dipenuhi semua browser target proyek.
 - `tenant-create`/`tenant-create-grid` CSS hanya dipakai form lama sehingga ikut dihapus; dialog memakai kelas `platform-dialog*` dan `platform-form-grid` yang baru.
+- Dialog tambah pengguna platform belum dijalankan di browser; yang terverifikasi adalah pola dialog yang sama (pendaftaran desa) membuka `showModal()` dengan benar setelah hidrasi klien berjalan, plus markup dan strukturnya lewat test render statis.
 
 - Verifikasi render memakai fixture statis, bukan halaman `/super-admin` sungguhan. Fixture menutup seluruh kelas blok platform, tetapi keadaan `:hover`, `:focus`, `:focus-visible`, `:active`, dan `::backdrop` tidak diuji karena tidak bisa dipicu lewat `getComputedStyle` tanpa interaksi; aturan untuk keadaan itu ikut terkonsolidasi tanpa perubahan nilai (terverifikasi statis).
 - Ada dua blok `@media (max-width: 560px)` terpisah karena aturan aslinya berada di dua posisi cascade berbeda. Keduanya sengaja tidak disatukan: menggabungkannya akan memindahkan deklarasi melewati aturan lain dan berpotensi mengubah hasil.

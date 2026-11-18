@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
+import { useActionState } from "react";
 
 import { createIdleActionState, type ActionState } from "@/lib/action-state";
 
@@ -32,10 +32,6 @@ export interface HasilResetSandi {
 }
 
 interface AksiPengguna {
-  buat: (
-    state: ActionState<{ id: string }>,
-    formData: FormData,
-  ) => Promise<ActionState<{ id: string }>>;
   status: (
     state: ActionState<{ active: boolean }>,
     formData: FormData,
@@ -64,96 +60,6 @@ function Pesan({ state }: { state: ActionState<unknown> }) {
     >
       {state.message}
     </p>
-  );
-}
-
-function GalatField({ pesan }: { pesan?: string }) {
-  if (!pesan) return null;
-  return (
-    <span className="form-help" role="alert">
-      {pesan}
-    </span>
-  );
-}
-
-function FormTambahPengguna({ aksi }: { aksi: AksiPengguna["buat"] }) {
-  const [state, formAction, pending] = useActionState(
-    aksi,
-    createIdleActionState<{ id: string }>(),
-  );
-  const [terbuka, setTerbuka] = useState(false);
-  const fieldErrors = state.status === "error" ? (state.fieldErrors ?? {}) : {};
-  const id = useId();
-
-  return (
-    <div className="platform-create">
-      <button
-        aria-controls={`${id}-form`}
-        aria-expanded={terbuka}
-        className="button button-secondary"
-        onClick={() => setTerbuka((nilai) => !nilai)}
-        type="button"
-      >
-        {terbuka ? "Tutup formulir" : "+ Tambah pengguna platform"}
-      </button>
-
-      {terbuka ? (
-        <form action={formAction} className="form-stack platform-create-form" id={`${id}-form`}>
-          <p className="form-help">
-            Akun baru langsung memakai role <strong>super-admin</strong> platform (tanpa desa) dan
-            dapat mengakses seluruh konsol.
-          </p>
-
-          <div className="platform-form-grid">
-            <label className="form-field">
-              <span className="form-label">Nama lengkap</span>
-              <input className="form-input" maxLength={255} minLength={3} name="name" required />
-              <GalatField pesan={fieldErrors.name?.[0]} />
-            </label>
-            <label className="form-field">
-              <span className="form-label">Email</span>
-              <input className="form-input" maxLength={255} name="email" required type="email" />
-              <GalatField pesan={fieldErrors.email?.[0]} />
-            </label>
-            <label className="form-field">
-              <span className="form-label">Username</span>
-              <input
-                autoComplete="off"
-                className="form-input"
-                maxLength={50}
-                minLength={3}
-                name="username"
-                pattern="[a-zA-Z0-9._-]{3,50}"
-                required
-              />
-              <GalatField pesan={fieldErrors.username?.[0]} />
-            </label>
-            <label className="form-field">
-              <span className="form-label">Sandi awal (minimal 12 karakter)</span>
-              <input
-                autoComplete="new-password"
-                className="form-input"
-                maxLength={72}
-                minLength={12}
-                name="password"
-                required
-                type="password"
-              />
-              <GalatField pesan={fieldErrors.password?.[0]} />
-            </label>
-          </div>
-
-          <Pesan state={state} />
-          <div className="platform-form-actions">
-            <button className="button button-primary" disabled={pending} type="submit">
-              {pending ? "Menyimpan..." : "Buat pengguna"}
-            </button>
-          </div>
-        </form>
-      ) : (
-        <Pesan state={state} />
-      )}
-    </div>
   );
 }
 
@@ -275,8 +181,6 @@ export function PenggunaPlatformConsole({
 }) {
   return (
     <>
-      <FormTambahPengguna aksi={aksi.buat} />
-
       <div className="tenant-table-scroll">
         <table className="tenant-table">
           <thead>
@@ -298,7 +202,7 @@ export function PenggunaPlatformConsole({
             ) : (
               <tr>
                 <td className="tenant-empty" colSpan={7}>
-                  Belum ada akun platform. Tambahkan pengguna pertama lewat formulir di atas.
+                  Belum ada akun platform. Tambahkan pengguna pertama lewat tombol di atas.
                 </td>
               </tr>
             )}

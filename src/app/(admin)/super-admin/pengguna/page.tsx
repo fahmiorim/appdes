@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { daftarPenggunaPlatform } from "@/features/multi-desa/application/pengguna-platform-use-cases";
+import { DialogTambahPengguna } from "@/features/multi-desa/presentation/dialog-tambah-pengguna";
 import { PenggunaPlatformConsole } from "@/features/multi-desa/presentation/pengguna-platform-console";
 import { PlatformCard, PlatformStat } from "@/features/multi-desa/presentation/platform-ui";
 
@@ -81,12 +82,12 @@ export default async function SuperAdminPenggunaPage() {
       </div>
 
       <PlatformCard
+        actions={<DialogTambahPengguna aksi={buatPenggunaAction} />}
         description="Nonaktifkan akun yang tidak dipakai lagi, reset sandi bila akses hilang, atau cabut sesi untuk mengeluarkan perangkat lama."
         title="Akun pengelola platform"
       >
         <PenggunaPlatformConsole
           aksi={{
-            buat: buatPenggunaAction,
             status: ubahStatusPenggunaAction,
             reset: resetSandiPenggunaAction,
             cabut: cabutSesiPenggunaAction,
