@@ -21,6 +21,7 @@
     "test:integration:ci": "node scripts/run-integration-tests.mjs --require-db",
     "test:watch": "vitest --config vitest.config.mts",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
+    "docs:inventory": "node scripts/generate-module-inventory.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",

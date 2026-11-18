@@ -1,13 +1,13 @@
 # Inventaris Modul Appdes SID
 
 Dokumen ini adalah inventaris route, Server Action, repository, dan use case yang
-digenerate ulang dari tree `main` commit `f5a6f42` (18 November 2026).
+digenerate ulang dari tree `origin/main` commit `f5a6f42` (18 November 2026).
 Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 
 - 36 halaman (`page.tsx`), 2 layout, dan 81 route handler.
 - 4 berkas berisi `"use server"` (Server Action).
 - 52 direktori fitur di `src/features`; 71 berkas `*-repository.ts` dan 89 berkas application/use case non-test.
-- 8 halaman admin: `/beranda` dan tujuh konsol `/super-admin/*`.
+- 8 halaman admin: `/beranda` dan `/super-admin/*`.
 
 > Metode: `git ls-tree -r --name-only origin/main`; hitungan `page.tsx`,
 > `route.ts`, `layout.tsx`, `src/features/*/application/*.ts` non-test, dan
@@ -208,7 +208,7 @@ webhook. Route handler Admin di bawah umumnya bukan UI pengelolaan.
 | `src/app/(warga)/layanan-mandiri/ubah-pin/actions.ts` |
 | `src/features/keuangan/application/apbdes-import-use-cases.ts` |
 
-## 4. File per modul
+## 4. Rincian use case dan repository per modul
 
 ### agenda
 
@@ -708,5 +708,5 @@ webhook. Route handler Admin di bawah umumnya bukan UI pengelolaan.
   tetap tercatat route-nya, tetapi tidak menambah daftar use case.
 - Inventaris tidak menilai kualitas, cakupan test, atau status fitur. Untuk
   status fitur lihat `docs/SID_FEATURE_MAP.md`.
-- Angka dapat berubah setelah commit `f5a6f42`; generate ulang bila route atau
-  modul bertambah.
+- Angka mengikuti ref yang digenerate; jalankan `npm run docs:inventory`
+  setelah route atau modul bertambah.

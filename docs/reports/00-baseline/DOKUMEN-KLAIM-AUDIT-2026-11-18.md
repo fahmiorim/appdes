@@ -3,9 +3,9 @@
 - **Task:** memeriksa klaim berlebih (overclaim) dan klaim usang pada dokumen status aktif, lalu memperbaikinya.
 - **Tanggal:** 18 November 2026.
 - **Branch:** `task/design-mockup-assets`.
-- **Base commit:** `0e01ad1` (`docs: record design mockup handoff`); merge-base dengan `origin/main` = `7a119d1`, `origin/main` = `f5a6f42`.
+- **Base commit:** `f5a6f42` (`main`, `docs: add FlexiDesa design mockups (#147)`); branch sudah di-rebase ke commit ini.
 - **Jenis perubahan:** dokumentasi saja. Tidak ada perubahan source, schema, migration, konfigurasi, atau data.
-- **Commit hasil:** `7af622e` (`docs(audit): koreksi klaim usang dan berlebih pada dokumen status`), di-push ke `origin/task/design-mockup-assets`.
+- **Commit hasil:** `c2fd248` (`docs(audit): koreksi klaim usang dan berlebih pada dokumen status`) setelah rebase; commit generator inventaris menyusul di branch yang sama.
 - **Status:** selesai — siap review.
 
 ## 1. Kondisi awal
@@ -90,6 +90,7 @@ Klaim yang diperiksa dan **sengaja tidak diubah** karena masih sesuai kode: inva
 | `git ls-tree ... \| grep -c '/route\.ts$'` | **81** |
 | `ls src/db/migrations/*.sql \| wc -l` | **13** |
 | `git diff --check` | **PASS** — tidak ada trailing whitespace pada diff |
+| `git rebase origin/main` | **PASS** — dua commit mockup lama dijatuhkan karena sudah upstream; tanpa konflik |
 | Build/typecheck/unit/integration test | **SKIPPED** — hanya dokumentasi; tidak ada kode yang berubah |
 
 ## 7. Risiko dan batasan

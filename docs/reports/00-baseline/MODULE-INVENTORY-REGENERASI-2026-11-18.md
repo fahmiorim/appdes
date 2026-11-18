@@ -3,9 +3,9 @@
 - **Task:** meregenerasi `docs/architecture/MODULE-INVENTORY.md` dari kode `main`.
 - **Tanggal:** 18 November 2026.
 - **Branch:** `task/design-mockup-assets`.
-- **Base commit:** `0e01ad1`; sumber data `origin/main` = `f5a6f42`.
+- **Base commit:** `f5a6f42`; sumber data `origin/main` = `f5a6f42`.
 - **Jenis perubahan:** dokumentasi saja. Tidak ada perubahan source, schema, migration, konfigurasi, atau data.
-- **Commit hasil:** `7af622e` (`docs(audit): koreksi klaim usang dan berlebih pada dokumen status`), di-push ke `origin/task/design-mockup-assets`.
+- **Commit hasil:** `c2fd248` (`docs(audit): koreksi klaim usang dan berlebih pada dokumen status`) setelah rebase; commit generator menyusul di branch yang sama.
 - **Status:** selesai — siap review.
 
 ## 1. Kondisi awal
@@ -22,7 +22,7 @@ Dokumen digenerate ulang dari tree `origin/main` (`f5a6f42`), bukan dari isi dok
 - `git grep -l "use server" origin/main -- src` untuk Server Action.
 - `src/features/*/application/*.ts` non-test dan `src/features/*/infrastructure/**/*-repository.ts` non-test untuk tabel modul dan daftar file.
 
-Skrip generator bersifat sementara (berkas dihapus setelah dipakai) dan tidak ditambahkan ke repository.
+Sejak task ini generator tersedia permanen sebagai `npm run docs:inventory` (`scripts/generate-module-inventory.mjs`). Perintah itu default membaca `origin/main` dan menerima ref lain sebagai argumen, misalnya `npm run docs:inventory -- HEAD`.
 
 ## 3. Hasil
 
@@ -54,6 +54,8 @@ Rincian yang berubah:
 | File | Alasan |
 |---|---|
 | `docs/architecture/MODULE-INVENTORY.md` | Diganti total dengan hasil generate dari `f5a6f42`; §1–§5 diperbarui, termasuk blok metode dan batasan |
+| `scripts/generate-module-inventory.mjs` | Dibuat permanen: ref/commit dinamis, format tabel area, empat Server Action, dan header sumber |
+| `package.json` | Menambah `docs:inventory` agar regenerasi menjadi perintah repository |
 | `docs/reports/00-baseline/DOKUMEN-KLAIM-AUDIT-2026-11-18.md` | Menyesuaikan risiko/keterbatasan agar tidak lagi menyatakan regenerasi belum dilakukan |
 | `docs/reports/00-baseline/MODULE-INVENTORY-REGENERASI-2026-11-18.md` | Laporan ini |
 
@@ -61,7 +63,8 @@ Rincian yang berubah:
 
 | Perintah | Hasil |
 |---|---|
-| `node .inventory-gen.cjs` (skrip sementara, lalu dihapus) | **PASS** — `pages=36 routes=81 layouts=2 features=52 app=89 repo=71 actions=4` |
+| `npm run docs:inventory` | **PASS** — `ref=origin/main commit=f5a6f42 pages=36 routes=81 layouts=2 features=52 app=89 repo=71 actions=4` |
+| `md5sum` dokumen sebelum/sesudah dua kali `npm run docs:inventory` | **Sama** — generator idempoten |
 | `grep -c '^| \`/' docs/architecture/MODULE-INVENTORY.md` | **117** — sama dengan 36 halaman + 81 route handler |
 | `grep -c '| Halaman |'` dan `grep -c '| Route handler |'` | **36** dan **81** |
 | `sort \| uniq -d` pada baris route | Kosong — tidak ada path duplikat |
@@ -76,10 +79,10 @@ Rincian yang berubah:
 - Inventaris diambil dari `origin/main` (`f5a6f42`) sementara branch ini berada di `0e01ad1`. Himpunan halaman dan route handler identik pada kedua commit (117 berkas), jadi isi tabel valid untuk keduanya; perbedaan lain hanya di isi komponen, bukan daftar route.
 - Angka "berkas application" dan "repository" mengikuti definisi di dokumen (nama berkas), bukan jumlah use case fungsional. Beberapa berkas application adalah helper atau notifikasi.
 - Dokumen hanya mendaftar keberadaan; ia tidak menilai kualitas, izin, atau cakupan test.
-- Regenerasi belum menjadi skrip permanen. Bila route atau modul sering bertambah, skrip generator perlu dijadikan perintah repository agar dokumen tidak usang lagi.
+- `npm run docs:inventory` membaca `origin/main` lokal. Jalankan `git fetch` lebih dulu bila `main` di remote sudah bergerak, atau lewatkan ref eksplisit seperti `npm run docs:inventory -- <ref>`.
 
 ## 8. Kesimpulan
 
 `MODULE-INVENTORY.md` kini mencerminkan kode `main` per `f5a6f42`: 36 halaman, 81 route handler, 4 Server Action, 52 direktori fitur, dan daftar file per modul yang diregenerasi. Klaim lama "29 halaman/80 route handler/2 Server Action" dan ketiadaan halaman Super Admin sudah tidak ada.
 
-Branch `task/design-mockup-assets` juga membawa commit `eea0fd8` yang menambahkan `public/images/logo.png` dan `public/images/logo-fd.png` atas permintaan pengguna. Berkas itu tidak diperiksa dalam audit dokumentasi ini. Perubahan menunggu review; belum ada merge atau deploy.
+Branch `task/design-mockup-assets` juga membawa commit aset `public/images/logo.png` dan `public/images/logo-fd.png` atas permintaan pengguna. Berkas itu tidak diperiksa dalam audit dokumentasi ini. Regenerasi berikutnya cukup `npm run docs:inventory`. Perubahan menunggu review; belum ada merge atau deploy.
