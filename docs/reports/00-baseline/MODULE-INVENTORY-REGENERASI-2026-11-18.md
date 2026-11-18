@@ -5,7 +5,8 @@
 - **Branch:** `task/design-mockup-assets`.
 - **Base commit:** `0e01ad1`; sumber data `origin/main` = `f5a6f42`.
 - **Jenis perubahan:** dokumentasi saja. Tidak ada perubahan source, schema, migration, konfigurasi, atau data.
-- **Status:** selesai — perubahan lokal, belum di-commit atau di-push.
+- **Commit hasil:** `7af622e` (`docs(audit): koreksi klaim usang dan berlebih pada dokumen status`), di-push ke `origin/task/design-mockup-assets`.
+- **Status:** selesai — siap review.
 
 ## 1. Kondisi awal
 
@@ -66,6 +67,7 @@ Rincian yang berubah:
 | `sort \| uniq -d` pada baris route | Kosong — tidak ada path duplikat |
 | `npx prettier --check docs/architecture/MODULE-INVENTORY.md` | **PASS** |
 | `git diff --check` | **PASS** — tidak ada trailing whitespace |
+| `git push origin task/design-mockup-assets` | **PASS** — `0e01ad1..eea0fd8` |
 | `git ls-tree -r --name-only HEAD -- src/app \| grep -cE '/(page\.tsx|route\.ts)$'` | **117** — himpunan route `HEAD` dan `origin/main` identik, tidak ada berkas main yang hilang dari branch |
 | Build/typecheck/unit/integration test | **SKIPPED** — hanya dokumentasi |
 
@@ -78,4 +80,6 @@ Rincian yang berubah:
 
 ## 8. Kesimpulan
 
-`MODULE-INVENTORY.md` kini mencerminkan kode `main` per `f5a6f42`: 36 halaman, 81 route handler, 4 Server Action, 52 direktori fitur, dan daftar file per modul yang diregenerasi. Klaim lama "29 halaman/80 route handler/2 Server Action" dan ketiadaan halaman Super Admin sudah tidak ada. Perubahan menunggu review.
+`MODULE-INVENTORY.md` kini mencerminkan kode `main` per `f5a6f42`: 36 halaman, 81 route handler, 4 Server Action, 52 direktori fitur, dan daftar file per modul yang diregenerasi. Klaim lama "29 halaman/80 route handler/2 Server Action" dan ketiadaan halaman Super Admin sudah tidak ada.
+
+Branch `task/design-mockup-assets` juga membawa commit `eea0fd8` yang menambahkan `public/images/logo.png` dan `public/images/logo-fd.png` atas permintaan pengguna. Berkas itu tidak diperiksa dalam audit dokumentasi ini. Perubahan menunggu review; belum ada merge atau deploy.
