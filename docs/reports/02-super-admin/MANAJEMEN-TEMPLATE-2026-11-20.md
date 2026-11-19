@@ -5,6 +5,7 @@
 - **Branch:** `task/super-admin-manajemen-template`
 - **Base commit:** `0b18f438a724af68080775000f143061e410842f` (`origin/main`)
 - **Commit kode:** `3c3e157`
+- **Commit koreksi tautan:** `a2c7a12`
 - **Status:** Siap review. Belum di-merge dan belum di-deploy.
 
 ## 1. Tujuan dan keputusan scope
