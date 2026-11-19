@@ -4,7 +4,7 @@
 - **Tanggal:** 20 November 2026
 - **Branch:** `task/super-admin-daftar-domain-ssl`
 - **Base commit:** `d28e9df` (`feat(super-admin): tambah submenu dan ringkasan daftar tenant`)
-- **Commit implementasi:** `26bebf1`, `40b98db`, `85de3da`, dan commit revisi kartu/filter pada branch yang sama.
+- **Commit implementasi:** `26bebf1`, `40b98db`, `85de3da`, dan `cf721b2` (revisi kartu/filter).
 - **Laporan lama:** `DAFTAR-TENANT-SUBMENU-2026-11-20.md` dipindahkan ke `archive/` karena submenu **Daftar tenant** sudah digantikan oleh **Desa & Domain → Daftar domain**.
 
 ## 1. Tujuan
