@@ -1,13 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { daftarAlbumGaleri, daftarFotoAlbum } from "@/features/publik/application/konten-publik";
+import { daftarAlbumGaleri, daftarFotoAlbum, daftarVideoGaleriPublik } from "@/features/publik/application/konten-publik";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
 import styles from "./galeri.module.css";
 
 export const dynamic = "force-dynamic";
-type Props = { searchParams: Promise<{ q?: string; tipe?: string }> };
+type Props = { searchParams: Promise<{ q?: string; tipe?: string; kategori?: string }> };
 
 function mediaUrl(value: string | null, villageId: number): string | null {
   if (!value) return null;
@@ -46,22 +46,22 @@ export default async function GaleriPage({searchParams}:Props) {
       {heroCover?<div className={styles.heroImage}><Image src={heroCover} alt="" fill sizes="(max-width: 700px) 35vw, 280px" unoptimized/></div>:<div className={styles.heroIcon}>▧</div>}
     </div></section>
     <div className={styles.container}>
-      <nav className={styles.tabs} aria-label="Jenis galeri"><Link href="/galeri" aria-current={type==="semua"?"page":undefined}>▧　Semua Galeri</Link><Link href="/galeri?tipe=foto" aria-current={type==="foto"?"page":undefined}>▣　Foto</Link><span aria-disabled="true" title="Belum ada modul video pada data galeri">▷　Video</span><Link href="/galeri?tipe=album" aria-current={type==="album"?"page":undefined}>▱　Album</Link></nav>
+      <nav className={styles.tabs} aria-label="Jenis galeri"><Link href="/galeri" aria-current={type==="semua"?"page":undefined}>▧　Semua Galeri</Link><Link href="/galeri?tipe=foto" aria-current={type==="foto"?"page":undefined}>▣　Foto</Link><Link href="/galeri?tipe=video" aria-current={type==="video"?"page":undefined}>▷　Video</Link><Link href="/galeri?tipe=album" aria-current={type==="album"?"page":undefined}>▱　Album</Link></nav>
       <div className={styles.layout}>
         <div className={styles.main}>
-          {type!=="foto"?<section className={styles.panel}>
+          {type==="video"?<section className={styles.panel}><div className={styles.sectionHeading}><div><h2>▷　Video Kegiatan</h2><p>Video kegiatan yang dipublikasikan oleh pemerintah desa.</p></div><span>{videos.length} Video</span></div>{videos.length?<div className={styles.videoGrid}>{videos.map(video=><article className={styles.videoCard} key={video.id}><iframe src={video.url} title={video.judul} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen/><h3>{video.judul}</h3><p>{video.keterangan??"Video kegiatan desa."}</p>{video.publishedAt?<small>{dateLabel(video.publishedAt)}</small>:null}</article>)}</div>:<div className={styles.empty}><span>▷</span><h3>Video belum tersedia</h3><p>Video akan ditampilkan setelah ditambahkan dan dipublikasikan melalui Admin Desa.</p></div>}</section>:null}\n          {type!=="foto"&&type!=="video"?<section className={styles.panel}>
             <div className={styles.sectionHeading}><div><h2>▱　Album Kegiatan Desa</h2><p>Kumpulan dokumentasi kegiatan dan program di {desa.namaDesa??"desa"}.</p></div><span>{albums.length} Album</span></div>
-            {albums.length?<div className={styles.albumGrid}>{albums.slice(0,8).map(album=>{const cover=mediaUrl(album.sampul,desa.id);return <Link className={styles.albumCard} href={"/galeri/"+encodeURIComponent(album.slug)} key={album.id}><div className={styles.albumCover}>{cover?<Image src={cover} alt={album.nama} fill sizes="(max-width: 680px) 45vw, 180px" unoptimized/>:<span>▧</span>}<b>▣ {album.jumlahFoto} Foto</b></div><h3>{album.nama}</h3>{dateLabel(null)?<small>{dateLabel(null)}</small>:<small>Dokumentasi desa</small>}</Link>})}</div>:<div className={styles.empty}><span>▧</span><h3>{query?"Album tidak ditemukan":"Album belum tersedia"}</h3><p>Album akan ditampilkan setelah dibuat dan dipublikasikan oleh pengelola desa.</p></div>}
+            {albums.length?<div className={styles.albumGrid}>{albums.slice(0,8).map(album=>{const cover=mediaUrl(album.sampul,desa.id);return <Link className={styles.albumCard} href={"/galeri/"+encodeURIComponent(album.slug)} key={album.id}><div className={styles.albumCover}>{cover?<Image src={cover} alt={album.nama} fill sizes="(max-width: 680px) 45vw, 180px" unoptimized/>:<span>▧</span>}<b>▣ {album.jumlahFoto} Foto</b></div><h3>{album.nama}</h3><small>{album.publishedAt?dateLabel(album.publishedAt):"Tanggal belum diatur"}</small></Link>})}</div>:<div className={styles.empty}><span>▧</span><h3>{query?"Album tidak ditemukan":"Album belum tersedia"}</h3><p>Album akan ditampilkan setelah dibuat dan dipublikasikan oleh pengelola desa.</p></div>}
           </section>:null}
-          {type!=="album"?<section className={styles.panel}>
+          {type!=="album"&&type!=="video"?<section className={styles.panel}>
             <div className={styles.sectionHeading}><div><h2>▧　Foto Terbaru</h2><p>Dokumentasi foto dari album yang dipublikasikan.</p></div><span>{totalFoto} Foto</span></div>
             {photos.length?<div className={styles.photoGrid}>{photos.map(photo=>{const src=mediaUrl(photo.gambar,desa.id);return <Link href={"/galeri/"+encodeURIComponent(photo.albumSlug)} className={styles.photo} key={photo.id}>{src?<Image src={src} alt={photo.judul||photo.albumNama} fill sizes="(max-width: 680px) 45vw, 220px" unoptimized/>:<span>▧</span>}<b>{photo.judul||photo.albumNama}</b></Link>})}</div>:<div className={styles.empty}><span>▧</span><h3>Foto belum tersedia</h3><p>Foto kegiatan akan tampil di sini setelah diunggah dan diaktifkan pada album.</p></div>}
           </section>:null}
         </div>
         <aside className={styles.aside}>
           <section className={styles.sideCard}><h2>⌕　Cari di Galeri</h2><form action="/galeri" method="get"><input type="search" name="q" placeholder="Masukkan kata kunci..." defaultValue={query}/><button type="submit" aria-label="Cari galeri">⌕</button></form></section>
-          <section className={styles.sideCard}><h2>▱　Kategori Galeri</h2><div className={styles.categoryList}><Link href="/galeri"><span>▧</span><strong>Semua Galeri</strong><b>{albums.length}</b></Link>{albums.slice(0,9).map(album=><Link href={"/galeri/"+encodeURIComponent(album.slug)} key={album.id}><span>▱</span><strong>{album.nama}</strong><b>{album.jumlahFoto}</b></Link>)}</div><p className={styles.categoryNote}>Daftar di atas mengikuti album aktif milik desa.</p></section>
-          <section className={styles.sideCard}><h2>▣　Video Kegiatan</h2><div className={styles.videoEmpty}><span>▷</span><strong>Belum ada video</strong><p>Video belum dapat ditampilkan karena modul video belum tersedia pada pengelolaan galeri.</p></div></section>
+          <section className={styles.sideCard}><h2>▱　Kategori Galeri</h2><div className={styles.categoryList}><Link href="/galeri"><span>▧</span><strong>Semua Galeri</strong><b>{allAlbums.length}</b></Link>{categoryRows.map(row=><Link href={"/galeri?kategori="+encodeURIComponent(row.name)} key={row.name}><span>▱</span><strong>{row.name}</strong><b>{row.count}</b></Link>)}</div><p className={styles.categoryNote}>Kategori dikelola oleh Admin Desa.</p></section>
+          <section className={styles.sideCard}><h2>▣　Video Kegiatan</h2>{videos.length?<div className={styles.videoSide}>{videos.slice(0,3).map(video=><a href={video.url} target="_blank" rel="noreferrer" key={video.id}><span>▷</span><strong>{video.judul}</strong><small>{video.provider.toUpperCase()}</small></a>)}</div>:<div className={styles.videoEmpty}><span>▷</span><strong>Belum ada video</strong><p>Video akan muncul setelah diterbitkan oleh Admin Desa.</p></div>}</section>
         </aside>
       </div>
       <section className={styles.banner}><span>▧</span><div><h2>Jelajahi Dokumentasi Pembangunan dan Kegiatan Desa</h2><p>Lihat berbagai dokumentasi foto kegiatan masyarakat, program pembangunan, serta potensi {desa.namaDesa??"desa"}.</p></div><Link href="/galeri">▧　Lihat Semua Galeri　→</Link></section>
