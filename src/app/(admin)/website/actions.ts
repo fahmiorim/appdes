@@ -419,3 +419,28 @@ export async function ubahHalamanWebsiteAction(fd: FormData): Promise<void> {
     .where(and(eq(halamanStatis.villageId, villageId), eq(halamanStatis.id, id)));
   revalidatePath("/website/halaman"); redirect("/website/halaman?saved=1");
 }
+
+
+export async function tambahKategoriBeritaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const nama = text(fd, "namaKategori");
+  const slug = slugify(text(fd, "slugKategori") || nama).slice(0, 100);
+  if (!nama || nama.length > 100 || !slug) throw new Error("Nama kategori dan slug wajib diisi.");
+  const [existing] = await db.select({ id: beritaKategori.id }).from(beritaKategori).where(and(eq(beritaKategori.villageId, villageId), eq(beritaKategori.slug, slug))).limit(1);
+  if (existing) throw new Error("Slug kategori sudah digunakan.");
+  await db.insert(beritaKategori).values({ villageId, nama, slug, aktif: true, urut: 0 });
+  revalidatePath("/website/konten"); redirect("/website/konten?saved=1#berita");
+}
+
+export async function hapusFotoGaleriWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "delete");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  if (!id) throw new Error("Foto tidak valid.");
+  const [row] = await db.select({ gambar: galeriFoto.gambar }).from(galeriFoto).where(and(eq(galeriFoto.villageId, villageId), eq(galeriFoto.id, id))).limit(1);
+  if (!row) throw new Error("Foto tidak ditemukan.");
+  await db.delete(galeriFoto).where(and(eq(galeriFoto.villageId, villageId), eq(galeriFoto.id, id)));
+  await hapusMedia(row.gambar);
+  revalidatePath("/website/konten"); redirect("/website/konten?deleted=1#galeri");
+}
