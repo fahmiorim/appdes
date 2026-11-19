@@ -10,7 +10,7 @@
 
 Status di bawah menunjukkan keberadaan struktur/kode yang teridentifikasi pada repository. Status ini **bukan jaminan bahwa seluruh alur siap dipakai di produksi**.
 
-**Cakupan UI (19 November 2026):** UI pengelolaan modul SID **sebagian tersedia**. Ada 17 berkas `page.tsx` admin: sepuluh halaman Admin Desa (termasuk `/beranda`) dan tujuh halaman konsol platform (`/super-admin`, `tenant`, `domain`, `pengguna`, `audit`, `template`, `pengaturan`); `RUTE_ADMIN_TERSEDIA` berisi 16 entri. Sepuluh halaman Admin Desa adalah `penduduk` (filter, paginasi, detail), `pengguna` dan `grup-akses` (Server Action), serta `keuangan`, `konten/berita`, `konten/galeri`, `persuratan/surat`, dan `pengaduan-admin` yang masih baca-saja tanpa form. Login Admin Desa `/masuk-admin` tetap halaman autentikasi, bukan UI pengelolaan modul. Modul SID lain sebagian baru memiliki route handler ekspor, PDF, atau berkas. Halaman publik yang ada adalah situs desa, bukan UI pengelolaan.
+**Cakupan UI (19 November 2026):** UI pengelolaan modul SID **sebagian tersedia**. Ada 19 berkas `page.tsx` admin: dua belas halaman Admin Desa (termasuk `/beranda`) dan tujuh halaman konsol platform (`/super-admin`, `tenant`, `domain`, `pengguna`, `audit`, `template`, `pengaturan`); `RUTE_ADMIN_TERSEDIA` berisi 16 entri. Dua belas halaman Admin Desa adalah `penduduk` (filter, paginasi, detail), `penduduk/baru` dan `penduduk/[id]/ubah` (form tambah/ubah), `pengguna` dan `grup-akses` (Server Action), serta `keuangan`, `konten/berita`, `konten/galeri`, `persuratan/surat`, dan `pengaduan-admin` yang masih baca-saja tanpa form. Login Admin Desa `/masuk-admin` tetap halaman autentikasi, bukan UI pengelolaan modul. Modul SID lain sebagian baru memiliki route handler ekspor, PDF, atau berkas. Halaman publik yang ada adalah situs desa, bukan UI pengelolaan.
 
 **Referensi mockup bukan status implementasi.** Per 19 November 2026 katalog berisi 38 layar Super Admin dan 10 layar Admin Desa. Audit memetakan 15 layar Super Admin sebagai sebagian dan 23 layar belum memiliki fitur/model data. Area seperti langganan, analitik penggunaan, pusat keamanan, dan editor template belum menjadi bagian modul yang ada; jangan menambahkannya ke peta ini sebagai "tersedia" sebelum use case, permission, dan model data dibuat. Pemetaan rinci ada di [audit mockup Super Admin](reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md) dan [review mockup Admin Desa](reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md).
 
@@ -30,7 +30,7 @@ Status di bawah menunjukkan keberadaan struktur/kode yang teridentifikasi pada r
 | Auth & RBAC | `auth`, `rbac` | Login, sesi, role, permission | Struktur dan use case tersedia | Core | Validasi role ownership dan invalidasi sesi. |
 | Website desa | `publik`, `konten`, `navigation` | Profil, konten, menu, media | Konten publik, galeri, pengumuman, dan media teridentifikasi | Core | `navigation` membangun menu **admin** dari modul dan izin RBAC; menu situs publik ada di `publik/nav-publik`. Pemilihan tema belum ada UI: tabel `theme` hanya diisi seed provisioning dan `src/themes/registry.ts` yang dirujuk schema belum ada. Backup media, signature validation, SEO/editor regression. |
 | Profil & wilayah | `wilayah`, `desa`, `gis` | Identitas desa, wilayah, peta | Struktur fitur teridentifikasi | Core | Validasi relasi wilayah pada tenant yang sama. |
-| Penduduk | `penduduk`, `warga` | Data penduduk, pencarian, mutasi, katalog | Use case/repository tersedia | Core | Validasi family/region/katalog lintas tenant; test import. |
+| Penduduk | `penduduk`, `warga` | Data penduduk, pencarian, mutasi, katalog | Use case/repository serta UI daftar, detail, tambah, dan ubah tersedia | Core | Form tambah/ubah memakai izin `update`; validasi family/region lintas tenant dan test import. |
 | Keluarga | `keluarga` | Kartu keluarga, kepala dan anggota keluarga | Implementasi teridentifikasi | Core | Tenant filter pada join/agregasi dan regionId. |
 | Rumah tangga | `rumah-tangga` | Data rumah tangga dan anggota | Implementasi teridentifikasi | Important | Validasi regionId dan composite FK. |
 | Surat & layanan mandiri | `surat`, `layanan-mandiri` | Jenis surat, persyaratan, permohonan, proses, dokumen | Backend dan route teridentifikasi | Core | Validasi resident/letter type; transisi status atomik; uji kiosk. |
@@ -55,7 +55,7 @@ Status di bawah menunjukkan keberadaan struktur/kode yang teridentifikasi pada r
 
 ## 3. Modul inti MVP yang disarankan
 
-Daftar ini adalah target modul. Sebagian sudah memiliki halaman Admin Desa (penduduk, pengguna, grup akses), sedangkan modul inti lain masih berupa backend, route handler, atau struktur fitur (lihat §1 dan §2).
+Daftar ini adalah target modul. Sebagian sudah memiliki halaman Admin Desa (penduduk termasuk tambah/ubah, pengguna, grup akses), sedangkan modul inti lain masih berupa backend, route handler, atau struktur fitur (lihat §1 dan §2).
 
 1. **Platform:** provisioning tenant, domain, status tenant, akun Admin Desa, dashboard Super Admin.
 2. **Akses:** login, RBAC, manajemen akun, audit trail.

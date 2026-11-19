@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { MENU_PLATFORM, menuPlatformAktif } from "./menu-platform";
+import { grupMenuPlatform, MENU_PLATFORM, menuPlatformAktif } from "./menu-platform";
 
 describe("menuPlatformAktif", () => {
   it("hanya menandai Ringkasan aktif tepat di /super-admin", () => {
@@ -25,5 +25,18 @@ describe("MENU_PLATFORM", () => {
     expect(new Set(MENU_PLATFORM.map((item) => item.href)).size).toBe(7);
     expect(MENU_PLATFORM[0]?.href).toBe("/super-admin");
     expect(MENU_PLATFORM.every((item) => item.href.startsWith("/super-admin"))).toBe(true);
+  });
+
+  it("memberi grup berlabel pada setiap item", () => {
+    expect(MENU_PLATFORM.every((item) => item.grup.trim().length > 0)).toBe(true);
+  });
+});
+
+describe("grupMenuPlatform", () => {
+  it("mengelompokkan menu sesuai urutan tanpa kehilangan item", () => {
+    const grup = grupMenuPlatform();
+
+    expect(grup.map((kelompok) => kelompok.grup)).toEqual(["Menu utama", "Tenant", "Platform"]);
+    expect(grup.flatMap((kelompok) => kelompok.item)).toHaveLength(MENU_PLATFORM.length);
   });
 });

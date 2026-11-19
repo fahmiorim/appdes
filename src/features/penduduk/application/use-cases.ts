@@ -7,6 +7,7 @@ import { catatPerubahanAnggotaKk } from "@/features/keluarga/application/catat-a
 import {
   HEAD_OF_FAMILY_RELATION_ID,
   PENDUDUK_RESOURCE,
+  type PendudukDTO,
   type PendudukFilter,
   type PendudukFormInput,
   type PendudukReferenceData,
@@ -119,6 +120,33 @@ export async function getPendudukReference(): Promise<PendudukReferenceData> {
   const villageId = await resolveVillageId(user);
 
   return getPendudukReferenceData(villageId);
+}
+
+export interface PendudukFormData {
+  references: PendudukReferenceData;
+  /** Data lama untuk mode ubah; `null` pada mode tambah. */
+  penduduk: PendudukDTO | null;
+}
+
+/**
+ * Data formulir tambah/ubah penduduk.
+ *
+ * Memakai izin `update` karena formulir menampilkan NIK lengkap dan data orang
+ * tua, bukan sekadar ringkasan baca. Pada mode ubah, pencarian data dibatasi
+ * `villageId` dari sesi sehingga ID milik desa lain diperlakukan tidak ada.
+ */
+export async function getPendudukFormData(id: number | null = null): Promise<PendudukFormData> {
+  const user = await requirePermission(PENDUDUK_RESOURCE, "update");
+  const villageId = await resolveVillageId(user);
+
+  const [references, penduduk] = await Promise.all([
+    getPendudukReferenceData(villageId),
+    id === null ? Promise.resolve(null) : findPendudukById(villageId, id),
+  ]);
+
+  if (id !== null && !penduduk) throw notFound("Data penduduk tidak ditemukan.");
+
+  return { references, penduduk };
 }
 
 /** Pastikan sebuah KK tidak punya lebih dari satu kepala keluarga. */

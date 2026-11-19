@@ -1,7 +1,7 @@
 # FlexiDesa Design System
 
-> Status: **Draft v0.4 — 89 mockup telah diinventarisasi; 42 mockup diaudit pada 18 November 2026, seluruh 38 layar Super Admin dan 10 layar Admin Desa ditinjau pada 19 November 2026, dan token awal diturunkan dari bukti visual.**
-> Sumber referensi: 89 mockup di `docs/mockups/public/`, `docs/mockups/account/`, `docs/mockups/support/`, `docs/mockups/platform/`, dan `docs/mockups/village/`.
+> Status: **Draft v0.5 — 126 mockup telah diinventarisasi; 42 mockup diaudit pada 18 November 2026, seluruh 39 layar Super Admin dan 46 layar Admin Desa ditinjau pada 19 November 2026, token awal diturunkan dari bukti visual, dan arah visual Super Admin ditetapkan pada 19 November 2026.**
+> Sumber referensi: 126 mockup di `docs/mockups/public/`, `docs/mockups/account/`, `docs/mockups/support/`, `docs/mockups/platform/`, dan `docs/mockups/village/`.
 > Audit terbaru tidak mengubah status token menjadi stable. Mockup adalah arah visual, bukan bukti implementasi atau acceptance data.
 
 ## 1. Tujuan dan aturan sumber kebenaran
@@ -83,10 +83,12 @@ Referensi yang diperiksa: `docs/mockups/account/Modern Indonesian Village Login 
 | Action purple strong | `#6512CF` | Hover/pressed aksi desa |
 | Action purple soft | `#EDE1FF` | Latar chip/ikon aksi dan segmen donut sekunder |
 | Action purple border | `#DCC6FF` | Outline ikon dan chip aksi |
+| Action purple (Super Admin) | `#7C3AED → #9333EA` | Sidebar aktif, CTA, tab aktif, dan KPI utama konsol platform |
+| Action purple hover | `#6D28D9` | Hover aksi konsol platform |
 
 Nilai tersebut adalah token baseline v0.3; tetap lakukan contrast check dan screenshot comparison sebelum status stable.
 
-Warna aksi ungu hanya berlaku untuk persona Admin Desa (shell `data-desa="true"` dan halaman desa). Konsol Platform Super Admin **saat ini** memakai `--color-brand` biru; tautan, status informasi, dan warna status semantik tidak ikut berubah. Mockup 38 layar Super Admin memperlihatkan sidebar navy dan aksi utama yang lebih gelap/ungu, tetapi arah tersebut belum disetujui sebagai token. Jangan mengubah warna konsol platform sebelum ada keputusan produk, sampel visual, dan pemeriksaan kontras.
+Warna aksi ungu dipakai kedua persona dengan nuansa berbeda. Admin Desa memakai `--color-action` (`#7A20F0`) pada shell `data-desa="true"`; konsol Super Admin memakai gradien `#7C3AED → #9333EA` pada shell `data-konsol="platform"`, mengikuti sidebar indigo-ungu dan aksi utama di 38 mockup. Tautan, status informasi, dan warna status semantik tidak ikut berubah. Arah ini ditetapkan sebagai keputusan produk pada 19 November 2026; perubahan warna konsol platform berikutnya harus melalui review visual dan pemeriksaan kontras.
 
 ### 4.1.2 Aset visual reusable
 
@@ -229,15 +231,15 @@ Sebelum mengubah status dokumen menjadi stable:
 
 | Area | Status |
 |---|---|
-| Inventaris mockup | 89 file terdaftar: 21 publik, 11 akun, 7 pendukung, 40 platform (2 landing/login + 38 konsol Super Admin), dan 10 Admin Desa |
+| Inventaris mockup | 126 file terdaftar: 21 publik, 11 akun, 7 pendukung, 41 platform (2 landing/login + 39 konsol Super Admin), dan 46 Admin Desa |
 | Audit struktur repository | Baseline 18 November 2026 pada `main`: `/masuk`, `/beranda`, dan tujuh halaman `/super-admin/*`. Login Admin Desa terpisah ditambahkan pada PR #155; bukan UI pengelolaan modul SID |
-| Audit visual referensi | 42 mockup diaudit pada 18 November 2026. Pada 19 November, seluruh 38 layar Super Admin ditinjau lewat contact sheet (layar utama pada resolusi 1400 px) dan 10 layar Admin Desa ditinjau. Audit ini tidak mengukur pixel, kontras final, atau viewport implementasi |
+| Audit visual referensi | 42 mockup diaudit pada 18 November 2026. Pada 19 November, 39 layar Super Admin ditinjau lewat contact sheet (layar utama pada resolusi 1400 px) dan 46 layar Admin Desa ditinjau. Audit ini tidak mengukur pixel, kontras final, atau viewport implementasi |
 | Prinsip dan semantik token | Draft; dapat dipakai sebagai kontrak semantik |
 | Baseline warna | Draft v0.3 diturunkan dari sampel visual; perlu contrast check dan browser comparison |
 | Komponen bersama | Spesifikasi awal; perlu visual review dan konsolidasi |
-| Admin Desa | 10 referensi di `docs/mockups/village/`; selisih dengan implementasi dicatat di [review mockup Admin Desa](../reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md) |
-| Super Admin | 38 referensi di `docs/mockups/platform/super-admin/`; baru 7 route konsol dengan kedalaman berbeda. Pemetaan dan 23 area tanpa model data ada di [audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md) |
-| Arah visual Super Admin | Belum diputuskan. Mockup memakai sidebar navy dan aksi gelap/ungu; implementasi masih biru di sidebar putih. Perbedaan ini dicatat di [spesifikasi Admin dan Super Admin](./ADMIN-PLATFORM-DESIGN.md), bukan diselesaikan diam-diam di Design System |
+| Admin Desa | 46 referensi di `docs/mockups/village/`; 11 area fitur, dengan backend yang jauh lebih siap daripada UI. Pemetaan modul dan status backend ada di [audit kesiapan backend mockup baru](../reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md) |
+| Super Admin | 39 referensi di `docs/mockups/platform/super-admin/`; baru 7 route konsol dengan kedalaman berbeda. Pemetaan dan 23 area tanpa model data ada di [audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md); layar Laporan & Export baru belum punya model data |
+| Arah visual Super Admin | Ditetapkan 19 November 2026 mengikuti 39 mockup: sidebar indigo-ungu, aksi ungu, topbar breadcrumb + pencarian, header halaman, dan KPI bertone. Shell dan tujuh halaman konsol sudah memakainya; 32 layar lain belum dibangun. Rincian di [spesifikasi Admin dan Super Admin](./ADMIN-PLATFORM-DESIGN.md) |
 | Responsive rules final | Belum diverifikasi pada viewport desktop/mobile |
 | Visual regression baseline | Belum dibuat; perlu runtime browser dan fixture sintetis |
 
@@ -245,14 +247,14 @@ Sebelum mengubah status dokumen menjadi stable:
 
 - `src/app/globals.css` mengimpor DM Sans dan Plus Jakarta Sans, tetapi `--font-sans` dan `--font-display` masih menggunakan Segoe UI/Arial. Jangan memilih salah satunya sebagai final sebelum font referensi dibaca dari PNG.
 - Login memakai split layout pada desktop dan menyembunyikan panel visual pada breakpoint 900px. Perlu dibandingkan dengan mockup, khususnya apakah panel/brand tetap harus hadir pada mobile.
-- Dashboard Admin dan Super Admin saat ini memakai satu admin shell. Perbedaan label dan navigasi sudah ada, tetapi visual hierarchy kedua persona belum melalui design review.
+- Dashboard Admin dan Super Admin memakai satu shell struktural dengan dua sistem visual: `data-desa="true"` (navy, aksi ungu desa) dan `data-konsol="platform"` (indigo-ungu, KPI bertone). Perbedaan ini sudah diimplementasikan, tetapi belum melalui screenshot comparison atau contrast check formal.
 
 ### 10.2 Gate sebelum status Stable
 
-1. Lanjutkan audit 89 PNG; catat ukuran, viewport, warna, tipografi, grid, radius, shadow, ikon, dan elemen berulang. Jangan mengklaim seluruh aset sudah pixel-perfect hanya karena contact sheet sudah dilihat.
+1. Lanjutkan audit 126 PNG; catat ukuran, viewport, warna, tipografi, grid, radius, shadow, ikon, dan elemen berulang. Jangan mengklaim seluruh aset sudah pixel-perfect hanya karena contact sheet sudah dilihat.
 2. Audit minimal tiga referensi representatif per kelompok serta seluruh pola unik.
 3. Revisi token hanya berdasarkan hasil inspeksi; sertakan nilai dan bukti referensi.
 4. Bandingkan `/masuk` dan `/masuk-admin` dengan screenshot login pada ukuran viewport yang sama.
-5. Selaraskan spesifikasi visual Admin Desa dengan sepuluh referensi di `docs/mockups/village/`, lalu putuskan arah visual Super Admin berdasarkan 38 referensi tanpa menyalin angka contoh dari gambar.
+5. Selaraskan spesifikasi visual Admin Desa dengan 46 referensi di `docs/mockups/village/`, lalu putuskan arah visual Super Admin berdasarkan 39 referensi tanpa menyalin angka contoh dari gambar.
 6. Jalankan aplikasi pada browser, ambil screenshot desktop dan mobile, lalu lakukan visual comparison.
 7. Perbarui matriks dengan status `implemented`, `visually reviewed`, atau `accepted` hanya jika bukti tersedia.

@@ -4,7 +4,11 @@ import Link from "next/link";
 import { AUDIT_EVENT_LABELS, type AuditEvent } from "@/features/audit/domain/audit";
 import { ambilAuditPlatform } from "@/features/multi-desa/application/audit-platform-use-cases";
 import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisioning-use-cases";
-import { PlatformCard, PlatformEmpty } from "@/features/multi-desa/presentation/platform-ui";
+import {
+  PlatformCard,
+  PlatformEmpty,
+  PlatformPageHeader,
+} from "@/features/multi-desa/presentation/platform-ui";
 
 import { pastikanSuperAdmin } from "../guard";
 
@@ -67,6 +71,7 @@ export default async function SuperAdminAuditPage({
 
   return (
     <>
+      <PlatformPageHeader path="/super-admin/audit" />
       <PlatformCard
         actions={
           <div className="platform-card-actions">

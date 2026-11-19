@@ -45,7 +45,9 @@ Invarian: host platform/reserved/unknown tidak boleh jatuh ke tenant; tidak ada 
 
 ## 2B. Relevansi fase terhadap perluasan mockup Super Admin (19 November 2026)
 
-**Kesimpulan:** Fase 0–6 dan urutannya tetap relevan. Perluasan menjadi 38 layar Super Admin memperjelas arah konsol, tetapi tidak menciptakan 23 modul siap pakai: audit memetakan 15 layar sebagai sebagian dan 23 layar belum memiliki fitur atau model data. Mockup tidak boleh dipakai sebagai acceptance data, dan tidak ada area baru yang boleh melompati gate keamanan tenant serta operasional Fase 1/5.
+**Kesimpulan:** Fase 0–6 dan urutannya tetap relevan. Perluasan menjadi 39 layar Super Admin memperjelas arah konsol, tetapi tidak menciptakan 23 modul siap pakai: audit memetakan 15 layar sebagai sebagian dan 23 layar belum memiliki fitur atau model data. Mockup tidak boleh dipakai sebagai acceptance data, dan tidak ada area baru yang boleh melompati gate keamanan tenant serta operasional Fase 1/5.
+
+Ekspansi 46 layar Admin Desa pada hari yang sama tidak mengubah urutan fase. Backend modul desa (kehadiran, inventaris, keluarga, mutasi penduduk, bumindes, pembangunan, statistik, kesehatan, bantuan, survei, dan persuratan) sudah tersedia di server, sedangkan UI-nya belum; pekerjaan berikutnya adalah menghubungkan UI ke use case yang ada, bukan membangun backend baru. Rincian per modul ada di [audit kesiapan backend mockup baru](./reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md).
 
 | Area di mockup | Kondisi repository | Fase/prioritas | Keputusan |
 |---|---|---|---|

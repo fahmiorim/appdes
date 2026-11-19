@@ -3,7 +3,11 @@ import type { Metadata } from "next";
 import { daftarPenggunaPlatform } from "@/features/multi-desa/application/pengguna-platform-use-cases";
 import { DialogTambahPengguna } from "@/features/multi-desa/presentation/dialog-tambah-pengguna";
 import { PenggunaPlatformConsole } from "@/features/multi-desa/presentation/pengguna-platform-console";
-import { PlatformCard, PlatformStat } from "@/features/multi-desa/presentation/platform-ui";
+import {
+  PlatformCard,
+  PlatformPageHeader,
+  PlatformStat,
+} from "@/features/multi-desa/presentation/platform-ui";
 
 import { pastikanSuperAdmin } from "../guard";
 import {
@@ -30,6 +34,10 @@ export default async function SuperAdminPenggunaPage() {
 
   return (
     <>
+      <PlatformPageHeader
+        actions={<DialogTambahPengguna aksi={buatPenggunaAction} />}
+        path="/super-admin/pengguna"
+      />
       <div className="platform-stat-grid">
         <PlatformStat
           icon={
@@ -42,6 +50,7 @@ export default async function SuperAdminPenggunaPage() {
           }
           label="Total akun"
           note="Akun tanpa desa (village_id kosong)"
+          tone="ungu"
           value={angka.format(pengguna.length)}
         />
         <PlatformStat
@@ -53,6 +62,7 @@ export default async function SuperAdminPenggunaPage() {
           }
           label="Akun aktif"
           note={`${angka.format(pengguna.length - aktif)} akun nonaktif`}
+          tone="hijau"
           value={angka.format(aktif)}
         />
         <PlatformStat
@@ -65,6 +75,7 @@ export default async function SuperAdminPenggunaPage() {
           }
           label="Sesi aktif"
           note="Sesi yang belum kedaluwarsa"
+          tone="biru"
           value={angka.format(sesiAktif)}
         />
         <PlatformStat
@@ -77,12 +88,12 @@ export default async function SuperAdminPenggunaPage() {
           }
           label="Tanpa role"
           note="Akun tanpa role tidak dapat membuka konsol"
+          tone="merah"
           value={angka.format(tanpaRole)}
         />
       </div>
 
       <PlatformCard
-        actions={<DialogTambahPengguna aksi={buatPenggunaAction} />}
         description="Nonaktifkan akun yang tidak dipakai lagi, reset sandi bila akses hilang, atau cabut sesi untuk mengeluarkan perangkat lama."
         title="Akun pengelola platform"
       >
