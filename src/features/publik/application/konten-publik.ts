@@ -7,6 +7,7 @@ import {
   getProfilDesa,
   listAlbumGaleri,
   listBerita,
+  listVideoGaleriPublik,
   countBerita,
   listDokumenPublik,
   listFotoAlbum,
@@ -93,4 +94,8 @@ export async function daftarSlugBerita(villageId: number) {
 
 export async function daftarSlugHalaman(villageId: number) {
   return listSlugHalaman(villageId);
+}
+
+export async function daftarVideoGaleriPublik(villageId: number, limit = 8) {
+  return listVideoGaleriPublik(villageId, limit);
 }
