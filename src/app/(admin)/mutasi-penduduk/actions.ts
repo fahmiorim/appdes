@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import {
   catatDatang, catatKelahiran, catatKematian, catatPindahKeluar, catatPerubahan,
 } from "@/features/penduduk/application/riwayat-penduduk-use-cases";
+import type { CatatDatangInput, CatatKelahiranInput, CatatPerubahanInput } from "@/features/penduduk/domain/riwayat-penduduk";
 
 function text(form: FormData, key: string): string {
   const value = form.get(key);
