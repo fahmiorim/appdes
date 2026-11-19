@@ -2,12 +2,31 @@ import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { profilDesaPublik } from "@/features/publik/application/konten-publik";
-import { getNavPublik } from "@/features/publik/application/nav-publik";
 
 import styles from "../informasi-publik.module.css";
-import { PublicShell } from "../public-shell";
+import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
 
 export const dynamic = "force-dynamic";
+
+function mediaUrl(value: string | null | undefined, villageId: number): string | null {
+  if (!value) return null;
+  const segments = value.split(/[\\\\/]/).filter(Boolean);
+  if (
+    segments.length === 0 ||
+    segments.some((segment) => segment === "." || segment === ".." || segment.includes(".."))
+  )
+    return null;
+  const path = segments[0] === String(villageId) ? segments : [String(villageId), ...segments];
+  return `/api/publik/media/${path.map(encodeURIComponent).join("/")}`;
+}
+
+function locationLabel(desa: {
+  namaKecamatan: string | null;
+  namaKabupaten: string | null;
+  namaPropinsi: string | null;
+}): string {
+  return [desa.namaKecamatan, desa.namaKabupaten, desa.namaPropinsi].filter(Boolean).join(", ");
+}
 
 function plainText(value: string) {
   return value
@@ -27,16 +46,15 @@ function plainText(value: string) {
 export default async function VisiMisiPage() {
   const desa = await getIdentitasFromRequest();
   const profil = await profilDesaPublik(desa.id);
+  const lokasi = locationLabel(desa);
+  const logoUrl = mediaUrl(desa.logo, desa.id);
   const misi = plainText(profil?.misi ?? "")
     .split(/\r?\n/)
     .map((item) => item.trim())
     .filter(Boolean);
   return (
-    <PublicShell
-      villageName={desa.namaDesa ?? "Pemerintah Desa"}
-      brandLabel="Visi & Misi Desa"
-      navigation={await getNavPublik(desa.id)}
-    >
+    <main className={styles.site}>
+      <PublicSiteHeader desa={desa} location={lokasi} logoUrl={logoUrl} activePath="/visi-misi" />
       <section className={styles.hero}>
         <div className={styles.container}>
           <div className={styles.crumb}>
@@ -77,6 +95,7 @@ export default async function VisiMisiPage() {
           </article>
         </div>
       </section>
-    </PublicShell>
+      <PublicSiteFooter desa={desa} location={lokasi} logoUrl={logoUrl} />
+    </main>
   );
 }
