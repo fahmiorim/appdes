@@ -9,7 +9,8 @@ import { dokumenPublik, galeriAlbum, galeriFoto, halamanStatis } from "@/db/sche
 import { updateIdentitas } from "@/features/desa/application/use-cases";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { desaFormSchema } from "@/features/desa/domain/desa";
-import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";\nimport { hapusMedia } from "@/features/publik/infrastructure/media-storage";
+import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
+import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import {
   createDokumenPublik,
   createMenuPublik,
@@ -60,6 +61,12 @@ export async function tambahMenuWebsiteAction(fd: FormData): Promise<void> {
   const linkTipe = text(fd, "linkTipe") || "internal";
   if (!nama || !link || nama.length > 50 || link.length > 500 || !["internal", "eksternal", "halaman"].includes(linkTipe)) {
     throw new Error("Data menu tidak valid.");
+  }
+  if (linkTipe === "internal" && (!link.startsWith("/") || link.startsWith("//"))) throw new Error("Link internal harus berupa path lokal.");
+  if (linkTipe === "eksternal") {
+    let url: URL;
+    try { url = new URL(link); } catch { throw new Error("URL eksternal tidak valid."); }
+    if (!["http:", "https:"].includes(url.protocol)) throw new Error("URL eksternal harus menggunakan HTTP atau HTTPS.");
   }
   const parentId = num(fd, "parentId");
   const menu = await listMenuPublik(villageId, true);
@@ -149,6 +156,11 @@ export async function tambahDokumenWebsiteAction(fd: FormData): Promise<void> {
   }
   const tautan = text(fd, "tautan");
   if (!berkas && !tautan) throw new Error("Unggah PDF/gambar atau isi tautan dokumen.");
+  if (tautan) {
+    let url: URL;
+    try { url = new URL(tautan); } catch { throw new Error("Tautan dokumen tidak valid."); }
+    if (!["http:", "https:"].includes(url.protocol)) throw new Error("Tautan dokumen harus menggunakan HTTP atau HTTPS.");
+  }
   const tahunText = text(fd, "tahun");
   const tahun = tahunText ? Number(tahunText) : null;
   if (tahun !== null && (!Number.isInteger(tahun) || tahun < 1900 || tahun > 2200)) throw new Error("Tahun dokumen tidak valid.");
@@ -172,7 +184,11 @@ export async function hapusDokumenWebsiteAction(fd: FormData): Promise<void> {
   const villageId = await resolveVillageId(user);
   const id = num(fd, "id");
   if (!id) throw new Error("Dokumen tidak valid.");
+  const [row] = await db.select({ berkas: dokumenPublik.berkas }).from(dokumenPublik)
+    .where(and(eq(dokumenPublik.villageId, villageId), eq(dokumenPublik.id, id))).limit(1);
+  if (!row) throw new Error("Dokumen tidak ditemukan.");
   await deleteDokumenPublik(villageId, id);
+  if (row.berkas) await hapusMedia(row.berkas);
   revalidatePath("/website/dokumen");
   redirect("/website/dokumen?deleted=1");
 }
