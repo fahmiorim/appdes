@@ -4,7 +4,7 @@
 - **Tanggal:** 19 November 2026.
 - **Branch:** `task/super-admin-layout-mockup`.
 - **Base commit:** `92e1a90` (`origin/main`).
-- **Commit hasil:** `(SHA diisi setelah commit)`.
+- **Commit hasil:** `0f4a8ae` (fitur dan laporan); pembaruan SHA ini dicatat pada commit lanjutan di branch yang sama.
 
 ## 1. Kondisi awal
 
