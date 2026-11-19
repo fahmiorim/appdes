@@ -15,6 +15,7 @@ import { sanitasiHtml, teksPolos } from "@/lib/sanitize";
 
 import styles from "../berita.module.css";
 import { PublicSiteFooter, PublicSiteHeader } from "../../public-site-layout";
+import { KomentarBerita } from "./komentar-berita";
 
 export const dynamic = "force-dynamic";
 
@@ -104,7 +105,7 @@ export default async function DetailBeritaPage({params}:Props){
             </Link>)}</div>:<p className={styles.emptySmall}>Belum ada berita terkait.</p>}
           </section>
 
-          {berita.headline||berita.isi?<section className={styles.commentPanel}><h2>▢　Tinggalkan Komentar</h2><p>Fitur komentar publik mengikuti pengaturan komentar berita dari pengelola desa.</p><span className={styles.commentNotice}>Komentar untuk berita ini belum tersedia pada halaman publik.</span></section>:null}
+          <KomentarBerita slug={berita.slug} enabled={berita.bolehKomentar}/>
         </div>
 
         <aside className={styles.detailSidebar}>
