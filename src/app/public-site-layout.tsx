@@ -52,7 +52,7 @@ const navigation = [
       { href: "/berita", label: "Berita" },
       { href: "/pengumuman", label: "Pengumuman" },
       { href: "/agenda", label: "Agenda Kegiatan" },
-      { href: "/statistik", label: "Statistik Desa" },
+      { href: "/statistik", label: "Statistik Desa" },\n      { href: "/transparansi/apbdes", label: "APBDes & Transparansi Anggaran" },
     ],
   },
   { href: "/galeri", label: "Galeri" },
