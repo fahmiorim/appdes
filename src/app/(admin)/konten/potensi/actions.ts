@@ -1,13 +1,8 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
-import { db } from "@/db";
-import { potensiDesa, potensiIndikator } from "@/db/schema";
-import { resolveVillageId } from "@/features/desa/application/resolve-village";
-import { RESOURCES } from "@/features/rbac/domain/resources";
-import { requirePermission } from "@/lib/dal";
+import { hapusPotensiAdmin, simpanPotensiAdmin } from "@/features/publik/application/konten-admin";
 
 const categories = new Set([
   "pertanian",
@@ -45,10 +40,6 @@ function metrics(raw: string) {
     })
     .filter((item) => item.label && item.nilai);
 }
-async function scope() {
-  const user = await requirePermission(RESOURCES.profilDesa, "update");
-  return resolveVillageId(user);
-}
 function refresh() {
   revalidatePath("/konten/potensi");
   revalidatePath("/potensi");
@@ -56,7 +47,6 @@ function refresh() {
 }
 
 export async function simpanPotensi(form: FormData) {
-  const villageId = await scope();
   const id = Number(value(form, "id") || 0);
   const kategori = value(form, "kategori");
   const judul = value(form, "judul").slice(0, 160);
@@ -71,49 +61,26 @@ export async function simpanPotensi(form: FormData) {
   const indikator = metrics(value(form, "indikator"));
   if (!categories.has(kategori) || !judul || !slug)
     throw new Error("Kategori, judul, dan slug wajib diisi dengan benar.");
-  if (id > 0) {
-    await db
-      .update(potensiDesa)
-      .set({ kategori, judul, slug, ringkasan, deskripsi, gambar, lokasi, kontak, unggulan, aktif })
-      .where(and(eq(potensiDesa.id, id), eq(potensiDesa.villageId, villageId)));
-    await db
-      .delete(potensiIndikator)
-      .where(and(eq(potensiIndikator.villageId, villageId), eq(potensiIndikator.potensiId, id)));
-    if (indikator.length)
-      await db
-        .insert(potensiIndikator)
-        .values(indikator.map((item) => ({ ...item, villageId, potensiId: id })));
-  } else {
-    const [created] = await db
-      .insert(potensiDesa)
-      .values({
-        villageId,
-        kategori,
-        judul,
-        slug,
-        ringkasan,
-        deskripsi,
-        gambar,
-        lokasi,
-        kontak,
-        unggulan,
-        aktif,
-      })
-      .$returningId();
-    if (created?.id && indikator.length)
-      await db
-        .insert(potensiIndikator)
-        .values(indikator.map((item) => ({ ...item, villageId, potensiId: created.id })));
-  }
+  await simpanPotensiAdmin({
+    id,
+    kategori,
+    judul,
+    slug,
+    ringkasan,
+    deskripsi,
+    gambar,
+    lokasi,
+    kontak,
+    unggulan,
+    aktif,
+    indikator,
+  });
   refresh();
 }
 
 export async function hapusPotensi(form: FormData) {
-  const villageId = await scope();
   const id = Number(value(form, "id"));
   if (!Number.isSafeInteger(id) || id < 1) throw new Error("ID potensi tidak valid.");
-  await db
-    .delete(potensiDesa)
-    .where(and(eq(potensiDesa.id, id), eq(potensiDesa.villageId, villageId)));
+  await hapusPotensiAdmin(id);
   refresh();
 }

@@ -1,34 +1,16 @@
-import { desc, eq } from "drizzle-orm";
 import type { Metadata } from "next";
 
-import { db } from "@/db";
-import { galeriVideo } from "@/db/schema";
-import { resolveVillageId } from "@/features/desa/application/resolve-village";
-import { GALERI_RESOURCE } from "@/features/konten/domain/galeri";
-import { listGaleriAdminData } from "@/features/publik/application/konten-admin";
-import { requirePermission } from "@/lib/dal";
+import {
+  listGaleriAdminData,
+  listVideoGaleriAdminData,
+} from "@/features/publik/application/konten-admin";
 
 import { hapusVideoGaleri, simpanMetadataAlbum, tambahVideoGaleri } from "./actions";
 
 export const metadata: Metadata = { title: "Galeri Desa" };
 
 export default async function GaleriAdminPage() {
-  const [rows, user] = await Promise.all([
-    listGaleriAdminData(),
-    requirePermission(GALERI_RESOURCE, "read"),
-  ]);
-  const villageId = await resolveVillageId(user);
-  const videos = await db
-    .select({
-      id: galeriVideo.id,
-      judul: galeriVideo.judul,
-      url: galeriVideo.url,
-      provider: galeriVideo.provider,
-      publishedAt: galeriVideo.publishedAt,
-    })
-    .from(galeriVideo)
-    .where(eq(galeriVideo.villageId, villageId))
-    .orderBy(desc(galeriVideo.publishedAt), desc(galeriVideo.id));
+  const [rows, videos] = await Promise.all([listGaleriAdminData(), listVideoGaleriAdminData()]);
   const totalFoto = rows.reduce((jumlah, row) => jumlah + row.jumlahFoto, 0);
 
   return (

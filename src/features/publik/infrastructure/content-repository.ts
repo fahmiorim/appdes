@@ -981,3 +981,147 @@ export async function listPotensiDesa(
     indikator: byPotensi.get(row.id) ?? [],
   }));
 }
+
+/* ------------------------------------------------------- kelola galeri admin */
+
+export interface VideoGaleriAdmin {
+  id: number;
+  judul: string;
+  url: string;
+  provider: string;
+  publishedAt: Date | null;
+}
+
+export async function listVideoGaleriAdmin(villageId: number): Promise<VideoGaleriAdmin[]> {
+  return db
+    .select({
+      id: galeriVideo.id,
+      judul: galeriVideo.judul,
+      url: galeriVideo.url,
+      provider: galeriVideo.provider,
+      publishedAt: galeriVideo.publishedAt,
+    })
+    .from(galeriVideo)
+    .where(eq(galeriVideo.villageId, villageId))
+    .orderBy(desc(galeriVideo.publishedAt), desc(galeriVideo.id));
+}
+
+export async function simpanMetadataAlbumAdmin(
+  villageId: number,
+  albumId: number,
+  kategori: string | null,
+  publishedAt: Date | null,
+): Promise<void> {
+  await db
+    .update(galeriAlbum)
+    .set({ kategori, publishedAt })
+    .where(and(eq(galeriAlbum.id, albumId), eq(galeriAlbum.villageId, villageId)));
+}
+
+export async function tambahVideoGaleriAdmin(
+  villageId: number,
+  data: {
+    judul: string;
+    keterangan: string | null;
+    url: string;
+    provider: "youtube" | "vimeo";
+    publishedAt: Date;
+  },
+): Promise<void> {
+  await db.insert(galeriVideo).values({
+    villageId,
+    judul: data.judul,
+    keterangan: data.keterangan,
+    url: data.url,
+    provider: data.provider,
+    aktif: true,
+    publishedAt: data.publishedAt,
+  });
+}
+
+export async function hapusVideoGaleriAdmin(villageId: number, videoId: number): Promise<void> {
+  await db
+    .delete(galeriVideo)
+    .where(and(eq(galeriVideo.id, videoId), eq(galeriVideo.villageId, villageId)));
+}
+
+/* ------------------------------------------------------ kelola potensi admin */
+
+export interface PotensiAdminInput {
+  id: number;
+  kategori: string;
+  judul: string;
+  slug: string;
+  ringkasan: string | null;
+  deskripsi: string | null;
+  gambar: string | null;
+  lokasi: string | null;
+  kontak: string | null;
+  unggulan: boolean;
+  aktif: boolean;
+  indikator: { label: string; nilai: string; urut: number }[];
+}
+
+export async function simpanPotensiAdmin(
+  villageId: number,
+  data: PotensiAdminInput,
+): Promise<void> {
+  await db.transaction(async (tx) => {
+    if (data.id > 0) {
+      await tx
+        .update(potensiDesa)
+        .set({
+          kategori: data.kategori,
+          judul: data.judul,
+          slug: data.slug,
+          ringkasan: data.ringkasan,
+          deskripsi: data.deskripsi,
+          gambar: data.gambar,
+          lokasi: data.lokasi,
+          kontak: data.kontak,
+          unggulan: data.unggulan,
+          aktif: data.aktif,
+        })
+        .where(and(eq(potensiDesa.id, data.id), eq(potensiDesa.villageId, villageId)));
+      await tx
+        .delete(potensiIndikator)
+        .where(
+          and(eq(potensiIndikator.villageId, villageId), eq(potensiIndikator.potensiId, data.id)),
+        );
+      if (data.indikator.length) {
+        await tx
+          .insert(potensiIndikator)
+          .values(data.indikator.map((item) => ({ ...item, villageId, potensiId: data.id })));
+      }
+      return;
+    }
+
+    const [created] = await tx
+      .insert(potensiDesa)
+      .values({
+        villageId,
+        kategori: data.kategori,
+        judul: data.judul,
+        slug: data.slug,
+        ringkasan: data.ringkasan,
+        deskripsi: data.deskripsi,
+        gambar: data.gambar,
+        lokasi: data.lokasi,
+        kontak: data.kontak,
+        unggulan: data.unggulan,
+        aktif: data.aktif,
+      })
+      .$returningId();
+    if (created?.id && data.indikator.length) {
+      await tx
+        .insert(potensiIndikator)
+        .values(data.indikator.map((item) => ({ ...item, villageId, potensiId: created.id })));
+    }
+  });
+}
+
+export async function hapusPotensiAdmin(villageId: number, id: number): Promise<void> {
+  await db
+    .delete(potensiDesa)
+    .where(and(eq(potensiDesa.id, id), eq(potensiDesa.villageId, villageId)));
+}
