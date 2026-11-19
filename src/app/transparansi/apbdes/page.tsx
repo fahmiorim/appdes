@@ -15,7 +15,6 @@ export const dynamic = "force-dynamic";
 type Props = { searchParams: Promise<{ tahun?: string }> };
 const palette = ["#1684f5", "#b64bf0", "#16b84b", "#f5a400", "#ed39a8"];
 
-function angka(value: number) { return new Intl.NumberFormat("id-ID").format(value); }
 function persen(value: number) { return value.toLocaleString("id-ID", { maximumFractionDigits: 2 }) + "%"; }
 function locationLabel(desa: { namaKecamatan: string | null; namaKabupaten: string | null; namaPropinsi: string | null }) {
   return [desa.namaKecamatan, desa.namaKabupaten, desa.namaPropinsi].filter(Boolean).join(", ");
@@ -48,7 +47,8 @@ export default async function ApbdesPublikPage({ searchParams }: Props) {
   const totalBelanja = belanja?.anggaran ?? "0";
   const totalPembiayaan = pembiayaan?.anggaran ?? "0";
   const realisasiBelanja = belanja?.realisasi ?? "0";
-  const sisaBelanja = toMinor(totalBelanja) - toMinor(realisasiBelanja);\n  const sisaBelanjaTampil = formatMoney(sisaBelanja > 0n ? sisaBelanja : 0n);
+  const sisaBelanja = toMinor(totalBelanja) - toMinor(realisasiBelanja);
+  const sisaBelanjaTampil = formatMoney(sisaBelanja > 0n ? sisaBelanja : 0n);
   const persenRealisasi = Number(totalBelanja) > 0 ? Math.min(100, Number(realisasiBelanja) / Number(totalBelanja) * 100) : 0;
   const komposisiTotal = laporan.bidang.reduce((sum, row) => sum + Number(row.anggaran), 0);
   let cursor = 0;
