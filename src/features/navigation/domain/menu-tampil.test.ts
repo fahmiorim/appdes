@@ -29,6 +29,11 @@ describe("ruteTersedia", () => {
     expect(ruteTersedia("/beranda?tab=ringkasan")).toBe(true);
     expect(ruteTersedia("/penduduk")).toBe(true);
     expect(ruteTersedia("/konten/berita")).toBe(true);
+    expect(ruteTersedia("/website")).toBe(true);
+    expect(ruteTersedia("/website/pengaturan")).toBe(true);
+    expect(ruteTersedia("/website/halaman")).toBe(true);
+    expect(ruteTersedia("/website/konten")).toBe(true);
+    expect(ruteTersedia("/website/dokumen")).toBe(true);
     expect(ruteTersedia("/pengaturan/pengguna")).toBe(true);
   });
 
