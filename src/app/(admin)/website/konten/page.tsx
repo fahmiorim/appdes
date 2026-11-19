@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { getWebsiteContentData } from "@/features/publik/application/website-admin";\nimport { tambahAlbumWebsiteAction, unggahFotoWebsiteAction } from "../actions";
+import { getWebsiteContentData } from "@/features/publik/application/website-admin";
+import { tambahAlbumWebsiteAction, unggahFotoWebsiteAction } from "../actions";
 import { WebsiteAdminShell, WebsiteMetric, WebsiteSection } from "../website-admin-shell";
 
 export const metadata: Metadata = { title: "Konten & Publikasi Website Desa" };
