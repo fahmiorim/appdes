@@ -1,7 +1,7 @@
 # FlexiDesa Design System
 
-> Status: **Draft v0.5 — 89 mockup telah diinventarisasi; 42 mockup diaudit pada 18 November 2026, seluruh 38 layar Super Admin dan 10 layar Admin Desa ditinjau pada 19 November 2026, token awal diturunkan dari bukti visual, dan arah visual Super Admin ditetapkan pada 19 November 2026.**
-> Sumber referensi: 89 mockup di `docs/mockups/public/`, `docs/mockups/account/`, `docs/mockups/support/`, `docs/mockups/platform/`, dan `docs/mockups/village/`.
+> Status: **Draft v0.5 — 126 mockup telah diinventarisasi; 42 mockup diaudit pada 18 November 2026, seluruh 39 layar Super Admin dan 46 layar Admin Desa ditinjau pada 19 November 2026, token awal diturunkan dari bukti visual, dan arah visual Super Admin ditetapkan pada 19 November 2026.**
+> Sumber referensi: 126 mockup di `docs/mockups/public/`, `docs/mockups/account/`, `docs/mockups/support/`, `docs/mockups/platform/`, dan `docs/mockups/village/`.
 > Audit terbaru tidak mengubah status token menjadi stable. Mockup adalah arah visual, bukan bukti implementasi atau acceptance data.
 
 ## 1. Tujuan dan aturan sumber kebenaran
@@ -231,15 +231,15 @@ Sebelum mengubah status dokumen menjadi stable:
 
 | Area | Status |
 |---|---|
-| Inventaris mockup | 89 file terdaftar: 21 publik, 11 akun, 7 pendukung, 40 platform (2 landing/login + 38 konsol Super Admin), dan 10 Admin Desa |
+| Inventaris mockup | 126 file terdaftar: 21 publik, 11 akun, 7 pendukung, 41 platform (2 landing/login + 39 konsol Super Admin), dan 46 Admin Desa |
 | Audit struktur repository | Baseline 18 November 2026 pada `main`: `/masuk`, `/beranda`, dan tujuh halaman `/super-admin/*`. Login Admin Desa terpisah ditambahkan pada PR #155; bukan UI pengelolaan modul SID |
-| Audit visual referensi | 42 mockup diaudit pada 18 November 2026. Pada 19 November, seluruh 38 layar Super Admin ditinjau lewat contact sheet (layar utama pada resolusi 1400 px) dan 10 layar Admin Desa ditinjau. Audit ini tidak mengukur pixel, kontras final, atau viewport implementasi |
+| Audit visual referensi | 42 mockup diaudit pada 18 November 2026. Pada 19 November, 39 layar Super Admin ditinjau lewat contact sheet (layar utama pada resolusi 1400 px) dan 46 layar Admin Desa ditinjau. Audit ini tidak mengukur pixel, kontras final, atau viewport implementasi |
 | Prinsip dan semantik token | Draft; dapat dipakai sebagai kontrak semantik |
 | Baseline warna | Draft v0.3 diturunkan dari sampel visual; perlu contrast check dan browser comparison |
 | Komponen bersama | Spesifikasi awal; perlu visual review dan konsolidasi |
-| Admin Desa | 10 referensi di `docs/mockups/village/`; selisih dengan implementasi dicatat di [review mockup Admin Desa](../reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md) |
-| Super Admin | 38 referensi di `docs/mockups/platform/super-admin/`; baru 7 route konsol dengan kedalaman berbeda. Pemetaan dan 23 area tanpa model data ada di [audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md) |
-| Arah visual Super Admin | Ditetapkan 19 November 2026 mengikuti 38 mockup: sidebar indigo-ungu, aksi ungu, topbar breadcrumb + pencarian, header halaman, dan KPI bertone. Shell dan tujuh halaman konsol sudah memakainya; 31 layar lain belum dibangun. Rincian di [spesifikasi Admin dan Super Admin](./ADMIN-PLATFORM-DESIGN.md) |
+| Admin Desa | 46 referensi di `docs/mockups/village/`; 11 area fitur, dengan backend yang jauh lebih siap daripada UI. Pemetaan modul dan status backend ada di [audit kesiapan backend mockup baru](../reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md) |
+| Super Admin | 39 referensi di `docs/mockups/platform/super-admin/`; baru 7 route konsol dengan kedalaman berbeda. Pemetaan dan 23 area tanpa model data ada di [audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md); layar Laporan & Export baru belum punya model data |
+| Arah visual Super Admin | Ditetapkan 19 November 2026 mengikuti 39 mockup: sidebar indigo-ungu, aksi ungu, topbar breadcrumb + pencarian, header halaman, dan KPI bertone. Shell dan tujuh halaman konsol sudah memakainya; 32 layar lain belum dibangun. Rincian di [spesifikasi Admin dan Super Admin](./ADMIN-PLATFORM-DESIGN.md) |
 | Responsive rules final | Belum diverifikasi pada viewport desktop/mobile |
 | Visual regression baseline | Belum dibuat; perlu runtime browser dan fixture sintetis |
 
@@ -251,10 +251,10 @@ Sebelum mengubah status dokumen menjadi stable:
 
 ### 10.2 Gate sebelum status Stable
 
-1. Lanjutkan audit 89 PNG; catat ukuran, viewport, warna, tipografi, grid, radius, shadow, ikon, dan elemen berulang. Jangan mengklaim seluruh aset sudah pixel-perfect hanya karena contact sheet sudah dilihat.
+1. Lanjutkan audit 126 PNG; catat ukuran, viewport, warna, tipografi, grid, radius, shadow, ikon, dan elemen berulang. Jangan mengklaim seluruh aset sudah pixel-perfect hanya karena contact sheet sudah dilihat.
 2. Audit minimal tiga referensi representatif per kelompok serta seluruh pola unik.
 3. Revisi token hanya berdasarkan hasil inspeksi; sertakan nilai dan bukti referensi.
 4. Bandingkan `/masuk` dan `/masuk-admin` dengan screenshot login pada ukuran viewport yang sama.
-5. Selaraskan spesifikasi visual Admin Desa dengan sepuluh referensi di `docs/mockups/village/`, lalu putuskan arah visual Super Admin berdasarkan 38 referensi tanpa menyalin angka contoh dari gambar.
+5. Selaraskan spesifikasi visual Admin Desa dengan 46 referensi di `docs/mockups/village/`, lalu putuskan arah visual Super Admin berdasarkan 39 referensi tanpa menyalin angka contoh dari gambar.
 6. Jalankan aplikasi pada browser, ambil screenshot desktop dan mobile, lalu lakukan visual comparison.
 7. Perbarui matriks dengan status `implemented`, `visually reviewed`, atau `accepted` hanya jika bukti tersedia.

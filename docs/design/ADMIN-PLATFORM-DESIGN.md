@@ -1,8 +1,8 @@
 # Spesifikasi Visual Admin Desa dan Super Admin
 
-> Status: **Product design v0.1 untuk Super Admin; Admin Desa dan Super Admin kini memiliki acuan screenshot.** Sepuluh layar Admin Desa ditambahkan 19 November 2026 di `docs/mockups/village/` dan ditinjau di [review mockup Admin Desa](../reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md). Tiga puluh delapan layar Super Admin berada di `docs/mockups/platform/super-admin/` dan dipetakan di [audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md).
+> Status: **Product design v0.1 untuk Super Admin; Admin Desa dan Super Admin kini memiliki acuan screenshot.** Empat puluh enam layar Admin Desa tersedia di `docs/mockups/village/` dan dipetakan di [audit kesiapan backend mockup baru](../reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md). Tiga puluh sembilan layar Super Admin berada di `docs/mockups/platform/super-admin/` dan dipetakan di [audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md).
 >
-> Catatan: §2 memakai mockup Admin Desa sebagai acuan. §3 sudah diselaraskan dengan 38 mockup Super Admin dan diimplementasikan pada 19 November 2026 (shell, header halaman, KPI bertone, tab tenant, dan dashboard). Angka contoh pada mockup tidak dipakai sebagai fixture; KPI dan tabel selalu membaca data tenant nyata.
+> Catatan: §2 memakai mockup Admin Desa sebagai acuan. §3 sudah diselaraskan dengan 39 mockup Super Admin dan diimplementasikan pada 19 November 2026 (shell, header halaman, KPI bertone, tab tenant, dan dashboard). Angka contoh pada mockup tidak dipakai sebagai fixture; KPI dan tabel selalu membaca data tenant nyata.
 
 ## 1. Prinsip bersama
 
@@ -127,7 +127,7 @@ Menu admin desa dibangun dari tabel `modules` yang dibatasi tenant, sedangkan ak
 - Konsol Super Admin sudah memiliki tujuh halaman (Ringkasan, Tenant, Domain, Pengguna platform, Audit trail, Template, Pengaturan) dengan menu sidebar bergrup, breadcrumb, header halaman, dan KPI bertone yang sama. Mockup lain (paket, monitoring, keamanan, laporan, peta sebaran, ekspor) belum memiliki model data/halaman. Halaman Template dan Pengaturan masih baca-saja karena sumbernya artefak kode dan environment; MFA, undangan anggota tim, monitor, backup, feature flag per tenant, dan langganan belum ada.
 - Audit trail platform dapat dicari, difilter per desa dan jenis peristiwa, menampilkan detail perubahan, serta diekspor ke CSV (maksimal 5.000 baris per unduhan). Retensi dan arsip audit terpusat belum ada.
 - Pengelolaan pengguna platform hanya menjangkau akun `village_id IS NULL`; akun administrator desa tetap dikelola dari konsol tenant masing-masing.
-- Admin Desa memiliki sepuluh screenshot acuan di `docs/mockups/village/`, dan Super Admin memiliki 38 screenshot di `docs/mockups/platform/super-admin/`. Semua masih satu varian desktop 1536 × 1024; belum ada varian mobile maupun state kosong/loading/error. Setiap penyimpangan/keputusan produk harus direview dan dicatat sebelum acceptance.
+- Admin Desa memiliki 46 screenshot acuan dalam 11 area di `docs/mockups/village/`, dan Super Admin memiliki 39 screenshot di `docs/mockups/platform/super-admin/`. Semua masih satu varian desktop 1536 × 1024; belum ada varian mobile maupun state kosong/loading/error. Setiap penyimpangan/keputusan produk harus direview dan dicatat sebelum acceptance.
 
 ## 5. Acceptance criteria
 

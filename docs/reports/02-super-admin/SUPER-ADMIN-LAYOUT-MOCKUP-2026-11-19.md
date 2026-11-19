@@ -1,6 +1,8 @@
 # Layout Super Admin Mengikuti Mockup
 
 - **Task:** menyelaraskan layout konsol Super Admin dengan 38 mockup di `docs/mockups/platform/super-admin/` — sidebar, topbar, header halaman, KPI, dashboard, dan konsol tenant.
+
+> Catatan 19 November 2026: setelah laporan ini dibuat, mockup Super Admin bertambah menjadi 39 layar. Layar Laporan & Export baru dan kesiapan backend-nya dicatat di [audit kesiapan backend mockup baru](../05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md).
 - **Tanggal:** 19 November 2026.
 - **Branch:** `task/super-admin-layout-mockup`.
 - **Base commit:** `92e1a90` (`origin/main`).
