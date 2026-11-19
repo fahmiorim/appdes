@@ -695,3 +695,126 @@
     font-size: 9px;
   }
 }
+
+/* Timeline mengikuti susunan kronologi pada mockup Sejarah Desa. */
+.timelineList {
+  position: relative;
+  display: grid;
+  gap: 0;
+  margin: 2px 0 0;
+  padding: 0 0 0 15px;
+  list-style: none;
+}
+.timelineList:before {
+  position: absolute;
+  top: 15px;
+  bottom: 16px;
+  left: 23px;
+  width: 2px;
+  background: linear-gradient(#8b35f4, #c6b4ff);
+  content: "";
+}
+.timelineItem {
+  position: relative;
+  display: grid;
+  grid-template-columns: 12px 82px minmax(0, 1fr) 54px;
+  align-items: center;
+  gap: 10px;
+  min-height: 61px;
+  padding: 5px 3px 5px 0;
+  border-bottom: 1px solid #e6eafa;
+}
+.timelineItem:last-child {
+  border-bottom: 0;
+}
+.timelineNode {
+  position: relative;
+  z-index: 1;
+  width: 17px;
+  height: 17px;
+  border: 3px solid #812cf1;
+  border-radius: 50%;
+  background: #fff;
+}
+.timelineYear {
+  display: grid;
+  place-items: center;
+  min-height: 31px;
+  padding: 4px 7px;
+  border-radius: 9px;
+  background: #eee4ff;
+  color: #6719dc;
+  font-size: 16px;
+  font-weight: 950;
+  font-variant-numeric: tabular-nums;
+}
+.timelineDescription {
+  min-width: 0;
+}
+.timelineDescription strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #101943;
+  font-size: 12px;
+  font-weight: 950;
+}
+.timelineDescription p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: #1c2549;
+  font-size: 10px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.timelineIcon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 45px;
+  border-radius: 11px;
+  background: #e3efff;
+  color: #0871ed;
+  font-size: 27px;
+  font-weight: 800;
+}
+.timelineItem:nth-child(3n + 2) .timelineIcon {
+  background: #e0f8e9;
+  color: #11a64e;
+}
+.timelineItem:nth-child(3n) .timelineIcon {
+  background: #fff0d2;
+  color: #ed9200;
+}
+.storyCard h2 > span,
+.timelineCard h2 > span,
+.galleryHeading h2 > span {
+  font-family: Arial, sans-serif;
+  font-weight: 500;
+}
+@media (max-width: 640px) {
+  .timelineList {
+    padding-left: 7px;
+  }
+  .timelineList:before {
+    left: 15px;
+  }
+  .timelineItem {
+    grid-template-columns: 12px 62px minmax(0, 1fr);
+    gap: 8px;
+    min-height: 58px;
+  }
+  .timelineYear {
+    font-size: 13px;
+  }
+  .timelineDescription strong {
+    font-size: 10px;
+  }
+  .timelineDescription p {
+    font-size: 9px;
+  }
+  .timelineIcon {
+    display: none;
+  }
+}
