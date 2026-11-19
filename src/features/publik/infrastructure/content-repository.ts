@@ -138,6 +138,7 @@ export async function getBeritaBySlug(
       terbitPada: berita.terbitPada,
       createdAt: berita.createdAt,
       kategori: beritaKategori.nama,
+      kategoriSlug: beritaKategori.slug,
       headline: berita.headline,
       bolehKomentar: berita.bolehKomentar,
     })
