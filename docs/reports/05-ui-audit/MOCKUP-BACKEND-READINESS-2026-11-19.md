@@ -4,6 +4,7 @@
 - **Tanggal:** 19 November 2026.
 - **Branch:** `task/mockup-catalog-backend-audit`.
 - **Base commit:** `0ffeda6` (bertumpuk pada branch `task/super-admin-layout-mockup` yang belum di-merge, karena perubahan dokumen desain berada di branch tersebut).
+- **Commit hasil:** `ba1bc18` (dokumen; pembaruan SHA ini dicatat pada commit lanjutan di branch yang sama).
 - **Jenis task:** audit dan dokumentasi; tidak mengubah source code, schema, migration, atau data.
 
 ## 1. Ringkasan eksekutif
