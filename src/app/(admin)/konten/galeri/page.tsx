@@ -19,11 +19,9 @@ export default async function GaleriAdminPage() {
     judul: galeriVideo.judul,
     url: galeriVideo.url,
     provider: galeriVideo.provider,
-    aktif: galeriVideo.aktif,
     publishedAt: galeriVideo.publishedAt,
   }).from(galeriVideo).where(eq(galeriVideo.villageId, villageId)).orderBy(desc(galeriVideo.publishedAt), desc(galeriVideo.id));
   const totalFoto = rows.reduce((jumlah, row) => jumlah + row.jumlahFoto, 0);
-  const categories = [...new Set(rows.map(row => row.kategori).filter((value): value is string => Boolean(value)))];
 
   return <div className="modul-page">
     <div className="page-heading"><div><span className="eyebrow">Publikasi</span><h1>Galeri Desa</h1><p>{rows.length.toLocaleString("id-ID")} album · {totalFoto.toLocaleString("id-ID")} foto · {videos.length} video.</p></div></div>
