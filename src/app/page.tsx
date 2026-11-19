@@ -67,7 +67,7 @@ export default async function PublicHomePage() {
     daftarDokumenPublik(desa.id, "pengumuman"),
   ]);
 
-  const galleryAlbum = albums[0];
+  const galleryAlbum = albums.find((album) => album.jumlahFoto > 0) ?? null;
   const galleryPhotos = galleryAlbum ? await daftarFotoAlbum(desa.id, galleryAlbum.id) : [];
   const location = locationLabel(desa);
   const leader = perangkat.find((item) => (item.jabatan ?? "").toLocaleLowerCase("id-ID").includes("kepala desa"));
@@ -180,7 +180,7 @@ export default async function PublicHomePage() {
         </section>
 
         <section className={styles.serviceBanner}>
-          <div className={styles.bannerIllustration}><span>▤</span><b>✓</b></div>
+          <div className={styles.bannerIllustration}><Image src="/images/home-service-illustration.svg" alt="" width={100} height={72} /></div>
           <div className={styles.bannerCopy}><strong>Urus Administrasi Desa<br/>Kini Lebih Mudah & Cepat</strong><small>Ajukan berbagai surat secara online, pantau prosesnya, dan ambil di kantor desa tanpa antre.</small></div>
           <div className={styles.bannerSteps}><span>▤<small>Ajukan Permohonan</small></span><b>→</b><span>⌛<small>Proses & Verifikasi</small></span><b>→</b><span>♧<small>Dapatkan Notifikasi</small></span><b>→</b><span>✓<small>Ambil Dokumen</small></span></div>
           <Link href="/layanan/surat">Mulai Sekarang →</Link>
