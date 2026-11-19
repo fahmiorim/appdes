@@ -1,14 +1,13 @@
 import "server-only";
 
 import {
+  countBerita,
   getAlbumBySlug,
   getBeritaBySlug,
   getHalamanBySlug,
   getProfilDesa,
   listAlbumGaleri,
   listBerita,
-  listVideoGaleriPublik,
-  countBerita,
   listDokumenPublik,
   listFotoAlbum,
   listKategoriBerita,
@@ -16,6 +15,7 @@ import {
   listSliderBeranda,
   listSlugBerita,
   listSlugHalaman,
+  listVideoGaleriPublik,
   listWidget,
   tambahHitBerita,
 } from "@/features/publik/infrastructure/content-repository";

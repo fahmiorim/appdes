@@ -1,6 +1,20 @@
 import "server-only";
 
-import { and, asc, count, desc, eq, inArray, isNotNull, isNull, like, lte, ne, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  like,
+  lte,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -382,6 +396,8 @@ export interface PerangkatRingkas {
   nip: string | null;
   jenisKelamin: string | null;
   foto: string | null;
+  tempatLahir: string | null;
+  tanggalLahir: string | null;
   urut: number;
   periode: string | null;
 }
@@ -397,6 +413,8 @@ export async function listPerangkatDesa(villageId: number): Promise<PerangkatRin
       nip: perangkatDesa.nip,
       jenisKelamin: perangkatDesa.jenisKelamin,
       foto: perangkatDesa.foto,
+      tempatLahir: perangkatDesa.tempatLahir,
+      tanggalLahir: perangkatDesa.tanggalLahir,
       urut: perangkatDesa.urut,
       periode: perangkatDesa.periode,
     })
@@ -858,7 +876,6 @@ export async function listSlugBerita(villageId: number): Promise<string[]> {
   return rows.map((row) => row.slug);
 }
 
-
 export interface VideoGaleriPublik {
   id: number;
   judul: string;
@@ -869,17 +886,28 @@ export interface VideoGaleriPublik {
   publishedAt: Date | null;
 }
 
-export async function listVideoGaleriPublik(villageId: number, limit = 8): Promise<VideoGaleriPublik[]> {
-  return db.select({
-    id: galeriVideo.id,
-    judul: galeriVideo.judul,
-    keterangan: galeriVideo.keterangan,
-    url: galeriVideo.url,
-    provider: galeriVideo.provider,
-    thumbnail: galeriVideo.thumbnail,
-    publishedAt: galeriVideo.publishedAt,
-  }).from(galeriVideo)
-    .where(and(eq(galeriVideo.villageId, villageId), eq(galeriVideo.aktif, true), or(isNull(galeriVideo.publishedAt), lte(galeriVideo.publishedAt, new Date()))))
+export async function listVideoGaleriPublik(
+  villageId: number,
+  limit = 8,
+): Promise<VideoGaleriPublik[]> {
+  return db
+    .select({
+      id: galeriVideo.id,
+      judul: galeriVideo.judul,
+      keterangan: galeriVideo.keterangan,
+      url: galeriVideo.url,
+      provider: galeriVideo.provider,
+      thumbnail: galeriVideo.thumbnail,
+      publishedAt: galeriVideo.publishedAt,
+    })
+    .from(galeriVideo)
+    .where(
+      and(
+        eq(galeriVideo.villageId, villageId),
+        eq(galeriVideo.aktif, true),
+        or(isNull(galeriVideo.publishedAt), lte(galeriVideo.publishedAt, new Date())),
+      ),
+    )
     .orderBy(desc(galeriVideo.publishedAt), desc(galeriVideo.id))
     .limit(limit);
 }
