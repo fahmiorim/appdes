@@ -444,3 +444,30 @@ export async function hapusFotoGaleriWebsiteAction(fd: FormData): Promise<void> 
   await hapusMedia(row.gambar);
   revalidatePath("/website/konten"); redirect("/website/konten?deleted=1#galeri");
 }
+
+
+export async function ubahDokumenWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-dokumen", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  const nama = text(fd, "nama");
+  const slug = slugify(text(fd, "slug") || nama);
+  const kategori = text(fd, "kategori") || "informasi_publik";
+  if (!id || !nama || nama.length > 200 || !slug || !["informasi_publik", "produk_hukum", "lainnya"].includes(kategori)) throw new Error("Data dokumen tidak valid.");
+  const [current] = await db.select({ berkas: dokumenPublik.berkas }).from(dokumenPublik).where(and(eq(dokumenPublik.villageId, villageId), eq(dokumenPublik.id, id))).limit(1);
+  if (!current) throw new Error("Dokumen tidak ditemukan.");
+  const [existing] = await db.select({ id: dokumenPublik.id }).from(dokumenPublik).where(and(eq(dokumenPublik.villageId, villageId), eq(dokumenPublik.slug, slug))).limit(1);
+  if (existing && existing.id !== id) throw new Error("Slug dokumen sudah digunakan.");
+  const file = fd.get("berkas");
+  let berkas = current.berkas;
+  if (file instanceof File && file.size > 0) berkas = await simpanBerkasMedia(villageId, { nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()) }, "dokumen", "berkas");
+  const tautan = text(fd, "tautan");
+  if (!berkas && !tautan) throw new Error("Dokumen harus memiliki berkas atau tautan.");
+  if (tautan) { let url: URL; try { url = new URL(tautan); } catch { throw new Error("Tautan dokumen tidak valid."); } if (!["http:", "https:"].includes(url.protocol)) throw new Error("Tautan dokumen harus HTTP atau HTTPS."); }
+  const tahunText = text(fd, "tahun");
+  const tahun = tahunText ? Number(tahunText) : null;
+  if (tahun !== null && (!Number.isInteger(tahun) || tahun < 1900 || tahun > 2200)) throw new Error("Tahun dokumen tidak valid.");
+  await db.update(dokumenPublik).set({ nama, slug, kategori, jenis: text(fd, "jenis") || null, nomor: text(fd, "nomor") || null, tahun, berkas, tautan: tautan || null, keterangan: text(fd, "keterangan") || null }).where(and(eq(dokumenPublik.villageId, villageId), eq(dokumenPublik.id, id)));
+  if (file instanceof File && file.size > 0 && current.berkas) await hapusMedia(current.berkas);
+  revalidatePath("/website/dokumen"); revalidatePath("/website"); redirect("/website/dokumen?saved=1");
+}
