@@ -12,7 +12,7 @@ export default async function StatistikPendudukPage({searchParams}:{searchParams
   const params=await searchParams;
   const jenis=typeof params.jenis==="string"?params.jenis:undefined;
   const laporan=await getLaporanPenduduk(jenis);
-  const pilihan=LAPORAN_PENDUDUK_OPTIONS.find((item)=>item.value===laporan.jenis)??LAPORAN_PENDUDUK_OPTIONS[0];
+  const pilihan=LAPORAN_PENDUDUK_OPTIONS.find((item)=>item.value===laporan.jenis)??LAPORAN_PENDUDUK_OPTIONS[0]!;
   const total=laporan.statistik.total.jumlah;
   return <div className="modul-page data-kependudukan-page">
     <DataKependudukanNav active="/statistik/penduduk"/>
