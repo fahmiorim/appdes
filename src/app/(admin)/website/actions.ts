@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { db } from "@/db";
-import { halamanStatis } from "@/db/schema";
+import { galeriAlbum, galeriFoto, halamanStatis } from "@/db/schema";
 import { updateIdentitas } from "@/features/desa/application/use-cases";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { desaFormSchema } from "@/features/desa/domain/desa";
@@ -175,4 +175,34 @@ export async function hapusDokumenWebsiteAction(fd: FormData): Promise<void> {
   await deleteDokumenPublik(villageId, id);
   revalidatePath("/website/dokumen");
   redirect("/website/dokumen?deleted=1");
+}
+
+export async function tambahAlbumWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const nama = text(fd, "namaAlbum");
+  const slug = slugify(text(fd, "slugAlbum") || nama);
+  if (!nama || nama.length > 150 || !slug) throw new Error("Nama dan slug album wajib diisi.");
+  const [existing] = await db.select({ id: galeriAlbum.id }).from(galeriAlbum)
+    .where(and(eq(galeriAlbum.villageId, villageId), eq(galeriAlbum.slug, slug))).limit(1);
+  if (existing) throw new Error("Slug album sudah digunakan.");
+  await db.insert(galeriAlbum).values({ villageId, nama, slug, keterangan: text(fd, "keteranganAlbum") || null, aktif: true, urut: 0 });
+  revalidatePath("/website/konten");
+  redirect("/website/konten?saved=1#galeri");
+}
+
+export async function unggahFotoWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const albumId = num(fd, "albumId");
+  if (!albumId) throw new Error("Pilih album galeri.");
+  const [album] = await db.select({ id: galeriAlbum.id }).from(galeriAlbum)
+    .where(and(eq(galeriAlbum.villageId, villageId), eq(galeriAlbum.id, albumId))).limit(1);
+  if (!album) throw new Error("Album tidak ditemukan pada desa ini.");
+  const file = fd.get("gambar");
+  if (!(file instanceof File) || file.size === 0) throw new Error("Pilih berkas gambar.");
+  const gambar = await simpanBerkasMedia(villageId, { nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()) }, "galeri", "gambar");
+  await db.insert(galeriFoto).values({ villageId, albumId, gambar, judul: text(fd, "judulFoto") || null, keterangan: text(fd, "keteranganFoto") || null, aktif: true, slider: false, urut: 0 });
+  revalidatePath("/website/konten");
+  redirect("/website/konten?saved=1#galeri");
 }
