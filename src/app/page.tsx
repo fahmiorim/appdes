@@ -15,6 +15,7 @@ import {
 } from "@/features/publik/application/konten-publik";
 
 import { PlatformLanding } from "./platform-landing";
+import { PublicSiteFooter, PublicSiteHeader } from "./public-site-layout";
 import styles from "./public-home.module.css";
 
 export const dynamic = "force-dynamic";
@@ -77,68 +78,7 @@ export default async function PublicHomePage() {
 
   return (
     <main className={styles.site}>
-      <div className={styles.topline}>
-        <div className={styles.container + " " + styles.toplineInner}>
-          <span>Website Resmi Pemerintah Desa</span>
-          <span className={styles.toplineLocation}>
-            {location || "Melayani dengan transparan dan terbuka"}
-          </span>
-        </div>
-      </div>
-
-      <header className={styles.header}>
-        <div className={styles.container + " " + styles.headerInner}>
-          <Link href="/" className={styles.brand} aria-label={`Beranda ${desa.namaDesa ?? "desa"}`}>
-            {desa.logo ? (
-              <Image
-                src={mediaUrl(desa.logo, desa.id) ?? "/images/logo.png"}
-                alt=""
-                width={48}
-                height={48}
-                className={styles.brandLogo}
-                unoptimized
-              />
-            ) : (
-              <span className={styles.brandMark} aria-hidden="true">
-                <svg viewBox="0 0 48 48" fill="none">
-                  <path
-                    d="M7 21.5 24 8l17 13.5v18H7v-18Z"
-                    stroke="currentColor"
-                    strokeWidth="2.8"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M17 39V25h14v14M12 19h24M20 16h8"
-                    stroke="currentColor"
-                    strokeWidth="2.8"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </span>
-            )}
-            <span className={styles.brandCopy}>
-              <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>
-                {desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}
-              </small>
-            </span>
-          </Link>
-
-          <nav className={styles.desktopNav} aria-label="Navigasi utama">
-            <Link className={styles.navActive} href="/">
-              Beranda
-            </Link>
-            <a href="#profil">Profil Desa</a>
-            <Link href="/berita">Berita</Link>
-            <a href="#agenda">Agenda</a>
-            <a href="#layanan">Layanan</a>
-          </nav>
-
-          <Link href="/masuk" className={styles.loginButton}>
-            Masuk <span aria-hidden="true">↗</span>
-          </Link>
-        </div>
-      </header>
+      <PublicSiteHeader desa={desa} location={location} logoUrl={mediaUrl(desa.logo, desa.id)} activePath="/" />
 
       <section className={styles.hero}>
         {heroImage ? (
@@ -409,41 +349,7 @@ export default async function PublicHomePage() {
         </div>
       </section>
 
-      <footer className={styles.footer}>
-        <div className={styles.container}>
-          <div className={styles.footerMain}>
-            <div className={styles.footerBrand}>
-              <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <p>
-                Portal informasi resmi untuk mewujudkan pelayanan publik desa yang terbuka, mudah,
-                dan terpercaya.
-              </p>
-            </div>
-            <div className={styles.footerContact}>
-              <span>ALAMAT KANTOR DESA</span>
-              <p>{desa.alamatKantor || location || "Informasi alamat belum tersedia."}</p>
-              {desa.telepon ? <a href={`tel:${desa.telepon}`}>{desa.telepon}</a> : null}
-              {desa.emailDesa ? <a href={`mailto:${desa.emailDesa}`}>{desa.emailDesa}</a> : null}
-            </div>
-            <div className={styles.footerLinks}>
-              <span>TAUTAN CEPAT</span>
-              <a href="#profil">Profil Desa</a>
-              <a href="#berita">Berita</a>
-              <a href="#agenda">Agenda</a>
-              <Link href="/masuk">Layanan Warga</Link>
-            </div>
-          </div>
-          <div className={styles.footerBottom}>
-            <span>
-              © {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. Seluruh hak cipta
-              dilindungi.
-            </span>
-            <span>
-              Didukung oleh <strong>FlexiDesa</strong>
-            </span>
-          </div>
-        </div>
-      </footer>
+      <PublicSiteFooter desa={desa} location={location} logoUrl={mediaUrl(desa.logo, desa.id)} />
     </main>
   );
 }
