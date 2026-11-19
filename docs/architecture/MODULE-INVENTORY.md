@@ -1,13 +1,13 @@
 # Inventaris Modul Appdes SID
 
 Dokumen ini adalah inventaris route, Server Action, repository, dan use case yang
-digenerate ulang dari tree `origin/main` commit `f5a6f42` (18 November 2026).
+digenerate ulang dari tree `origin/main` commit `58347a6` (19 November 2026).
 Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 
-- 36 halaman (`page.tsx`), 2 layout, dan 81 route handler.
-- 4 berkas berisi `"use server"` (Server Action).
-- 52 direktori fitur di `src/features`; 71 berkas `*-repository.ts` dan 89 berkas application/use case non-test.
-- 8 halaman admin: `/beranda` dan `/super-admin/*`.
+- 46 halaman (`page.tsx`), 2 layout, dan 82 route handler.
+- 6 berkas berisi `"use server"` (Server Action).
+- 52 direktori fitur di `src/features`; 72 berkas `*-repository.ts` dan 92 berkas application/use case non-test.
+- 17 halaman admin (termasuk `/beranda` dan `/super-admin/*`).
 
 > Metode: `git ls-tree -r --name-only origin/main`; hitungan `page.tsx`,
 > `route.ts`, `layout.tsx`, `src/features/*/application/*.ts` non-test, dan
@@ -59,10 +59,10 @@ Layout: `src/app/(admin)/layout.tsx`, `src/app/layout.tsx`.
 | penduduk | 7 | 8 |
 | pengaduan | 2 | 1 |
 | pengaturan | 1 | 1 |
-| pengguna | 1 | 1 |
+| pengguna | 2 | 1 |
 | pesan-warga | 0 | 1 |
 | plugin | 1 | 1 |
-| publik | 5 | 1 |
+| publik | 6 | 1 |
 | rate-limit | 1 | 1 |
 | rbac | 2 | 1 |
 | rumah-tangga | 1 | 1 |
@@ -72,7 +72,7 @@ Layout: `src/app/(admin)/layout.tsx`, `src/app/layout.tsx`.
 | survey | 1 | 1 |
 | umpan-balik | 0 | 0 |
 | warga | 1 | 1 |
-| wilayah | 1 | 1 |
+| wilayah | 2 | 2 |
 
 ## 2. Route dan route handler
 
@@ -107,6 +107,7 @@ webhook. Route handler Admin di bawah umumnya bukan UI pengelolaan.
 | `/api/publik/surat` | Route handler | API | `src/app/api/publik/surat/route.ts` |
 | `/api/publik/survei/[id]/respons` | Route handler | API | `src/app/api/publik/survei/[id]/respons/route.ts` |
 | `/api/webhooks/email` | Route handler | API | `src/app/api/webhooks/email/route.ts` |
+| `/api/wilayah` | Route handler | API | `src/app/api/wilayah/route.ts` |
 | `/bantuan/ekspor` | Route handler | Admin | `src/app/(admin)/bantuan/ekspor/route.ts` |
 | `/beranda` | Halaman | Admin | `src/app/(admin)/beranda/page.tsx` |
 | `/berita` | Halaman | Publik | `src/app/berita/page.tsx` |
@@ -139,6 +140,7 @@ webhook. Route handler Admin di bawah umumnya bukan UI pengelolaan.
 | `/kesehatan/ibu-hamil/ekspor` | Route handler | Admin | `src/app/(admin)/kesehatan/ibu-hamil/ekspor/route.ts` |
 | `/kesehatan/kia/ekspor` | Route handler | Admin | `src/app/(admin)/kesehatan/kia/ekspor/route.ts` |
 | `/kesehatan/pemantauan-anak/ekspor` | Route handler | Admin | `src/app/(admin)/kesehatan/pemantauan-anak/ekspor/route.ts` |
+| `/keuangan` | Halaman | Admin | `src/app/(admin)/keuangan/page.tsx` |
 | `/keuangan/anggaran/template` | Route handler | Admin | `src/app/(admin)/keuangan/anggaran/template/route.ts` |
 | `/keuangan/laporan-dokumen/[id]/berkas` | Route handler | Admin | `src/app/(admin)/keuangan/laporan-dokumen/[id]/berkas/route.ts` |
 | `/keuangan/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/keuangan/laporan/ekspor/route.ts` |
@@ -146,6 +148,8 @@ webhook. Route handler Admin di bawah umumnya bukan UI pengelolaan.
 | `/keuangan/laporan/realisasi/ekspor` | Route handler | Admin | `src/app/(admin)/keuangan/laporan/realisasi/ekspor/route.ts` |
 | `/keuangan/triwulan/ekspor` | Route handler | Admin | `src/app/(admin)/keuangan/triwulan/ekspor/route.ts` |
 | `/kontak` | Halaman | Publik | `src/app/kontak/page.tsx` |
+| `/konten/berita` | Halaman | Admin | `src/app/(admin)/konten/berita/page.tsx` |
+| `/konten/galeri` | Halaman | Admin | `src/app/(admin)/konten/galeri/page.tsx` |
 | `/layanan` | Halaman | Publik | `src/app/layanan/page.tsx` |
 | `/layanan-mandiri` | Halaman | Warga | `src/app/(warga)/layanan-mandiri/page.tsx` |
 | `/layanan-mandiri/beranda` | Halaman | Warga | `src/app/(warga)/layanan-mandiri/beranda/page.tsx` |
@@ -155,10 +159,13 @@ webhook. Route handler Admin di bawah umumnya bukan UI pengelolaan.
 | `/layanan-mandiri/ubah-pin` | Halaman | Warga | `src/app/(warga)/layanan-mandiri/ubah-pin/page.tsx` |
 | `/layanan/surat` | Halaman | Publik | `src/app/layanan/surat/page.tsx` |
 | `/masuk` | Halaman | Auth | `src/app/(auth)/masuk/page.tsx` |
+| `/masuk-admin` | Halaman | Auth | `src/app/(auth)/masuk-admin/page.tsx` |
 | `/pelanggan/[id]/dokumen` | Route handler | Admin | `src/app/(admin)/pelanggan/[id]/dokumen/route.ts` |
 | `/pembangunan/buku/ekspor` | Route handler | Admin | `src/app/(admin)/pembangunan/buku/ekspor/route.ts` |
 | `/pemerintahan` | Halaman | Publik | `src/app/pemerintahan/page.tsx` |
 | `/pendapat/ekspor` | Route handler | Admin | `src/app/(admin)/pendapat/ekspor/route.ts` |
+| `/penduduk` | Halaman | Admin | `src/app/(admin)/penduduk/page.tsx` |
+| `/penduduk/[id]` | Halaman | Admin | `src/app/(admin)/penduduk/[id]/page.tsx` |
 | `/penduduk/dpt/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/dpt/ekspor/route.ts` |
 | `/penduduk/dpt/rekap/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/dpt/rekap/ekspor/route.ts` |
 | `/penduduk/dtks/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/dtks/ekspor/route.ts` |
@@ -169,9 +176,13 @@ webhook. Route handler Admin di bawah umumnya bukan UI pengelolaan.
 | `/penduduk/suplemen/[id]/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/suplemen/[id]/ekspor/route.ts` |
 | `/penduduk/suplemen/laporan/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/suplemen/laporan/ekspor/route.ts` |
 | `/pengaduan` | Halaman | Publik | `src/app/pengaduan/page.tsx` |
+| `/pengaduan-admin` | Halaman | Admin | `src/app/(admin)/pengaduan-admin/page.tsx` |
+| `/pengaturan/grup-akses` | Halaman | Admin | `src/app/(admin)/pengaturan/grup-akses/page.tsx` |
+| `/pengaturan/pengguna` | Halaman | Admin | `src/app/(admin)/pengaturan/pengguna/page.tsx` |
 | `/pengumuman` | Halaman | Publik | `src/app/pengumuman/page.tsx` |
 | `/permohonan-surat/[id]/syarat/[syaratId]` | Route handler | Admin | `src/app/(admin)/permohonan-surat/[id]/syarat/[syaratId]/route.ts` |
 | `/permohonan-surat/ekspor` | Route handler | Admin | `src/app/(admin)/permohonan-surat/ekspor/route.ts` |
+| `/persuratan/surat` | Halaman | Admin | `src/app/(admin)/persuratan/surat/page.tsx` |
 | `/persuratan/surat/[id]/pdf` | Route handler | Admin | `src/app/(admin)/persuratan/surat/[id]/pdf/route.ts` |
 | `/persuratan/surat/arsip/ekspor` | Route handler | Admin | `src/app/(admin)/persuratan/surat/arsip/ekspor/route.ts` |
 | `/potensi` | Halaman | Publik | `src/app/potensi/page.tsx` |
@@ -203,6 +214,8 @@ webhook. Route handler Admin di bawah umumnya bukan UI pengelolaan.
 
 | Berkas |
 |---|
+| `src/app/(admin)/pengaturan/grup-akses/actions.ts` |
+| `src/app/(admin)/pengaturan/pengguna/actions.ts` |
 | `src/app/(admin)/super-admin/actions.ts` |
 | `src/app/(admin)/super-admin/pengguna/actions.ts` |
 | `src/app/(warga)/layanan-mandiri/ubah-pin/actions.ts` |
@@ -578,6 +591,7 @@ webhook. Route handler Admin di bawah umumnya bukan UI pengelolaan.
 ### pengguna
 
 **Use case/application**
+- `src/features/pengguna/application/pengguna-admin.ts`
 - `src/features/pengguna/application/pengguna-use-cases.ts`
 
 **Repository**
@@ -603,6 +617,7 @@ webhook. Route handler Admin di bawah umumnya bukan UI pengelolaan.
 
 **Use case/application**
 - `src/features/publik/application/dokumen-publik.ts`
+- `src/features/publik/application/konten-admin.ts`
 - `src/features/publik/application/konten-publik.ts`
 - `src/features/publik/application/media-publik.ts`
 - `src/features/publik/application/nav-publik.ts`
@@ -694,9 +709,11 @@ webhook. Route handler Admin di bawah umumnya bukan UI pengelolaan.
 ### wilayah
 
 **Use case/application**
+- `src/features/wilayah/application/data-wilayah.ts`
 - `src/features/wilayah/application/wilayah-publik.ts`
 
 **Repository**
+- `src/features/wilayah/infrastructure/data-wilayah-repository.ts`
 - `src/features/wilayah/infrastructure/wilayah-repository.ts`
 
 ## 5. Batasan

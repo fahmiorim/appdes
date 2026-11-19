@@ -25,7 +25,7 @@ Hostname **bukan** bukti autentikasi dan tidak boleh menjadi satu-satunya kontro
 
 Nama host sistem lain seperti `www`, `admin`, `demo`, `api`, `mail`, `autodiscover`, `status`, `cdn`, dan `static` harus dicadangkan dan tidak boleh dipakai sebagai slug tenant. Daftar final harus menjadi satu konstanta domain yang dipakai validasi provisioning dan host router.
 
-Rute `/admin` pada hostname tenant adalah area Admin Desa. Rute tersebut berbeda otoritas dari `admin.flexidesa.id`, yang hanya untuk Super Admin platform. Jangan menyamakan role administrator desa dengan role Super Admin platform.
+Area Admin Desa pada hostname tenant tidak memakai prefiks `/admin`; halamannya berada di `/beranda`, `/penduduk`, `/keuangan`, `/konten/*`, `/persuratan/surat`, `/pengaduan-admin`, dan `/pengaturan/*`, sesuai `RUTE_ADMIN_TERSEDIA`. Rute tersebut berbeda otoritas dari `admin.flexidesa.id`, yang hanya untuk Super Admin platform. Jangan menyamakan role administrator desa dengan role Super Admin platform.
 
 ## 2. Baseline implementasi yang ditemukan
 
@@ -127,7 +127,7 @@ Bentuk final boleh disesuaikan dengan pola repository. Ketentuannya:
 
 ### 4.3 Area Admin Desa
 
-Pada `<slug>.flexidesa.id/admin`:
+Pada `<slug>.flexidesa.id` (halaman Admin Desa seperti `/beranda` dan `/penduduk`):
 - wajib ada sesi valid;
 - akun harus terikat pada desa yang sama dengan tenant hostname;
 - role harus dimiliki tenant yang sama;

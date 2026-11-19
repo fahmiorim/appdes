@@ -149,7 +149,7 @@ Ditambahkan 19 November 2026. Seluruh file berukuran 1536 × 1024 dan hanya ters
 3. Bila dua referensi mirip, tetapkan satu sebagai acuan utama; jangan menggabungkan elemen yang bertentangan.
 4. Gunakan data sintetis. Jangan menambahkan NIK, nomor KK, atau data warga nyata ke mockup, fixture, atau laporan.
 5. Perbedaan implementasi dari referensi dicatat di laporan audit, bukan dengan mengubah gambar referensi.
-6. Referensi visual bukan pengganti pengujian browser; status implementasi mengikuti audit final.
+6. Referensi visual bukan pengganti pengujian browser; status implementasi mengikuti laporan audit sesuai cakupannya (lihat [Referensi](#referensi)), bukan gambar referensi.
 7. Untuk layar Admin Desa, folder `village/` menjadi acuan visual utama. Folder `public/` adalah versi publik desa dan tidak boleh dijadikan pengganti dashboard admin.
 
 ## Referensi

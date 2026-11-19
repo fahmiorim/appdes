@@ -2,7 +2,7 @@
 
 > Status: **Product design v0.1 untuk Super Admin; Admin Desa dan Super Admin kini memiliki acuan screenshot.** Sepuluh layar Admin Desa ditambahkan 19 November 2026 di `docs/mockups/village/` dan ditinjau di [review mockup Admin Desa](../reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md). Tiga puluh delapan layar Super Admin berada di `docs/mockups/platform/super-admin/` dan dipetakan di [audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md).
 >
-> Catatan: §2 memakai mockup Admin Desa sebagai acuan, sedangkan §1 dan §3 belum diselaraskan dengan mockup. Mockup memakai sidebar navy dan aksi utama ungu, sedangkan §1 dan implementasi saat ini memakai sidebar putih dan aksi biru. Perbedaan ini adalah keputusan produk yang belum diambil.
+> Catatan: §2 memakai mockup Admin Desa sebagai acuan, sedangkan §1 dan §3 belum diselaraskan dengan mockup. Mockup dan shell Admin Desa di kode memakai sidebar navy dengan aksi utama ungu; §1 masih menargetkan sidebar putih dan aksi biru. Perbedaan §1 dengan mockup/implementasi adalah keputusan produk yang belum diambil.
 
 ## 1. Prinsip bersama
 
@@ -120,7 +120,7 @@ Menu admin desa dibangun dari tabel `modules` yang dibatasi tenant, sedangkan ak
 
 ## 4. Batasan saat ini
 
-- Admin sidebar desa saat ini baru menampilkan Beranda; kelompok menu desa di §2 adalah target, bukan fitur yang sudah diimplementasikan.
+- Admin sidebar desa menampilkan Beranda, Data Penduduk, dan grup Pengaturan (Pengguna & Hak Akses serta Grup Akses). Kelompok menu lain di §2 (Data Desa, Persuratan, Keuangan, Layanan) masih target, belum fitur yang sudah diimplementasikan.
 - Konsol Super Admin sudah memiliki tujuh halaman (Ringkasan, Tenant, Domain, Pengguna platform, Audit trail, Template, Pengaturan) dengan menu sidebar dan kerangka visual yang sama. Halaman Template dan Pengaturan masih baca-saja karena sumbernya artefak kode dan environment; MFA, undangan anggota tim, monitor, backup, feature flag per tenant, dan langganan belum ada.
 - Audit trail platform dapat dicari, difilter per desa dan jenis peristiwa, menampilkan detail perubahan, serta diekspor ke CSV (maksimal 5.000 baris per unduhan). Retensi dan arsip audit terpusat belum ada.
 - Pengelolaan pengguna platform hanya menjangkau akun `village_id IS NULL`; akun administrator desa tetap dikelola dari konsol tenant masing-masing.

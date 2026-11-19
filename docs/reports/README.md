@@ -22,7 +22,7 @@ Gunakan laporan sesuai cakupannya; tidak ada satu laporan yang mewakili seluruh 
 | Acuan | Cakupan | Cara memakai |
 |---|---|---|
 | [Audit mockup Super Admin](./05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md) | 38 layar Super Admin, 9 area baru, status route/model data | Acuan terkini untuk konsol platform |
-| [Review mockup Admin Desa](./05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md) | 10 layar Admin Desa | Acuan terkini untuk area desa |
+| [Review mockup Admin Desa](./05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md) | 10 layar Admin Desa | Acuan visual 10 layar; status implementasi terbaru menyusul laporan `03-core-sid` (penduduk, pengguna/grup akses) |
 | [Audit final 42 mockup](./05-ui-audit/UI-MOCKUP-AUDIT-FINAL-2026-11-18.md) | 21 publik, 11 akun, 7 pendukung, landing/login, dashboard Super Admin lama | Snapshot historis 18 November; jangan dipakai sebagai katalog lengkap |
 | [Katalog mockup](../mockups/README.md) | 89 path dan pengelompokan aset | Sumber inventaris file |
 | [Sinkronisasi dokumen mockup](./05-ui-audit/DOCS-SYNC-MOCKUP-2026-11-19.md) | Penyelarasan Design System, peta fitur, dan roadmap | Catatan keputusan relevansi fase dan backlog platform |

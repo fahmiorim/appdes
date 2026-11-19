@@ -254,9 +254,10 @@ Aturan penting:
   ke database production. Integration test membuat database, menjalankan
   migrasi, dan menulis fixture.
 - Buat backup sebelum migrasi apa pun pada database yang sudah berisi data.
-- Repository saat ini memiliki 13 migrasi: baseline
-  `src/db/migrations/0000_baseline.sql` dan `0001`–`0012` untuk composite
-  foreign key, kontrol tenant, dan lifecycle tenant. Tidak ada migrasi rollback
+- Repository saat ini memiliki 16 migrasi: baseline
+  `src/db/migrations/0000_baseline.sql` dan `0001`–`0015` untuk composite
+  foreign key, kontrol tenant, lifecycle tenant, serta menu penduduk dan
+  pengguna/grup akses. Tidak ada migrasi rollback
   otomatis; pemulihan dilakukan dari backup.
 
 ### 6.1 Bootstrap Super Admin dan desa pertama
