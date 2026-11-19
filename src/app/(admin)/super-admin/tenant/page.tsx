@@ -5,7 +5,7 @@ import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisio
 import { hariMenujuPurge, statusRetensi } from "@/features/multi-desa/domain/lifecycle-tenant";
 import { parseStatusTenantFilter } from "@/features/multi-desa/domain/status-tenant-filter";
 import { DialogDaftarDesa } from "@/features/multi-desa/presentation/dialog-daftar-desa";
-import { PlatformCard } from "@/features/multi-desa/presentation/platform-ui";
+import { PlatformCard, PlatformPageHeader } from "@/features/multi-desa/presentation/platform-ui";
 import { TenantConsole } from "@/features/multi-desa/presentation/tenant-console";
 
 import {
@@ -28,12 +28,14 @@ export const metadata: Metadata = {
 
 const angka = new Intl.NumberFormat("id-ID");
 
-type Props = { searchParams: Promise<{ status?: string | string[] }> };
+type Props = { searchParams: Promise<{ status?: string | string[]; q?: string | string[] }> };
 
 export default async function SuperAdminTenantPage({ searchParams }: Props) {
   await pastikanSuperAdmin();
 
-  const statusAwal = parseStatusTenantFilter((await searchParams).status);
+  const params = await searchParams;
+  const statusAwal = parseStatusTenantFilter(params.status);
+  const kataKunci = (Array.isArray(params.q) ? params.q[0] : params.q)?.trim().slice(0, 120) ?? "";
 
   const [desa, domain] = await Promise.all([daftarDesaSuperAdmin(), daftarSemuaDomain()]);
   const rows = desa.map((item) => ({
@@ -44,18 +46,22 @@ export default async function SuperAdminTenantPage({ searchParams }: Props) {
 
   return (
     <>
-      <PlatformCard
+      <PlatformPageHeader
         actions={<DialogDaftarDesa aksi={buatDesaAction} />}
+        path="/super-admin/tenant"
+      />
+      <PlatformCard
         description={`${angka.format(rows.length)} desa terdaftar. Setiap baris dapat dibuka untuk mengubah pengaturan desa; purge bersifat permanen dan hanya tersedia setelah ekspor berlaku.`}
         flush
         title="Daftar tenant"
       >
         <div className="platform-tenant-console">
           <TenantConsole
-            key={statusAwal}
+            key={`${statusAwal}:${kataKunci}`}
             desa={rows}
             domain={domain}
             statusAwal={statusAwal}
+            queryAwal={kataKunci}
             aksi={{
               status: ubahStatusAction,
               kuota: ubahKuotaAction,

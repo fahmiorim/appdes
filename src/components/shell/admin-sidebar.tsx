@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import type { MenuNode } from "@/features/navigation/application/build-menu";
-import { MENU_PLATFORM, menuPlatformAktif } from "@/features/navigation/domain/menu-platform";
+import { grupMenuPlatform, menuPlatformAktif } from "@/features/navigation/domain/menu-platform";
 import { pathMenu, ratakanMenu } from "@/features/navigation/domain/menu-tampil";
 
 export function AdminSidebar({
@@ -116,27 +116,27 @@ export function AdminSidebar({
             <span>{isPlatformAdmin ? "Konsol Super Admin" : "Admin Desa"}</span>
           </span>
         </Link>
-        <div className="admin-nav-label">
-          {isPlatformAdmin ? "Workspace platform" : "Menu utama"}
-        </div>
+        {isPlatformAdmin ? null : <div className="admin-nav-label">Menu utama</div>}
         <nav className="admin-nav" aria-label="Navigasi administrasi">
           {isPlatformAdmin
-            ? MENU_PLATFORM.map((item) => (
-                <Link
-                  className="admin-nav-link"
-                  href={item.href}
-                  key={item.href}
-                  aria-current={menuPlatformAktif(item.href, pathname) ? "page" : undefined}
-                  onClick={() => setOpen(false)}
-                >
-                  <span className="admin-nav-icon" aria-hidden="true">
-                    {item.icon}
-                  </span>
-                  <span>{item.label}</span>
-                  {menuPlatformAktif(item.href, pathname) ? (
-                    <span className="admin-nav-active-dot" />
-                  ) : null}
-                </Link>
+            ? grupMenuPlatform().map((kelompok) => (
+                <div className="platform-nav-group" key={kelompok.grup}>
+                  <div className="admin-nav-label">{kelompok.grup}</div>
+                  {kelompok.item.map((item) => (
+                    <Link
+                      className="admin-nav-link"
+                      href={item.href}
+                      key={item.href}
+                      aria-current={menuPlatformAktif(item.href, pathname) ? "page" : undefined}
+                      onClick={() => setOpen(false)}
+                    >
+                      <span className="admin-nav-icon" aria-hidden="true">
+                        {item.icon}
+                      </span>
+                      <span>{item.label}</span>
+                    </Link>
+                  ))}
+                </div>
               ))
             : null}
 
@@ -202,8 +202,11 @@ export function AdminSidebar({
               height={92}
               unoptimized
             />
-            <strong>Satu platform, banyak desa.</strong>
-            <span>Terhubung · Terpisah · Terkendali</span>
+            <strong>
+              FlexiDesa<span className="admin-brand-domain">.id</span>
+            </strong>
+            <span>Platform Desa Terpadu</span>
+            <span className="platform-sidebar-role">Super Admin</span>
           </div>
         ) : (
           <>

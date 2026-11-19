@@ -6,6 +6,7 @@ import { useActionState, useId, useMemo, useState } from "react";
 import type { StatusRetensi } from "@/features/multi-desa/domain/lifecycle-tenant";
 import {
   cocokStatusTenant,
+  STATUS_TENANT_FILTER,
   type StatusTenantFilter,
 } from "@/features/multi-desa/domain/status-tenant-filter";
 import type { HasilEkspor } from "@/features/multi-desa/infrastructure/lifecycle-tenant-repository";
@@ -461,29 +462,53 @@ function PanelKelola({
   );
 }
 
+const TAB_STATUS: readonly { nilai: StatusTenantFilter; label: string }[] = [
+  { nilai: "semua", label: "Semua" },
+  { nilai: "aktif", label: "Aktif" },
+  { nilai: "nonaktif", label: "Nonaktif" },
+  { nilai: "siap-purge", label: "Siap purge" },
+];
+
 export function TenantConsole({
   desa,
   domain,
   statusAwal,
+  queryAwal = "",
   aksi,
 }: {
   desa: DesaKonsolRow[];
   domain: DomainKonsolRow[];
   /** Nilai awal dari query param; halaman memberi `key={statusAwal}` agar URL menang. */
   statusAwal: StatusTenantFilter;
+  /** Kata kunci awal dari pencarian top bar (`?q=`). */
+  queryAwal?: string;
   aksi: AksiKonsol;
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(queryAwal);
   const [status, setStatus] = useState<StatusTenantFilter>(statusAwal);
   const [terbuka, setTerbuka] = useState<number | null>(null);
 
   const pilihStatus = (nilai: StatusTenantFilter) => {
     setStatus(nilai);
-    // Simpan filter di URL agar bisa dibagikan dan tahan refresh.
-    router.replace(nilai === "semua" ? pathname : `${pathname}?status=${nilai}`, { scroll: false });
+    // Simpan filter di URL agar bisa dibagikan dan tahan refresh. Kata kunci
+    // dari top bar dipertahankan supaya tab tidak diam-diam menghapusnya.
+    const params = new URLSearchParams();
+    if (query.trim()) params.set("q", query.trim());
+    if (nilai !== "semua") params.set("status", nilai);
+    const suffix = params.toString();
+    router.replace(suffix ? `${pathname}?${suffix}` : pathname, { scroll: false });
   };
+
+  const jumlahStatus = useMemo(() => {
+    return Object.fromEntries(
+      STATUS_TENANT_FILTER.map((nilai) => [
+        nilai,
+        desa.filter((item) => cocokStatusTenant(item, nilai)).length,
+      ]),
+    ) as Record<StatusTenantFilter, number>;
+  }, [desa]);
 
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("id-ID");
@@ -503,6 +528,22 @@ export function TenantConsole({
 
   return (
     <>
+      <div className="tenant-tabs-row">
+        <div aria-label="Filter status desa" className="platform-tabs" role="group">
+          {TAB_STATUS.map((tab) => (
+            <button
+              aria-pressed={status === tab.nilai}
+              className="platform-tab"
+              key={tab.nilai}
+              onClick={() => pilihStatus(tab.nilai)}
+              type="button"
+            >
+              {tab.label}
+              <span className="platform-tab-count">{angka.format(jumlahStatus[tab.nilai])}</span>
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="tenant-toolbar">
         <label className="tenant-search">
           <span className="sr-only">Cari nama desa, kode, slug, atau domain</span>
@@ -513,19 +554,6 @@ export function TenantConsole({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
-        </label>
-        <label className="tenant-filter">
-          <span className="sr-only">Filter status desa</span>
-          <select
-            className="form-input"
-            value={status}
-            onChange={(event) => pilihStatus(event.target.value as StatusTenantFilter)}
-          >
-            <option value="semua">Semua status</option>
-            <option value="aktif">Aktif</option>
-            <option value="nonaktif">Nonaktif</option>
-            <option value="siap-purge">Siap purge</option>
-          </select>
         </label>
         <span className="tenant-result-count">
           Menampilkan {angka.format(filtered.length)} dari {angka.format(desa.length)} desa

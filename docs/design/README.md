@@ -12,6 +12,7 @@ Referensi gambar ada di [mockups/](../mockups/README.md). Audit visual historis 
 
 Status per 19 November 2026 mengikuti tiga acuan berikut, bukan satu laporan lama:
 
-- [Audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md) — 38 layar dan kesenjangan model data.
-- [Review mockup Admin Desa](../reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md) — acuan visual 10 layar Admin Desa; status implementasi terbaru ada di laporan `03-core-sid` (penduduk, pengguna/grup akses).
-- [Audit final 42 mockup](../reports/05-ui-audit/UI-MOCKUP-AUDIT-FINAL-2026-11-18.md) — snapshot publik, akun, dan pendukung per 18 November 2026; tetap historis dan tidak mencakup 37 layar Super Admin baru.
+- [Audit kesiapan backend mockup baru](../reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md) — 39 layar Super Admin dan 46 layar Admin Desa, dipetakan ke modul, schema, use case, dan route.
+- [Audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md) — 38 layar pada snapshot 19 November pagi dan kesenjangan model data.
+- [Review mockup Admin Desa](../reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md) — 10 layar Admin Desa lama; path asetnya sudah tidak aktif dan digantikan 46 layar di katalog.
+- [Audit final 42 mockup](../reports/05-ui-audit/UI-MOCKUP-AUDIT-FINAL-2026-11-18.md) — snapshot publik, akun, dan pendukung per 18 November 2026; tetap historis dan tidak mencakup layar Super Admin yang ditambahkan kemudian.
