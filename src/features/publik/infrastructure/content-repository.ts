@@ -183,6 +183,8 @@ export interface AlbumRingkas {
   nama: string;
   slug: string;
   keterangan: string | null;
+  kategori: string | null;
+  publishedAt: Date | null;
   sampul: string | null;
   jumlahFoto: number;
 }
