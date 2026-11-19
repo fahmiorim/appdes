@@ -3,7 +3,7 @@ import "server-only";
 import { and, eq, gte, sum } from "drizzle-orm";
 
 import { db } from "@/db";
-import { pengunjungLog } from "@/db/schema";
+import { halamanStatis, pengunjungLog } from "@/db/schema";
 import { getIdentitasDesa } from "@/features/desa/infrastructure/desa-repository";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import {
