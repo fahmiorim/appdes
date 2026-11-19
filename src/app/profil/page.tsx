@@ -25,11 +25,11 @@ function mediaUrl(value: string | null | undefined, villageId: number): string |
 }
 
 function plainText(value: string | null | undefined, max = 1800): string {
-  return (value ?? "").replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script>/gi, " ")
-    .replace(/<style\\b[^>]*>[\\s\\S]*?<\\/style>/gi, " ")
+  return (value ?? "").replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&")
     .replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'").replace(/\\s+/g, " ").trim().slice(0, max);
+    .replace(/&#39;/gi, "'").replace(/\s+/g, " ").trim().slice(0, max);
 }
 
 function formatNumber(value: number) {
@@ -58,7 +58,7 @@ export default async function ProfilDesaPage() {
   const historyImage = mediaUrl(slider[2]?.gambar, desa.id) ?? (galleryPhotos[2] ? mediaUrl(galleryPhotos[2].gambar, desa.id) : null);
   const visi = plainText(profil?.visi);
   const sejarah = plainText(profil?.sejarah);
-  const misi = (profil?.misi ?? "").split(/\\r?\\n/).map((item) => plainText(item, 300)).filter(Boolean);
+  const misi = (profil?.misi ?? "").split(/\r?\n/).map((item) => plainText(item, 300)).filter(Boolean);
   const mapUrl = profil?.koordinat
     ? `https://www.google.com/maps?q=${encodeURIComponent(profil.koordinat)}`
     : null;
