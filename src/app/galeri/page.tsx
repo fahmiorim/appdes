@@ -1,160 +1,71 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { daftarAlbumGaleri, daftarFotoAlbum } from "@/features/publik/application/konten-publik";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
-import { daftarAlbumGaleri } from "@/features/publik/application/konten-publik";
-
+import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
 import styles from "./galeri.module.css";
-import { GalleryShell } from "./gallery-shell";
 
 export const dynamic = "force-dynamic";
-
-type Props = {
-  searchParams: Promise<{ q?: string }>;
-};
+type Props = { searchParams: Promise<{ q?: string; tipe?: string }> };
 
 function mediaUrl(value: string | null, villageId: number): string | null {
   if (!value) return null;
-  const segments = value.split(/[\\/]/).filter(Boolean);
-  if (
-    segments.length === 0 ||
-    segments.some((part) => part === "." || part === ".." || part.includes(".."))
-  ) {
-    return null;
-  }
-  const path = segments[0] === String(villageId) ? segments : [String(villageId), ...segments];
-  return `/api/publik/media/${path.map(encodeURIComponent).join("/")}`;
+  const segments=value.split(/[\\/]/).filter(Boolean);
+  if (!segments.length || segments.some(part=>part==="."||part===".."||part.includes(".."))) return null;
+  const path=segments[0]===String(villageId)?segments:[String(villageId),...segments];
+  return "/api/publik/media/"+path.map(encodeURIComponent).join("/");
+}
+function locationLabel(desa:{namaKecamatan:string|null;namaKabupaten:string|null;namaPropinsi:string|null}) {
+  return [desa.namaKecamatan,desa.namaKabupaten,desa.namaPropinsi].filter(Boolean).join(", ");
+}
+function dateLabel(value:Date|null) {
+  if(!value)return null;
+  return new Intl.DateTimeFormat("id-ID",{day:"2-digit",month:"short",year:"numeric"}).format(value);
 }
 
-export default async function GaleriPage({ searchParams }: Props) {
-  const [desa, params] = await Promise.all([getIdentitasFromRequest(), searchParams]);
-  const query = (params.q ?? "").trim().slice(0, 80);
-  const albums = await daftarAlbumGaleri(desa.id, query || undefined);
-  const totalFoto = albums.reduce((total, album) => total + album.jumlahFoto, 0);
+export default async function GaleriPage({searchParams}:Props) {
+  const [desa,params]=await Promise.all([getIdentitasFromRequest(),searchParams]);
+  const query=(params.q??"").trim().slice(0,80);
+  const type=params.tipe==="foto"?"foto":params.tipe==="album"?"album":"semua";
+  const albums=await daftarAlbumGaleri(desa.id,query||undefined);
+  const photoAlbums=albums.filter(album=>album.jumlahFoto>0);
+  const photoRows=await Promise.all(photoAlbums.slice(0,12).map(async album=>({album,photos:await daftarFotoAlbum(desa.id,album.id)})));
+  const photos=photoRows.flatMap(({album,photos})=>photos.map(photo=>({...photo,albumSlug:album.slug,albumNama:album.nama}))).slice(0,12);
+  const totalFoto=albums.reduce((sum,album)=>sum+album.jumlahFoto,0);
+  const logoUrl=desa.logo?mediaUrl(desa.logo,desa.id):null;
+  const location=locationLabel(desa);
+  const heroAlbum=albums.find(album=>mediaUrl(album.sampul,desa.id))??albums[0]??null;
+  const heroCover=heroAlbum?mediaUrl(heroAlbum.sampul,desa.id):null;
 
-  return (
-    <GalleryShell villageName={desa.namaDesa ?? "Pemerintah Desa"}>
-      <section className={styles.hero}>
-        <div className={styles.container}>
-          <div className={styles.breadcrumb}>
-            <Link href="/">Beranda</Link>
-            <span>/</span>
-            <span>Galeri</span>
-          </div>
-          <p className={styles.kicker}>MOMEN &amp; CERITA DESA</p>
-          <h1>Galeri {desa.namaDesa ?? "Desa"}</h1>
-          <p>
-            Dokumentasi kegiatan, pembangunan, dan kebersamaan warga {desa.namaDesa ?? "desa"} yang
-            telah dipublikasikan.
-          </p>
+  return <main className={styles.site}>
+    <PublicSiteHeader desa={desa} location={location} logoUrl={logoUrl} activePath="/galeri"/>
+    <section className={styles.hero}><div className={styles.heroInner}>
+      <nav aria-label="Breadcrumb"><Link href="/">Beranda</Link><span>›</span><span>Galeri</span></nav>
+      <h1>Galeri Desa</h1><p>Dokumentasi kegiatan, pembangunan, dan potensi {desa.namaDesa??"desa"}.</p>
+      {heroCover?<div className={styles.heroImage}><Image src={heroCover} alt="" fill sizes="(max-width: 700px) 35vw, 280px" unoptimized/></div>:<div className={styles.heroIcon}>▧</div>}
+    </div></section>
+    <div className={styles.container}>
+      <nav className={styles.tabs} aria-label="Jenis galeri"><Link href="/galeri" aria-current={type==="semua"?"page":undefined}>▧　Semua Galeri</Link><Link href="/galeri?tipe=foto" aria-current={type==="foto"?"page":undefined}>▣　Foto</Link><span aria-disabled="true" title="Belum ada modul video pada data galeri">▷　Video</span><Link href="/galeri?tipe=album" aria-current={type==="album"?"page":undefined}>▱　Album</Link></nav>
+      <div className={styles.layout}>
+        <div className={styles.main}>
+          {type!=="foto"?<section className={styles.panel}>
+            <div className={styles.sectionHeading}><div><h2>▱　Album Kegiatan Desa</h2><p>Kumpulan dokumentasi kegiatan dan program di {desa.namaDesa??"desa"}.</p></div><span>{albums.length} Album</span></div>
+            {albums.length?<div className={styles.albumGrid}>{albums.slice(0,8).map(album=>{const cover=mediaUrl(album.sampul,desa.id);return <Link className={styles.albumCard} href={"/galeri/"+encodeURIComponent(album.slug)} key={album.id}><div className={styles.albumCover}>{cover?<Image src={cover} alt={album.nama} fill sizes="(max-width: 680px) 45vw, 180px" unoptimized/>:<span>▧</span>}<b>▣ {album.jumlahFoto} Foto</b></div><h3>{album.nama}</h3>{dateLabel(null)?<small>{dateLabel(null)}</small>:<small>Dokumentasi desa</small>}</Link>})}</div>:<div className={styles.empty}><span>▧</span><h3>{query?"Album tidak ditemukan":"Album belum tersedia"}</h3><p>Album akan ditampilkan setelah dibuat dan dipublikasikan oleh pengelola desa.</p></div>}
+          </section>:null}
+          {type!=="album"?<section className={styles.panel}>
+            <div className={styles.sectionHeading}><div><h2>▧　Foto Terbaru</h2><p>Dokumentasi foto dari album yang dipublikasikan.</p></div><span>{totalFoto} Foto</span></div>
+            {photos.length?<div className={styles.photoGrid}>{photos.map(photo=>{const src=mediaUrl(photo.gambar,desa.id);return <Link href={"/galeri/"+encodeURIComponent(photo.albumSlug)} className={styles.photo} key={photo.id}>{src?<Image src={src} alt={photo.judul||photo.albumNama} fill sizes="(max-width: 680px) 45vw, 220px" unoptimized/>:<span>▧</span>}<b>{photo.judul||photo.albumNama}</b></Link>})}</div>:<div className={styles.empty}><span>▧</span><h3>Foto belum tersedia</h3><p>Foto kegiatan akan tampil di sini setelah diunggah dan diaktifkan pada album.</p></div>}
+          </section>:null}
         </div>
-      </section>
-
-      <section className={styles.content}>
-        <div className={styles.container}>
-          <div className={styles.galleryLayout}>
-            <div className={styles.galleryMain}>
-              <section className={styles.gallerySection}>
-                <div className={styles.sectionHeading}>
-                  <div>
-                    <p className={styles.kicker}>DOKUMENTASI DESA</p>
-                    <h2>Album kegiatan desa</h2>
-                    <p>Kumpulan dokumentasi yang telah dipublikasikan oleh pemerintah desa.</p>
-                  </div>
-                  <span>{albums.length} album</span>
-                </div>
-
-                <form className={styles.gallerySearch} action="/galeri" method="get">
-                  <label htmlFor="gallery-search">Cari album galeri</label>
-                  <div>
-                    <input
-                      id="gallery-search"
-                      type="search"
-                      name="q"
-                      placeholder="Masukkan nama atau keterangan album..."
-                      defaultValue={query}
-                    />
-                    <button type="submit">Cari galeri</button>
-                  </div>
-                </form>
-
-                {albums.length ? (
-                  <div className={styles.grid}>
-                    {albums.map((album) => {
-                      const cover = mediaUrl(album.sampul, desa.id);
-                      return (
-                        <Link
-                          className={styles.card}
-                          href={`/galeri/${encodeURIComponent(album.slug)}`}
-                          key={album.id}
-                        >
-                          <div className={styles.cover}>
-                            {cover ? (
-                              <Image
-                                src={cover}
-                                alt={album.nama}
-                                fill
-                                sizes="(max-width: 640px) 100vw, (max-width: 900px) 50vw, 33vw"
-                                unoptimized
-                              />
-                            ) : (
-                              <span aria-hidden="true">▧</span>
-                            )}
-                            <b>{album.jumlahFoto} foto</b>
-                          </div>
-                          <div className={styles.cardBody}>
-                            <h3>{album.nama}</h3>
-                            <p>{album.keterangan || "Dokumentasi kegiatan dan aktivitas desa."}</p>
-                            <span>
-                              Lihat album <i>→</i>
-                            </span>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className={styles.empty}>
-                    <span>▧</span>
-                    <h3>{query ? "Album tidak ditemukan" : "Galeri belum tersedia"}</h3>
-                    <p>
-                      {query
-                        ? "Coba gunakan kata kunci lain untuk mencari album."
-                        : "Foto kegiatan desa akan ditampilkan setelah dipublikasikan."}
-                    </p>
-                    {query ? <Link href="/galeri">Hapus pencarian →</Link> : null}
-                  </div>
-                )}
-              </section>
-            </div>
-
-            <aside className={styles.galleryAside}>
-              <section className={styles.asideCard}>
-                <h2>Ringkasan galeri</h2>
-                <div className={styles.galleryStats}>
-                  <div>
-                    <strong>{albums.length}</strong>
-                    <span>Album tersedia</span>
-                  </div>
-                  <div>
-                    <strong>{totalFoto}</strong>
-                    <span>Foto dalam hasil</span>
-                  </div>
-                </div>
-              </section>
-
-              <section className={styles.galleryCallout}>
-                <span aria-hidden="true">▧</span>
-                <h2>Kenangan dan kegiatan desa</h2>
-                <p>
-                  Jelajahi album untuk melihat dokumentasi yang telah dibagikan kepada masyarakat.
-                </p>
-                <Link href="/kontak">Hubungi pemerintah desa</Link>
-              </section>
-            </aside>
-          </div>
-        </div>
-      </section>
-    </GalleryShell>
-  );
+        <aside className={styles.aside}>
+          <section className={styles.sideCard}><h2>⌕　Cari di Galeri</h2><form action="/galeri" method="get"><input type="search" name="q" placeholder="Masukkan kata kunci..." defaultValue={query}/><button type="submit" aria-label="Cari galeri">⌕</button></form></section>
+          <section className={styles.sideCard}><h2>▱　Kategori Galeri</h2><div className={styles.categoryList}><Link href="/galeri"><span>▧</span><strong>Semua Galeri</strong><b>{albums.length}</b></Link>{albums.slice(0,9).map(album=><Link href={"/galeri/"+encodeURIComponent(album.slug)} key={album.id}><span>▱</span><strong>{album.nama}</strong><b>{album.jumlahFoto}</b></Link>)}</div><p className={styles.categoryNote}>Daftar di atas mengikuti album aktif milik desa.</p></section>
+          <section className={styles.sideCard}><h2>▣　Video Kegiatan</h2><div className={styles.videoEmpty}><span>▷</span><strong>Belum ada video</strong><p>Video belum dapat ditampilkan karena modul video belum tersedia pada pengelolaan galeri.</p></div></section>
+        </aside>
+      </div>
+      <section className={styles.banner}><span>▧</span><div><h2>Jelajahi Dokumentasi Pembangunan dan Kegiatan Desa</h2><p>Lihat berbagai dokumentasi foto kegiatan masyarakat, program pembangunan, serta potensi {desa.namaDesa??"desa"}.</p></div><Link href="/galeri">▧　Lihat Semua Galeri　→</Link></section>
+    </div>
+    <PublicSiteFooter desa={desa} location={location} logoUrl={logoUrl}/>
+  </main>;
 }
