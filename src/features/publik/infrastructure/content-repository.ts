@@ -911,3 +911,66 @@ export async function listVideoGaleriPublik(
     .orderBy(desc(galeriVideo.publishedAt), desc(galeriVideo.id))
     .limit(limit);
 }
+
+/* ------------------------------------------------------- kelola galeri admin */
+
+export interface VideoGaleriAdmin {
+  id: number;
+  judul: string;
+  url: string;
+  provider: string;
+  publishedAt: Date | null;
+}
+
+export async function listVideoGaleriAdmin(villageId: number): Promise<VideoGaleriAdmin[]> {
+  return db
+    .select({
+      id: galeriVideo.id,
+      judul: galeriVideo.judul,
+      url: galeriVideo.url,
+      provider: galeriVideo.provider,
+      publishedAt: galeriVideo.publishedAt,
+    })
+    .from(galeriVideo)
+    .where(eq(galeriVideo.villageId, villageId))
+    .orderBy(desc(galeriVideo.publishedAt), desc(galeriVideo.id));
+}
+
+export async function simpanMetadataAlbumAdmin(
+  villageId: number,
+  albumId: number,
+  kategori: string | null,
+  publishedAt: Date | null,
+): Promise<void> {
+  await db
+    .update(galeriAlbum)
+    .set({ kategori, publishedAt })
+    .where(and(eq(galeriAlbum.id, albumId), eq(galeriAlbum.villageId, villageId)));
+}
+
+export async function tambahVideoGaleriAdmin(
+  villageId: number,
+  data: {
+    judul: string;
+    keterangan: string | null;
+    url: string;
+    provider: "youtube" | "vimeo";
+    publishedAt: Date;
+  },
+): Promise<void> {
+  await db.insert(galeriVideo).values({
+    villageId,
+    judul: data.judul,
+    keterangan: data.keterangan,
+    url: data.url,
+    provider: data.provider,
+    aktif: true,
+    publishedAt: data.publishedAt,
+  });
+}
+
+export async function hapusVideoGaleriAdmin(villageId: number, videoId: number): Promise<void> {
+  await db
+    .delete(galeriVideo)
+    .where(and(eq(galeriVideo.id, videoId), eq(galeriVideo.villageId, villageId)));
+}
