@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 function mediaUrl(value: string | null | undefined, villageId: number): string | null {
   if (!value) return null;
-  const segments = value.split(/[\\\\/]/).filter(Boolean);
+  const segments = value.split(/[\\/]/).filter(Boolean);
   if (
     segments.length === 0 ||
     segments.some((segment) => segment === "." || segment === ".." || segment.includes(".."))
