@@ -394,3 +394,23 @@ export async function hapusSliderWebsiteAction(fd: FormData): Promise<void> {
   await hapusMedia(row.gambar);
   revalidatePath("/website/konten"); revalidatePath("/website"); redirect("/website/konten?deleted=1#slider");
 }
+
+
+export async function ubahHalamanWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-halaman", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  const judul = text(fd, "judul");
+  const slug = slugify(text(fd, "slug") || judul);
+  const isi = text(fd, "isi");
+  if (!id || !judul || judul.length > 200 || !slug || !isi) throw new Error("Data halaman tidak lengkap.");
+  const [existing] = await db.select({ id: halamanStatis.id }).from(halamanStatis)
+    .where(and(eq(halamanStatis.villageId, villageId), eq(halamanStatis.slug, slug))).limit(1);
+  const [current] = await db.select({ id: halamanStatis.id }).from(halamanStatis)
+    .where(and(eq(halamanStatis.villageId, villageId), eq(halamanStatis.id, id))).limit(1);
+  if (!current) throw new Error("Halaman tidak ditemukan.");
+  if (existing && existing.id !== id) throw new Error("Slug halaman sudah digunakan.");
+  await db.update(halamanStatis).set({ judul, slug, isi: sanitasiHtml(isi) })
+    .where(and(eq(halamanStatis.villageId, villageId), eq(halamanStatis.id, id)));
+  revalidatePath("/website/halaman"); redirect("/website/halaman?saved=1");
+}
