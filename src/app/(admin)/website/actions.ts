@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { db } from "@/db";
-import { dokumenPublik, galeriAlbum, galeriFoto, halamanStatis } from "@/db/schema";
+import { agendaKegiatan, berita, beritaKategori, dokumenPublik, galeriAlbum, galeriFoto, halamanStatis, slider, theme, widget } from "@/db/schema";
 import { updateIdentitas } from "@/features/desa/application/use-cases";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { desaFormSchema } from "@/features/desa/domain/desa";
@@ -221,4 +221,141 @@ export async function unggahFotoWebsiteAction(fd: FormData): Promise<void> {
   await db.insert(galeriFoto).values({ villageId, albumId, gambar, judul: text(fd, "judulFoto") || null, keterangan: text(fd, "keteranganFoto") || null, aktif: true, slider: false, urut: 0 });
   revalidatePath("/website/konten");
   redirect("/website/konten?saved=1#galeri");
+}
+
+export async function simpanTemaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-pengaturan", "update");
+  const villageId = await resolveVillageId(user);
+  const [active] = await db.select({ id: theme.id, opsi: theme.opsi }).from(theme)
+    .where(and(eq(theme.villageId, villageId), eq(theme.aktif, true))).limit(1);
+  if (!active) throw new Error("Tema desa belum disiapkan oleh Super Admin.");
+  const warnaUtama = text(fd, "warnaUtama");
+  const warnaAksen = text(fd, "warnaAksen");
+  const font = text(fd, "font");
+  const logoTampil = fd.get("logoTampil") === "on";
+  const warna = /^#[0-9a-fA-F]{6}$/;
+  if (!warna.test(warnaUtama) || !warna.test(warnaAksen)) throw new Error("Warna tema harus berupa kode HEX enam digit.");
+  if (!["system", "sans", "serif"].includes(font)) throw new Error("Pilihan font tidak valid.");
+  let opsiLama: Record<string, unknown> = {};
+  try { const parsed: unknown = active.opsi ? JSON.parse(active.opsi) : {}; if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) opsiLama = parsed as Record<string, unknown>; } catch { opsiLama = {}; }
+  const opsi = { ...opsiLama, branding: { warnaUtama, warnaAksen, font, logoTampil } };
+  await db.update(theme).set({ opsi: JSON.stringify(opsi) }).where(and(eq(theme.villageId, villageId), eq(theme.id, active.id)));
+  revalidatePath("/website"); revalidatePath("/website/pengaturan");
+  redirect("/website/pengaturan?saved=1#tema");
+}
+
+export async function ubahMenuWebsiteDetailAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-halaman", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  const nama = text(fd, "nama");
+  const link = text(fd, "link");
+  const linkTipe = text(fd, "linkTipe");
+  const parentId = num(fd, "parentId");
+  if (!id || !nama || nama.length > 50 || !link || link.length > 500 || !["internal", "eksternal", "halaman"].includes(linkTipe)) throw new Error("Data menu tidak valid.");
+  const [current] = await db.select({ id: (await import("@/db/schema")).menuPublik.id }).from((await import("@/db/schema")).menuPublik).where(and(eq((await import("@/db/schema")).menuPublik.villageId, villageId), eq((await import("@/db/schema")).menuPublik.id, id))).limit(1);
+  if (!current) throw new Error("Menu tidak ditemukan.");
+  if (parentId) {
+    const [parent] = await db.select({ id: (await import("@/db/schema")).menuPublik.id }).from((await import("@/db/schema")).menuPublik).where(and(eq((await import("@/db/schema")).menuPublik.villageId, villageId), eq((await import("@/db/schema")).menuPublik.id, parentId))).limit(1);
+    if (!parent || parentId === id) throw new Error("Menu induk tidak valid.");
+  }
+  await db.update((await import("@/db/schema")).menuPublik).set({ nama, link, linkTipe, parentId }).where(and(eq((await import("@/db/schema")).menuPublik.villageId, villageId), eq((await import("@/db/schema")).menuPublik.id, id)));
+  revalidatePath("/website/halaman"); redirect("/website/halaman?saved=1");
+}
+
+export async function tambahBeritaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const judul = text(fd, "judulBerita");
+  const slug = slugify(text(fd, "slugBerita") || judul);
+  const isi = text(fd, "isiBerita");
+  const ringkasan = text(fd, "ringkasanBerita");
+  if (!judul || judul.length > 200 || !slug || !isi) throw new Error("Judul, slug, dan isi berita wajib diisi.");
+  const [existing] = await db.select({ id: berita.id }).from(berita).where(and(eq(berita.villageId, villageId), eq(berita.slug, slug))).limit(1);
+  if (existing) throw new Error("Slug berita sudah digunakan.");
+  const kategoriText = text(fd, "kategoriId");
+  const kategoriId = kategoriText ? Number(kategoriText) : null;
+  if (kategoriId !== null) {
+    const [category] = await db.select({ id: beritaKategori.id }).from(beritaKategori).where(and(eq(beritaKategori.villageId, villageId), eq(beritaKategori.id, kategoriId))).limit(1);
+    if (!category) throw new Error("Kategori berita tidak ditemukan.");
+  }
+  const file = fd.get("gambarBerita");
+  let gambar: string | null = null;
+  if (file instanceof File && file.size > 0) gambar = await simpanBerkasMedia(villageId, { nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()) }, "berita", "gambar");
+  const status = text(fd, "statusBerita") === "published" ? "published" : "draft";
+  const tanggal = text(fd, "terbitPada");
+  const terbitPada = tanggal ? new Date(tanggal) : status === "published" ? new Date() : null;
+  await db.insert(berita).values({ villageId, judul, slug, ringkasan: ringkasan || null, isi: sanitasiHtml(isi), kategoriId, gambar, status, terbitPada, headline: fd.get("headline") === "on", slider: fd.get("tampilSlider") === "on" });
+  revalidatePath("/website/konten"); revalidatePath("/website"); redirect("/website/konten?saved=1#berita");
+}
+
+export async function ubahStatusBeritaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  if (!id) throw new Error("Berita tidak valid.");
+  const status = text(fd, "status") === "published" ? "published" : "draft";
+  await db.update(berita).set({ status, terbitPada: status === "published" ? new Date() : null }).where(and(eq(berita.villageId, villageId), eq(berita.id, id)));
+  revalidatePath("/website/konten"); revalidatePath("/website"); redirect("/website/konten?saved=1#berita");
+}
+
+export async function tambahAgendaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const judul = text(fd, "judulAgenda");
+  const mulai = text(fd, "mulaiAgenda");
+  const selesai = text(fd, "selesaiAgenda");
+  if (!judul || judul.length > 200 || !/^\d{4}-\d{2}-\d{2}$/.test(mulai)) throw new Error("Judul dan tanggal mulai agenda wajib diisi.");
+  if (selesai && (!/^\d{4}-\d{2}-\d{2}$/.test(selesai) || selesai < mulai)) throw new Error("Tanggal selesai tidak valid.");
+  await db.insert(agendaKegiatan).values({ villageId, judul, mulai, selesai: selesai || null, jamMulai: text(fd, "jamMulai") || null, jamSelesai: text(fd, "jamSelesai") || null, kategori: text(fd, "kategoriAgenda") || "umum", status: "rencana", lokasi: text(fd, "lokasiAgenda") || null, deskripsi: text(fd, "deskripsiAgenda") || null, tayang: fd.get("tayangAgenda") === "on" });
+  revalidatePath("/website/konten"); revalidatePath("/website"); redirect("/website/konten?saved=1#agenda");
+}
+
+export async function ubahStatusAgendaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  if (!id) throw new Error("Agenda tidak valid.");
+  await db.update(agendaKegiatan).set({ tayang: text(fd, "tayang") === "true" }).where(and(eq(agendaKegiatan.villageId, villageId), eq(agendaKegiatan.id, id)));
+  revalidatePath("/website/konten"); revalidatePath("/website"); redirect("/website/konten?saved=1#agenda");
+}
+
+export async function tambahWidgetWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-halaman", "update");
+  const villageId = await resolveVillageId(user);
+  const judul = text(fd, "judulWidget");
+  const jenis = Number(text(fd, "jenisWidget"));
+  if (!Number.isInteger(jenis) || jenis < 1 || jenis > 6) throw new Error("Jenis widget tidak valid.");
+  await db.insert(widget).values({ villageId, judul: judul || null, isi: text(fd, "isiWidget") || null, jenis, pengaturan: null, urut: Math.max(0, Number(text(fd, "urutWidget")) || 0), aktif: fd.get("aktifWidget") === "on" });
+  revalidatePath("/website/halaman"); redirect("/website/halaman?saved=1#widget");
+}
+
+export async function ubahStatusWidgetWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-halaman", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  if (!id) throw new Error("Widget tidak valid.");
+  await db.update(widget).set({ aktif: text(fd, "aktif") === "true" }).where(and(eq(widget.villageId, villageId), eq(widget.id, id)));
+  revalidatePath("/website/halaman"); redirect("/website/halaman?saved=1#widget");
+}
+
+export async function tambahSliderWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const file = fd.get("gambarSlider");
+  if (!(file instanceof File) || file.size === 0) throw new Error("Gambar slider wajib dipilih.");
+  const gambar = await simpanBerkasMedia(villageId, { nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()) }, "slider", "gambar");
+  const tautan = text(fd, "tautanSlider");
+  if (tautan) { let url: URL; try { url = new URL(tautan); } catch { throw new Error("Tautan slider tidak valid."); } if (!["http:", "https:"].includes(url.protocol)) throw new Error("Tautan slider harus HTTP atau HTTPS."); }
+  await db.insert(slider).values({ villageId, gambar, judul: text(fd, "judulSlider") || null, keterangan: text(fd, "keteranganSlider") || null, tautan: tautan || null, urut: Math.max(0, Number(text(fd, "urutSlider")) || 0), aktif: fd.get("aktifSlider") === "on" });
+  revalidatePath("/website/konten"); revalidatePath("/website"); redirect("/website/konten?saved=1#slider");
+}
+
+export async function ubahStatusSliderWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  if (!id) throw new Error("Slider tidak valid.");
+  await db.update(slider).set({ aktif: text(fd, "aktif") === "true" }).where(and(eq(slider.villageId, villageId), eq(slider.id, id)));
+  revalidatePath("/website/konten"); revalidatePath("/website"); redirect("/website/konten?saved=1#slider");
 }
