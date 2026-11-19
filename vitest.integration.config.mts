@@ -42,6 +42,7 @@ export default defineConfig({
       "src/db/b5-set-null-relations-composite-fk.integration.test.ts",
       "src/db/b5-tenant-migration-guard.integration.test.ts",
       "src/db/m0016-tenant-child-tables.integration.test.ts",
+      "src/db/m0017-role-tenant-constraint.integration.test.ts",
       "src/db/tenant-composite-fk.integration.test.ts",
       "src/features/agenda/infrastructure/agenda-repository.integration.test.ts",
       "src/features/bantuan/integrasi-warga.test.ts",
