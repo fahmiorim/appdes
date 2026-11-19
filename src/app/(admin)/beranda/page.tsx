@@ -297,7 +297,7 @@ export default async function AdminHomePage() {
 
       {stats && statistik ? (
         <>
-          <div className="beranda-kpi-grid">
+          <div className="beranda-kpi-grid beranda-kpi-grid-lima">
             <article className="beranda-card beranda-kpi" data-tone="biru">
               <span className="beranda-kpi-icon">{ikonKpi("penduduk")}</span>
               <div className="beranda-kpi-body">
@@ -354,9 +354,6 @@ export default async function AdminHomePage() {
                 </span>
               </div>
             </article>
-          </div>
-
-          <div className="beranda-kpi-grid beranda-kpi-grid-lima">
             {laporanApbdes ? (
               <article className="beranda-card beranda-kpi" data-tone="ungu">
                 <span className="beranda-kpi-icon">{ikonAksesCepat("apbdes")}</span>
