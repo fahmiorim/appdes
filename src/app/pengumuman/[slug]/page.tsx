@@ -9,7 +9,7 @@ import { sanitasiHtml } from "@/lib/sanitize";
 
 import styles from "./pengumuman-detail.module.css";
 import { PublicSiteFooter, PublicSiteHeader } from "../../public-site-layout";
-import { SalinTautan } from "./salin-tautan";
+import { BagikanPengumuman } from "./bagikan-pengumuman";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
@@ -56,8 +56,6 @@ export default async function DetailPengumumanPage({ params }: Props) {
   const document = mediaUrl(item.dokumen, desa.id);
   const logo = mediaUrl(desa.logo, desa.id);
   const location = [desa.namaKecamatan, desa.namaKabupaten, desa.namaPropinsi].filter(Boolean).join(", ");
-  const sharePath = `/pengumuman/${encodeURIComponent(item.slug)}`;
-  const shareText = encodeURIComponent(item.judul);
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
@@ -104,7 +102,7 @@ export default async function DetailPengumumanPage({ params }: Props) {
               </dl>
             </section>
             {document ? <section className={styles.attachments}><h3>♧　Lampiran Dokumen</h3><a href={document} target="_blank" rel="noreferrer"><span className={styles.pdf}>PDF</span><span><strong>{item.judul}</strong><small>Dokumen lampiran · Buka / unduh</small></span><b>↓</b></a></section> : null}
-            <div className={styles.shareRow}><strong>♧　Bagikan Pengumuman</strong><a className={styles.whatsapp} href={`https://wa.me/?text=${shareText}%20${encodeURIComponent(sharePath)}`} target="_blank" rel="noreferrer">WhatsApp</a><a className={styles.facebook} href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(sharePath)}`} target="_blank" rel="noreferrer">Facebook</a><a className={styles.telegram} href={`https://t.me/share/url?url=${encodeURIComponent(sharePath)}&text=${shareText}`} target="_blank" rel="noreferrer">Telegram</a><SalinTautan path={sharePath}/></div>
+            <BagikanPengumuman title={item.judul}/>
           </article>
         </div>
 
