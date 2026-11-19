@@ -17,9 +17,13 @@ CREATE TABLE `potensi_desa` (
 	CONSTRAINT `potensi_desa_id` PRIMARY KEY (`id`),
 	CONSTRAINT `potensi_desa_village_fk` FOREIGN KEY (`village_id`) REFERENCES `villages` (`id`) ON DELETE CASCADE
 );
+--> statement-breakpoint
 CREATE UNIQUE INDEX `potensi_desa_village_slug_uq` ON `potensi_desa` (`village_id`, `slug`);
+--> statement-breakpoint
 CREATE UNIQUE INDEX `potensi_desa_village_id_uq` ON `potensi_desa` (`village_id`, `id`);
+--> statement-breakpoint
 CREATE INDEX `potensi_desa_village_category_active_idx` ON `potensi_desa` (`village_id`, `kategori`, `aktif`, `urut`);
+--> statement-breakpoint
 
 CREATE TABLE `potensi_indikator` (
 	`id` int NOT NULL AUTO_INCREMENT,
@@ -33,4 +37,5 @@ CREATE TABLE `potensi_indikator` (
 	CONSTRAINT `potensi_indikator_village_fk` FOREIGN KEY (`village_id`) REFERENCES `villages` (`id`) ON DELETE CASCADE,
 	CONSTRAINT `potensi_indikator_tenant_fk` FOREIGN KEY (`village_id`, `potensi_id`) REFERENCES `potensi_desa` (`village_id`, `id`) ON DELETE CASCADE
 );
+--> statement-breakpoint
 CREATE INDEX `potensi_indikator_village_potensi_idx` ON `potensi_indikator` (`village_id`, `potensi_id`, `urut`);
