@@ -5412,7 +5412,33 @@ a.beranda-quick-tile:hover {
 .penduduk-heading-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
+}
+
+.penduduk-form-card {
+  margin-top: 0;
+}
+
+.penduduk-form-lebar {
+  grid-column: 1 / -1;
+}
+
+.penduduk-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 620px) {
+  .penduduk-form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .penduduk-form-actions .button {
+    width: 100%;
+  }
 }
 
 .penduduk-kpi-grid {

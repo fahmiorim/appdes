@@ -23,7 +23,11 @@ import {
   catatDatang,
   catatKelahiran,
 } from "@/features/penduduk/application/riwayat-penduduk-use-cases";
-import { createPenduduk, updatePenduduk } from "@/features/penduduk/application/use-cases";
+import {
+  createPenduduk,
+  getPendudukFormData,
+  updatePenduduk,
+} from "@/features/penduduk/application/use-cases";
 import type { PendudukFilter, PendudukFormInput } from "@/features/penduduk/domain/penduduk";
 import {
   listDpt,
@@ -423,6 +427,13 @@ describe("AUD-003 update penduduk: foreign reference dan target tenant", () => {
 
     const [row] = await db.select().from(residents).where(eq(residents.id, pendudukB));
     expect(row?.name).toBe(`Target B ${RUN}`);
+  });
+
+  it("form ubah tidak membuka penduduk milik desa lain", async () => {
+    const { desaA, pendudukB } = dataUji();
+    sesi.villageId = desaA;
+
+    await expect(getPendudukFormData(pendudukB)).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("menerima referensi desa sendiri dan menulis dengan predicate id + villageId", async () => {

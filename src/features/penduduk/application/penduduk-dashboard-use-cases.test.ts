@@ -2,12 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import * as desa from "@/features/desa/application/resolve-village";
 import * as pendudukRepo from "@/features/penduduk/infrastructure/penduduk-repository";
+import * as referenceRepo from "@/features/penduduk/infrastructure/reference-repository";
 import * as wilayahRepo from "@/features/wilayah/infrastructure/wilayah-repository";
 import * as dal from "@/lib/dal";
 
 import {
   getPendudukDetailData,
   getPendudukFilterOptionsData,
+  getPendudukFormData,
   getRingkasanPendudukData,
 } from "./use-cases";
 
@@ -40,6 +42,21 @@ vi.mock("@/features/wilayah/infrastructure/wilayah-repository", () => ({
 }));
 
 const admin = { id: "u-admin", villageId: 7 } as never;
+
+const referensiKosong = {
+  religions: [],
+  educations: [],
+  occupations: [],
+  maritalStatuses: [],
+  familyRelations: [],
+  bloodTypes: [],
+  citizenships: [],
+  families: [],
+  regions: [],
+  dusun: [],
+  rw: [],
+  rt: [],
+};
 
 describe("use case dashboard penduduk", () => {
   beforeEach(() => {
@@ -79,6 +96,41 @@ describe("use case dashboard penduduk", () => {
     await expect(getPendudukDetailData(99)).rejects.toThrow("Akses ditolak");
     expect(pendudukRepo.getPendudukDetailById).not.toHaveBeenCalled();
     expect(pendudukRepo.getRingkasanPenduduk).not.toHaveBeenCalled();
+  });
+
+  it("membuka form tambah hanya dengan izin update dan memakai desa sesi", async () => {
+    vi.mocked(referenceRepo.getPendudukReferenceData).mockResolvedValue(referensiKosong);
+
+    await expect(getPendudukFormData()).resolves.toEqual({
+      references: referensiKosong,
+      penduduk: null,
+    });
+    expect(dal.requirePermission).toHaveBeenCalledWith("penduduk", "update");
+    expect(referenceRepo.getPendudukReferenceData).toHaveBeenCalledWith(7);
+    expect(pendudukRepo.findPendudukById).not.toHaveBeenCalled();
+  });
+
+  it("mengambil data ubah dari desa sesi, bukan id dari klien", async () => {
+    vi.mocked(referenceRepo.getPendudukReferenceData).mockResolvedValue(referensiKosong);
+    vi.mocked(pendudukRepo.findPendudukById).mockResolvedValue({ id: 99 } as never);
+
+    await expect(getPendudukFormData(99)).resolves.toMatchObject({ penduduk: { id: 99 } });
+    expect(pendudukRepo.findPendudukById).toHaveBeenCalledWith(7, 99);
+  });
+
+  it("menolak id penduduk milik desa lain sebagai tidak ditemukan", async () => {
+    vi.mocked(referenceRepo.getPendudukReferenceData).mockResolvedValue(referensiKosong);
+    vi.mocked(pendudukRepo.findPendudukById).mockResolvedValue(null);
+
+    await expect(getPendudukFormData(99)).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
+  it("tidak menyentuh referensi bila izin update ditolak", async () => {
+    vi.mocked(dal.requirePermission).mockRejectedValue(new Error("Akses ditolak"));
+
+    await expect(getPendudukFormData(99)).rejects.toThrow("Akses ditolak");
+    expect(pendudukRepo.findPendudukById).not.toHaveBeenCalled();
+    expect(referenceRepo.getPendudukReferenceData).not.toHaveBeenCalled();
   });
 
   it("menyusun opsi wilayah unik dan terurut dari desa sesi", async () => {

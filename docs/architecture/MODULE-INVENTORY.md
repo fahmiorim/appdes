@@ -1,15 +1,15 @@
 # Inventaris Modul Appdes SID
 
 Dokumen ini adalah inventaris route, Server Action, repository, dan use case yang
-digenerate ulang dari tree `origin/main` commit `58347a6` (19 November 2026).
+digenerate ulang dari tree `55d132f` commit `55d132f` (19 November 2026).
 Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 
-- 46 halaman (`page.tsx`), 2 layout, dan 82 route handler.
-- 6 berkas berisi `"use server"` (Server Action).
+- 48 halaman (`page.tsx`), 2 layout, dan 82 route handler.
+- 7 berkas berisi `"use server"` (Server Action).
 - 52 direktori fitur di `src/features`; 72 berkas `*-repository.ts` dan 92 berkas application/use case non-test.
-- 17 halaman admin (termasuk `/beranda` dan `/super-admin/*`).
+- 19 halaman admin (termasuk `/beranda` dan `/super-admin/*`).
 
-> Metode: `git ls-tree -r --name-only origin/main`; hitungan `page.tsx`,
+> Metode: `git ls-tree -r --name-only 55d132f`; hitungan `page.tsx`,
 > `route.ts`, `layout.tsx`, `src/features/*/application/*.ts` non-test, dan
 > `src/features/*/infrastructure/**/*-repository.ts` non-test. Route group
 > Next.js (`(admin)`, `(auth)`, `(public)`, `(warga)`) dihapus dari path;
@@ -166,6 +166,8 @@ webhook. Route handler Admin di bawah umumnya bukan UI pengelolaan.
 | `/pendapat/ekspor` | Route handler | Admin | `src/app/(admin)/pendapat/ekspor/route.ts` |
 | `/penduduk` | Halaman | Admin | `src/app/(admin)/penduduk/page.tsx` |
 | `/penduduk/[id]` | Halaman | Admin | `src/app/(admin)/penduduk/[id]/page.tsx` |
+| `/penduduk/[id]/ubah` | Halaman | Admin | `src/app/(admin)/penduduk/[id]/ubah/page.tsx` |
+| `/penduduk/baru` | Halaman | Admin | `src/app/(admin)/penduduk/baru/page.tsx` |
 | `/penduduk/dpt/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/dpt/ekspor/route.ts` |
 | `/penduduk/dpt/rekap/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/dpt/rekap/ekspor/route.ts` |
 | `/penduduk/dtks/ekspor` | Route handler | Admin | `src/app/(admin)/penduduk/dtks/ekspor/route.ts` |
@@ -214,6 +216,7 @@ webhook. Route handler Admin di bawah umumnya bukan UI pengelolaan.
 
 | Berkas |
 |---|
+| `src/app/(admin)/penduduk/actions.ts` |
 | `src/app/(admin)/pengaturan/grup-akses/actions.ts` |
 | `src/app/(admin)/pengaturan/pengguna/actions.ts` |
 | `src/app/(admin)/super-admin/actions.ts` |
