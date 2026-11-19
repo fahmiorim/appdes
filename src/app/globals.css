@@ -6124,3 +6124,69 @@ a.beranda-quick-tile:hover {
   font-size: 11.5px;
   line-height: 1.6;
 }
+
+
+/* Dashboard Admin Desa — parity mockup v1 */
+.beranda-kpi-grid-lima {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.beranda-grid-dashboard-extra {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
+}
+.beranda-grid-dashboard-extra .beranda-card-head > a,
+.beranda-card-head > a {
+  color: var(--color-action);
+  font-size: 11px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.beranda-apbdes-summary {
+  display: flex;
+  align-items: center;
+  gap: clamp(18px, 3vw, 36px);
+  min-height: 150px;
+}
+.beranda-apbdes-ring {
+  display: grid;
+  width: 142px;
+  height: 142px;
+  flex: 0 0 142px;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+  border-radius: 50%;
+  background: radial-gradient(circle closest-side, #fff 77%, transparent 79% 100%), conic-gradient(#7a20f0 var(--realisasi), #ece7f8 0);
+  color: #10183d;
+}
+.beranda-apbdes-ring strong {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+}
+.beranda-apbdes-ring span { color: #68728d; font-size: 11px; font-weight: 700; }
+.beranda-apbdes-summary dl { display: grid; flex: 1; gap: 13px; margin: 0; }
+.beranda-apbdes-summary dl div { display: grid; gap: 2px; }
+.beranda-apbdes-summary dt { color: #69748f; font-size: 10.5px; }
+.beranda-apbdes-summary dd { margin: 0; color: #172044; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.beranda-program-list { display: grid; gap: 11px; margin: 0; padding: 0; list-style: none; }
+.beranda-program-list li { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(70px, 1fr) 36px auto; align-items: center; gap: 10px; }
+.beranda-program-list li > div:first-child { display: grid; min-width: 0; gap: 2px; }
+.beranda-program-list li > div:first-child strong { overflow: hidden; color: #1c2748; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.beranda-program-list li > div:first-child span { overflow: hidden; color: #8490a8; font-size: 9.5px; text-overflow: ellipsis; white-space: nowrap; }
+.beranda-program-progress { height: 9px; overflow: hidden; border-radius: 99px; background: #e9e7f3; }
+.beranda-program-progress span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #7a20f0, #a66af7); }
+.beranda-program-list li > strong { color: #1b2545; font-size: 10.5px; font-variant-numeric: tabular-nums; }
+.beranda-program-status { padding: 4px 8px; border-radius: 99px; background: #e5f7ed; color: #16734c; font-size: 9px; font-weight: 800; white-space: nowrap; }
+@media (max-width: 1440px) {
+  .beranda-kpi-grid-lima { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 1080px) {
+  .beranda-grid-dashboard-extra { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 620px) {
+  .beranda-kpi-grid-lima { grid-template-columns: minmax(0, 1fr); }
+  .beranda-apbdes-summary { flex-wrap: wrap; justify-content: center; }
+  .beranda-program-list li { grid-template-columns: minmax(0, 1fr) 42px; }
+  .beranda-program-progress { grid-column: 1; grid-row: 2; }
+  .beranda-program-status { grid-column: 2; grid-row: 2; justify-self: end; }
+}
