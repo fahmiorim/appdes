@@ -15,7 +15,9 @@
 | --- | --- | --- |
 | Serialisasi | kunci `(desa, tahun)` + transaksi | transaksi saja, tanpa kunci |
 | Nilai induk | dihitung dari jumlah anak | ditulis apa adanya dari berkas impor |
-| Nilai realisasi | dari input | selalu `0.00`, menimpa realisasi tersimpan |
+| Nilai realisasi | dari input | hanya pada baris baru (`0.00`); baris yang sudah ada tidak diubah (`main`) |
+
+Catatan: pada `main`, impor sama sekali tidak menulis `realisasi` untuk baris yang sudah ada—`onDuplicateKeyUpdate` hanya memuat `anggaran`. Penimpaan realisasi baru muncul saat impor dialihkan ke `saveKeuanganNilai` di branch ini (commit `86be91f`) dan sudah diperbaiki oleh kebijakan `pertahankanRealisasi` (`48e7222`). Rinciannya ada di `docs/reports/01-security/AUD-013-realisasi-impact-2026-11-19.md`.
 
 Akibatnya dua hal:
 
