@@ -120,6 +120,13 @@
       "when": 1795278963264,
       "tag": "0016_tenant_child_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1795365363264,
+      "tag": "0017_role_tenant_trigger",
+      "breakpoints": true
     }
   ]
 }

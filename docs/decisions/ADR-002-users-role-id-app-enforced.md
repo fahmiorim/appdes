@@ -2,7 +2,7 @@
 
 - **Task:** AUD-034 — keputusan relasi `users.role_id` → `roles.id` pada matriks B2.
 - **Tanggal:** 16 November 2026
-- **Status:** Diterima
+- **Status:** Diterima; dilengkapi ADR-003 (sejak 20 November 2026 kepemilikan tenant juga ditegakkan trigger database).
 - **Branch:** `task/AUD-034-users-role-id-app-enforced`
 - **Base commit:** `30b81de4be06a39298ec23d2b319cb14740840a8` (`main` setelah PR #80)
 - **Commit keputusan:** `200179fc8ea09c37602455b0c232665836236058`
