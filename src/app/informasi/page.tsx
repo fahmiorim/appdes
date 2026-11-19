@@ -4,6 +4,7 @@ import { agendaMendatang } from "@/features/agenda/application/agenda-use-cases"
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { getStatistikDesa } from "@/features/desa/application/statistik-desa";
 import { daftarBerita, daftarDokumenPublik, profilDesaPublik } from "@/features/publik/application/konten-publik";
+import { isSafeDocumentLink } from "@/features/publik/domain/dokumen";
 import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
 import styles from "./informasi.module.css";
 
@@ -80,7 +81,7 @@ export default async function InformasiDesaPage() {
           </section>
         </div>
         <section className={styles.panel + " " + styles.documents}><div className={styles.panelHeading}><div><span className={styles.kicker}>TRANSPARANSI INFORMASI</span><h2>Dokumen Publik Desa</h2><p>Dokumen resmi yang dipublikasikan pemerintah desa.</p></div><Link href="/dokumen">Lihat Semua Dokumen →</Link></div>
-          {dokumen.length ? <div className={styles.documentList}>{dokumen.slice(0, 5).map((doc) => <article key={doc.id}><span className={styles.docIcon}>▤</span><div><h3>{doc.nama}</h3><small>{doc.kategori}{doc.tahun ? " · " + doc.tahun : ""}{doc.nomor ? " · " + doc.nomor : ""}</small></div>{doc.tautan ? <a href={doc.tautan} target="_blank" rel="noreferrer">Buka ↗</a> : doc.berkas ? <span className={styles.fileLabel}>Berkas tersedia</span> : <span className={styles.fileLabel}>Informasi</span>}</article>)}</div> : <div className={styles.empty}>Belum ada dokumen publik yang tersedia.</div>}
+          {dokumen.length ? <div className={styles.documentList}>{dokumen.slice(0, 5).map((doc) => <article key={doc.id}><span className={styles.docIcon}>▤</span><div><h3>{doc.nama}</h3><small>{doc.kategori}{doc.tahun ? " · " + doc.tahun : ""}{doc.nomor ? " · " + doc.nomor : ""}</small></div>{doc.tautan && isSafeDocumentLink(doc.tautan) ? <a href={doc.tautan} target="_blank" rel="noreferrer">Buka ↗</a> : mediaUrl(doc.berkas, desa.id) ? <a href={mediaUrl(doc.berkas, desa.id)!} target="_blank" rel="noreferrer">Buka berkas ↗</a> : <span className={styles.fileLabel}>Berkas belum tersedia</span>}</article>)}</div> : <div className={styles.empty}>Belum ada dokumen publik yang tersedia.</div>}
         </section>
         <section className={styles.bottomCta}><div><h2>Butuh Informasi Lebih Lanjut?</h2><p>Hubungi pemerintah {desa.namaDesa ?? "desa"} melalui kanal kontak resmi.</p></div><Link href="/kontak">Hubungi Kami　→</Link></section>
       </div>
