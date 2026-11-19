@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 const tabs = [
   { href: "/website", label: "Dashboard Website" },
@@ -14,7 +15,7 @@ export function WebsiteAdminShell({
   title: string;
   description: string;
   active: (typeof tabs)[number]["href"];
-  children: React.ReactNode;
+  children: ReactNode;
   action?: React.ReactNode;
 }) {
   return (
