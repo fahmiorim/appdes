@@ -261,9 +261,11 @@ export async function ubahMenuWebsiteDetailAction(fd: FormData): Promise<void> {
   if (!id || !nama || nama.length > 50 || !link || link.length > 500 || !["internal", "eksternal", "halaman"].includes(linkTipe)) throw new Error("Data menu tidak valid.");
   const [current] = await db.select({ id: menuPublik.id }).from(menuPublik).where(and(eq(menuPublik.villageId, villageId), eq(menuPublik.id, id))).limit(1);
   if (!current) throw new Error("Menu tidak ditemukan.");
+  if (linkTipe === "internal" && (!link.startsWith("/") || link.startsWith("//"))) throw new Error("Link internal harus berupa path lokal.");
+  if (linkTipe === "eksternal") { let url: URL; try { url = new URL(link); } catch { throw new Error("URL eksternal tidak valid."); } if (!["http:", "https:"].includes(url.protocol)) throw new Error("URL eksternal harus HTTP atau HTTPS."); }
   if (parentId) {
-    const [parent] = await db.select({ id: menuPublik.id }).from(menuPublik).where(and(eq(menuPublik.villageId, villageId), eq(menuPublik.id, parentId))).limit(1);
-    if (!parent || parentId === id) throw new Error("Menu induk tidak valid.");
+    const [parent] = await db.select({ id: menuPublik.id, parentId: menuPublik.parentId }).from(menuPublik).where(and(eq(menuPublik.villageId, villageId), eq(menuPublik.id, parentId))).limit(1);
+    if (!parent || parentId === id || parent.parentId !== null) throw new Error("Menu induk harus menu utama pada desa ini.");
   }
   await db.update(menuPublik).set({ nama, link, linkTipe, parentId }).where(and(eq(menuPublik.villageId, villageId), eq(menuPublik.id, id)));
   revalidatePath("/website/halaman"); redirect("/website/halaman?saved=1");
