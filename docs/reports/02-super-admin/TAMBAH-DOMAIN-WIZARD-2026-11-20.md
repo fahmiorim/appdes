@@ -133,7 +133,7 @@ Test fokus mencakup guard non-super-admin, penolakan id domain yang tidak terdaf
 - **Tidak ada verifikasi kepemilikan domain (TXT/HTTP challenge).** Langkah DNS hanya memeriksa resolusi host; kepemilikan domain tidak dibuktikan secara kriptografis.
 - Domain custom tetap dapat disimpan ketika DNS/TLS bermasalah; statusnya ditampilkan sebagai peringatan, bukan sukses palsu. Ini disengaja agar operator dapat menyelesaikan konfigurasi infrastruktur setelah pendaftaran.
 - Pemeriksaan satu domain dapat memakan waktu hingga batas timeout pemeriksa TLS yang sudah ada (beberapa alamat × 8 detik). Belum ada background job atau progres streaming.
-- Dialog tambah domain lama tetap dipertahankan untuk pemakaian di Konsol Tenant. Route baru menjadi jalur utama dari Daftar Domain.
+- Dialog tambah domain lama tidak dihapus pada task ini. Setelah tombol Daftar Domain dialihkan ke wizard, komponen tersebut tidak lagi dipakai; penghapusan atau penggunaannya kembali menunggu task terpisah agar scope tetap fokus.
 - Route ini belum memiliki audit event khusus untuk pemeriksaan DNS/SSL per domain; pencatatan audit yang ada baru untuk perubahan domain/tenant.
 - Test penuh seluruh repository tidak dijalankan ulang; validasi difokuskan pada file yang berubah.
 
