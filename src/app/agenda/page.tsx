@@ -4,6 +4,7 @@ import { agendaBulan, agendaMendatang } from "@/features/agenda/application/agen
 import { agendaJamLabel, bulanAgendaDalamRentang, geserBulanAgenda } from "@/features/agenda/domain/agenda";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
+import { CetakJadwal } from "./cetak-jadwal";
 import styles from "./agenda.module.css";
 
 export const dynamic = "force-dynamic";
@@ -90,7 +91,7 @@ export default async function AgendaPage({searchParams}:Props) {
           <section className={styles.sideCard}><h2>▥　Statistik Kegiatan</h2><div className={styles.stats}><div><b>▦</b><strong>{stats.total}</strong><span>Total Kegiatan</span></div><div><b>✓</b><strong>{stats.done}</strong><span>Sudah Dilaksanakan</span></div><div><b>⌛</b><strong>{stats.ongoing}</strong><span>Sedang Berlangsung</span></div><div><b>◷</b><strong>{stats.planned}</strong><span>Dalam Perencanaan</span></div></div><small className={styles.statsNote}>Statistik untuk {selectedMonth}</small></section>
           <section className={styles.sideCard}><h2>▦　Kegiatan Mendatang</h2>{upcoming.length?<div className={styles.upcoming}>{upcoming.slice(0,3).map(item=>{const d=dateParts(item.mulai);return <Link key={item.id} href={"/agenda/"+item.id}><span><b>{d.day}</b><small>{d.month}</small></span><div><strong>{item.judul}</strong><small>◷　{agendaJamLabel(item.jamMulai,item.jamSelesai)??"Waktu belum diatur"}　|　{item.lokasi??"Lokasi belum ditentukan"}</small></div><b>›</b></Link>})}</div>:<p className={styles.muted}>Belum ada agenda mendatang.</p>}<Link className={styles.allLink} href="/agenda">Lihat Semua Kegiatan　→</Link></section>
           <section className={styles.notify}><span>▣</span><h2>Ikuti Setiap Kegiatan Desa</h2><p>Dapatkan informasi terbaru agenda dan kegiatan desa secara langsung.</p><Link href="/masuk">♧　Masuk untuk informasi warga</Link></section>
-          <section className={styles.download}><h2>↓　Unduh Jadwal Kegiatan</h2><p>Jadwal kegiatan desa dapat dicetak atau disimpan melalui fitur cetak.</p><button type="button" onClick={undefined}>Jadwal {selectedMonth} · Cetak</button></section>
+          <section className={styles.download}><h2>↓　Unduh Jadwal Kegiatan</h2><p>Jadwal kegiatan desa dapat dicetak atau disimpan melalui fitur cetak.</p><CetakJadwal/></section>
         </aside>
       </div>
     </div>
