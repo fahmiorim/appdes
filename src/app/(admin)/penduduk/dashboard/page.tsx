@@ -14,6 +14,7 @@ export default async function DashboardKependudukanPage() {
     getLaporanPenduduk("umur"),
   ]);
   const total = summary.total;
+  const totalUmur = age.statistik.total.jumlah;
   const genderRows = [
     { label: "Laki-laki", value: summary.lakiLaki, color: "blue" },
     { label: "Perempuan", value: summary.perempuan, color: "pink" },
@@ -34,10 +35,10 @@ export default async function DashboardKependudukanPage() {
       <div className="data-kependudukan-grid">
         <section className="platform-card data-panel"><header><h2>Komposisi Penduduk</h2><p>Perbandingan berdasarkan jenis kelamin</p></header>
           {genderRows.map((item) => <div className="data-bar-row" key={item.label}><span>{item.label}</span><div><i data-tone={item.color} style={{width: total ? (item.value / total * 100) + "%" : "0%"}} /></div><strong>{number.format(item.value)}</strong></div>)}
-          <footer>Total {number.format(total)} jiwa</footer>
+          <footer>Total terhitung {number.format(totalUmur)} jiwa</footer>
         </section>
-        <section className="platform-card data-panel"><header><h2>Kelompok Umur</h2><p>Distribusi berdasarkan kategori umur yang tersedia</p></header>
-          {age.statistik.baris.map((row) => <div className="data-bar-row" key={row.label}><span>{row.label}</span><div><i style={{width: total ? (row.jumlah / total * 100) + "%" : "0%"}} /></div><strong>{number.format(row.jumlah)}</strong></div>)}
+        <section className="platform-card data-panel"><header><h2>Kelompok Umur</h2><p>Distribusi penduduk aktif berdasarkan kategori umur</p></header>
+          {age.statistik.baris.map((row) => <div className="data-bar-row" key={row.label}><span>{row.label}</span><div><i style={{width: totalUmur ? (row.jumlah / totalUmur * 100) + "%" : "0%"}} /></div><strong>{number.format(row.jumlah)}</strong></div>)}
           {age.statistik.baris.length === 0 ? <p className="modul-empty">Belum ada data umur yang dapat dihitung.</p> : null}
         </section>
         <section className="platform-card data-panel"><header><h2>Akses Cepat</h2><p>Kelola data kependudukan desa</p></header>
