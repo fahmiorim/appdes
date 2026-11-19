@@ -25,7 +25,7 @@ export async function getWebsiteDashboardData() {
     getIdentitasDesa(villageId),
     db.select({ id: halamanStatis.id, judul: halamanStatis.judul, slug: halamanStatis.slug, aktif: halamanStatis.aktif }).from(halamanStatis).where(eq(halamanStatis.villageId, villageId)),
     db.select({ id: berita.id, judul: berita.judul, slug: berita.slug, gambar: berita.gambar, status: berita.status, terbitPada: berita.terbitPada, kategori: beritaKategori.nama, hit: berita.hit }).from(berita).leftJoin(beritaKategori, and(eq(berita.kategoriId, beritaKategori.id), eq(beritaKategori.villageId, villageId))).where(eq(berita.villageId, villageId)).orderBy(desc(berita.updatedAt)).limit(100),
-    db.select({ id: agendaKegiatan.id, judul: agendaKegiatan.judul, mulai: agendaKegiatan.mulai, selesai: agendaKegiatan.selesai, jamMulai: agendaKegiatan.jamMulai, jamSelesai: agendaKegiatan.jamSelesai, kategori: agendaKegiatan.kategori, status: agendaKegiatan.status, lokasi: agendaKegiatan.lokasi, deskripsi: agendaKegiatan.deskripsi, tayang: agendaKegiatan.tayang }).from(agendaKegiatan).where(eq(agendaKegiatan.villageId, villageId)).orderBy(desc(agendaKegiatan.mulai)).limit(100),
+    db.select({ id: agendaKegiatan.id, judul: agendaKegiatan.judul, mulai: agendaKegiatan.mulai, selesai: agendaKegiatan.selesai, jamMulai: agendaKegiatan.jamMulai, jamSelesai: agendaKegiatan.jamSelesai, kategori: agendaKegiatan.kategori, status: agendaKegiatan.status, lokasi: agendaKegiatan.lokasi, deskripsi: agendaKegiatan.deskripsi, tayang: agendaKegiatan.tayang }).from(agendaKegiatan).where(eq(agendaKegiatan.villageId, villageId)).orderBy(desc(agendaKegiatan.mulai)).limit(100),\n    db.select({ id: beritaKategori.id, nama: beritaKategori.nama }).from(beritaKategori).where(eq(beritaKategori.villageId, villageId)).orderBy(beritaKategori.nama),
     db.select({ id: galeriAlbum.id, nama: galeriAlbum.nama, slug: galeriAlbum.slug, keterangan: galeriAlbum.keterangan, sampul: galeriAlbum.sampul }).from(galeriAlbum).where(eq(galeriAlbum.villageId, villageId)),
     db.select({ albumId: galeriFoto.albumId, jumlah: count() }).from(galeriFoto).where(eq(galeriFoto.villageId, villageId)).groupBy(galeriFoto.albumId),
     db.select({ id: dokumenPublik.id, nama: dokumenPublik.nama, slug: dokumenPublik.slug, kategori: dokumenPublik.kategori, jenis: dokumenPublik.jenis, nomor: dokumenPublik.nomor, tahun: dokumenPublik.tahun, berkas: dokumenPublik.berkas, tautan: dokumenPublik.tautan, keterangan: dokumenPublik.keterangan, aktif: dokumenPublik.aktif }).from(dokumenPublik).where(eq(dokumenPublik.villageId, villageId)).orderBy(desc(dokumenPublik.updatedAt)),
@@ -71,7 +71,7 @@ export async function getWebsitePagesData() {
 
 export async function getWebsiteContentData() {
   const villageId = await tenantWebsite("website-konten");
-  const [articles, albums, photoCounts, slides, agenda] = await Promise.all([
+  const [articles, albums, photoCounts, slides, agenda, categories] = await Promise.all([
     db.select({ id: berita.id, judul: berita.judul, slug: berita.slug, ringkasan: berita.ringkasan, gambar: berita.gambar, status: berita.status, terbitPada: berita.terbitPada, kategoriId: berita.kategoriId, kategori: beritaKategori.nama, hit: berita.hit }).from(berita).leftJoin(beritaKategori, and(eq(berita.kategoriId, beritaKategori.id), eq(beritaKategori.villageId, villageId))).where(eq(berita.villageId, villageId)).orderBy(desc(berita.updatedAt)).limit(100),
     db.select({ id: galeriAlbum.id, nama: galeriAlbum.nama, slug: galeriAlbum.slug, keterangan: galeriAlbum.keterangan, sampul: galeriAlbum.sampul }).from(galeriAlbum).where(eq(galeriAlbum.villageId, villageId)).orderBy(desc(galeriAlbum.updatedAt)),
     db.select({ albumId: galeriFoto.albumId, jumlah: count() }).from(galeriFoto).where(eq(galeriFoto.villageId, villageId)).groupBy(galeriFoto.albumId),
@@ -79,7 +79,7 @@ export async function getWebsiteContentData() {
     db.select({ id: agendaKegiatan.id, judul: agendaKegiatan.judul, mulai: agendaKegiatan.mulai, selesai: agendaKegiatan.selesai, jamMulai: agendaKegiatan.jamMulai, jamSelesai: agendaKegiatan.jamSelesai, kategori: agendaKegiatan.kategori, status: agendaKegiatan.status, lokasi: agendaKegiatan.lokasi, deskripsi: agendaKegiatan.deskripsi, tayang: agendaKegiatan.tayang }).from(agendaKegiatan).where(eq(agendaKegiatan.villageId, villageId)).orderBy(desc(agendaKegiatan.mulai)).limit(100),
   ]);
   const albumWithCount = albums.map((album) => ({ ...album, jumlahFoto: photoCounts.find((row) => row.albumId === album.id)?.jumlah ?? 0 }));
-  return { berita: articles, album: albumWithCount, slider: slides, agenda };
+  return { berita: articles, album: albumWithCount, slider: slides, agenda, categories };
 }
 
 export async function getWebsiteDocumentsData() {
