@@ -17,6 +17,7 @@ import { getStatistikDesa } from "@/features/desa/application/statistik-desa";
 import { getIdentitasDesaUseCase } from "@/features/desa/application/use-cases";
 import { getLaporanKeuangan } from "@/features/keuangan/application/keuangan-use-cases";
 import { getBukuPembangunan } from "@/features/pembangunan/application/use-cases";
+import { listBeritaAdminData } from "@/features/publik/application/konten-admin";
 import { labelPermohonanStatus } from "@/features/layanan-mandiri/domain/layanan-mandiri";
 import { isSuperAdminUser } from "@/features/multi-desa/application/provisioning-use-cases";
 import { hasPermission } from "@/features/rbac/application/authorization";
@@ -248,6 +249,9 @@ export default async function AdminHomePage() {
           hasPermission(user.permissions, RESOURCES.pembangunan, "read")
             ? getBukuPembangunan(new Date().getFullYear())
             : Promise.resolve([]),
+          hasPermission(user.permissions, RESOURCES.berita, "read")
+            ? listBeritaAdminData(4)
+            : Promise.resolve([]),
         ]);
 
   const identitas = data?.[0] ?? null;
@@ -259,6 +263,7 @@ export default async function AdminHomePage() {
   const aktivitas = data?.[6] ?? [];
   const laporanApbdes = data?.[7] ?? null;
   const programPrioritas = data?.[8] ?? [];
+  const pengumuman = data?.[9] ?? [];
 
   const namaDesa = identitas?.namaDesa ?? "Desa";
   const wilayah = [identitas?.namaKecamatan, identitas?.namaKabupaten]
@@ -518,54 +523,64 @@ export default async function AdminHomePage() {
             ) : null}
           </div>
 
-          <div className="beranda-bottom">
-            <section className="beranda-card" aria-labelledby="akses-cepat">
+          <div className="beranda-bottom beranda-bottom-dashboard">
+            <section className="beranda-card" aria-labelledby="aktivitas-terbaru">
               <div className="beranda-card-head">
-                <h2 className="beranda-card-title" id="akses-cepat">
-                  <span className="beranda-title-icon" aria-hidden="true">
-                    <Ikon>
-                      <path d="M13 3 5 13.5h5L9.5 21 19 10h-5.5z" />
-                    </Ikon>
-                  </span>
-                  Akses Cepat
+                <h2 className="beranda-card-title" id="aktivitas-terbaru">
+                  <span className="beranda-title-icon" aria-hidden="true"><Ikon><path d="M3 12h4l2.5-6 4 12 2.5-6h5" /></Ikon></span>
+                  Aktivitas Terbaru
                 </h2>
+                <Link href="/audit-log">Lihat Semua →</Link>
               </div>
-
-              {aksesCepat.length === 0 ? (
-                <p className="beranda-empty">Belum ada modul yang dapat diakses oleh akun ini.</p>
-              ) : (
-                <ul className="beranda-quick">
-                  {aksesCepat.map((item) => (
-                    <li key={item.label}>
-                      <Link className="beranda-quick-tile" href={item.href}>
-                        <span className="beranda-quick-icon">{ikonAksesCepat(item.ikon)}</span>
-                        <span className="beranda-quick-label">{item.label}</span>
-                      </Link>
+              {aktivitas.length === 0 ? <p className="beranda-empty">Belum ada aktivitas tercatat.</p> : (
+                <ol className="beranda-feed">
+                  {aktivitas.slice(0, 5).map((catatan) => (
+                    <li key={catatan.id}>
+                      <span className="beranda-feed-icon" data-tone={toneAktivitas(catatan.event)} aria-hidden="true">{ikonAktivitas(catatan.event)}</span>
+                      <div className="beranda-feed-body">
+                        <strong>{labelAktivitas(catatan.event)}</strong>
+                        <span>{catatan.actorName ?? "Sistem"} · {waktuRelatif(catatan.createdAt, sekarang)}</span>
+                      </div>
                     </li>
                   ))}
-                </ul>
+                </ol>
               )}
             </section>
 
-            <aside className="beranda-profil" aria-labelledby="profil-desa">
-              <div className="beranda-profil-head">
-                <Image
-                  alt=""
-                  className="beranda-profil-logo"
-                  height={56}
-                  src={identitas?.logo ?? "/images/logo.png"}
-                  unoptimized
-                  width={56}
-                />
-                <div>
-                  <strong id="profil-desa">{namaDesa}</strong>
-                  <span>{wilayah.length > 0 ? wilayah.join(", ") : "Wilayah belum diisi"}</span>
-                </div>
+            <section className="beranda-card" aria-labelledby="pengumuman-informasi">
+              <div className="beranda-card-head">
+                <h2 className="beranda-card-title" id="pengumuman-informasi">
+                  <span className="beranda-title-icon" aria-hidden="true"><Ikon><path d="M4 7h16v13H4z" /><path d="M8 7V4h8v3M8 12h8M8 16h5" /></Ikon></span>
+                  Pengumuman & Informasi
+                </h2>
+                {hasPermission(user.permissions, RESOURCES.berita, "read") ? <Link href="/konten/berita">Lihat Semua →</Link> : null}
               </div>
-              <Link className="beranda-profil-link" href="/profil">
-                Lihat Profil Desa <span aria-hidden="true">→</span>
-              </Link>
-            </aside>
+              {!hasPermission(user.permissions, RESOURCES.berita, "read") ? (
+                <p className="beranda-empty">Akun ini tidak memiliki akses membaca berita desa.</p>
+              ) : pengumuman.length === 0 ? (
+                <p className="beranda-empty">Belum ada berita atau pengumuman yang dipublikasikan.</p>
+              ) : (
+                <div className="beranda-announcement">
+                  {pengumuman[0].gambar ? (
+                    <Image alt="" className="beranda-announcement-image" height={150} src={pengumuman[0].gambar} unoptimized width={190} />
+                  ) : (
+                    <div className="beranda-announcement-placeholder" aria-hidden="true"><Ikon><path d="M4 5h16v14H4z" /><path d="m5 16 5-5 3 3 2-2 4 4" /></Ikon></div>
+                  )}
+                  <div className="beranda-announcement-copy">
+                    {pengumuman[0].kategori ? <span className="beranda-announcement-category">{pengumuman[0].kategori}</span> : null}
+                    <strong>{pengumuman[0].judul}</strong>
+                    {pengumuman[0].terbitPada ? <time dateTime={pengumuman[0].terbitPada.toISOString()}>{FORMAT_HARI.format(pengumuman[0].terbitPada)}</time> : null}
+                    {pengumuman[0].ringkasan ? <p>{pengumuman[0].ringkasan}</p> : null}
+                    <Link href="/konten/berita">Kelola informasi desa →</Link>
+                  </div>
+                </div>
+              )}
+              {pengumuman.length > 1 ? (
+                <ul className="beranda-announcement-list">
+                  {pengumuman.slice(1, 4).map((item) => <li key={item.id}><span>{item.kategori ?? "Informasi"}</span><strong>{item.judul}</strong></li>)}
+                </ul>
+              ) : null}
+            </section>
           </div>
         </>
       ) : (
