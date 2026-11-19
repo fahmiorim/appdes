@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
@@ -8,6 +9,7 @@ import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
 import { PrintStatisticsButton } from "./print-statistics-button";
 import styles from "./statistik.module.css";
 
+export const metadata: Metadata = { title: "Data Statistik Desa" };
 export const dynamic = "force-dynamic";
 
 function angka(value: number) { return new Intl.NumberFormat("id-ID").format(value); }
