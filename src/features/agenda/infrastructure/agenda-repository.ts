@@ -75,11 +75,20 @@ export async function listAgendaPublikRentang(
 }
 
 /** Detail agenda publik berdasarkan ID dan tenant; draft tidak pernah terbaca. */
-export async function getAgendaPublikById(villageId: number, id: number): Promise<AgendaRow | null> {
+export async function getAgendaPublikById(
+  villageId: number,
+  id: number,
+): Promise<AgendaRow | null> {
   const [row] = await db
     .select({ ...KOLOM, tayang: agendaKegiatan.tayang })
     .from(agendaKegiatan)
-    .where(and(eq(agendaKegiatan.villageId, villageId), eq(agendaKegiatan.id, id), eq(agendaKegiatan.tayang, true)))
+    .where(
+      and(
+        eq(agendaKegiatan.villageId, villageId),
+        eq(agendaKegiatan.id, id),
+        eq(agendaKegiatan.tayang, true),
+      ),
+    )
     .limit(1);
   return row ?? null;
 }

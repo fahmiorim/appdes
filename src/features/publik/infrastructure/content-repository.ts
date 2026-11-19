@@ -375,6 +375,8 @@ export interface PerangkatRingkas {
   nip: string | null;
   jenisKelamin: string | null;
   foto: string | null;
+  tempatLahir: string | null;
+  tanggalLahir: string | null;
   urut: number;
   periode: string | null;
 }
@@ -390,6 +392,8 @@ export async function listPerangkatDesa(villageId: number): Promise<PerangkatRin
       nip: perangkatDesa.nip,
       jenisKelamin: perangkatDesa.jenisKelamin,
       foto: perangkatDesa.foto,
+      tempatLahir: perangkatDesa.tempatLahir,
+      tanggalLahir: perangkatDesa.tanggalLahir,
       urut: perangkatDesa.urut,
       periode: perangkatDesa.periode,
     })
