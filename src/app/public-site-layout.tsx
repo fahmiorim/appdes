@@ -147,8 +147,7 @@ export function PublicSiteFooter({ desa, location, logoUrl }: Props) {
         </div>
         <div className={styles.footerColumn}>
           <strong>Ikuti Kami</strong>
-          <span>Media sosial resmi pemerintah desa</span>
-
+          <span>Media sosial resmi belum dikonfigurasi oleh pengelola desa.</span>
         </div>
       </div>
       <div className={styles.footerBottom}>
