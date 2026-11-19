@@ -9,6 +9,7 @@ import { sanitasiHtml } from "@/lib/sanitize";
 
 import styles from "./pengumuman-detail.module.css";
 import { PublicSiteFooter, PublicSiteHeader } from "../../public-site-layout";
+import { SalinTautan } from "./salin-tautan";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
@@ -103,7 +104,7 @@ export default async function DetailPengumumanPage({ params }: Props) {
               </dl>
             </section>
             {document ? <section className={styles.attachments}><h3>♧　Lampiran Dokumen</h3><a href={document} target="_blank" rel="noreferrer"><span className={styles.pdf}>PDF</span><span><strong>{item.judul}</strong><small>Dokumen lampiran · Buka / unduh</small></span><b>↓</b></a></section> : null}
-            <div className={styles.shareRow}><strong>♧　Bagikan Pengumuman</strong><a className={styles.whatsapp} href={`https://wa.me/?text=${shareText}%20${encodeURIComponent(sharePath)}`} target="_blank" rel="noreferrer">WhatsApp</a><a className={styles.facebook} href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(sharePath)}`} target="_blank" rel="noreferrer">Facebook</a><a className={styles.telegram} href={`https://t.me/share/url?url=${encodeURIComponent(sharePath)}&text=${shareText}`} target="_blank" rel="noreferrer">Telegram</a><button type="button" onClick={undefined} className={styles.copyLink} aria-label="Salin tautan">Tautan: {sharePath}</button></div>
+            <div className={styles.shareRow}><strong>♧　Bagikan Pengumuman</strong><a className={styles.whatsapp} href={`https://wa.me/?text=${shareText}%20${encodeURIComponent(sharePath)}`} target="_blank" rel="noreferrer">WhatsApp</a><a className={styles.facebook} href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(sharePath)}`} target="_blank" rel="noreferrer">Facebook</a><a className={styles.telegram} href={`https://t.me/share/url?url=${encodeURIComponent(sharePath)}&text=${shareText}`} target="_blank" rel="noreferrer">Telegram</a><SalinTautan path={sharePath}/></div>
           </article>
         </div>
 
