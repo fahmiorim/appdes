@@ -48,6 +48,7 @@ export interface BeritaRingkas {
   createdAt: Date;
   kategori: string | null;
   headline: boolean;
+  hit: number;
 }
 
 export async function listBerita(
@@ -80,6 +81,7 @@ export async function listBerita(
       createdAt: berita.createdAt,
       kategori: beritaKategori.nama,
       headline: berita.headline,
+      hit: berita.hit,
     })
     .from(berita)
     .leftJoin(
