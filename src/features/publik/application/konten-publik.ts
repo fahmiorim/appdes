@@ -38,7 +38,11 @@ export async function daftarBerita(
   return listBerita(villageId, opsi);
 }
 
-export async function hitungBeritaPublik(villageId: number, kategoriSlug?: string) {\n  return countBerita(villageId, kategoriSlug);\n}\n\nexport async function detailBerita(villageId: number, slug: string) {
+export async function hitungBeritaPublik(villageId: number, kategoriSlug?: string) {
+  return countBerita(villageId, kategoriSlug);
+}
+
+export async function detailBerita(villageId: number, slug: string) {
   return getBeritaBySlug(villageId, slug);
 }
 
