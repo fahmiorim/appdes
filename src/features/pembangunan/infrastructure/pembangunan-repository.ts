@@ -263,14 +263,14 @@ export async function findDokumentasiScoped(
       proyekId: pembangunanDokumentasi.proyekId,
     })
     .from(pembangunanDokumentasi)
-    .innerJoin(pembangunanProyek, eq(pembangunanDokumentasi.proyekId, pembangunanProyek.id))
-    .where(and(eq(pembangunanDokumentasi.id, id), eq(pembangunanProyek.villageId, villageId)))
+    .where(and(eq(pembangunanDokumentasi.id, id), eq(pembangunanDokumentasi.villageId, villageId)))
     .limit(1);
 
   return row ?? null;
 }
 
 export async function insertDokumentasi(
+  villageId: number,
   proyekId: number,
   gambar: string,
   input: DokumentasiFormInput,
@@ -278,6 +278,7 @@ export async function insertDokumentasi(
   const [inserted] = await db
     .insert(pembangunanDokumentasi)
     .values({
+      villageId,
       proyekId,
       gambar,
       judul: blankToNull(input.judul),

@@ -17,9 +17,10 @@ import {
 /**
  * Repository survei untuk panel admin.
  *
- * Hanya tabel `survey` yang menyimpan `village_id`; tabel anak di-scope lewat
- * survei induknya. Karena itu setiap operasi pada soal/responden harus
- * didahului pemeriksaan kepemilikan survei di use case.
+ * Tabel anak menyimpan `village_id` hasil denormalisasi dan composite foreign
+ * key menjaga nilainya sama dengan induk. Use case tetap memeriksa
+ * kepemilikan survei sebelum operasi pada soal/responden; `villageId` yang
+ * ditulis ke tabel anak berasal dari tenant sesi, bukan dari input klien.
  */
 
 /**
@@ -237,10 +238,14 @@ interface SoalValues {
   urutan: number;
 }
 
-export async function insertSoal(surveyId: number, values: SoalValues): Promise<number> {
+export async function insertSoal(
+  villageId: number,
+  surveyId: number,
+  values: SoalValues,
+): Promise<number> {
   const [row] = await db
     .insert(surveySoal)
-    .values({ surveyId, ...values })
+    .values({ villageId, surveyId, ...values })
     .$returningId();
 
   if (!row) throw new Error("Gagal menyimpan pertanyaan.");
@@ -340,6 +345,7 @@ export async function getResponden(surveyId: number, respondenId: number) {
 
 /** Simpan responden beserta seluruh jawabannya dalam satu transaksi. */
 export async function insertResponden(
+  villageId: number,
   surveyId: number,
   input: { nama: string; nik: string | null },
   jawaban: readonly { soalId: number; jawaban: string }[],
@@ -347,7 +353,7 @@ export async function insertResponden(
   return db.transaction(async (tx) => {
     const [row] = await tx
       .insert(surveyResponden)
-      .values({ surveyId, nama: input.nama, nik: input.nik })
+      .values({ villageId, surveyId, nama: input.nama, nik: input.nik })
       .$returningId();
 
     if (!row) throw new Error("Gagal menyimpan responden.");
@@ -355,6 +361,7 @@ export async function insertResponden(
     if (jawaban.length > 0) {
       await tx.insert(surveyJawaban).values(
         jawaban.map((item) => ({
+          villageId,
           respondenId: row.id,
           soalId: item.soalId,
           jawaban: item.jawaban,

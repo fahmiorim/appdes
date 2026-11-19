@@ -1,6 +1,7 @@
 import {
   date,
   decimal,
+  foreignKey,
   index,
   int,
   mysqlTable,
@@ -75,6 +76,7 @@ export const pembangunanProyek = mysqlTable(
   },
   (t) => [
     uniqueIndex("pembangunan_proyek_village_slug_uq").on(t.villageId, t.slug),
+    uniqueIndex("pembangunan_proyek_village_id_uq").on(t.villageId, t.id),
     index("pembangunan_proyek_village_tahun_idx").on(t.villageId, t.tahunAnggaran),
     index("pembangunan_proyek_village_status_idx").on(t.villageId, t.status),
   ],
@@ -83,16 +85,17 @@ export const pembangunanProyek = mysqlTable(
 /**
  * `pembangunan_dokumentasi` — foto/dokumentasi proyek pembangunan.
  *
- * Tidak menyimpan `village_id`; isolasi tenant dijaga lewat proyek induk
- * (sama seperti tabel anak pada modul survei).
+ * Menyimpan `village_id` yang didenormalisasi dari proyek induk agar isolasi
+ * tenant dijaga composite foreign key, bukan hanya join di aplikasi.
  */
 export const pembangunanDokumentasi = mysqlTable(
   "pembangunan_dokumentasi",
   {
     id: int("id").autoincrement().primaryKey(),
-    proyekId: int("proyek_id")
+    villageId: int("village_id")
       .notNull()
-      .references(() => pembangunanProyek.id, { onDelete: "cascade" }),
+      .references(() => villages.id, { onDelete: "cascade" }),
+    proyekId: int("proyek_id").notNull(),
 
     /** Jalur relatif media. */
     gambar: varchar("gambar", { length: 255 }).notNull(),
@@ -101,7 +104,14 @@ export const pembangunanDokumentasi = mysqlTable(
 
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
-  (t) => [index("pembangunan_dokumentasi_proyek_idx").on(t.proyekId)],
+  (t) => [
+    index("pembangunan_dokumentasi_village_proyek_idx").on(t.villageId, t.proyekId),
+    foreignKey({
+      name: "pembangunan_dokumentasi_proyek_tenant_fk",
+      columns: [t.villageId, t.proyekId],
+      foreignColumns: [pembangunanProyek.villageId, pembangunanProyek.id],
+    }).onDelete("cascade"),
+  ],
 );
 
 export type PembangunanProyek = typeof pembangunanProyek.$inferSelect;
