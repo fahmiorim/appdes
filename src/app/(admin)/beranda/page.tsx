@@ -6,7 +6,6 @@ import type { ReactNode } from "react";
 
 import {
   dashboardAktivitasTerbaru,
-  dashboardPermohonanTerbaru,
   dashboardStatistikUmur,
   dashboardStats,
   dashboardTrenPermohonan,
@@ -18,7 +17,6 @@ import { getIdentitasDesaUseCase } from "@/features/desa/application/use-cases";
 import { getLaporanKeuangan } from "@/features/keuangan/application/keuangan-use-cases";
 import { getBukuPembangunan } from "@/features/pembangunan/application/use-cases";
 import { listBeritaAdminData } from "@/features/publik/application/konten-admin";
-import { labelPermohonanStatus } from "@/features/layanan-mandiri/domain/layanan-mandiri";
 import { isSuperAdminUser } from "@/features/multi-desa/application/provisioning-use-cases";
 import { hasPermission } from "@/features/rbac/application/authorization";
 import { RESOURCES } from "@/features/rbac/domain/resources";
@@ -37,24 +35,6 @@ const FORMAT_HARI = new Intl.DateTimeFormat("id-ID", {
   month: "long",
   year: "numeric",
 });
-
-/**
- * Pintasan beranda hanya menautkan halaman yang benar-benar tersedia.
- * Setiap pintasan memakai izin baca modulnya agar tidak menjadi tautan 403.
- */
-const AKSES_CEPAT = [
-  { label: "Data Penduduk", href: "/penduduk", ikon: "penduduk", resource: RESOURCES.penduduk },
-  { label: "Arsip Surat", href: "/persuratan/surat", ikon: "surat", resource: RESOURCES.surat },
-  { label: "Berita Desa", href: "/konten/berita", ikon: "berita", resource: RESOURCES.berita },
-  { label: "Galeri Desa", href: "/konten/galeri", ikon: "galeri", resource: RESOURCES.galeri },
-  { label: "Keuangan Desa", href: "/keuangan", ikon: "apbdes", resource: RESOURCES.keuangan },
-  {
-    label: "Pengaduan Warga",
-    href: "/pengaduan-admin",
-    ikon: "pengaduan",
-    resource: RESOURCES.pengaduan,
-  },
-] as const;
 
 function Ikon({ children }: { children: ReactNode }) {
   return (
@@ -228,10 +208,6 @@ export default async function AdminHomePage() {
   }
 
   const villageId = user.villageId;
-  const aksesCepat = AKSES_CEPAT.filter((item) =>
-    hasPermission(user.permissions, item.resource, "read"),
-  );
-
   const data =
     villageId === null
       ? null
@@ -241,8 +217,7 @@ export default async function AdminHomePage() {
           getStatistikDesa(villageId),
           dashboardStatistikUmur(villageId),
           dashboardTrenPermohonan(villageId),
-          dashboardPermohonanTerbaru(villageId),
-          dashboardAktivitasTerbaru(villageId),
+                  dashboardAktivitasTerbaru(villageId),
           hasPermission(user.permissions, RESOURCES.laporanKeuangan, "read")
             ? getLaporanKeuangan()
             : Promise.resolve(null),
@@ -259,11 +234,10 @@ export default async function AdminHomePage() {
   const statistik = data?.[2] ?? null;
   const perUmur = data?.[3] ?? [];
   const tren = data?.[4] ?? [];
-  const permohonan = data?.[5] ?? [];
-  const aktivitas = data?.[6] ?? [];
-  const laporanApbdes = data?.[7] ?? null;
-  const programPrioritas = data?.[8] ?? [];
-  const pengumuman = data?.[9] ?? [];
+  const aktivitas = data?.[5] ?? [];
+  const laporanApbdes = data?.[6] ?? null;
+  const programPrioritas = data?.[7] ?? [];
+  const pengumuman = data?.[8] ?? [];
 
   const namaDesa = identitas?.namaDesa ?? "Desa";
   const wilayah = [identitas?.namaKecamatan, identitas?.namaKabupaten]
