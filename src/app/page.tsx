@@ -160,6 +160,23 @@ export default async function PublicHomePage() {
           </article>
         </section>
 
+        {agenda.length > 0 ? (
+          <section className={styles.agendaPanel}>
+            <div className={styles.cardHeading}>
+              <div><h2>Agenda Terdekat</h2><small>Kegiatan pemerintah dan masyarakat desa</small></div>
+              <Link href="/agenda">Lihat Semua →</Link>
+            </div>
+            <div className={styles.agendaList}>
+              {agenda.slice(0, 3).map((item) => (
+                <article className={styles.agendaItem} key={item.id}>
+                  <span className={styles.agendaDate}>{agendaTanggalPanjang(item.mulai)}</span>
+                  <div><strong>{item.judul}</strong><small>{[item.jamMulai, item.lokasi].filter(Boolean).join(" · ") || "Informasi agenda desa"}</small></div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <section className={styles.profileGallery}>
           <article className={styles.profileCard}>
             <div><h2>⌂　Profil Desa</h2><p>{cleanText(profil?.sejarah) || `Kenali ${desa.namaDesa ?? "desa"} melalui informasi pemerintahan, wilayah, sejarah, dan potensi desa.`}</p><Link href="/profil">Selengkapnya →</Link></div>
