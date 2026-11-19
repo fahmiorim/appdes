@@ -116,6 +116,7 @@ export interface BeritaDetail extends BeritaRingkas {
   isi: string;
   dokumen: string | null;
   hit: number;
+  bolehKomentar: boolean;
 }
 
 export async function getBeritaBySlug(
@@ -136,6 +137,7 @@ export async function getBeritaBySlug(
       createdAt: berita.createdAt,
       kategori: beritaKategori.nama,
       headline: berita.headline,
+      bolehKomentar: berita.bolehKomentar,
     })
     .from(berita)
     .leftJoin(
