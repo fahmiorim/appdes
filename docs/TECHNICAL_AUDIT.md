@@ -7,6 +7,8 @@
 >
 > **Catatan pembaruan (18 November 2026):** isi temuan dipertahankan sebagai snapshot audit awal. Status kode terkini untuk setiap temuan yang sudah diremediasi dicatat pada tabel di awal §5 dan pada temuan yang buktinya berubah (AUD-021, AUD-029).
 >
+> **Catatan koreksi status (19 November 2026):** beberapa klaim status dikoreksi setelah pemeriksaan ulang terhadap kode: konfigurasi cookie cache (§3), status AUD-013, AUD-015, dan AUD-028, bukti AUD-030 dan AUD-031, serta angka inventaris §2. Temuan lain tetap snapshot audit awal. Rincian dan bukti ada di [laporan pemeriksaan status](./reports/00-baseline/TECHNICAL-AUDIT-STATUS-CHECK-2026-11-19.md).
+>
 > **Catatan status (19 November 2026):** inventaris kode kini 48 `page.tsx` (19 halaman admin: 12 Admin Desa + 7 konsol platform), 82 route handler, 52 direktori fitur, 16 migrasi (`0000`–`0015`), dan 50 berkas `*.integration.test.ts` (53 test terpetakan). Temuan AUD di bawah tetap snapshot; status UI per layer ada di [audit mockup dan dokumen](./reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
 
 ## 1. Ringkasan eksekutif
@@ -34,10 +36,10 @@ Aplikasi menggunakan Next.js App Router, React, TypeScript, MySQL, Drizzle ORM, 
 Audit dilakukan secara **read-only** terhadap repository. Tidak ada perubahan source code, migrasi database, penghapusan file, atau operasi tulis ke lingkungan aplikasi.
 
 Inventaris statis yang teridentifikasi:
-- Sekitar 717 file repository.
-- Sekitar 52 prefix fitur (sekitar 51 direktori fitur aktual).
-- Sekitar 191 file test.
-- 78 file schema TypeScript di `src/db/schema/`.
+- 1.307 file ter-track di Git (per 19 November 2026).
+- 52 direktori fitur aktual.
+- 284 file test, termasuk 50 integration test.
+- 79 file schema TypeScript di `src/db/schema/`.
 - Satu baseline SQL migration saat audit: `src/db/migrations/0000_baseline.sql` (per 19 November 2026: 16 migrasi, `0000`–`0015`).
 - 130 entri halaman/API (per 19 November 2026: 48 halaman `page.tsx`, 82 route handler, 52 direktori fitur, dan 79 berkas schema; 284 berkas test termasuk 50 integration test).
 - Stack utama: Next.js 16.4.2, React 19.3.0, TypeScript, MySQL, Drizzle ORM, Better Auth, Zod, Vitest.
@@ -57,7 +59,7 @@ Karena itu, temuan yang berasal dari source code dibedakan dari risiko yang masi
 |---|---|
 | Frontend dan routing | Next.js App Router, React, TypeScript |
 | Database | MySQL, Drizzle ORM; schema di `src/db/schema/` |
-| Autentikasi | Better Auth; sesi 7 hari, update age 1 hari, cookie cache 5 menit |
+| Autentikasi | Better Auth; sesi 7 hari, update age 1 hari, cookie cache dimatikan sehingga sesi diverifikasi ke database setiap permintaan |
 | Validasi | Zod dan validasi domain/use case |
 | Pengujian | Vitest; unit test dan sebagian integration test MySQL |
 | Migrasi | `src/db/migrations/`, Drizzle journal |
@@ -73,7 +75,7 @@ Route group yang teridentifikasi: `(admin)`, `(public)`, `(warga)`, dan `api`. P
 4. API key eksternal disimpan dalam bentuk hash, mendukung status aktif/kedaluwarsa, dan mencatat last-used.
 5. Media publik dibatasi berdasarkan tenant/host, kategori publik, pencegahan path traversal, dan CSP sandbox untuk SVG.
 6. `src/lib/sanitize.ts` menerapkan allowlist sanitasi HTML.
-7. Import APBDes menerapkan batas ukuran, validasi data, dan upsert batch transaksional.
+7. Import APBDes menerapkan batas ukuran, validasi data, dan upsert batch transaksional yang memakai kunci `(desa, tahun)` serta mengagregasi ulang induk.
 8. Ekspor kesehatan yang diperiksa menggunakan permission KIA, konteks desa dari sesi, dan respons private no-store.
 
 ## 5. Temuan audit
@@ -98,8 +100,8 @@ Status temuan sudah berubah sejak audit awal. Tabel berikut adalah ringkasan ver
 | AUD-008 | Diperbaiki | `provisioning-repository.ts:103-104,161-191` memakai template platform `src/db/templates/tenant-template.ts`, bukan desa pertama. |
 | AUD-011 | Diperbaiki | Join kepala keluarga, wilayah, dan agregasi anggota memakai `villageId` (`keluarga-repository.ts:123-147`). |
 | AUD-012 | Diperbaiki | Join keluarga dan wilayah pada daftar penduduk memakai `villageId` (`penduduk-repository.ts:193-205`). |
-| AUD-013 | Diperbaiki | `saveKeuanganNilai` berjalan dalam `db.transaction` (`keuangan-repository.ts:119`). |
-| AUD-014 | Diperbaiki | Pemeriksaan kuota dan penulisan berkas dijalankan di bawah kunci (`media-storage.ts:187`). |
+| AUD-013 | Diperbaiki | `saveKeuanganNilai` berjalan di kunci MySQL `(desa, tahun)` + `db.transaction` (`keuangan-repository.ts:109`); impor APBDes memakai jalur yang sama, termasuk agregasi ulang induk. |
+| AUD-014 | Diperbaiki | Pemeriksaan kuota dan penulisan berkas dijalankan di bawah kunci (`media-storage.ts:189`). |
 | AUD-016 | Diperbaiki | Transisi status dalam `db.transaction` dan memeriksa `affectedRows` (`layanan-mandiri-repository.ts:258,339,358`). |
 | AUD-017 | Diperbaiki | `validasiIsiMedia` memeriksa magic bytes, bukan MIME klien (`src/features/publik/domain/media.ts:104-126`). |
 | AUD-019 | Diperbaiki di kode; provider nyata belum diuji | Allowlist `TTE_ALLOWED_HOSTS` dan validasi host provider (`src/features/surat/domain/tte.ts:255-277`, `src/lib/env.ts`). |
@@ -107,10 +109,10 @@ Status temuan sudah berubah sejak audit awal. Tabel berikut adalah ringkasan ver
 | AUD-021 | Diperbaiki | `src/app/api/webhooks/email/route.ts` hanya membaca `Host`; signature HMAC mengikat `host` dan `eventId`. |
 | AUD-025 | Diperbaiki | `konteksKia` mengambil `villageId` dari sesi dan seluruh operasi KIA memakainya (`kia-use-cases.ts:52-97`). |
 | AUD-029 | Sebagian: kode tertutup, konfigurasi proxy belum diverifikasi | `resolve-village.ts:38-40` hanya memakai `Host`; host tak dikenal menjadi 404 (PR #137); `getRequestOrigin()` masih memakai `X-Forwarded-Host` untuk URL absolut. |
-| AUD-030 | Sebagian | Test repository kini mengassert filter `villageId` (`kesehatan-repository.test.ts:66`); integration test dua tenant belum ada. |
-| AUD-031 | Sebagian | 11 integration test isolasi per modul plus `isolasi-village.integration.test.ts`; belum mencakup seluruh modul. |
+| AUD-030 | Terbuka | Test repository memeriksa bahwa `where` dipanggil, tetapi belum mengassert predikat `villageId` (`kesehatan-repository.test.ts:66`); integration test dua tenant belum ada. |
+| AUD-031 | Sebagian | 12 berkas integration test isolasi (11 per modul + `isolasi-village.integration.test.ts`); modul seperti keuangan, surat, layanan mandiri, dan agenda belum tercakup. |
 
-Temuan AUD-009 dan AUD-010 sudah diperbarui langsung pada bagiannya. AUD-015 (backup media), AUD-022 (matriks endpoint publik), dan AUD-028 (regression test XSS) tetap terbuka.
+Temuan AUD-009 dan AUD-010 sudah diperbarui langsung pada bagiannya. AUD-022 (matriks endpoint publik) tetap terbuka. AUD-015 (backup media) berstatus prosedur terdokumentasi tanpa drill, dan AUD-028 (regression test XSS) tertutup oleh `src/lib/sanitize.test.ts`.
 
 ### AUD-001 — Kepemilikan role terhadap tenant belum dibuktikan
 
@@ -256,7 +258,9 @@ Role slug `administrator` memberi hak penuh dalam konteks aplikasi desa dan buka
 ### AUD-013 — Agregasi nilai keuangan tidak terlihat transaksional
 
 **Prioritas:** P2 — Menengah  
-**Status:** risiko race condition.
+**Status:** risiko race condition (snapshot audit awal).
+
+**Status kode (19 November 2026): tertutup.** `saveKeuanganNilai` berjalan di bawah kunci MySQL `(desa, tahun)` dan di dalam satu transaksi. Impor APBDes (`upsertKeuanganBatch`) memakai jalur yang sama, sehingga induk selalu diagregasi ulang dari nilai tersimpan; sebelumnya impor menulis nilai induk dari berkas tanpa kunci. Bukti: `src/features/keuangan/infrastructure/keuangan-repository.ts` dan `apbdes-import-concurrency.integration.test.ts`.
 
 **Bukti:** `src/features/keuangan/infrastructure/keuangan-repository.ts`. `saveKeuanganNilai()` membaca nilai lama, mengagregasi, lalu upsert tanpa transaction yang terlihat; batch upsert lain menggunakan transaction.
 
@@ -278,7 +282,9 @@ Role slug `administrator` memberi hak penuh dalam konteks aplikasi desa dan buka
 ### AUD-015 — Backup media belum terverifikasi
 
 **Prioritas:** P1 — Tinggi  
-**Status:** belum terbukti ada/tidaknya backup eksternal.
+**Status:** belum terbukti ada/tidaknya backup eksternal (snapshot audit awal).
+
+**Status kode (19 November 2026): sebagian.** Prosedur backup dan restore media terdokumentasi di `docs/deployment/BACKUP-RESTORE.md` §5 dan §6.3, termasuk arsip `tar` + checksum dan peringatan bahwa backup database tidak mencakup `storage/media`. Yang belum ada: drill restore gabungan DB + media dan bukti RPO/RTO.
 
 **Bukti:** media disimpan di `storage/media/<villageId>/`; use case backup database yang diperiksa tidak menunjukkan bahwa direktori media ikut diarsipkan.
 
@@ -385,9 +391,9 @@ Role slug `administrator` memberi hak penuh dalam konteks aplikasi desa dan buka
 
 **Status:** kontrol positif.
 
-**Bukti:** `src/lib/sanitize.ts`; sanitasi memakai allowlist tag, atribut, dan skema URL serta diterapkan saat simpan/render sesuai alur yang diperiksa.
+**Bukti:** `src/lib/sanitize.ts`; sanitasi memakai allowlist tag, atribut, dan skema URL serta diterapkan saat simpan/render sesuai alur yang diperiksa. Regression test tersedia di `src/lib/sanitize.test.ts` (9 test): `<script>`, handler `onerror`, atribut `style` berisi `javascript:`, URI `javascript:`, `<iframe>`, dan `data:` URI ditolak.
 
-**Rekomendasi:** pertahankan dan tambahkan regression test payload XSS.
+**Rekomendasi:** pertahankan; tambahkan payload baru bila ada jalur render atau tag yang diizinkan bertambah.
 
 ### AUD-029 — Keamanan resolusi host bergantung reverse proxy
 
@@ -416,7 +422,7 @@ Role slug `administrator` memberi hak penuh dalam konteks aplikasi desa dan buka
 **Prioritas:** P2 — Menengah  
 **Status:** terkonfirmasi dari cakupan test yang diperiksa.
 
-**Bukti:** `src/features/isolasi-village.integration.test.ts` mencakup sebagian modul seperti SiLPA, Lapak, Buku Tamu, Arsip, Kehadiran, dan Anjungan; belum seluruh fitur.
+**Bukti:** 12 berkas isolasi: 11 `*tenant-isolation.integration.test.ts` (inventaris, kehadiran, kelompok, keluarga, kontak, penduduk/DTKS, riwayat penduduk, suplemen, RBAC, rumah tangga, statistik) plus `src/features/isolasi-village.integration.test.ts` (SiLPA, Lapak, Buku Tamu, Arsip, Kehadiran, Anjungan). Modul seperti keuangan, surat, layanan mandiri, dan agenda belum memiliki test isolasi dua tenant.
 
 **Rekomendasi:** buat matriks coverage repository/use case per fitur dan tambah test lintas tenant.
 
@@ -429,7 +435,7 @@ Role slug `administrator` memberi hak penuh dalam konteks aplikasi desa dan buka
 3. **P1:** validasi role ownership dan cabut sesi saat reset password.
 4. **P1:** pastikan reverse proxy mengamankan forwarded host.
 5. **P1:** tetapkan backup media dan uji restore DB + media.
-6. **P2:** perbaiki race condition keuangan, kuota media, dan transisi status surat.
+6. **P2 (selesai di kode):** race condition keuangan (termasuk impor APBDes), kuota media, dan transisi status surat sudah diserialkan. Sisa pekerjaan adalah validasi runtime pada lingkungan nyata.
 7. **P2:** tambahkan signature validation untuk upload dan audit semua endpoint publik.
 8. **P2:** perluas integration test isolasi dua tenant.
 9. **P2:** pisahkan dashboard Super Admin dan template provisioning dari data desa pertama.
