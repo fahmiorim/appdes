@@ -48,6 +48,10 @@ export default async function SejarahPage() {
   const storyImage = archivePhotos[0] ? mediaUrl(archivePhotos[0].gambar, desa.id) : null;
   const location = locationLabel(desa);
   const historyParagraphs = (profil?.sejarah ?? "").split(/\r?\n|<br\s*\/?\s*>|<\/p>/i).map(plainText).filter(Boolean);
+  const historyMilestones = historyParagraphs.flatMap((paragraph) => {
+    const years = [...paragraph.matchAll(/\b(18|19|20)\d{2}\b/g)].map((match) => match[0]);
+    return [...new Set(years)].map((year) => ({ year, description: paragraph }));
+  }).filter((item, index, items) => items.findIndex((candidate) => candidate.year === item.year) === index).sort((a, b) => Number(a.year) - Number(b.year));
 
   return (
     <main className={styles.site}>
@@ -92,10 +96,17 @@ export default async function SejarahPage() {
 
             <section className={styles.timelineCard}>
               <h2><span>⚑</span> Tonggak Sejarah Penting</h2>
-              <div className={styles.timelineEmpty}>
+              {historyMilestones.length ? <ol className={styles.timelineList}>{historyMilestones.map((item, index) => (
+                <li className={styles.timelineItem} key={item.year}>
+                  <span className={styles.timelineNode} aria-hidden="true" />
+                  <time className={styles.timelineYear}>{item.year}</time>
+                  <div className={styles.timelineDescription}><strong>{index === 0 ? "Catatan awal perjalanan desa" : "Perkembangan desa"}</strong><p>{item.description}</p></div>
+                  <span className={styles.timelineIcon} aria-hidden="true">{index === 0 ? "⌂" : index % 2 ? "⌁" : "♧"}</span>
+                </li>
+              ))}</ol> : <div className={styles.timelineEmpty}>
                 <span>◷</span>
-                <div><strong>Kronologi sejarah belum tersedia</strong><p>Tambahkan tahun dan peristiwa penting melalui pengelolaan konten desa agar perjalanan sejarah {desa.namaDesa ?? "desa"} dapat ditampilkan di sini.</p></div>
-              </div>
+                <div><strong>Jejak waktu dalam sejarah desa</strong><p>Belum ada tahun yang tercantum pada narasi sejarah yang dipublikasikan.</p></div>
+              </div>}
             </section>
           </div>
 
