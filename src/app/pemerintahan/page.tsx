@@ -22,7 +22,7 @@ function mediaUrl(value: string | null | undefined, villageId: number): string |
   return `/api/publik/media/${path.map(encodeURIComponent).join("/")}`;
 }
 
-function namaLengkap(item: (typeof perangkat)[number]): string {
+function namaLengkap(item: { gelarDepan: string | null; nama: string; gelarBelakang: string | null }): string {
   return [item.gelarDepan, item.nama, item.gelarBelakang].filter(Boolean).join(" ");
 }
 
