@@ -10,6 +10,8 @@ import {
   galeriAlbum,
   galeriFoto,
   galeriVideo,
+  potensiDesa,
+  potensiIndikator,
   halamanStatis,
   jabatanPerangkat,
   menuPublik,
@@ -882,4 +884,40 @@ export async function listVideoGaleriPublik(villageId: number, limit = 8): Promi
     .where(and(eq(galeriVideo.villageId, villageId), eq(galeriVideo.aktif, true), or(isNull(galeriVideo.publishedAt), lte(galeriVideo.publishedAt, new Date()))))
     .orderBy(desc(galeriVideo.publishedAt), desc(galeriVideo.id))
     .limit(limit);
+}
+
+
+/* ---------------------------------------------------------------- potensi desa */
+
+export interface PotensiDesaRingkas {
+  id: number;
+  kategori: string;
+  judul: string;
+  slug: string;
+  ringkasan: string | null;
+  deskripsi: string | null;
+  gambar: string | null;
+  lokasi: string | null;
+  kontak: string | null;
+  unggulan: boolean;
+  indikator: { id: number; label: string; nilai: string }[];
+}
+
+export async function listPotensiDesa(villageId: number, includeInactive = false): Promise<PotensiDesaRingkas[]> {
+  const conditions = [eq(potensiDesa.villageId, villageId)];
+  if (!includeInactive) conditions.push(eq(potensiDesa.aktif, true));
+  const rows = await db.select({
+    id: potensiDesa.id, kategori: potensiDesa.kategori, judul: potensiDesa.judul,
+    slug: potensiDesa.slug, ringkasan: potensiDesa.ringkasan, deskripsi: potensiDesa.deskripsi,
+    gambar: potensiDesa.gambar, lokasi: potensiDesa.lokasi, kontak: potensiDesa.kontak,
+    unggulan: potensiDesa.unggulan, urut: potensiDesa.urut,
+  }).from(potensiDesa).where(and(...conditions)).orderBy(asc(potensiDesa.urut), asc(potensiDesa.id));
+  const ids = rows.map((row) => row.id);
+  const indicators = ids.length ? await db.select({
+    id: potensiIndikator.id, potensiId: potensiIndikator.potensiId,
+    label: potensiIndikator.label, nilai: potensiIndikator.nilai,
+  }).from(potensiIndikator).where(and(eq(potensiIndikator.villageId, villageId), inArray(potensiIndikator.potensiId, ids))).orderBy(asc(potensiIndikator.urut), asc(potensiIndikator.id)) : [];
+  const byPotensi = new Map<number, { id: number; label: string; nilai: string }[]>();
+  for (const item of indicators) byPotensi.set(item.potensiId, [...(byPotensi.get(item.potensiId) ?? []), { id: item.id, label: item.label, nilai: item.nilai }]);
+  return rows.map(({ urut: _urut, ...row }) => ({ ...row, indikator: byPotensi.get(row.id) ?? [] }));
 }
