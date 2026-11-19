@@ -74,6 +74,16 @@ export async function listAgendaPublikRentang(
     .orderBy(asc(agendaKegiatan.mulai), asc(agendaKegiatan.jamMulai), asc(agendaKegiatan.id));
 }
 
+/** Detail agenda publik berdasarkan ID dan tenant; draft tidak pernah terbaca. */
+export async function getAgendaPublikById(villageId: number, id: number): Promise<AgendaRow | null> {
+  const [row] = await db
+    .select({ ...KOLOM, tayang: agendaKegiatan.tayang })
+    .from(agendaKegiatan)
+    .where(and(eq(agendaKegiatan.villageId, villageId), eq(agendaKegiatan.id, id), eq(agendaKegiatan.tayang, true)))
+    .limit(1);
+  return row ?? null;
+}
+
 /** Seluruh agenda desa untuk halaman admin, termasuk yang belum tayang. */
 export async function listAgendaAdmin(villageId: number): Promise<AgendaRow[]> {
   return db
