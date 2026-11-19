@@ -8,3 +8,23 @@
 .downloadCard{display:grid;grid-template-columns:65px minmax(0,1fr) auto;align-items:center;gap:13px;margin:11px 0 23px;padding:14px 17px;border:1px solid #d9d0ff;border-radius:15px;background:linear-gradient(105deg,#e7ddff,#f6f3ff 55%,#e5ddff);box-shadow:0 5px 14px #3e2a8510}.folder{color:#7022ec;font-size:52px;line-height:1}.downloadCard h2{margin:0 0 4px;font-size:19px;font-weight:900}.downloadCard p{margin:0;color:#313b62;font-size:11px;line-height:1.45}.pending{padding:9px 12px;border:1px solid #a77aff;border-radius:24px;color:#6b20e9;font-size:10px;font-weight:850;white-space:nowrap}
 @media(max-width:900px){.heroMap{right:12%}.topGrid,.lowerGrid{grid-template-columns:1fr}.sideStack{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto}.downloadCard{grid-template-columns:55px 1fr}.pending{grid-column:2;justify-self:start}}
 @media(max-width:640px){.container{width:calc(100% - 22px)}.hero{min-height:160px}.heroInner{width:calc(100% - 32px);min-height:160px;padding:12px 0 20px}.hero h1{font-size:26px}.heroInner>p{max-width:255px;font-size:11px}.heroMap{top:69px;right:0;width:100px;height:68px;border-width:5px;opacity:.5}.heroMap:before{top:-15px;width:30px;height:30px;border-width:4px}.heroMap span{margin-top:20px;font-size:25px}.sectionNav{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin-bottom:9px;padding:7px}.sectionNav a{min-height:36px;gap:6px;font-size:10px}.sectionNav a span{font-size:21px}.topGrid,.lowerGrid{gap:8px}.mapCard,.infoCard,.tableCard,.geoCard{padding:10px}.mapCard h2,.infoCard h2,.tableCard h2,.geoCard h2{font-size:16px}.mapFrame,.mapSvg{min-height:240px}.sideStack{grid-template-columns:1fr;gap:8px}.infoCard dl>div{padding:7px 2px}.infoCard dt,.infoCard dd{font-size:10px}.tableWrap th,.tableWrap td{padding:8px 6px;font-size:9px}.tableFoot{flex-wrap:wrap;font-size:9px}.geoCard>p{font-size:10px}.downloadCard{grid-template-columns:40px 1fr;gap:8px;margin-bottom:17px;padding:11px}.folder{font-size:35px}.downloadCard h2{font-size:14px}.downloadCard p{font-size:9px}.pending{font-size:9px}}
+
+/* Penyelarasan detail visual mockup Wilayah Desa */
+.mapFrame{isolation:isolate;background:#718d61}
+.mapBackdrop{z-index:0;object-fit:cover;filter:saturate(1.12) contrast(1.04)}
+.mapSvg{position:relative;z-index:1;background:transparent}
+.mapEmpty{position:relative;z-index:1}
+.north,.mapNote{z-index:2}
+.mapActions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.mapActions a,.mapActionDisabled{display:inline-flex;min-height:34px;align-items:center;justify-content:center;gap:6px;padding:7px 12px;border:1px solid #dce5f5;border-radius:10px;background:#f6f8ff;color:#14204d;font-size:10px;font-weight:850;text-decoration:none}
+.mapActions .mapActionActive{border-color:#7929f2;background:linear-gradient(100deg,#8c2cf2,#5716e7);color:#fff}
+.mapActionDisabled{border-color:#b58aff;background:#fff;color:#7624e8}
+.mapLegend{padding-top:9px}
+.geoPhoto,.geoPlaceholder{position:relative;min-height:130px;overflow:hidden;border-radius:10px;background:linear-gradient(135deg,#d9e8f6,#a8c7b4)}
+.geoPhoto img{object-fit:cover}
+.geoPlaceholder{display:grid;place-items:center;padding:18px;color:#6f7b91;font-size:10px;text-align:center}
+.downloadCard{grid-template-columns:65px minmax(190px,1fr) auto}
+.downloadActions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px}
+.downloadActions span{padding:9px 11px;border:1px solid #a77aff;border-radius:24px;background:#fff;color:#6b20e9;font-size:9px;font-weight:850;white-space:nowrap}
+@media(max-width:900px){.downloadCard{grid-template-columns:55px 1fr}.downloadActions{grid-column:2;justify-content:flex-start}}
+@media(max-width:640px){.mapActions a,.mapActionDisabled{min-height:31px;padding:6px 8px;font-size:9px}.downloadCard{grid-template-columns:40px 1fr}.downloadActions{grid-column:2;justify-content:flex-start}.downloadActions span{font-size:8px;white-space:normal}.geoPhoto,.geoPlaceholder{min-height:115px}}
