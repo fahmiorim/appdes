@@ -144,6 +144,8 @@ Migration yang dibuat:
 
 Keduanya aditif: membuat tabel baru, unique index pada `domain_id`, index status, dan foreign key cascade. Tidak ada perubahan kolom lama, tidak ada backfill, dan tidak ada downtime yang direncanakan.
 
+Saat dijalankan pertama kali, Drizzle melaporkan sukses tetapi tidak membuat kedua tabel. Penyebabnya: nilai `when` pada `_journal.json` untuk 0019/0020 lebih kecil daripada 0018, sehingga Drizzle menganggap kedua migration sudah lewat. Nilai `when` dikoreksi menjadi `1795451764000` dan `1795451765000` (setelah 0018) sebelum migration dijalankan ulang. Jangan mengubah migration yang sudah diterapkan; koreksi ini hanya pada metadata migration baru yang belum pernah diterapkan.
+
 Urutan deploy yang disarankan:
 
 1. Backup database.
@@ -154,7 +156,7 @@ Urutan deploy yang disarankan:
 
 Rollback kode dapat dilakukan tanpa menghapus tabel. Menghapus tabel cache bersifat destruktif dan memerlukan persetujuan terpisah.
 
-**Migration belum dijalankan pada task ini**, baik ke database production maupun database lain. Tidak ada database test disposable yang diverifikasi untuk task ini.
+**Migration sudah dijalankan hanya pada database pengembangan lokal** `127.0.0.1/desa_dev` setelah error runtime `domain_ssl_checks` dilaporkan. Tidak ada migration yang dijalankan ke production. Verifikasi setelah migrate: `domain_ssl_checks` dan `domain_dns_checks` ada, dan `__drizzle_migrations` berisi 21 baris.
 
 ## 8. Validasi
 
@@ -169,14 +171,15 @@ Perintah yang benar-benar dijalankan:
 | `npm run lint` | **PASS** — 0 error; 2 warning lama `no-console` di `scripts/wilayah/generate-wilayah.mjs`. |
 | `npm run format:check` | **PASS** — seluruh file sesuai Prettier setelah perbaikan. |
 | `git diff --check` | **PASS** — tidak ada whitespace error. |
-| `npm run db:migrate` | **SKIPPED** — tidak dijalankan ke database mana pun pada task ini. |
-| Visual QA browser | **SKIPPED** — belum ada sesi Super Admin dengan data seed dan database yang sudah dimigrasikan. |
+| `npm run db:migrate` | **PASS (LOKAL)** — dijalankan ke `127.0.0.1/desa_dev`, bukan production; setelah koreksi urutan timestamp, kedua tabel cache dibuat. |
+| Verifikasi tabel via `mysql2` | **PASS** — `domain_ssl_checks` dan `domain_dns_checks` terdaftar; `__drizzle_migrations` berisi 21 baris. |
+| Visual QA browser | **SKIPPED** — belum ada sesi Super Admin dengan data seed untuk memeriksa tampilan setelah migration. |
 
 Test fokus yang dijalankan mencakup guard non-super-admin, penolakan use case, pemetaan cache, kolom/tombol halaman, status belum diperiksa, pencarian, pagination, navigasi, dan header.
 
 ## 9. Risiko dan batasan
 
-- **Migration belum diterapkan.** Halaman akan gagal membaca cache sampai migration 0019/0020 dijalankan. Ini adalah syarat deployment, bukan hasil yang sudah diverifikasi di database.
+- **Migration baru diterapkan di database lokal.** Setiap environment lain, termasuk production, tetap harus menjalankan 0019/0020 sebelum kode ini dipakai. Tanpa itu halaman akan gagal membaca cache.
 - **Belum ada visual QA.** Tampilan tabel 10 kolom, badge, dialog, dan tombol massal belum diperiksa di browser.
 - **Pemeriksaan jaringan belum diuji end-to-end.** Test memakai mock untuk pemeriksa; handshake TLS dan resolver nyata belum dijalankan pada domain publik dari lingkungan ini.
 - Domain pengembangan seperti `*.localhost` memang ditolak oleh guard host publik, sehingga akan tampil **Bermasalah** setelah pemeriksaan. Itu perilaku keamanan yang disengaja, bukan bug status.
@@ -190,4 +193,4 @@ Test fokus yang dijalankan mencakup guard non-super-admin, penolakan use case, p
 
 ## 10. Kesimpulan
 
-Halaman **Desa & Domain → Daftar domain** sekarang mengikuti struktur mockup dan menampilkan status DNS/SSL dari pemeriksaan server-side nyata dengan cache database. Menu **Daftar tenant** sudah dihapus dari navigasi. Perubahan siap direview, tetapi belum boleh dianggap siap production sebelum migration dijalankan dan tampilan diverifikasi di browser dengan data nyata.
+Halaman **Desa & Domain → Daftar domain** sekarang mengikuti struktur mockup dan menampilkan status DNS/SSL dari pemeriksaan server-side nyata dengan cache database. Menu **Daftar tenant** sudah dihapus dari navigasi. Database pengembangan lokal sudah dimigrasikan dan error tabel cache sudah teratasi; production tetap memerlukan migration 0019/0020. Tampilan belum diverifikasi lewat browser dengan sesi Super Admin.
