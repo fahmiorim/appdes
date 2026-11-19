@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath } from "next/cache";\nimport { and, eq } from "drizzle-orm";\nimport { db } from "@/db";\nimport { halamanStatis } from "@/db/schema";
 import { redirect } from "next/navigation";
 import { updateIdentitas } from "@/features/desa/application/use-cases";
 import { desaFormSchema } from "@/features/desa/domain/desa";
@@ -10,7 +10,7 @@ import {
   dokumenSlugExists, listMenuPublik, updateDokumenPublik, updateMenuPublik,
 } from "@/features/publik/infrastructure/content-repository";
 import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
-import { requirePermission } from "@/lib/dal";
+import { requirePermission } from "@/lib/dal";\nimport { sanitasiHtml } from "@/lib/sanitize";
 
 const text = (fd: FormData, key: string) => { const value = fd.get(key); return typeof value === "string" ? value.trim() : ""; };
 const num = (fd: FormData, key: string) => { const value = Number(text(fd,key)); return Number.isSafeInteger(value) && value > 0 ? value : null; };
@@ -85,4 +85,4 @@ export async function hapusDokumenWebsiteAction(fd: FormData): Promise<void> {
   const user=await requirePermission("website-dokumen","delete"); const villageId=await resolveVillageId(user);
   const id=num(fd,"id"); if(!id) throw new Error("Dokumen tidak valid.");
   await deleteDokumenPublik(villageId,id); revalidatePath("/website/dokumen"); redirect("/website/dokumen?deleted=1");
-}
+}\nexport async function tambahHalamanWebsiteAction(fd: FormData): Promise<void> {\n  const user=await requirePermission("website-halaman","update"); const villageId=await resolveVillageId(user);\n  const judul=text(fd,"judul"), slug=slugify(text(fd,"slug")||judul), isi=text(fd,"isi");\n  if(!judul || judul.length>200 || !slug || !isi) throw new Error("Judul, slug, dan isi halaman wajib diisi.");\n  const [existing]=await db.select({id:halamanStatis.id}).from(halamanStatis).where(and(eq(halamanStatis.villageId,villageId),eq(halamanStatis.slug,slug))).limit(1);\n  if(existing) throw new Error("Slug halaman sudah digunakan.");\n  await db.insert(halamanStatis).values({villageId,judul,slug,isi:sanitasiHtml(isi),aktif:fd.get("aktif")==="on"});\n  revalidatePath("/website/halaman"); redirect("/website/halaman?saved=1");\n}\n\nexport async function ubahStatusHalamanWebsiteAction(fd: FormData): Promise<void> {\n  const user=await requirePermission("website-halaman","update"); const villageId=await resolveVillageId(user);\n  const id=num(fd,"id"); if(!id) throw new Error("Halaman tidak valid.");\n  await db.update(halamanStatis).set({aktif:text(fd,"aktif")==="true"}).where(and(eq(halamanStatis.villageId,villageId),eq(halamanStatis.id,id)));\n  revalidatePath("/website/halaman"); redirect("/website/halaman?saved=1");\n}\n\nexport async function hapusHalamanWebsiteAction(fd: FormData): Promise<void> {\n  const user=await requirePermission("website-halaman","delete"); const villageId=await resolveVillageId(user);\n  const id=num(fd,"id"); if(!id) throw new Error("Halaman tidak valid.");\n  await db.delete(halamanStatis).where(and(eq(halamanStatis.villageId,villageId),eq(halamanStatis.id,id)));\n  revalidatePath("/website/halaman"); redirect("/website/halaman?deleted=1");\n}
