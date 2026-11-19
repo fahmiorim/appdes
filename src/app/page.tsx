@@ -15,8 +15,8 @@ import {
 } from "@/features/publik/application/konten-publik";
 
 import { PlatformLanding } from "./platform-landing";
-import { PublicSiteFooter, PublicSiteHeader } from "./public-site-layout";
 import styles from "./public-home.module.css";
+import { PublicSiteFooter, PublicSiteHeader } from "./public-site-layout";
 
 export const dynamic = "force-dynamic";
 
@@ -78,7 +78,12 @@ export default async function PublicHomePage() {
 
   return (
     <main className={styles.site}>
-      <PublicSiteHeader desa={desa} location={location} logoUrl={mediaUrl(desa.logo, desa.id)} activePath="/" />
+      <PublicSiteHeader
+        desa={desa}
+        location={location}
+        logoUrl={mediaUrl(desa.logo, desa.id)}
+        activePath="/"
+      />
 
       <section className={styles.hero}>
         {heroImage ? (
