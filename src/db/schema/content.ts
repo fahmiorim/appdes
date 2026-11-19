@@ -223,6 +223,9 @@ export const galeriAlbum = mysqlTable(
     nama: varchar("nama", { length: 150 }).notNull(),
     slug: varchar("slug", { length: 150 }).notNull(),
     keterangan: text("keterangan"),
+    kategori: varchar("kategori", { length: 80 }),
+    /** Tanggal publikasi album untuk pengurutan dan label publik. */
+    publishedAt: timestamp("published_at"),
     /** Gambar sampul album (jalur relatif media). */
     sampul: varchar("sampul", { length: 255 }),
     aktif: boolean("aktif").notNull().default(true),
