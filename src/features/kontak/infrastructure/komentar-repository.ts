@@ -84,13 +84,13 @@ export async function listKomentarPublik(
  */
 export async function insertKomentar(
   villageId: number,
-  values: Omit<KomentarRow, "id" | "createdAt">,
+  values: Omit<KomentarRow, "id" | "createdAt"> & { halaman?: string },
 ): Promise<number> {
   const [result] = await db
     .insert(komentar)
     .values({
       villageId,
-      halaman: "kontak",
+      halaman: values.halaman ?? "kontak",
       namaPenulis: values.namaPenulis,
       isi: values.isi,
       status: "aktif",
