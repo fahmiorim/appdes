@@ -102,7 +102,7 @@ Database uji: `desa_test_apbdes_20261119 @ 127.0.0.1` (MySQL 8.0.30, disposable,
 | `npx prettier --check` (4 file berubah/baru) | **PASS** |
 | `npx vitest run --config vitest.config.mts src/features/keuangan` | **PASS** — 13 file, 165 test |
 | `npx vitest run --config vitest.integration.config.mts src/features/keuangan/infrastructure/apbdes-import-concurrency.integration.test.ts src/features/keuangan/infrastructure/keuangan-concurrency.integration.test.ts` | **PASS** — 2 file, 5 test |
-| `npm run test:integration` (seluruh suite) | **SKIPPED** — tidak dijalankan untuk task ini; hanya suite keuangan yang terkait yang dijalankan |
+| `TEST_DATABASE_URL=…/desa_test_suite_apbdes_20261119 TEST_DATABASE_ACK=1 npm run test:integration:ci` (seluruh suite) | **PASS** — 54 file, 295 test, 0 gagal, 0 skip, 153,90 detik, exit 0 |
 | `git diff --check` | **PASS** |
 
 ## 6. Keamanan dan multi-tenant
@@ -119,7 +119,7 @@ Database uji: `desa_test_apbdes_20261119 @ 127.0.0.1` (MySQL 8.0.30, disposable,
 - Realisasi pada impor tetap `0.00` (perilaku lama, tidak diubah task ini). Impor yang dijalankan setelah realisasi tercatat akan mengosongkan realisasi tahun tersebut. Ini perlu keputusan produk tersendiri dan belum ditangani.
 - Perubahan "induk nol tidak ditulis" berlaku untuk semua pemanggil `saveKeuanganNilai`, bukan hanya impor. Pembaca yang mengandalkan adanya baris eksplisit bernilai nol (mis. ekspor yang menghitung baris) perlu diperiksa; pencarian kode tidak menemukan ketergantungan seperti itu, tetapi belum diuji end-to-end di UI.
 - Penguncian hanya mengoordinasi proses yang memakai MySQL yang sama.
-- Suite integration penuh tidak dijalankan; regresi di modul lain tidak tercakup pemeriksaan ini.
+- Suite integration penuh lulus pada database disposable terpisah (`desa_test_suite_apbdes_20261119`), termasuk 4 test baru di berkas ini. Yang belum dicakup: pengujian runtime/UI dan perilaku penguncian pada lebih dari satu instance MySQL.
 
 ## 8. Kesimpulan
 
