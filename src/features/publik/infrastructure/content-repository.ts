@@ -47,6 +47,7 @@ export interface BeritaRingkas {
   terbitPada: Date | null;
   createdAt: Date;
   kategori: string | null;
+  kategoriSlug: string | null;
   headline: boolean;
   hit: number;
 }
@@ -80,6 +81,7 @@ export async function listBerita(
       terbitPada: berita.terbitPada,
       createdAt: berita.createdAt,
       kategori: beritaKategori.nama,
+      kategoriSlug: beritaKategori.slug,
       headline: berita.headline,
       hit: berita.hit,
     })
@@ -136,6 +138,7 @@ export async function getBeritaBySlug(
       terbitPada: berita.terbitPada,
       createdAt: berita.createdAt,
       kategori: beritaKategori.nama,
+      kategoriSlug: beritaKategori.slug,
       headline: berita.headline,
       bolehKomentar: berita.bolehKomentar,
     })
