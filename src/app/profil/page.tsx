@@ -56,197 +56,64 @@ export default async function ProfilDesaPage() {
   ]);
 
   const lokasi = locationLabel(desa);
+  const logo = mediaUrl(desa.logo, desa.id);
   const sejarah = plainText(profil?.sejarah);
-  const misi = (profil?.misi ?? "")
-    .split(/\r?\n/)
-    .map((item) => plainText(item))
-    .filter(Boolean);
-  const koordinat = profil?.koordinat?.match(/^(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)$/);
-  const petaUrl = koordinat
-    ? `https://www.google.com/maps?q=${encodeURIComponent(profil?.koordinat ?? "")}`
-    : null;
+  const visi = plainText(profil?.visi);
+  const misi = plainText(profil?.misi).split(/\\r?\\n/).map((item) => item.trim()).filter(Boolean);
+  const koordinat = profil?.koordinat?.match(/^(-?\\d{1,3}(?:\\.\\d+)?)\\s*,\\s*(-?\\d{1,3}(?:\\.\\d+)?)$/);
+  const petaUrl = koordinat ? `https://www.google.com/maps?q=${encodeURIComponent(profil?.koordinat ?? "")}` : null;
+  const intro = plainText(profil?.sambutan) || `Informasi umum ${desa.namaDesa ?? "desa"} belum dilengkapi oleh pemerintah desa.`;
+  const number = (value: number) => new Intl.NumberFormat("id-ID").format(value);
 
   return (
     <main className={styles.site}>
-      <PublicSiteHeader
-        desa={desa}
-        location={lokasi}
-        logoUrl={mediaUrl(desa.logo, desa.id)}
-        activePath="/profil"
-      />
+      <PublicSiteHeader desa={desa} location={lokasi} logoUrl={logo} activePath="/profil" />
       <section className={styles.hero}>
-        <div className={styles.container}>
-          <nav className={styles.breadcrumb} aria-label="Breadcrumb">
-            <Link href="/">Beranda</Link>
-            <span>/</span>
-            <span aria-current="page">Profil Desa</span>
-          </nav>
-          <p className={styles.eyebrow}>MENGENAL LEBIH DEKAT</p>
-          <h1>Profil {desa.namaDesa ?? "Desa"}</h1>
-          <p className={styles.heroText}>
-            Kenali identitas, sejarah, visi, dan arah pembangunan {desa.namaDesa ?? "desa"}.
-          </p>
-          {lokasi ? <p className={styles.location}>⌖ {lokasi}</p> : null}
+        <div className={styles.heroInner}>
+          <nav aria-label="Breadcrumb"><Link href="/">Beranda</Link><span>›</span><span>Profil Desa</span></nav>
+          <h1>Profil Desa</h1>
+          <p>Informasi lengkap tentang sejarah, visi misi, wilayah, potensi, dan kondisi umum {desa.namaDesa ?? "desa"}.</p>
         </div>
       </section>
-
-      <section className={styles.introSection}>
-        <div className={styles.container + " " + styles.introGrid}>
-          <div className={styles.identityCard}>
-            <div className={styles.identityMark}>
-              {desa.logo ? (
-                <Image
-                  src={mediaUrl(desa.logo, desa.id) ?? "/images/logo.png"}
-                  alt={`Logo ${desa.namaDesa ?? "desa"}`}
-                  width={92}
-                  height={92}
-                  unoptimized
-                />
-              ) : (
-                <span aria-hidden="true">D</span>
-              )}
-            </div>
-            <p className={styles.cardLabel}>PEMERINTAH DESA</p>
-            <h2>{desa.namaDesa ?? "Nama Desa"}</h2>
-            <p>{lokasi || "Informasi wilayah belum dilengkapi."}</p>
-            {desa.kodeDesa ? <span className={styles.code}>Kode desa: {desa.kodeDesa}</span> : null}
-          </div>
-
-          <div className={styles.introCopy}>
-            <p className={styles.kicker}>SAMBUTAN & GAMBARAN UMUM</p>
-            <h2>Membangun desa dimulai dengan mengenal potensinya.</h2>
-            {plainText(profil?.sambutan) ? (
-              <p>{plainText(profil?.sambutan)}</p>
-            ) : sejarah ? (
-              <p>{sejarah.slice(0, 520)}</p>
-            ) : (
-              <p>
-                Informasi gambaran umum desa akan ditampilkan di sini setelah dilengkapi oleh
-                pemerintah desa.
-              </p>
-            )}
-            <div className={styles.quickFacts}>
-              <div>
-                <span>Desa</span>
-                <strong>{desa.namaDesa ?? "—"}</strong>
-              </div>
-              <div>
-                <span>Kecamatan</span>
-                <strong>{desa.namaKecamatan ?? "—"}</strong>
-              </div>
-              <div>
-                <span>Kabupaten</span>
-                <strong>{desa.namaKabupaten ?? "—"}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className={styles.contentSection}>
-        <div className={styles.container + " " + styles.contentGrid}>
-          <article className={styles.contentCard}>
-            <p className={styles.kicker}>SEJARAH DESA</p>
-            <h2>Perjalanan dan cerita desa</h2>
-            {sejarah ? (
-              <p className={styles.bodyCopy}>{sejarah}</p>
-            ) : (
-              <p className={styles.muted}>Sejarah desa belum dipublikasikan.</p>
-            )}
-          </article>
-          <aside className={styles.sideStack}>
-            <div className={styles.visionCard}>
-              <p className={styles.kicker}>VISI DESA</p>
-              <h2>Arah dan cita-cita bersama</h2>
-              <p>{plainText(profil?.visi) || "Visi desa belum dipublikasikan."}</p>
-            </div>
-            <div className={styles.missionCard}>
-              <p className={styles.kicker}>MISI DESA</p>
-              <h2>Langkah untuk mewujudkan visi</h2>
-              {misi.length ? (
-                <ol>
-                  {misi.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ol>
-              ) : (
-                <p className={styles.muted}>Misi desa belum dipublikasikan.</p>
-              )}
-            </div>
+      <div className={styles.container}>
+        <div className={styles.topGrid}>
+          <aside className={styles.sidebar}>
+            <h2><span>▤</span> Profil Desa</h2>
+            <nav aria-label="Menu profil desa">
+              <a className={styles.selected} href="#tentang">▣ <span>Tentang Desa</span></a>
+              <a href="#sejarah">✿ <span>Sejarah Desa</span></a><a href="#visi-misi">♡ <span>Visi & Misi</span></a>
+              <a href="#wilayah">⌖ <span>Wilayah Desa</span></a><a href="#potensi">♧ <span>Potensi Desa</span></a>
+              <a href="#data-umum">▣ <span>Data Umum</span></a><a href="#sarana">♧ <span>Sarana & Prasarana</span></a>
+            </nav>
           </aside>
-        </div>
-      </section>
-
-      <section className={styles.officialSection}>
-        <div className={styles.container}>
-          <div className={styles.sectionHeading}>
-            <div>
-              <p className={styles.kicker}>PEMERINTAHAN DESA</p>
-              <h2>Perangkat desa</h2>
-              <p>Kenali perangkat yang menjalankan pelayanan dan pemerintahan desa.</p>
+          <section className={styles.aboutCard} id="tentang">
+            <h2>Tentang {desa.namaDesa ?? "Desa"}</h2>
+            <div className={styles.aboutBody}>
+              <div className={styles.villageVisual}>{logo ? <Image src={logo} alt="" width={90} height={90} unoptimized /> : <span>🏡</span>}<strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong><small>{lokasi || "Informasi wilayah desa"}</small></div>
+              <p>{intro}</p>
             </div>
-            <span className={styles.count}>{perangkat.length} perangkat aktif</span>
-          </div>
-          {perangkat.length ? (
-            <div className={styles.officialGrid}>
-              {perangkat.map((item) => {
-                const foto = mediaUrl(item.foto, desa.id);
-                const nama = [item.gelarDepan, item.nama, item.gelarBelakang]
-                  .filter(Boolean)
-                  .join(" ");
-                return (
-                  <article className={styles.officialCard} key={item.id}>
-                    <div className={styles.officialPhoto}>
-                      {foto ? (
-                        <Image
-                          src={foto}
-                          alt={`Foto ${nama}`}
-                          fill
-                          sizes="(max-width: 700px) 50vw, 220px"
-                          unoptimized
-                        />
-                      ) : (
-                        <span aria-hidden="true">{item.nama.slice(0, 1).toUpperCase()}</span>
-                      )}
-                    </div>
-                    <div className={styles.officialInfo}>
-                      <h3>{nama}</h3>
-                      <p>{item.jabatan ?? "Perangkat Desa"}</p>
-                      {item.periode ? <small>Periode {item.periode}</small> : null}
-                    </div>
-                  </article>
-                );
-              })}
+            <div className={styles.metrics} id="data-umum">
+              <div><span>▦</span><small>Data Penduduk</small><strong>{number(statistik.total)} Jiwa</strong></div>
+              <div><span>♧</span><small>Jumlah KK</small><strong>{number(statistik.keluarga)} KK</strong></div>
+              <div><span>⌖</span><small>Jumlah Dusun</small><strong>{number(statistik.perDusun.length)} Dusun</strong></div>
+              <div><span>⌑</span><small>Wilayah</small><strong>{lokasi || "Belum tersedia"}</strong></div>
             </div>
-          ) : (
-            <div className={styles.emptyState}>Data perangkat desa belum tersedia.</div>
-          )}
+          </section>
         </div>
-      </section>
-
-      <section className={styles.contactSection}>
-        <div className={styles.container + " " + styles.contactPanel}>
-          <div>
-            <p className={styles.kicker}>INFORMASI WILAYAH</p>
-            <h2>Kunjungi kantor desa</h2>
-            <p>{desa.alamatKantor || lokasi || "Alamat kantor desa belum dilengkapi."}</p>
+        <div className={styles.middleGrid}>
+          <div className={styles.leftStack}>
+            <section className={styles.panel} id="sejarah"><h2>▣　Sejarah Singkat Desa</h2><p>{sejarah || "Informasi sejarah desa belum dipublikasikan."}</p><Link href="/sejarah" className={styles.more}>Selengkapnya →</Link></section>
+            <section className={styles.panel} id="wilayah"><h2>⌖　Letak & Wilayah Desa</h2><p>{lokasi || "Informasi lokasi desa belum dilengkapi."}</p>{petaUrl ? <a className={styles.more} href={petaUrl} target="_blank" rel="noreferrer">Lihat lokasi di peta ↗</a> : <p className={styles.muted}>Koordinat lokasi belum tersedia.</p>}</section>
           </div>
-          <div className={styles.contactActions}>
-            {desa.telepon ? <a href={`tel:${desa.telepon}`}>Hubungi kantor desa</a> : null}
-            {petaUrl ? (
-              <a href={petaUrl} target="_blank" rel="noreferrer">
-                Lihat lokasi di peta ↗
-              </a>
-            ) : null}
-          </div>
+          <section className={styles.visionPanel} id="visi-misi"><h2>◎　Visi & Misi Desa</h2>
+            <div className={styles.visionQuote}><b>“</b><div><strong>Visi</strong><p>{visi || "Visi desa belum dipublikasikan."}</p></div></div>
+            <h3>▣　Misi</h3>{misi.length ? <ol>{misi.map((item,index)=><li key={index}>{item}</li>)}</ol> : <p className={styles.muted}>Misi desa belum dipublikasikan.</p>}
+            <Link href="/visi-misi" className={styles.more}>Lihat visi & misi →</Link>
+          </section>
         </div>
-      </section>
-
-      <PublicSiteFooter
-        desa={desa}
-        location={lokasi}
-        logoUrl={mediaUrl(desa.logo, desa.id)}
-      />
+        <section className={styles.widePanel} id="potensi"><h2>♧　Potensi Desa</h2><p>Informasi potensi unggulan {desa.namaDesa ?? "desa"}.</p><div className={styles.emptyContent}>Data potensi desa belum tersedia untuk ditampilkan.</div></section>
+        <section className={styles.widePanel} id="sarana"><h2>▱　Sarana & Prasarana Desa</h2><p>Fasilitas umum dan infrastruktur pendukung pelayanan serta kegiatan masyarakat.</p><div className={styles.emptyContent}>Data sarana dan prasarana desa belum tersedia untuk ditampilkan.</div></section>
+      </div>
+      <PublicSiteFooter desa={desa} location={lokasi} logoUrl={logo} />
     </main>
   );
-}
