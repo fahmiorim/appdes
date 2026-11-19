@@ -1,5 +1,9 @@
 # Tenant Isolation Hardening — 20 November 2026
 
+> **Catatan:** dokumen ini adalah snapshot pekerjaan pada commit `ef1353f`.
+> Pekerjaan lanjutan, bukti test modul tambahan, dan status PR #174 ada di
+> [Revisi 2](./TENANT-ISOLATION-HARDENING-2026-11-20-REV2.md).
+
 - **Task:** menutup sisa celah isolasi tenant prioritas: composite FK
   `survey_soal.indikator_id`, fallback desa untuk akun platform, dan matriks
   bukti test isolasi per modul.
