@@ -1,22 +1,28 @@
 import type { Metadata } from "next";
+import { tambahMenuWebsiteAction, ubahMenuWebsiteAction, hapusMenuWebsiteAction } from "../actions";
 import { getWebsitePagesData } from "@/features/publik/application/website-admin";
 import { WebsiteAdminShell, WebsiteSection } from "../website-admin-shell";
 
 export const metadata: Metadata = { title: "Halaman & Navigasi Website Desa" };
 
 export default async function WebsitePagesPage() {
-  const { menu, widget } = await getWebsitePagesData();
+  const { menu, widget, pages } = await getWebsitePagesData();
   return (
-    <WebsiteAdminShell title="Halaman & Navigasi" active="/website/halaman" description="Kelola susunan menu navigasi dan elemen halaman website desa.">
-      <div className="website-dashboard-grid">
+    <WebsiteAdminShell title="Halaman & Navigasi" active="/website/halaman" description="Kelola halaman statis dan susunan menu yang tampil pada website desa.">
+      <nav className="website-settings-tabs"><a className="is-active" href="#daftar-halaman">Daftar Halaman</a><a href="#menu-navigasi">Menu Navigasi</a><a href="#widget">Widget Website</a></nav>
+      <div className="website-dashboard-grid website-pages-grid">
+        <WebsiteSection title="Daftar Halaman">
+          <div id="daftar-halaman" className="website-table-wrap"><table className="website-table"><thead><tr><th>Judul Halaman</th><th>Alamat</th><th>Status</th></tr></thead><tbody>{pages.map((page)=><tr key={page.id}><td><strong>{page.judul}</strong></td><td>/{page.slug}</td><td><span className={page.aktif?"website-status":"website-status website-status-off"}>{page.aktif?"Aktif":"Nonaktif"}</span></td></tr>)}</tbody></table>{pages.length===0?<p className="modul-empty">Belum ada halaman statis. Halaman profil inti dikelola melalui data Profil Desa.</p>:null}</div>
+        </WebsiteSection>
         <WebsiteSection title="Menu Navigasi">
-          {menu.length === 0 ? <p className="modul-empty">Belum ada menu navigasi yang dibuat.</p> : <ol className="website-list">{menu.map((item) => <li key={item.id}><div><strong>{item.nama}</strong><span>{item.link}</span></div><span className={item.aktif ? "website-status" : "website-status website-status-off"}>{item.aktif ? "Aktif" : "Nonaktif"}</span></li>)}</ol>}
+          <div id="menu-navigasi" className="website-table-wrap"><table className="website-table"><thead><tr><th>Nama Menu</th><th>Link</th><th>Status</th><th>Aksi</th></tr></thead><tbody>{menu.map((item)=><tr key={item.id}><td><strong>{item.nama}</strong>{item.parentId?<small>Submenu · induk #{item.parentId}</small>:null}</td><td className="website-cell-link">{item.link}</td><td><span className={item.aktif?"website-status":"website-status website-status-off"}>{item.aktif?"Aktif":"Nonaktif"}</span></td><td><div className="website-row-actions"><form action={ubahMenuWebsiteAction}><input type="hidden" name="id" value={item.id}/><input type="hidden" name="aktif" value={String(!item.aktif)}/><button type="submit" className="website-mini-button">{item.aktif?"Nonaktifkan":"Aktifkan"}</button></form><form action={hapusMenuWebsiteAction}><input type="hidden" name="id" value={item.id}/><button type="submit" className="website-mini-button is-danger">Hapus</button></form></div></td></tr>)}</tbody></table>{menu.length===0?<p className="modul-empty">Belum ada menu navigasi.</p>:null}</div>
+          <form action={tambahMenuWebsiteAction} className="website-inline-form"><strong>Tambah Menu</strong><div className="website-form-grid"><label>Nama Menu *<input name="nama" required maxLength={50}/></label><label>URL / Link *<input name="link" required maxLength={500} placeholder="/desa/profil"/></label><label>Tipe Link<select name="linkTipe" defaultValue="internal"><option value="internal">Internal</option><option value="eksternal">Eksternal</option><option value="halaman">Halaman Statis</option></select></label><label>Menu Induk<select name="parentId" defaultValue=""><option value="">Menu Utama</option>{menu.filter((x)=>x.parentId===null).map((x)=><option key={x.id} value={x.id}>{x.nama}</option>)}</select></label></div><button className="website-button website-button-primary" type="submit">＋ Tambah Menu</button></form>
         </WebsiteSection>
         <WebsiteSection title="Widget Website">
-          {widget.length === 0 ? <p className="modul-empty">Belum ada widget yang dikonfigurasi.</p> : <ul className="website-list">{widget.map((item) => <li key={item.id}><div><strong>{item.judul ?? `Widget ${item.jenis}`}</strong><span>Urutan {item.urut}</span></div><span className={item.aktif ? "website-status" : "website-status website-status-off"}>{item.aktif ? "Aktif" : "Nonaktif"}</span></li>)}</ul>}
+          <div id="widget" className="website-list">{widget.map((item)=><div className="website-list-row" key={item.id}><div><strong>{item.judul??`Widget ${item.jenis}`}</strong><span>Urutan {item.urut}</span></div><span className={item.aktif?"website-status":"website-status website-status-off"}>{item.aktif?"Aktif":"Nonaktif"}</span></div>)}{widget.length===0?<p className="modul-empty">Belum ada widget yang dikonfigurasi.</p>:null}</div>
         </WebsiteSection>
+        <WebsiteSection title="Tips Pengelolaan"><ul className="website-tips"><li>Gunakan judul menu yang singkat dan mudah dipahami.</li><li>Pastikan tautan internal mengarah ke halaman yang tersedia.</li><li>Nonaktifkan menu tanpa menghapusnya jika hanya ingin menyembunyikan sementara.</li></ul></WebsiteSection>
       </div>
-      <p className="website-hint">Daftar ini membaca konfigurasi milik desa yang sedang login. Form tambah, ubah, susun ulang, dan publikasi akan diaktifkan pada tahap pengelolaan berikutnya.</p>
     </WebsiteAdminShell>
   );
 }
