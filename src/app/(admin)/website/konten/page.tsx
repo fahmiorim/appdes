@@ -13,7 +13,7 @@ import { WebsiteAdminShell, WebsiteMetric, WebsiteSection } from "../website-adm
 export const metadata: Metadata = { title: "Konten & Publikasi Website Desa" };
 
 export default async function WebsiteContentPage() {
-  const { berita, album, slider, agenda, categories } = await getWebsiteContentData();
+  const { berita, album, photos, slider, agenda, categories } = await getWebsiteContentData();
   const tayang = berita.filter((item) => item.status === "published");
   const draft = berita.filter((item) => item.status === "draft");
   const agendaTayang = agenda.filter((item) => item.tayang);
