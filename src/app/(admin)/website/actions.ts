@@ -74,6 +74,12 @@ export async function tambahMenuWebsiteAction(fd: FormData): Promise<void> {
     try { url = new URL(link); } catch { throw new Error("URL eksternal tidak valid."); }
     if (!["http:", "https:"].includes(url.protocol)) throw new Error("URL eksternal harus menggunakan HTTP atau HTTPS.");
   }
+  if (linkTipe === "halaman") {
+    const match = /^\/halaman\/([a-z0-9-]+)$/.exec(link);
+    if (!match) throw new Error("Tautan halaman harus menggunakan format /halaman/slug.");
+    const [page] = await db.select({ id: halamanStatis.id }).from(halamanStatis).where(and(eq(halamanStatis.villageId, villageId), eq(halamanStatis.slug, match[1]!), eq(halamanStatis.aktif, true))).limit(1);
+    if (!page) throw new Error("Halaman statis tidak ditemukan atau belum dipublikasikan.");
+  }
   const parentId = num(fd, "parentId");
   const menu = await listMenuPublik(villageId, true);
   if (parentId && !menu.some((item) => item.id === parentId && item.parentId === null)) {
@@ -263,6 +269,12 @@ export async function ubahMenuWebsiteDetailAction(fd: FormData): Promise<void> {
   if (!current) throw new Error("Menu tidak ditemukan.");
   if (linkTipe === "internal" && (!link.startsWith("/") || link.startsWith("//"))) throw new Error("Link internal harus berupa path lokal.");
   if (linkTipe === "eksternal") { let url: URL; try { url = new URL(link); } catch { throw new Error("URL eksternal tidak valid."); } if (!["http:", "https:"].includes(url.protocol)) throw new Error("URL eksternal harus HTTP atau HTTPS."); }
+  if (linkTipe === "halaman") {
+    const match = /^\/halaman\/([a-z0-9-]+)$/.exec(link);
+    if (!match) throw new Error("Tautan halaman harus menggunakan format /halaman/slug.");
+    const [page] = await db.select({ id: halamanStatis.id }).from(halamanStatis).where(and(eq(halamanStatis.villageId, villageId), eq(halamanStatis.slug, match[1]!), eq(halamanStatis.aktif, true))).limit(1);
+    if (!page) throw new Error("Halaman statis tidak ditemukan atau belum dipublikasikan.");
+  }
   if (parentId) {
     const [parent] = await db.select({ id: menuPublik.id, parentId: menuPublik.parentId }).from(menuPublik).where(and(eq(menuPublik.villageId, villageId), eq(menuPublik.id, parentId))).limit(1);
     if (!parent || parentId === id || parent.parentId !== null) throw new Error("Menu induk harus menu utama pada desa ini.");
