@@ -67,4 +67,12 @@ describe("ratakanMenu", () => {
   it("mengembalikan daftar kosong untuk menu kosong", () => {
     expect(ratakanMenu([])).toEqual([]);
   });
+
+  it("mengenali lima halaman Website Desa", () => {
+    expect(ruteTersedia("/website")).toBe(true);
+    expect(ruteTersedia("/website/pengaturan")).toBe(true);
+    expect(ruteTersedia("/website/halaman")).toBe(true);
+    expect(ruteTersedia("/website/konten")).toBe(true);
+    expect(ruteTersedia("/website/dokumen")).toBe(true);
+  });
 });
