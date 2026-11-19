@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
 import Link from "next/link";
 
 import { agendaMendatang } from "@/features/agenda/application/agenda-use-cases";
@@ -45,7 +46,7 @@ function urlBerita(page: number, q: string, kategori: string) {
   return query ? `/berita?${query}` : "/berita";
 }
 
-function Icon({ children }: { children: React.ReactNode }) {
+function Icon({ children }: { children: ReactNode }) {
   return <span className={styles.icon} aria-hidden="true">{children}</span>;
 }
 
