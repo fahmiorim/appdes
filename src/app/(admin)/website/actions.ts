@@ -5,11 +5,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { db } from "@/db";
-import { agendaKegiatan, berita, beritaKategori, dokumenPublik, galeriAlbum, galeriFoto, halamanStatis, slider, theme, widget } from "@/db/schema";
+import { agendaKegiatan, berita, beritaKategori, dokumenPublik, galeriAlbum, galeriFoto, halamanStatis, menuPublik, slider, theme, widget } from "@/db/schema";
 import { updateIdentitas } from "@/features/desa/application/use-cases";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { desaFormSchema } from "@/features/desa/domain/desa";
-import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
+import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";\nimport type { BerkasUnggahan } from "@/features/publik/domain/media";
 import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import {
   createDokumenPublik,
@@ -47,7 +47,7 @@ export async function simpanIdentitasWebsiteAction(fd: FormData): Promise<void> 
     tandaTangan: text(fd, "tandaTangan"), stempel: text(fd, "stempel"),
     penomoranSurat: text(fd, "penomoranSurat") || "2",
   });
-  await updateIdentitas(input);
+  const unggahan: Partial<Record<"logo" | "tandaTangan" | "stempel", BerkasUnggahan>> = {};\n  for (const field of ["logo", "tandaTangan", "stempel"] as const) {\n    const file = fd.get(field);\n    if (file instanceof File && file.size > 0) unggahan[field] = { nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()) };\n  }\n  await updateIdentitas(input, unggahan);
   revalidatePath("/website");
   revalidatePath("/website/pengaturan");
   redirect("/website/pengaturan?saved=1");
@@ -253,13 +253,13 @@ export async function ubahMenuWebsiteDetailAction(fd: FormData): Promise<void> {
   const linkTipe = text(fd, "linkTipe");
   const parentId = num(fd, "parentId");
   if (!id || !nama || nama.length > 50 || !link || link.length > 500 || !["internal", "eksternal", "halaman"].includes(linkTipe)) throw new Error("Data menu tidak valid.");
-  const [current] = await db.select({ id: (await import("@/db/schema")).menuPublik.id }).from((await import("@/db/schema")).menuPublik).where(and(eq((await import("@/db/schema")).menuPublik.villageId, villageId), eq((await import("@/db/schema")).menuPublik.id, id))).limit(1);
+  const [current] = await db.select({ id: menuPublik.id }).from(menuPublik).where(and(eq(menuPublik.villageId, villageId), eq(menuPublik.id, id))).limit(1);
   if (!current) throw new Error("Menu tidak ditemukan.");
   if (parentId) {
-    const [parent] = await db.select({ id: (await import("@/db/schema")).menuPublik.id }).from((await import("@/db/schema")).menuPublik).where(and(eq((await import("@/db/schema")).menuPublik.villageId, villageId), eq((await import("@/db/schema")).menuPublik.id, parentId))).limit(1);
+    const [parent] = await db.select({ id: menuPublik.id }).from(menuPublik).where(and(eq(menuPublik.villageId, villageId), eq(menuPublik.id, parentId))).limit(1);
     if (!parent || parentId === id) throw new Error("Menu induk tidak valid.");
   }
-  await db.update((await import("@/db/schema")).menuPublik).set({ nama, link, linkTipe, parentId }).where(and(eq((await import("@/db/schema")).menuPublik.villageId, villageId), eq((await import("@/db/schema")).menuPublik.id, id)));
+  await db.update(menuPublik).set({ nama, link, linkTipe, parentId }).where(and(eq(menuPublik.villageId, villageId), eq(menuPublik.id, id)));
   revalidatePath("/website/halaman"); redirect("/website/halaman?saved=1");
 }
 
