@@ -16,7 +16,7 @@ export function WebsiteAdminShell({
   description: string;
   active: (typeof tabs)[number]["href"];
   children: ReactNode;
-  action?: React.ReactNode;
+  action?: ReactNode;
 }) {
   return (
     <div className="modul-page website-admin-page">
@@ -36,6 +36,6 @@ export function WebsiteMetric({ label, value, note }: { label: string; value: st
   return <article className="website-metric"><span>{label}</span><strong>{value}</strong>{note ? <small>{note}</small> : null}</article>;
 }
 
-export function WebsiteSection({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
+export function WebsiteSection({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
   return <section className="modul-card website-section"><div className="website-section-heading"><h2>{title}</h2>{action}</div>{children}</section>;
 }
