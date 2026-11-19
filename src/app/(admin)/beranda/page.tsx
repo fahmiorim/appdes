@@ -287,7 +287,7 @@ export default async function AdminHomePage() {
       <div className="beranda-head">
         <div>
           <h1>Dashboard Admin Desa</h1>
-          <p>Selamat datang, {user.name}. Kelola data, layanan, dan informasi desa di sini.</p>
+          <p>Kelola layanan, data, dan pembangunan {namaDesa} dengan mudah dan terintegrasi.</p>
         </div>
         <span className="beranda-date">
           <Ikon>
@@ -378,104 +378,17 @@ export default async function AdminHomePage() {
               perDusun={statistik.perDusun}
               perUmur={perUmur}
             />
-
             <section className="beranda-card" aria-labelledby="tren-layanan-surat">
               <div className="beranda-card-head">
                 <h2 className="beranda-card-title" id="tren-layanan-surat">
                   <span className="beranda-title-icon" aria-hidden="true">
-                    <Ikon>
-                      <path d="M4 19V5" />
-                      <path d="M4 19h16" />
-                      <path d="m7 14 3.5-3.5 3 2.5L20 7" />
-                    </Ikon>
+                    <Ikon><path d="M4 19V5" /><path d="M4 19h16" /><path d="m7 14 3.5-3.5 3 2.5L20 7" /></Ikon>
                   </span>
                   Tren Layanan Surat
                 </h2>
                 <span className="beranda-range">6 Bulan Terakhir</span>
               </div>
               <TrenLayananSurat titik={tren} />
-            </section>
-
-            <section className="beranda-card" aria-labelledby="permohonan-terbaru">
-              <div className="beranda-card-head">
-                <h2 className="beranda-card-title" id="permohonan-terbaru">
-                  <span className="beranda-title-icon" aria-hidden="true">
-                    <Ikon>
-                      <path d="M6 3.5h8.2L19 8.3V20.5H6z" />
-                      <path d="M14 3.5v5h5" />
-                      <path d="M9 13h6" />
-                    </Ikon>
-                  </span>
-                  Permohonan Surat Terbaru
-                </h2>
-              </div>
-
-              {permohonan.length === 0 ? (
-                <p className="beranda-empty">Belum ada permohonan surat yang masuk.</p>
-              ) : (
-                <ul className="beranda-doc-list">
-                  {permohonan.map((baris) => (
-                    <li key={baris.id}>
-                      <span className="beranda-doc-icon" aria-hidden="true">
-                        <Ikon>
-                          <path d="M6 3.5h8.2L19 8.3V20.5H6z" />
-                          <path d="M14 3.5v5h5" />
-                          <path d="M9 13h6" />
-                          <path d="M9 16.5h4.5" />
-                        </Ikon>
-                      </span>
-                      <div className="beranda-doc-main">
-                        <strong>{baris.jenisSurat}</strong>
-                        <span>{baris.pemohon}</span>
-                      </div>
-                      <span className="beranda-doc-time">
-                        {waktuRelatif(baris.diajukanPada, sekarang)}
-                      </span>
-                      <span className="beranda-chip" data-status={baris.status}>
-                        {labelPermohonanStatus(baris.status)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-
-            <section className="beranda-card" aria-labelledby="aktivitas-terbaru">
-              <div className="beranda-card-head">
-                <h2 className="beranda-card-title" id="aktivitas-terbaru">
-                  <span className="beranda-title-icon" aria-hidden="true">
-                    <Ikon>
-                      <path d="M3 12h4l2.5-6 4 12 2.5-6h5" />
-                    </Ikon>
-                  </span>
-                  Aktivitas Terbaru
-                </h2>
-              </div>
-
-              {aktivitas.length === 0 ? (
-                <p className="beranda-empty">Belum ada aktivitas tercatat.</p>
-              ) : (
-                <ol className="beranda-feed">
-                  {aktivitas.map((catatan) => (
-                    <li key={catatan.id}>
-                      <span
-                        className="beranda-feed-icon"
-                        data-tone={toneAktivitas(catatan.event)}
-                        aria-hidden="true"
-                      >
-                        {ikonAktivitas(catatan.event)}
-                      </span>
-                      <div className="beranda-feed-body">
-                        <strong>{labelAktivitas(catatan.event)}</strong>
-                        <span>
-                          {catatan.actorName ?? "Sistem"} ·{" "}
-                          {waktuRelatif(catatan.createdAt, sekarang)}
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              )}
             </section>
           </div>
 
@@ -530,7 +443,6 @@ export default async function AdminHomePage() {
                   <span className="beranda-title-icon" aria-hidden="true"><Ikon><path d="M3 12h4l2.5-6 4 12 2.5-6h5" /></Ikon></span>
                   Aktivitas Terbaru
                 </h2>
-                <Link href="/audit-log">Lihat Semua →</Link>
               </div>
               {aktivitas.length === 0 ? <p className="beranda-empty">Belum ada aktivitas tercatat.</p> : (
                 <ol className="beranda-feed">
