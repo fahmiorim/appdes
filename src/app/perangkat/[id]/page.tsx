@@ -24,13 +24,6 @@ function fullName(item: { gelarDepan: string | null; nama: string; gelarBelakang
   return [item.gelarDepan, item.nama, item.gelarBelakang].filter(Boolean).join(" ");
 }
 
-function dateLabel(value: string | null) {
-  if (!value) return null;
-  const date = new Date(`${value}T00:00:00`);
-  if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "long", year: "numeric" }).format(date);
-}
-
 function roleDescription(role: string | null) {
   const name = (role ?? "").toLocaleLowerCase("id-ID");
   if (name.includes("kepala desa")) return "Memimpin penyelenggaraan pemerintahan desa, pembangunan, pembinaan kemasyarakatan, dan pemberdayaan masyarakat.";
