@@ -18,6 +18,7 @@ export interface KirimKomentarParams {
   namaPenulis: string;
   isi: string;
   halaman?: string;
+  email?: string | null;
 }
 
 /**
@@ -42,5 +43,6 @@ export async function kirimKomentarPublik(params: KirimKomentarParams): Promise<
     namaPenulis: params.namaPenulis,
     isi: params.isi,
     halaman: params.halaman,
+    email: params.email,
   });
 }
