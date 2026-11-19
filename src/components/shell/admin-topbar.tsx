@@ -70,18 +70,47 @@ export function AdminTopbar({
         </nav>
       )}
       <div className="admin-topbar-user">
-        <span className="admin-user-chip">
-          <span className="avatar" aria-hidden="true">
-            {initials || "U"}
-          </span>
-          <span className="admin-user-text">
-            <strong>{name}</strong>
-            <span>Pengguna aktif</span>
-          </span>
-        </span>
-        <Button variant="secondary" onClick={handleSignOut} disabled={isSigningOut}>
-          {isSigningOut ? "Keluar..." : "Keluar"}
-        </Button>
+        {isPlatformAdmin ? (
+          <details className="platform-user-menu">
+            <summary className="admin-user-chip">
+              <span className="avatar" aria-hidden="true">
+                {initials || "U"}
+              </span>
+              <span className="admin-user-text">
+                <strong>{name}</strong>
+                <span>Platform FlexiDesa</span>
+              </span>
+              <span aria-hidden="true" className="platform-user-chevron">
+                ▾
+              </span>
+            </summary>
+            <div className="platform-user-menu-panel">
+              <button
+                className="button button-secondary button-block"
+                disabled={isSigningOut}
+                onClick={handleSignOut}
+                type="button"
+              >
+                {isSigningOut ? "Keluar..." : "Keluar"}
+              </button>
+            </div>
+          </details>
+        ) : (
+          <>
+            <span className="admin-user-chip">
+              <span className="avatar" aria-hidden="true">
+                {initials || "U"}
+              </span>
+              <span className="admin-user-text">
+                <strong>{name}</strong>
+                <span>Pengguna aktif</span>
+              </span>
+            </span>
+            <Button variant="secondary" onClick={handleSignOut} disabled={isSigningOut}>
+              {isSigningOut ? "Keluar..." : "Keluar"}
+            </Button>
+          </>
+        )}
       </div>
     </header>
   );

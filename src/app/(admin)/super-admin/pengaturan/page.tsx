@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getKonfigurasiPlatform } from "@/features/multi-desa/application/platform-info-use-cases";
 import {
   PlatformCard,
+  PlatformPageHeader,
   PlatformStat,
   PlatformStatus,
 } from "@/features/multi-desa/presentation/platform-ui";
@@ -81,6 +82,7 @@ export default async function SuperAdminPengaturanPage() {
 
   return (
     <>
+      <PlatformPageHeader path="/super-admin/pengaturan" />
       <PlatformCard
         description="Kebijakan retensi dijalankan oleh pekerjaan terjadwal platform."
         title="Kebijakan retensi"
@@ -96,6 +98,7 @@ export default async function SuperAdminPengaturanPage() {
             }
             label="Masa tenggang retensi"
             note="Hari sebelum data desa nonaktif boleh di-purge"
+            tone="ungu"
             value={angka.format(konfigurasi.retensi.masaTenggangHari)}
           />
           <PlatformStat
@@ -108,6 +111,7 @@ export default async function SuperAdminPengaturanPage() {
             }
             label="Masa berlaku ekspor"
             note="Hari sebelum berkas ekspor dibersihkan"
+            tone="biru"
             value={angka.format(konfigurasi.retensi.umurEksporHari)}
           />
           <PlatformStat
@@ -120,6 +124,7 @@ export default async function SuperAdminPengaturanPage() {
             }
             label="Retensi audit"
             note="Bulan penyimpanan audit, termasuk desa ter-purge"
+            tone="hijau"
             value={angka.format(konfigurasi.retensi.retensiAuditBulan)}
           />
         </div>

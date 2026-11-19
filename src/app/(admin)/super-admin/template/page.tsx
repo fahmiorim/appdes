@@ -4,6 +4,7 @@ import { getTemplateTenantPlatform } from "@/features/multi-desa/application/pla
 import {
   PlatformCard,
   PlatformEmpty,
+  PlatformPageHeader,
   PlatformStat,
   PlatformStatus,
 } from "@/features/multi-desa/presentation/platform-ui";
@@ -29,6 +30,7 @@ export default async function SuperAdminTemplatePage() {
 
   return (
     <>
+      <PlatformPageHeader path="/super-admin/template" />
       <div className="platform-stat-grid">
         <PlatformStat
           icon={
@@ -39,6 +41,7 @@ export default async function SuperAdminTemplatePage() {
           }
           label="Versi template"
           note={`Sumber: ${template.sumber.jenis} · ${template.sumber.dibuatPada}`}
+          tone="ungu"
           value={template.versi}
         />
         <PlatformStat
@@ -50,6 +53,7 @@ export default async function SuperAdminTemplatePage() {
           }
           label="Role"
           note="Dibuat ulang untuk setiap tenant"
+          tone="biru"
           value={angka.format(template.roles.length)}
         />
         <PlatformStat
@@ -63,6 +67,7 @@ export default async function SuperAdminTemplatePage() {
           }
           label="Modul"
           note={`${angka.format(template.modules.filter((modul) => modul.isGroup).length)} grup, ${angka.format(template.modules.filter((modul) => !modul.isGroup).length)} item`}
+          tone="hijau"
           value={angka.format(template.modules.length)}
         />
         <PlatformStat
@@ -75,6 +80,7 @@ export default async function SuperAdminTemplatePage() {
           }
           label="Aturan akses"
           note="Pasangan role × modul"
+          tone="oranye"
           value={angka.format(template.akses.length)}
         />
       </div>

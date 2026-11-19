@@ -6,6 +6,7 @@ import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisio
 import {
   PlatformCard,
   PlatformEmpty,
+  PlatformPageHeader,
   PlatformStat,
   PlatformStatus,
 } from "@/features/multi-desa/presentation/platform-ui";
@@ -38,6 +39,7 @@ export default async function SuperAdminDomainPage() {
 
   return (
     <>
+      <PlatformPageHeader path="/super-admin/domain" />
       <div className="platform-stat-grid">
         <PlatformStat
           icon={
@@ -49,6 +51,7 @@ export default async function SuperAdminDomainPage() {
           }
           label="Total domain"
           note="Domain utama dan alias"
+          tone="ungu"
           value={angka.format(domain.length)}
         />
         <PlatformStat
@@ -62,6 +65,7 @@ export default async function SuperAdminDomainPage() {
           }
           label="Desa berdomain"
           note={`Dari ${angka.format(desa.length)} desa terdaftar`}
+          tone="hijau"
           value={angka.format(desaBerdomain)}
         />
         <PlatformStat
@@ -74,6 +78,7 @@ export default async function SuperAdminDomainPage() {
           }
           label="Desa tanpa domain"
           note="Tambahkan dari panel tenant"
+          tone="oranye"
           value={angka.format(desaTanpaDomain)}
         />
       </div>

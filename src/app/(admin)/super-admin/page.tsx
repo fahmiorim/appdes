@@ -7,11 +7,14 @@ import { daftarSemuaDomain } from "@/features/multi-desa/application/kelola-desa
 import { daftarPenggunaPlatform } from "@/features/multi-desa/application/pengguna-platform-use-cases";
 import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisioning-use-cases";
 import { hariMenujuPurge, statusRetensi } from "@/features/multi-desa/domain/lifecycle-tenant";
+import { hitungTrenTenant } from "@/features/multi-desa/domain/tren-tenant";
 import {
   PlatformCard,
   PlatformEmpty,
+  PlatformPageHeader,
   PlatformStat,
   PlatformStatus,
+  PlatformTrend,
 } from "@/features/multi-desa/presentation/platform-ui";
 
 import { pastikanSuperAdmin } from "./guard";
@@ -52,6 +55,9 @@ export default async function SuperAdminPage() {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
   const aktivitas = audit.rows.slice(0, 6);
+  const persentaseAktif = rows.length > 0 ? Math.round((totalAktif / rows.length) * 100) : 0;
+  const tren = hitungTrenTenant(rows, new Date(), 6);
+  const baruBulanIni = tren[tren.length - 1]?.jumlah ?? 0;
 
   // Baris bernilai nol hanya menambah tinggi halaman tanpa memberi tindakan,
   // jadi panel hanya menampilkan kondisi yang benar-benar perlu ditangani.
@@ -90,19 +96,32 @@ export default async function SuperAdminPage() {
       aksi: "Buka konsol tenant",
     });
   }
+  const penggunaTanpaRole = penggunaPlatform.filter((item) => item.roleSlug === null).length;
+  if (penggunaTanpaRole > 0) {
+    perhatian.push({
+      kunci: "role-platform",
+      judul: `${angka.format(penggunaTanpaRole)} akun platform tanpa role`,
+      keterangan: "Akun tanpa role tidak dapat membuka konsol; tetapkan role platform yang sah.",
+      href: "/super-admin/pengguna",
+      aksi: "Tinjau akses",
+    });
+  }
 
   return (
     <>
-      <section className="platform-welcome" aria-label="Selamat datang">
-        <div>
-          <span className="eyebrow">PUSAT KENDALI FLEXIDESA</span>
-          <h2>Selamat datang, Super Admin</h2>
-          <p>Pantau dan kelola seluruh tenant desa dari satu konsol terpusat.</p>
-        </div>
-        <span className="platform-welcome-mark" aria-hidden="true">
-          ✦
-        </span>
-      </section>
+      <PlatformPageHeader
+        actions={
+          <>
+            <Link className="button button-secondary" href="/super-admin/audit">
+              Lihat audit
+            </Link>
+            <Link className="button button-primary" href="/super-admin/tenant">
+              Kelola tenant
+            </Link>
+          </>
+        }
+        path="/super-admin"
+      />
       <div className="platform-stat-grid">
         <PlatformStat
           icon={
@@ -115,7 +134,45 @@ export default async function SuperAdminPage() {
           }
           label="Total desa"
           note={`${angka.format(totalAktif)} desa aktif`}
+          tone="ungu"
           value={angka.format(rows.length)}
+        />
+        <PlatformStat
+          icon={
+            <>
+              <circle cx="12" cy="12" r="8.4" />
+              <path d="m8.4 12 2.4 2.4 4.8-5" />
+            </>
+          }
+          label="Desa aktif"
+          note={`${angka.format(persentaseAktif)}% dari total tenant`}
+          tone="hijau"
+          value={angka.format(totalAktif)}
+        />
+        <PlatformStat
+          icon={
+            <>
+              <circle cx="12" cy="12" r="8.4" />
+              <path d="M10 8.6v6.8M14 8.6v6.8" />
+            </>
+          }
+          label="Desa nonaktif"
+          note={`${angka.format(siapPurge.length)} siap purge`}
+          tone="merah"
+          value={angka.format(nonaktif.length)}
+        />
+        <PlatformStat
+          icon={
+            <>
+              <circle cx="12" cy="12" r="8.4" />
+              <path d="M3.6 12h16.8" />
+              <path d="M12 3.6c2.4 2.4 3.6 5.2 3.6 8.4s-1.2 6-3.6 8.4c-2.4-2.4-3.6-5.2-3.6-8.4s1.2-6 3.6-8.4" />
+            </>
+          }
+          label="Domain terdaftar"
+          note={`${angka.format(desaTanpaDomain)} desa belum berdomain`}
+          tone="biru"
+          value={angka.format(domain.length)}
         />
         <PlatformStat
           icon={
@@ -128,150 +185,160 @@ export default async function SuperAdminPage() {
           }
           label="Pengguna desa"
           note={`${angka.format(totalPenduduk)} penduduk tercatat`}
+          tone="oranye"
           value={angka.format(totalPengguna)}
-        />
-        <PlatformStat
-          icon={
-            <>
-              <circle cx="12" cy="12" r="8.4" />
-              <path d="M3.6 12h16.8" />
-              <path d="M12 3.6c2.4 2.4 3.6 5.2 3.6 8.4s-1.2 6-3.6 8.4c-2.4-2.4-3.6-5.2-3.6-8.4s1.2-6 3.6-8.4" />
-            </>
-          }
-          label="Domain terdaftar"
-          note={`${angka.format(desaTanpaDomain)} desa belum berdomain`}
-          value={angka.format(domain.length)}
-        />
-        <PlatformStat
-          icon={
-            <>
-              <path d="M12 3.4 19 6v5.4c0 4.2-2.9 7.6-7 9.2-4.1-1.6-7-5-7-9.2V6z" />
-              <circle cx="12" cy="10.4" r="2" />
-              <path d="M8.7 16.1a3.8 3.8 0 0 1 6.6 0" />
-            </>
-          }
-          label="Pengguna platform"
-          note={`${angka.format(penggunaPlatform.length)} akun pengelola terdaftar`}
-          value={angka.format(penggunaPlatform.filter((item) => item.active).length)}
         />
       </div>
 
-      <PlatformCard
-        actions={
-          <Link className="button button-secondary" href="/super-admin/tenant">
-            Kelola semua tenant
-          </Link>
-        }
-        description="Lima desa yang paling akhir didaftarkan."
-        flush
-        title="Tenant terbaru"
-      >
-        {terbaru.length > 0 ? (
-          <div className="tenant-table-scroll">
-            <table className="tenant-table">
-              <thead>
-                <tr>
-                  <th scope="col">Desa</th>
-                  <th scope="col">Domain</th>
-                  <th scope="col">Pengguna</th>
-                  <th scope="col">Penduduk</th>
-                  <th scope="col">Terdaftar</th>
-                  <th scope="col">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {terbaru.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      <strong>{item.name || "Tanpa nama"}</strong>
-                      <span className="tenant-secondary">Kode: {item.code || "—"}</span>
-                    </td>
-                    <td>{item.domain || <span className="tenant-secondary">Belum diatur</span>}</td>
-                    <td>{angka.format(item.pengguna)}</td>
-                    <td>{angka.format(item.penduduk)}</td>
-                    <td>{tanggal.format(new Date(item.createdAt))}</td>
-                    <td>
-                      <PlatformStatus
-                        aktif={item.active}
-                        label={item.active ? "Aktif" : "Nonaktif"}
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <PlatformEmpty
-            action={
-              <Link className="button button-primary" href="/super-admin/tenant">
-                Daftarkan desa pertama
+      <div className="platform-dashboard-grid">
+        <div className="platform-dashboard-main">
+          <PlatformCard
+            actions={
+              <Link className="button button-secondary" href="/super-admin/tenant">
+                Semua tenant
               </Link>
             }
-            description="Mulai dengan membuat tenant desa, lalu tetapkan domain dan administrator desanya."
-            title="Belum ada tenant desa"
-          />
-        )}
-      </PlatformCard>
+            description="Pendaftaran tenant kumulatif enam bulan terakhir, dihitung dari tanggal tenant dibuat."
+            title="Pertumbuhan tenant"
+          >
+            <div className="platform-trend-summary">
+              <div>
+                <span>Total tenant</span>
+                <strong>{angka.format(rows.length)}</strong>
+              </div>
+              <div>
+                <span>Baru bulan ini</span>
+                <strong>+{angka.format(baruBulanIni)}</strong>
+              </div>
+              <div>
+                <span>Desa aktif</span>
+                <strong>{angka.format(persentaseAktif)}%</strong>
+              </div>
+            </div>
+            <PlatformTrend points={tren} />
+          </PlatformCard>
 
-      <div className="platform-split">
-        <PlatformCard
-          description="Kondisi tenant yang membutuhkan tindakan operator."
-          title="Perlu perhatian"
-        >
-          {perhatian.length > 0 ? (
-            <ul className="platform-attention-list">
-              {perhatian.map((baris) => (
-                <li key={baris.kunci}>
-                  <div>
-                    <strong>{baris.judul}</strong>
-                    <p>{baris.keterangan}</p>
-                  </div>
-                  <Link className="button button-secondary" href={baris.href}>
-                    {baris.aksi}
+          <PlatformCard
+            actions={
+              <Link className="button button-secondary" href="/super-admin/tenant">
+                Kelola semua tenant
+              </Link>
+            }
+            description="Lima desa yang paling akhir didaftarkan."
+            flush
+            title="Tenant terbaru"
+          >
+            {terbaru.length > 0 ? (
+              <div className="tenant-table-scroll">
+                <table className="tenant-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Desa</th>
+                      <th scope="col">Domain</th>
+                      <th scope="col">Pengguna</th>
+                      <th scope="col">Penduduk</th>
+                      <th scope="col">Terdaftar</th>
+                      <th scope="col">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {terbaru.map((item) => (
+                      <tr key={item.id}>
+                        <td>
+                          <strong>{item.name || "Tanpa nama"}</strong>
+                          <span className="tenant-secondary">Kode: {item.code || "—"}</span>
+                        </td>
+                        <td>
+                          {item.domain || <span className="tenant-secondary">Belum diatur</span>}
+                        </td>
+                        <td>{angka.format(item.pengguna)}</td>
+                        <td>{angka.format(item.penduduk)}</td>
+                        <td>{tanggal.format(new Date(item.createdAt))}</td>
+                        <td>
+                          <PlatformStatus
+                            aktif={item.active}
+                            label={item.active ? "Aktif" : "Nonaktif"}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <PlatformEmpty
+                action={
+                  <Link className="button button-primary" href="/super-admin/tenant">
+                    Daftarkan desa pertama
                   </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <PlatformEmpty
-              description="Semua tenant berdomain, berstatus aktif, dan tidak ada data yang menunggu purge."
-              title="Tidak ada tindakan tertunda"
-            />
-          )}
-        </PlatformCard>
+                }
+                description="Mulai dengan membuat tenant desa, lalu tetapkan domain dan administrator desanya."
+                title="Belum ada tenant desa"
+              />
+            )}
+          </PlatformCard>
+        </div>
+        <div className="platform-dashboard-side">
+          <PlatformCard
+            description="Kondisi tenant yang membutuhkan tindakan operator."
+            title="Perlu perhatian"
+          >
+            {perhatian.length > 0 ? (
+              <ul className="platform-attention-list">
+                {perhatian.map((baris) => (
+                  <li key={baris.kunci}>
+                    <div>
+                      <strong>{baris.judul}</strong>
+                      <p>{baris.keterangan}</p>
+                    </div>
+                    <Link className="button button-secondary" href={baris.href}>
+                      {baris.aksi}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <PlatformEmpty
+                description="Semua tenant berdomain, berstatus aktif, dan tidak ada data yang menunggu purge."
+                title="Tidak ada tindakan tertunda"
+              />
+            )}
+          </PlatformCard>
 
-        <PlatformCard
-          actions={
-            <Link className="button button-secondary" href="/super-admin/audit">
-              Semua aktivitas
-            </Link>
-          }
-          description="Peristiwa terakhir lintas desa dan platform."
-          title="Aktivitas terbaru"
-        >
-          {aktivitas.length > 0 ? (
-            <ul className="platform-activity">
-              {aktivitas.map((baris) => (
-                <li key={baris.id}>
-                  <span aria-hidden="true" className="platform-activity-dot" />
-                  <div>
-                    <strong>{AUDIT_EVENT_LABELS[baris.event as AuditEvent] ?? baris.event}</strong>
-                    <span className="platform-activity-meta">
-                      {baris.actorName ?? "Sistem"} · {baris.villageName ?? "Platform"} ·{" "}
-                      {waktu.format(new Date(baris.createdAt))}
-                    </span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <PlatformEmpty
-              description="Setelah operator melakukan perubahan, jejaknya akan muncul di sini."
-              title="Belum ada aktivitas tercatat"
-            />
-          )}
-        </PlatformCard>
+          <PlatformCard
+            actions={
+              <Link className="button button-secondary" href="/super-admin/audit">
+                Semua aktivitas
+              </Link>
+            }
+            description="Peristiwa terakhir lintas desa dan platform."
+            title="Aktivitas terbaru"
+          >
+            {aktivitas.length > 0 ? (
+              <ul className="platform-activity">
+                {aktivitas.map((baris) => (
+                  <li key={baris.id}>
+                    <span aria-hidden="true" className="platform-activity-dot" />
+                    <div>
+                      <strong>
+                        {AUDIT_EVENT_LABELS[baris.event as AuditEvent] ?? baris.event}
+                      </strong>
+                      <span className="platform-activity-meta">
+                        {baris.actorName ?? "Sistem"} · {baris.villageName ?? "Platform"} ·{" "}
+                        {waktu.format(new Date(baris.createdAt))}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <PlatformEmpty
+                description="Setelah operator melakukan perubahan, jejaknya akan muncul di sini."
+                title="Belum ada aktivitas tercatat"
+              />
+            )}
+          </PlatformCard>
+        </div>
       </div>
     </>
   );
