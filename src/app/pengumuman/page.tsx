@@ -187,7 +187,7 @@ export default async function PengumumanPage({ searchParams }: Props) {
                     "Buka pengumuman untuk membaca informasi selengkapnya dari pemerintah desa."}
                 </p>
                 <Link
-                  href={`/berita/${encodeURIComponent(utama.slug)}`}
+                  href={`/pengumuman/${encodeURIComponent(utama.slug)}`}
                   className={styles.primaryLink}
                 >
                   Baca pengumuman <span aria-hidden="true">→</span>
@@ -248,7 +248,7 @@ export default async function PengumumanPage({ searchParams }: Props) {
                       <div className={styles.itemCopy}>
                         <time dateTime={date.toISOString()}>{tanggal(date)}</time>
                         <h3>
-                          <Link href={`/berita/${encodeURIComponent(item.slug)}`}>
+                          <Link href={`/pengumuman/${encodeURIComponent(item.slug)}`}>
                             {item.judul}
                           </Link>
                         </h3>
