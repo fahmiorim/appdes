@@ -129,6 +129,28 @@ export async function getFirstVillageId(): Promise<number | null> {
 }
 
 /**
+ * Desa aktif jika instalasi benar-benar hanya memiliki satu desa.
+ *
+ * `jumlah` dibatasi dua karena pemanggil hanya perlu membedakan nol, satu, dan
+ * lebih dari satu. Fallback tenant tidak boleh menebak desa pertama saat ada
+ * beberapa desa aktif.
+ */
+export async function getSoleVillageId(): Promise<{ villageId: number | null; jumlah: number }> {
+  const rows = await db
+    .select({ id: villages.id })
+    .from(villages)
+    .where(eq(villages.active, true))
+    .orderBy(asc(villages.id))
+    .limit(2);
+
+  const [row] = rows;
+  return {
+    villageId: rows.length === 1 && row !== undefined ? row.id : null,
+    jumlah: rows.length,
+  };
+}
+
+/**
  * Daftar desa beserta seluruh domain/alias dan slug subdomainnya.
  *
  * Satu desa dapat muncul beberapa kali (satu baris per alias). `villages.domain`
