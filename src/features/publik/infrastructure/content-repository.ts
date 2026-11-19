@@ -1,6 +1,20 @@
 import "server-only";
 
-import { and, asc, count, desc, eq, inArray, isNotNull, like, lte, ne, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  like,
+  lte,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -9,6 +23,7 @@ import {
   dokumenPublik,
   galeriAlbum,
   galeriFoto,
+  galeriVideo,
   halamanStatis,
   jabatanPerangkat,
   menuPublik,
@@ -182,6 +197,8 @@ export interface AlbumRingkas {
   nama: string;
   slug: string;
   keterangan: string | null;
+  kategori: string | null;
+  publishedAt: Date | null;
   sampul: string | null;
   jumlahFoto: number;
 }
@@ -200,6 +217,8 @@ export async function listAlbumGaleri(villageId: number, cari?: string): Promise
       nama: galeriAlbum.nama,
       slug: galeriAlbum.slug,
       keterangan: galeriAlbum.keterangan,
+      kategori: galeriAlbum.kategori,
+      publishedAt: galeriAlbum.publishedAt,
       sampul: galeriAlbum.sampul,
       urut: galeriAlbum.urut,
     })
@@ -242,6 +261,8 @@ export async function getAlbumBySlug(
       nama: galeriAlbum.nama,
       slug: galeriAlbum.slug,
       keterangan: galeriAlbum.keterangan,
+      kategori: galeriAlbum.kategori,
+      publishedAt: galeriAlbum.publishedAt,
       sampul: galeriAlbum.sampul,
     })
     .from(galeriAlbum)
@@ -853,4 +874,103 @@ export async function listSlugBerita(villageId: number): Promise<string[]> {
     .from(berita)
     .where(and(beritaLayakTayang(villageId), isNotNull(berita.slug)));
   return rows.map((row) => row.slug);
+}
+
+export interface VideoGaleriPublik {
+  id: number;
+  judul: string;
+  keterangan: string | null;
+  url: string;
+  provider: string;
+  thumbnail: string | null;
+  publishedAt: Date | null;
+}
+
+export async function listVideoGaleriPublik(
+  villageId: number,
+  limit = 8,
+): Promise<VideoGaleriPublik[]> {
+  return db
+    .select({
+      id: galeriVideo.id,
+      judul: galeriVideo.judul,
+      keterangan: galeriVideo.keterangan,
+      url: galeriVideo.url,
+      provider: galeriVideo.provider,
+      thumbnail: galeriVideo.thumbnail,
+      publishedAt: galeriVideo.publishedAt,
+    })
+    .from(galeriVideo)
+    .where(
+      and(
+        eq(galeriVideo.villageId, villageId),
+        eq(galeriVideo.aktif, true),
+        or(isNull(galeriVideo.publishedAt), lte(galeriVideo.publishedAt, new Date())),
+      ),
+    )
+    .orderBy(desc(galeriVideo.publishedAt), desc(galeriVideo.id))
+    .limit(limit);
+}
+
+/* ------------------------------------------------------- kelola galeri admin */
+
+export interface VideoGaleriAdmin {
+  id: number;
+  judul: string;
+  url: string;
+  provider: string;
+  publishedAt: Date | null;
+}
+
+export async function listVideoGaleriAdmin(villageId: number): Promise<VideoGaleriAdmin[]> {
+  return db
+    .select({
+      id: galeriVideo.id,
+      judul: galeriVideo.judul,
+      url: galeriVideo.url,
+      provider: galeriVideo.provider,
+      publishedAt: galeriVideo.publishedAt,
+    })
+    .from(galeriVideo)
+    .where(eq(galeriVideo.villageId, villageId))
+    .orderBy(desc(galeriVideo.publishedAt), desc(galeriVideo.id));
+}
+
+export async function simpanMetadataAlbumAdmin(
+  villageId: number,
+  albumId: number,
+  kategori: string | null,
+  publishedAt: Date | null,
+): Promise<void> {
+  await db
+    .update(galeriAlbum)
+    .set({ kategori, publishedAt })
+    .where(and(eq(galeriAlbum.id, albumId), eq(galeriAlbum.villageId, villageId)));
+}
+
+export async function tambahVideoGaleriAdmin(
+  villageId: number,
+  data: {
+    judul: string;
+    keterangan: string | null;
+    url: string;
+    provider: "youtube" | "vimeo";
+    publishedAt: Date;
+  },
+): Promise<void> {
+  await db.insert(galeriVideo).values({
+    villageId,
+    judul: data.judul,
+    keterangan: data.keterangan,
+    url: data.url,
+    provider: data.provider,
+    aktif: true,
+    publishedAt: data.publishedAt,
+  });
+}
+
+export async function hapusVideoGaleriAdmin(villageId: number, videoId: number): Promise<void> {
+  await db
+    .delete(galeriVideo)
+    .where(and(eq(galeriVideo.id, videoId), eq(galeriVideo.villageId, villageId)));
 }

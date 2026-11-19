@@ -15,6 +15,7 @@ import {
   listSliderBeranda,
   listSlugBerita,
   listSlugHalaman,
+  listVideoGaleriPublik,
   listWidget,
   tambahHitBerita,
 } from "@/features/publik/infrastructure/content-repository";
@@ -93,4 +94,8 @@ export async function daftarSlugBerita(villageId: number) {
 
 export async function daftarSlugHalaman(villageId: number) {
   return listSlugHalaman(villageId);
+}
+
+export async function daftarVideoGaleriPublik(villageId: number, limit = 8) {
+  return listVideoGaleriPublik(villageId, limit);
 }

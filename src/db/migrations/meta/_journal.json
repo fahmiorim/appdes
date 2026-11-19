@@ -141,6 +141,13 @@
       "when": 1795452000000,
       "tag": "0019_komentar_email",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "5",
+      "when": 1795210000000,
+      "tag": "0020_gallery_categories_videos",
+      "breakpoints": true
     }
   ]
 }
