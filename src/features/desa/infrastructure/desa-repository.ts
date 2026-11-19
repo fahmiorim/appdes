@@ -117,17 +117,6 @@ export async function getNamaDesa(villageId: number): Promise<string | null> {
   return row?.name ?? null;
 }
 
-/** Id desa aktif pertama. Hanya untuk fallback mode satu-desa/administrasi. */
-export async function getFirstVillageId(): Promise<number | null> {
-  const [row] = await db
-    .select({ id: villages.id })
-    .from(villages)
-    .where(eq(villages.active, true))
-    .orderBy(asc(villages.id))
-    .limit(1);
-  return row?.id ?? null;
-}
-
 /**
  * Desa aktif jika instalasi benar-benar hanya memiliki satu desa.
  *

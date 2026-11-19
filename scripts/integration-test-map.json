@@ -26,6 +26,7 @@
         "src/db/b5-tenant-migration-guard.integration.test.ts",
         "src/db/m0016-tenant-child-tables.integration.test.ts",
         "src/db/m0017-role-tenant-constraint.integration.test.ts",
+        "src/db/m0018-preflight.integration.test.ts",
         "src/db/m0018-survey-indicator-tenant-fk.integration.test.ts",
         "src/db/tenant-composite-fk.integration.test.ts"
       ]
@@ -33,8 +34,24 @@
     {
       "id": "tenant-isolation-lintas-modul",
       "description": "Isolasi villageId untuk modul yang tidak punya test khusus. Dijalankan bila salah satu modul yang dicakup berubah.",
-      "coversModules": ["anjungan", "arsip", "buku-tamu", "kehadiran", "keuangan", "lapak"],
-      "tests": ["src/features/isolasi-village.integration.test.ts"]
+      "coversModules": [
+        "anjungan",
+        "api-eksternal",
+        "arsip",
+        "buku-tamu",
+        "bumindes",
+        "idm",
+        "kehadiran",
+        "keuangan",
+        "lapak",
+        "pelanggan",
+        "pengaduan",
+        "plugin"
+      ],
+      "tests": [
+        "src/features/isolasi-modul-tambahan.integration.test.ts",
+        "src/features/isolasi-village.integration.test.ts"
+      ]
     }
   ],
   "modules": {

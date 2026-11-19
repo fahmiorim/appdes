@@ -36,26 +36,30 @@ diuji, bukan seluruh query di modul.
 | Pembangunan | `pembangunan_proyek`, `pembangunan_dokumentasi` | `m0016-tenant-child-tables`, schema composite FK | Relasi dokumentasi dan proyek; belum ada test CRUD/ekspor khusus | Sebagian |
 | Bantuan | `bantuan_program`, `bantuan_peserta` | Schema composite FK, `integrasi-warga` | Relasi peserta/program; belum ada test isolasi daftar/ekspor khusus | Sebagian |
 | Kesehatan dan KIA | `kia`, `ibu_hamil`, `bulanan_anak` | Schema composite FK | Relasi ibu/anak/posyandu; belum ada test isolasi daftar/ekspor khusus | Sebagian |
-| Agenda | `agenda_kegiatan` | `agenda-repository` | Repository dasar; belum ada skenario dua desa | Sebagian |
+| Agenda | `agenda_kegiatan` | `agenda-repository` | Baca publik dua desa; belum jalur tulis lintas desa | Sebagian |
 | Website dan konten | `halaman_statis`, `berita`, `dokumen_publik`, `widget`, `slider` | `dokumen-publik` | Publikasi dokumen; belum ada test isolasi menu/halaman/berita | Sebagian |
 | Kehadiran | `kehadiran_perangkat`, `kehadiran_izin`, `kehadiran_pengaturan` | `rekap-kehadiran-tenant-isolation`, `isolasi-village` | Rekap izin, daftar kehadiran; belum semua jalur tulis | Sebagian |
-| IDM | `idm_indikator`, `idm_sdgs` | Belum ada | — | Belum |
-| Pengaduan | `pengaduan`, lampiran | Belum ada | — | Belum |
-| BUMDes | `bumindes_*` | Belum ada | — | Belum |
-| Pemilihan | `elections`, `pemilihan_kandidat` | Belum ada | — | Belum |
-| API eksternal | `api_keys` | Belum ada | — | Belum |
-| Pelanggan dan plugin | `pelanggan`, `plugin_registry` | Belum ada | — | Belum |
+| IDM | `idm_indikator`, `idm_sdgs` | `isolasi-modul-tambahan` | Daftar, tahun, SDGs, create/update/delete, tolak ID desa lain | Kuat |
+| Pengaduan | `pengaduan`, lampiran | `isolasi-modul-tambahan` | Daftar, detail, publik, hitungan, tanggapan, hapus, tolak ID desa lain | Kuat |
+| BUMDes | `bumindes_*` | `isolasi-modul-tambahan` | Baca seluruh tabel anak, tulis item, tolak ID desa lain; tulis tabel anak lain belum diuji | Sebagian |
+| Pemilihan | `elections`, `pemilihan_kandidat` | Belum ada | Hanya domain/schema; belum ada repository atau use case | Belum |
+| API eksternal | `api_keys` | `isolasi-modul-tambahan` | Daftar, pencarian, penonaktifan; kunci desa lain tidak berubah | Kuat |
+| Pelanggan | `pelanggan` | `isolasi-modul-tambahan` | Daftar, detail, update, delete, tolak ID desa lain | Kuat |
+| Plugin | `plugin_registry` | `isolasi-modul-tambahan` | Status per desa tidak saling menimpa, hapus terbatas desa | Kuat |
 
 ## Prioritas penambahan test
 
-1. **Pengaduan dan lampiran** — melibatkan berkas dan data pribadi; perlu test
-   baca, unduh, dan tolak lampiran desa lain.
-2. **IDM** — modul inti; perlu test indikator, SDGs, dan laporan per desa.
-3. **BUMDes** — banyak tabel anak; perlu test relasi dan laporan.
-4. **API eksternal** — kunci API harus terikat satu desa dan tidak dapat
-   membaca desa lain.
-5. **Surat, keuangan, bantuan, kesehatan** — tambahkan test ekspor/impor dan
-   jalur tulis yang belum tercakup.
+1. **Surat** — tambahkan test daftar, detail, permohonan, ekspor, dan tolak ID
+desa lain pada seluruh jalur tulis.
+2. **Keuangan** — perluas test ke ekspor/laporan dan seluruh jalur tulis, bukan
+hanya concurrency dan impor APBDes.
+3. **Bantuan dan kesehatan/KIA** — tambahkan test daftar, laporan, dan tolak
+peserta/anak dari desa lain.
+4. **BUMDes** — tambahkan jalur tulis untuk peraturan, aparat, tanah kas,
+pembangunan, dan kader; saat ini hanya item yang diuji tulis.
+5. **Lampiran pengaduan** — uji unduh/hapus lampiran yang dimiliki desa lain.
+6. **Pemilihan** — implementasi repository/use case belum ada; test isolasi
+tidak dapat dibuat sebelum jalur data tersedia.
 
 ## Aturan minimum untuk modul baru
 
@@ -74,6 +78,8 @@ atau ekspor.
 
 - `0017_role_tenant_trigger.sql` menutup `users.role_id`.
 - `0018_survey_indicator_tenant_fk.sql` menutup `survey_soal.indikator_id`.
+- Preflight 0018 diuji oleh `src/db/m0018-preflight.integration.test.ts`:
+  referensi lintas desa harus menghentikan migration sebelum DDL dijalankan.
 - Daftar 74 composite FK dikunci oleh
   `src/db/tenant-composite-fk.integration.test.ts`.
 

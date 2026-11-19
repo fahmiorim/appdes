@@ -10,11 +10,11 @@ lihat [Matriks Isolasi Tenant](./TENANT-ISOLATION-MATRIX.md).
 
 ## Ringkasan
 
-- **57** integration test
+- **59** integration test
 - **20** modul
-- **24** test lintas modul:
-  - 23 test schema/migration/composite FK di `src/db/`
-  - 1 test isolasi `villageId` untuk enam modul
+- **26** test lintas modul:
+  - 24 test schema/migration/composite FK di `src/db/`
+  - 2 test isolasi `villageId` lintas modul
 
 ## Modul
 
@@ -45,8 +45,8 @@ lihat [Matriks Isolasi Tenant](./TENANT-ISOLATION-MATRIX.md).
 
 | Kelompok | Jumlah | Cakupan |
 |---|---:|---|
-| `database-schema` | 23 | Schema, composite FK, migration guard, cascade, restrict, set null, rollback |
-| `tenant-isolation-lintas-modul` | 1 | `anjungan`, `arsip`, `buku-tamu`, `kehadiran`, `keuangan`, `lapak` |
+| `database-schema` | 24 | Schema, composite FK, migration guard, preflight, cascade, restrict, set null, rollback |
+| `tenant-isolation-lintas-modul` | 2 | `anjungan`, `api-eksternal`, `arsip`, `buku-tamu`, `bumindes`, `idm`, `kehadiran`, `keuangan`, `lapak`, `pelanggan`, `pengaduan`, `plugin` |
 
 ## Kebijakan seleksi yang disarankan
 
@@ -56,7 +56,7 @@ lihat [Matriks Isolasi Tenant](./TENANT-ISOLATION-MATRIX.md).
 | Satu modul fitur | Test modul tersebut; tambah `tenant-isolation-lintas-modul` bila modul tercakup |
 | `src/db/**` atau migration | Semua `database-schema`, ditambah test modul yang berubah |
 | RBAC, auth, atau permission | Test `rbac`; pertimbangkan seluruh suite bila menyentuh sesi/tenant |
-| Shared code, API, action, dependency, atau path tidak dikenal | **Seluruh 57 test** sebagai fail-safe |
+| Shared code, API, action, dependency, atau path tidak dikenal | **Seluruh 59 test** sebagai fail-safe |
 
 Prinsipnya: seleksi hanya boleh mempersempit test bila path perubahan dapat
 dipetakan dengan yakin. Path yang tidak dikenal harus menjalankan seluruh suite,
