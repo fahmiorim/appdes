@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, count, desc, eq, inArray, isNotNull, like, lte, ne, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNotNull, isNull, like, lte, ne, or, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -877,7 +877,7 @@ export async function listVideoGaleriPublik(villageId: number, limit = 8): Promi
     thumbnail: galeriVideo.thumbnail,
     publishedAt: galeriVideo.publishedAt,
   }).from(galeriVideo)
-    .where(and(eq(galeriVideo.villageId, villageId), eq(galeriVideo.aktif, true), lte(galeriVideo.publishedAt, new Date())))
+    .where(and(eq(galeriVideo.villageId, villageId), eq(galeriVideo.aktif, true), or(isNull(galeriVideo.publishedAt), lte(galeriVideo.publishedAt, new Date()))))
     .orderBy(desc(galeriVideo.publishedAt), desc(galeriVideo.id))
     .limit(limit);
 }
