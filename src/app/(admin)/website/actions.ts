@@ -5,11 +5,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { db } from "@/db";
-import { galeriAlbum, galeriFoto, halamanStatis } from "@/db/schema";
+import { dokumenPublik, galeriAlbum, galeriFoto, halamanStatis } from "@/db/schema";
 import { updateIdentitas } from "@/features/desa/application/use-cases";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { desaFormSchema } from "@/features/desa/domain/desa";
-import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
+import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";\nimport { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import {
   createDokumenPublik,
   createMenuPublik,
