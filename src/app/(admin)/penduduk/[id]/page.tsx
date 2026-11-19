@@ -7,10 +7,13 @@ import {
   calculateAge,
   GENDER_LABELS,
   LIFE_STATUS_LABELS,
+  PENDUDUK_RESOURCE,
   RESIDENCE_STATUS_LABELS,
   samarkanNik,
 } from "@/features/penduduk/domain/penduduk";
+import { hasPermission } from "@/features/rbac/application/authorization";
 import { formatWilayahLabel } from "@/features/wilayah/domain/wilayah";
+import { verifySession } from "@/lib/dal";
 
 export const metadata: Metadata = {
   title: "Detail Penduduk",
@@ -38,8 +41,10 @@ export default async function PendudukDetailPage({ params }: { params: Promise<{
 
   if (!Number.isInteger(nomor) || nomor <= 0) notFound();
 
-  const data = await getPendudukDetailData(nomor);
+  const [data, user] = await Promise.all([getPendudukDetailData(nomor), verifySession()]);
   if (!data) notFound();
+
+  const bolehUbah = hasPermission(user.permissions, PENDUDUK_RESOURCE, "update");
 
   const penduduk = data.resident;
   const usia = calculateAge(penduduk.birthDate);
@@ -68,12 +73,19 @@ export default async function PendudukDetailPage({ params }: { params: Promise<{
             {usia !== null ? ` · ${usia} tahun` : ""}
           </p>
         </div>
-        <span
-          className="beranda-chip"
-          data-tone={penduduk.lifeStatus === "alive" ? "hijau" : "oranye"}
-        >
-          {LIFE_STATUS_LABELS[penduduk.lifeStatus]}
-        </span>
+        <div className="penduduk-heading-actions">
+          <span
+            className="beranda-chip"
+            data-tone={penduduk.lifeStatus === "alive" ? "hijau" : "oranye"}
+          >
+            {LIFE_STATUS_LABELS[penduduk.lifeStatus]}
+          </span>
+          {bolehUbah ? (
+            <Link className="button button-primary" href={`/penduduk/${penduduk.id}/ubah`}>
+              Ubah Data
+            </Link>
+          ) : null}
+        </div>
       </div>
 
       <div className="penduduk-detail-layout">

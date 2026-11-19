@@ -14,10 +14,13 @@ import {
   hitungFilterPenduduk,
   LIFE_STATUS_LABELS,
   parseFilterPenduduk,
+  PENDUDUK_RESOURCE,
   samarkanNik,
   type PendudukFilter,
   type PendudukListRow,
 } from "@/features/penduduk/domain/penduduk";
+import { hasPermission } from "@/features/rbac/application/authorization";
+import { verifySession } from "@/lib/dal";
 
 export const metadata: Metadata = {
   title: "Data Penduduk",
@@ -70,11 +73,13 @@ export default async function PendudukPage({
   const filter = parseFilterPenduduk(params);
   const halamanDiminta = halamanDari(params.page);
 
-  const [ringkasan, opsi, awal] = await Promise.all([
+  const [ringkasan, opsi, awal, user] = await Promise.all([
     getRingkasanPendudukData(),
     getPendudukFilterOptionsData(),
     listPenduduk({ filter, page: halamanDiminta, pageSize: PER_HALAMAN }),
+    verifySession(),
   ]);
+  const bolehTambah = hasPermission(user.permissions, PENDUDUK_RESOURCE, "update");
 
   // Halaman di luar rentang (mis. tautan lama setelah data menyusut) diarahkan
   // ke halaman terakhir, bukan menampilkan tabel kosong yang membingungkan.
@@ -102,6 +107,11 @@ export default async function PendudukPage({
           <Link className="button button-secondary" href={tautanEkspor(filter)}>
             Ekspor CSV
           </Link>
+          {bolehTambah ? (
+            <Link className="button button-primary" href="/penduduk/baru">
+              + Tambah Penduduk
+            </Link>
+          ) : null}
         </div>
       </div>
 
