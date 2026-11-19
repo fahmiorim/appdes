@@ -54,7 +54,7 @@ export async function simpanMetadataAlbum(form: FormData) {
 }
 
 export async function tambahVideoGaleri(form: FormData) {
-  const user = await requirePermission(GALERI_RESOURCE, "create");
+  const user = await requirePermission(GALERI_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
   const judul = field(form, "judul").slice(0, 150);
   const keterangan = field(form, "keterangan").slice(0, 2000) || null;
