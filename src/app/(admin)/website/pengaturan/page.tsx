@@ -18,7 +18,7 @@ export default async function WebsiteSettingsPage() {
             <div className="website-form-grid" id="identitas">
               <label>Nama Website / Desa *<input name="namaDesa" required maxLength={100} defaultValue={desa?.namaDesa ?? ""}/></label>
               <label>Kode Desa<input name="kodeDesa" maxLength={10} defaultValue={desa?.kodeDesa ?? ""}/></label>
-              <label>Slogan / Tagline<input name="website" maxLength={150} defaultValue={desa?.website ?? ""} placeholder="Alamat website atau tagline"/></label>
+              <label>Alamat Website (URL)<input name="website" maxLength={150} defaultValue={desa?.website ?? ""} placeholder="https://desa.example.id"/></label>
               <label>Kode Pos<input name="kodePos" maxLength={5} defaultValue={desa?.kodePos ?? ""}/></label>
               <label>Kecamatan<input name="namaKecamatan" defaultValue={desa?.namaKecamatan ?? ""}/></label>
               <label>Kabupaten<input name="namaKabupaten" defaultValue={desa?.namaKabupaten ?? ""}/></label>
