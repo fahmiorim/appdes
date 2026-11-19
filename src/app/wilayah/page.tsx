@@ -48,6 +48,7 @@ export default async function WilayahPage() {
   const projected = proyeksikanKelompokRings(shapes.map((shape) => shape.rings), { lebar: 1000, tinggi: 650, padding: 36 });
   const mapPhoto = mapData.areas.map((area) => mediaUrl(area.foto, desa.id)).find(Boolean) ?? null;
   const profileStats = statistik.perDusun.filter((item) => item.label !== "Belum diisi");
+  const residentsByDusun = new Map(profileStats.map((item) => [item.label, item.total]));
   const totalResidents = statistik.total;
   const totalFamilies = statistik.keluarga;
   const boundaryRows = [
@@ -85,7 +86,7 @@ export default async function WilayahPage() {
                       <rect width="100" height="100" fill="#dce8d0"/><path d="M0 12L30 0 58 18 100 8M-8 62L25 45 51 60 88 43 110 55M8 100L33 78 65 92 100 70" fill="none" stroke="#a8bd93" strokeWidth="3" opacity=".65"/>
                     </pattern>
                   </defs>
-                  <rect width="1000" height="650" fill={mapPhoto ? "#567b48" : "url(#terrain)"}/>
+                  {!mapPhoto ? <rect width="1000" height="650" fill="url(#terrain)"/> : null}
                   {shapes.map((shape, i) => (projected[i] ?? []).map((ring, j) => <polygon key={`${shape.id}-${j}`} points={ring.map((point) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(" ")} fill={shape.color} fillOpacity=".78" stroke="#fff" strokeWidth="9" strokeLinejoin="round"/>))}
                   <path d="M500 285c-20-27-48-14-48 10 0 29 48 67 48 67s48-38 48-67c0-24-28-37-48-10z" fill="#ed174c" stroke="#fff" strokeWidth="8"/>
                   <circle cx="500" cy="295" r="13" fill="#fff"/>
@@ -96,14 +97,14 @@ export default async function WilayahPage() {
               <div className={styles.north}>N<br/>↑</div>
               <div className={styles.mapNote}>{shapes.length} area GIS terpublikasi</div>
             </div>
-            <div className={styles.mapLegend}>{shapes.length ? shapes.map((shape, i) => <span key={shape.id}><i style={{background:shape.color}}/>{shape.name}</span>) : <span>Belum ada batas area yang dipublikasikan</span>}</div>
+            <div className={styles.mapActions}><a className={styles.mapActionActive} href="#peta-wilayah">▧ Peta Wilayah</a><a href="#peta-wilayah">▧ Satelit</a><a href="#batas-administratif">▱ Batas Administratif</a><span className={styles.mapActionDisabled}>⇩ Unduh Peta (PDF)</span></div><div className={styles.mapLegend}>{shapes.length ? shapes.map((shape, i) => <span key={shape.id}><i style={{background:shape.color}}/>{shape.name}</span>) : <span>Belum ada batas area yang dipublikasikan</span>}</div>
           </section>
 
           <aside className={styles.sideStack}>
             <section className={styles.infoCard}>
               <h2><span>ⓘ</span> Informasi Wilayah</h2>
               <dl>
-                <div><dt>Jumlah Dusun</dt><dd>{dusun.length || "—"}</dd></div>
+                <div><dt>⌖ Luas Wilayah</dt><dd>Belum tersedia</dd></div>\n                <div><dt>▧ Jumlah Dusun</dt><dd>{dusun.length || "—"}</dd></div>
                 <div><dt>Jumlah RW</dt><dd>{rw.length || "—"}</dd></div>
                 <div><dt>Jumlah RT</dt><dd>{rt.length || "—"}</dd></div>
                 <div><dt>Jumlah Penduduk</dt><dd>{formatNumber(totalResidents)} jiwa</dd></div>
@@ -122,9 +123,9 @@ export default async function WilayahPage() {
         <div className={styles.lowerGrid}>
           <section className={styles.tableCard}>
             <h2><span>♙</span> Pembagian Wilayah Dusun</h2>
-            <p className={styles.subtitle}>Daftar dusun, RW, dan RT berdasarkan data administrasi desa.</p>
-            {grouped.length ? <div className={styles.tableWrap}><table><thead><tr><th>No</th><th>Dusun</th><th>Jumlah RW</th><th>Jumlah RT</th></tr></thead><tbody>{grouped.map((group,i) => <tr key={group.name}><td>{i+1}</td><td><i style={{background:palette[i%palette.length]}}/>{group.name}</td><td>{new Set(group.items.map((r)=>r.rw).filter(Boolean)).size || "—"}</td><td>{new Set(group.items.map((r)=>r.rt).filter(Boolean)).size || "—"}</td></tr>)}</tbody></table></div> : <div className={styles.emptySmall}>Data dusun belum tersedia.</div>}
-            <div className={styles.tableFoot}><span>Total dusun: {dusun.length}</span><span>Total RW: {rw.length}</span><span>Total RT: {rt.length}</span></div>
+            <p className={styles.subtitle}>Daftar dusun, luas wilayah, dan jumlah penduduk di {desa.namaDesa ?? "desa"}.</p>
+            {grouped.length ? <div className={styles.tableWrap}><table><thead><tr><th>No</th><th>Dusun</th><th>Luas Wilayah</th><th>Jumlah RT</th><th>Jumlah KK</th><th>Jumlah Penduduk</th></tr></thead><tbody>{grouped.map((group,i) => <tr key={group.name}><td>{i+1}</td><td><i style={{background:palette[i%palette.length]}}/>{group.name}</td><td>{new Set(group.items.map((r)=>r.rw).filter(Boolean)).size || "—"}</td><td>{new Set(group.items.map((r)=>r.rt).filter(Boolean)).size || "—"}</td></tr>)}</tbody></table></div> : <div className={styles.emptySmall}>Data dusun belum tersedia.</div>}
+            <div className={styles.tableFoot}><span>Total</span><span>Luas: —</span><span>{rt.length} RT</span><span>{formatNumber(totalFamilies)} KK</span><span>{formatNumber(totalResidents)} jiwa</span></div>
             <p className={styles.note}>Luas per dusun, jumlah KK, dan jumlah penduduk per dusun belum tersedia dari sumber data wilayah yang digunakan.</p>
           </section>
           <section className={styles.geoCard}>
