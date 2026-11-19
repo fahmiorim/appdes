@@ -360,3 +360,37 @@ export async function ubahStatusSliderWebsiteAction(fd: FormData): Promise<void>
   await db.update(slider).set({ aktif: text(fd, "aktif") === "true" }).where(and(eq(slider.villageId, villageId), eq(slider.id, id)));
   revalidatePath("/website/konten"); revalidatePath("/website"); redirect("/website/konten?saved=1#slider");
 }
+
+
+export async function hapusBeritaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "delete");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  if (!id) throw new Error("Berita tidak valid.");
+  const [row] = await db.select({ gambar: berita.gambar }).from(berita).where(and(eq(berita.villageId, villageId), eq(berita.id, id))).limit(1);
+  if (!row) throw new Error("Berita tidak ditemukan.");
+  await db.delete(berita).where(and(eq(berita.villageId, villageId), eq(berita.id, id)));
+  if (row.gambar) await hapusMedia(row.gambar);
+  revalidatePath("/website/konten"); revalidatePath("/website"); redirect("/website/konten?deleted=1#berita");
+}
+
+export async function hapusAgendaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "delete");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  if (!id) throw new Error("Agenda tidak valid.");
+  await db.delete(agendaKegiatan).where(and(eq(agendaKegiatan.villageId, villageId), eq(agendaKegiatan.id, id)));
+  revalidatePath("/website/konten"); revalidatePath("/website"); redirect("/website/konten?deleted=1#agenda");
+}
+
+export async function hapusSliderWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "delete");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  if (!id) throw new Error("Slider tidak valid.");
+  const [row] = await db.select({ gambar: slider.gambar }).from(slider).where(and(eq(slider.villageId, villageId), eq(slider.id, id))).limit(1);
+  if (!row) throw new Error("Slider tidak ditemukan.");
+  await db.delete(slider).where(and(eq(slider.villageId, villageId), eq(slider.id, id)));
+  await hapusMedia(row.gambar);
+  revalidatePath("/website/konten"); revalidatePath("/website"); redirect("/website/konten?deleted=1#slider");
+}
