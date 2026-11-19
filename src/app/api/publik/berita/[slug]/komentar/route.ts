@@ -63,6 +63,7 @@ export async function POST(request: Request, context: Context) {
     villageId: resolved.desa.id,
     namaPenulis: nama,
     isi,
+    email: email || null,
     halaman: resolved.halaman,
   });
   return NextResponse.json({ id, message: "Komentar berhasil dikirim." }, { status: 201 });
