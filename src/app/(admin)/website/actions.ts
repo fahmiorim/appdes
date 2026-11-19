@@ -33,7 +33,7 @@ export async function simpanIdentitasWebsiteAction(fd: FormData): Promise<void> 
 }
 
 export async function tambahMenuWebsiteAction(fd: FormData): Promise<void> {
-  const user = await requirePermission("website-halaman","create"); const villageId = await resolveVillageId(user);
+  const user = await requirePermission("website-halaman","update"); const villageId = await resolveVillageId(user);
   const nama=text(fd,"nama"), link=text(fd,"link"), linkTipe=text(fd,"linkTipe") || "internal";
   if (!nama || !link || nama.length>50 || link.length>500 || !["internal","eksternal","halaman"].includes(linkTipe)) throw new Error("Data menu tidak valid.");
   const parentId=num(fd,"parentId");
@@ -58,7 +58,7 @@ export async function hapusMenuWebsiteAction(fd: FormData): Promise<void> {
 }
 
 export async function tambahDokumenWebsiteAction(fd: FormData): Promise<void> {
-  const user=await requirePermission("website-dokumen","create"); const villageId=await resolveVillageId(user);
+  const user=await requirePermission("website-dokumen","update"); const villageId=await resolveVillageId(user);
   const nama=text(fd,"nama"), kategori=text(fd,"kategori") || "informasi_publik";
   if(!nama || nama.length>200) throw new Error("Nama dokumen wajib diisi (maksimal 200 karakter).");
   const slug=slugify(text(fd,"slug") || nama); if(!slug) throw new Error("Slug dokumen tidak valid.");
