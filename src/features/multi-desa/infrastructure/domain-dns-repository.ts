@@ -1,6 +1,6 @@
 import "server-only";
 
-import { asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { domainDnsChecks } from "@/db/schema";
@@ -34,6 +34,33 @@ export async function listHasilDns(): Promise<HasilDnsRow[]> {
           : [],
       })),
     );
+}
+
+/** Hasil DNS terakhir untuk satu domain, tanpa memuat cache domain lain. */
+export async function getHasilDns(domainId: number): Promise<HasilDnsRow | null> {
+  const [row] = await db
+    .select({
+      domainId: domainDnsChecks.domainId,
+      status: domainDnsChecks.status,
+      addresses: domainDnsChecks.addresses,
+      error: domainDnsChecks.error,
+      checkedAt: domainDnsChecks.checkedAt,
+    })
+    .from(domainDnsChecks)
+    .where(eq(domainDnsChecks.domainId, domainId))
+    .limit(1);
+
+  if (!row) return null;
+
+  return {
+    ...row,
+    addresses: row.addresses
+      ? row.addresses
+          .split("\n")
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : [],
+  };
 }
 
 /** Simpan hasil DNS terakhir untuk satu domain. */

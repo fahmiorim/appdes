@@ -4,9 +4,13 @@ const state = vi.hoisted(() => ({
   requireSuperAdmin: vi.fn(),
   listSemuaDomain: vi.fn(),
   getDomainPlatform: vi.fn(),
+  getDetailDomainPlatform: vi.fn(),
+  listDomainDesa: vi.fn(),
   listHasilSsl: vi.fn(),
+  getHasilSsl: vi.fn(),
   simpanHasilSsl: vi.fn(),
   listHasilDns: vi.fn(),
+  getHasilDns: vi.fn(),
   simpanHasilDns: vi.fn(),
   periksaSslDomain: vi.fn(),
   periksaDnsDomain: vi.fn(),
@@ -19,15 +23,19 @@ vi.mock("./provisioning-use-cases", () => ({
 vi.mock("@/features/multi-desa/infrastructure/kelola-desa-repository", () => ({
   listSemuaDomain: state.listSemuaDomain,
   getDomainPlatform: state.getDomainPlatform,
+  getDetailDomainPlatform: state.getDetailDomainPlatform,
+  listDomainDesa: state.listDomainDesa,
 }));
 
 vi.mock("@/features/multi-desa/infrastructure/domain-ssl-repository", () => ({
   listHasilSsl: state.listHasilSsl,
+  getHasilSsl: state.getHasilSsl,
   simpanHasilSsl: state.simpanHasilSsl,
 }));
 
 vi.mock("@/features/multi-desa/infrastructure/domain-dns-repository", () => ({
   listHasilDns: state.listHasilDns,
+  getHasilDns: state.getHasilDns,
   simpanHasilDns: state.simpanHasilDns,
 }));
 
@@ -51,6 +59,116 @@ describe("pemantauan domain", () => {
     state.listSemuaDomain.mockResolvedValue(domain);
     state.listHasilSsl.mockResolvedValue([]);
     state.listHasilDns.mockResolvedValue([]);
+  });
+
+  it("mengambil detail satu domain beserta alias dan cache milik tenant itu", async () => {
+    state.getDetailDomainPlatform.mockResolvedValue({
+      id: 7,
+      villageId: 3,
+      domain: "tanjung-gading.example.id",
+      isPrimary: true,
+      createdAt: new Date("2026-01-12"),
+      desa: {
+        id: 3,
+        name: "Desa Tanjung Gading",
+        slug: "tanjung-gading",
+        code: "1207012001",
+        logo: null,
+        district: "Sei Suka",
+        regency: "Batu Bara",
+        province: "Sumatera Utara",
+        active: true,
+        createdAt: new Date("2026-01-10"),
+        updatedAt: new Date("2026-11-18"),
+      },
+    });
+    state.listDomainDesa.mockResolvedValue([
+      {
+        id: 7,
+        villageId: 3,
+        domain: "tanjung-gading.example.id",
+        isPrimary: true,
+        createdAt: new Date("2026-01-12"),
+      },
+    ]);
+    state.getHasilDns.mockResolvedValue({
+      domainId: 7,
+      status: "normal",
+      addresses: ["103.135.221.40"],
+      error: null,
+      checkedAt: new Date("2026-11-18"),
+    });
+    state.getHasilSsl.mockResolvedValue({
+      domainId: 7,
+      status: "aktif",
+      validFrom: new Date("2026-10-14"),
+      validTo: new Date("2027-01-12"),
+      issuer: "Let's Encrypt",
+      error: null,
+      checkedAt: new Date("2026-11-18"),
+    });
+    const { ambilDetailDomainPlatform } = await import("./pemantauan-domain-use-cases");
+
+    await expect(ambilDetailDomainPlatform(7)).resolves.toMatchObject({
+      domain: { id: 7, villageId: 3 },
+      desa: { name: "Desa Tanjung Gading" },
+      dns: { status: "normal" },
+      ssl: { status: "aktif" },
+    });
+    expect(state.getDetailDomainPlatform).toHaveBeenCalledWith(7);
+    expect(state.listDomainDesa).toHaveBeenCalledWith(3);
+    expect(state.getHasilDns).toHaveBeenCalledWith(7);
+    expect(state.getHasilSsl).toHaveBeenCalledWith(7);
+  });
+
+  it("memakai status belum diperiksa bila cache DNS/SSL belum ada", async () => {
+    state.getDetailDomainPlatform.mockResolvedValue({
+      id: 7,
+      villageId: 3,
+      domain: "tanjung-gading.example.id",
+      isPrimary: true,
+      createdAt: new Date("2026-01-12"),
+      desa: {
+        id: 3,
+        name: "Desa Tanjung Gading",
+        slug: "tanjung-gading",
+        code: "1207012001",
+        logo: null,
+        district: "Sei Suka",
+        regency: "Batu Bara",
+        province: "Sumatera Utara",
+        active: true,
+        createdAt: new Date("2026-01-10"),
+        updatedAt: new Date("2026-11-18"),
+      },
+    });
+    state.listDomainDesa.mockResolvedValue([
+      {
+        id: 7,
+        villageId: 3,
+        domain: "tanjung-gading.example.id",
+        isPrimary: true,
+        createdAt: new Date("2026-01-12"),
+      },
+    ]);
+    state.getHasilDns.mockResolvedValue(null);
+    state.getHasilSsl.mockResolvedValue(null);
+    const { ambilDetailDomainPlatform } = await import("./pemantauan-domain-use-cases");
+
+    await expect(ambilDetailDomainPlatform(7)).resolves.toMatchObject({
+      dns: { status: "belum-diperiksa", addresses: [], checkedAt: null },
+      ssl: { status: "belum-diperiksa", validTo: null, checkedAt: null },
+    });
+  });
+
+  it("mengembalikan null untuk id tidak valid atau domain yang tidak ada", async () => {
+    state.getDetailDomainPlatform.mockResolvedValue(null);
+    const { ambilDetailDomainPlatform } = await import("./pemantauan-domain-use-cases");
+
+    await expect(ambilDetailDomainPlatform(0)).resolves.toBeNull();
+    await expect(ambilDetailDomainPlatform(99)).resolves.toBeNull();
+    expect(state.getDetailDomainPlatform).toHaveBeenCalledOnce();
+    expect(state.getDetailDomainPlatform).toHaveBeenCalledWith(99);
   });
 
   it("menolak pembacaan cache bila bukan pengelola platform", async () => {

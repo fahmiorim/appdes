@@ -62,6 +62,24 @@ export function menuPlatformAktif(href: string, pathname: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+/**
+ * Href submenu yang paling spesifik untuk pathname aktif.
+ *
+ * Detail domain (`/super-admin/domain/12`) tetap menandai "Daftar Domain",
+ * sedangkan "Tambah Domain" menang atas "Daftar Domain" karena prefiksnya lebih
+ * panjang. Dengan begitu submenu tidak perlu aturan rute satu per satu.
+ */
+export function submenuPlatformAktif(
+  anak: readonly MenuPlatformAnak[],
+  pathname: string,
+): string | null {
+  const cocok = anak
+    .filter((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
+    .sort((a, b) => b.href.length - a.href.length);
+
+  return cocok[0]?.href ?? null;
+}
+
 /** Daftar grup unik sesuai urutan kemunculan, untuk label sidebar. */
 export function grupMenuPlatform(): { readonly grup: string; readonly item: MenuPlatformItem[] }[] {
   return MENU_PLATFORM.reduce<{ grup: string; item: MenuPlatformItem[] }[]>((hasil, item) => {

@@ -175,7 +175,8 @@ describe("SuperAdminDomainPage", () => {
     expect(html).toContain("Custom");
     expect(html).toContain("Normal");
     expect(html).toContain("Segera expired");
-    expect(html).toContain("Kelola Desa Sukamaju");
+    expect(html).toContain("Detail domain sukamaju.localhost");
+    expect(html).toContain('href="/super-admin/domain/1"');
   });
 
   it("menandai domain yang belum diperiksa tanpa menganggapnya aktif", async () => {

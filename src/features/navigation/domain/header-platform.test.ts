@@ -47,6 +47,16 @@ describe("headerPlatform", () => {
     ]);
   });
 
+  it("menampilkan breadcrumb Detail Domain untuk id domain dinamis", () => {
+    const header = headerPlatform("/super-admin/domain/12");
+
+    expect(header.title).toBe("Detail Domain");
+    expect(header.remah).toEqual([
+      { label: "Desa & Domain" },
+      { label: "Daftar Domain", href: "/super-admin/domain" },
+    ]);
+  });
+
   it("jatuh ke ringkasan untuk pathname yang tidak dikenal", () => {
     expect(headerPlatform("/super-admin/tidak-ada").title).toBe("Ringkasan platform");
   });

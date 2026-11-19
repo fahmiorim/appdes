@@ -89,6 +89,17 @@ export function headerPlatform(pathname: string): HeaderPlatform {
   const persis = HEADER_PLATFORM[pathname];
   if (persis) return persis;
 
+  // Detail domain memakai id dinamis; top bar tetap menampilkan konteks
+  // "Desa & Domain → Detail Domain" tanpa menambah entri per id.
+  if (/^\/super-admin\/domain\/\d+$/.test(pathname)) {
+    return {
+      eyebrow: "Desa & Domain",
+      title: "Detail Domain",
+      description: "Informasi dan pengaturan domain, DNS, SSL, serta riwayat perubahan.",
+      remah: [{ label: "Desa & Domain" }, { label: "Daftar Domain", href: "/super-admin/domain" }],
+    };
+  }
+
   const induk = Object.keys(HEADER_PLATFORM)
     .filter((href) => href !== "/super-admin" && pathname.startsWith(`${href}/`))
     .sort((a, b) => b.length - a.length)[0];
