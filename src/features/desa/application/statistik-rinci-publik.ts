@@ -24,7 +24,7 @@ export async function getRincianStatistikPublik(villageId: number) {
     else '≥ 60' end`;
   const [ageRows, educationRows, occupationRows, regionRows, mapRows] = await Promise.all([
     db.select({ label: ageGroup, total: count() }).from(residents)
-      .where(and(alive(villageId), isNotNull(residents.birthDate)))
+      .where(and(alive(villageId), isNotNull(residents.birthDate), sql`${residents.birthDate} <= curdate()`))
       .groupBy(ageGroup),
     db.select({ label: sql<string>`coalesce(${educations.name}, 'Belum diisi')`, total: count() })
       .from(residents).leftJoin(educations, eq(residents.educationId, educations.id))
