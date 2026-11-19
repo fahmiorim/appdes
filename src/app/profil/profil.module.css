@@ -1,79 +1,98 @@
 .site {
   min-height: 100vh;
-  background: #f1f5fd;
-  color: #101b46;
-}
-.container {
-  width: min(1180px, calc(100% - 56px));
-  margin: auto;
-  padding-bottom: 34px;
-}
-.hero {
-  min-height: 166px;
-  background: linear-gradient(110deg, #073c70, #07528a 55%, #1476a3);
-  color: white;
-  position: relative;
+  background: #f1f6ff;
+  color: #101b4b;
   overflow: hidden;
 }
-.hero:after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 78% 20%, #ffffff26, transparent 40%);
-  pointer-events: none;
+.container {
+  width: min(1180px, calc(100% - 60px));
+  margin-inline: auto;
+}
+.hero {
+  position: relative;
+  min-height: 168px;
+  margin-top: 0;
+  background:
+    linear-gradient(90deg, #063a70f2 0%, #07528dc9 47%, #052c6033 100%),
+    linear-gradient(120deg, #07549a, #0a7ca4);
+  background-position: center;
+  background-size: cover;
+  color: #fff;
+  border-radius: 0 0 24px 24px;
 }
 .heroInner {
-  width: min(1180px, calc(100% - 56px));
+  width: min(1180px, calc(100% - 84px));
   margin: auto;
-  padding: 22px 0 32px;
-  position: relative;
-  z-index: 1;
+  padding: 20px 0 28px;
 }
-.hero nav {
+.breadcrumb {
   display: flex;
-  gap: 12px;
-  font-size: 12px;
-  color: #e2efff;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 9px;
+  font-size: 11px;
+  color: #d7eaff;
 }
-.hero nav a {
+.breadcrumb a {
   color: inherit;
+  text-decoration: none;
+}
+.breadcrumb > span:last-child {
+  color: white;
 }
 .hero h1 {
-  margin: 8px 0 4px;
-  font-size: 34px;
-  font-weight: 850;
-}
-.hero p {
-  max-width: 470px;
   margin: 0;
-  color: #e1efff;
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: 34px;
+  line-height: 1.1;
+  font-weight: 900;
+  letter-spacing: -0.04em;
 }
-.topGrid {
-  display: grid;
-  grid-template-columns: 230px minmax(0, 1fr);
-  gap: 16px;
-  margin-top: -20px;
+.hero p:not(.breadcrumb) {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #eff7ff;
+}
+.profileLayout {
   position: relative;
   z-index: 2;
+  display: grid;
+  grid-template-columns: 206px minmax(0, 1fr);
+  gap: 16px;
+  margin-top: -20px;
+  padding-bottom: 30px;
 }
 .sidebar,
 .aboutCard,
-.panel,
-.visionPanel,
-.widePanel {
-  border: 1px solid #dce6f6;
-  border-radius: 17px;
-  background: #ffffffed;
-  box-shadow: 0 7px 20px #274a8010;
+.historyCard,
+.regionCard,
+.visionCard,
+.potentialCard,
+.facilityCard,
+.generalData {
+  border: 1px solid #dbe6f7;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #fff, #f8faff);
+  box-shadow: 0 5px 14px #183c7210;
 }
 .sidebar {
-  padding: 18px 13px;
+  align-self: start;
+  position: sticky;
+  top: 12px;
+  padding: 14px 12px;
 }
 .sidebar h2 {
-  margin: 0 0 14px;
-  font-size: 17px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 12px;
+  padding: 4px 5px;
+  font-size: 16px;
+  font-weight: 900;
+}
+.sidebar h2 span {
+  color: #075bea;
+  font-size: 22px;
 }
 .sidebar nav {
   display: grid;
@@ -81,229 +100,630 @@
 }
 .sidebar nav a {
   display: flex;
-  gap: 12px;
-  padding: 9px 11px;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  padding: 6px 9px;
   border-radius: 8px;
-  color: #152047;
-  font-size: 12px;
+  color: #101b4b;
+  font-size: 11px;
   font-weight: 650;
+  text-decoration: none;
 }
-.sidebar nav a.selected,
-.sidebar nav a:hover {
-  background: #e4edff;
+.sidebar nav a > span {
+  width: 16px;
+  color: #101b4b;
+  font-size: 15px;
+  text-align: center;
+}
+.sidebar nav a:hover,
+.sidebar nav a.active {
+  background: #dce8ff;
+  color: #064de0;
+}
+.sidebar nav a.active > span {
   color: #075bea;
 }
+.mainContent {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
 .aboutCard {
-  padding: 12px 15px;
+  padding: 13px 15px 12px;
 }
-.aboutCard h2,
-.panel h2,
-.visionPanel h2,
-.widePanel h2 {
-  margin: 0 0 13px;
+.aboutCard > h2 {
+  margin: 0 0 12px;
   font-size: 20px;
-  font-weight: 850;
+  font-weight: 900;
+  letter-spacing: -0.035em;
 }
-.aboutBody {
+.aboutGrid {
   display: grid;
   grid-template-columns: 1.05fr 1fr;
-  gap: 24px;
+  gap: 22px;
   align-items: center;
 }
-.villageVisual {
-  min-height: 160px;
+.aboutPhoto {
+  position: relative;
+  min-height: 164px;
+  overflow: hidden;
   border-radius: 13px;
-  background: linear-gradient(140deg, #e4f2ff, #f6f9ff);
+  background: linear-gradient(130deg, #dbeaff, #a5c6e7);
+}
+.aboutPhoto img {
+  object-fit: cover;
+}
+.imageFallback {
+  display: grid;
+  min-height: 164px;
+  place-items: center;
+  color: #6b7b9c;
+  font-size: 12px;
+}
+.aboutText {
+  position: relative;
+  align-self: stretch;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  gap: 5px;
-  color: #174477;
+  padding: 7px 5px 24px 0;
 }
-.villageVisual img {
-  object-fit: contain;
+.aboutText:after {
+  position: absolute;
+  z-index: 0;
+  right: -15px;
+  bottom: -12px;
+  left: -18px;
+  height: 64px;
+  background: linear-gradient(145deg, #d8edff, #e7e8ff);
+  clip-path: polygon(
+    0 48%,
+    18% 12%,
+    35% 42%,
+    52% 8%,
+    70% 42%,
+    86% 12%,
+    100% 30%,
+    100% 100%,
+    0 100%
+  );
+  content: "";
+  opacity: 0.72;
 }
-.villageVisual strong {
-  font-size: 14px;
+.aboutText p,
+.aboutText small {
+  position: relative;
+  z-index: 1;
 }
-.villageVisual small {
-  font-size: 10px;
-  color: #667994;
-}
-.aboutBody > p,
-.panel > p,
-.widePanel > p {
+.aboutText p {
   margin: 0;
-  color: #152047;
-  font-size: 12px;
-  line-height: 1.65;
+  font-size: 11px;
+  line-height: 1.6;
+  color: #17234c;
 }
-.metrics {
+.aboutText small {
+  margin-top: 8px;
+  color: #657493;
+  font-size: 9px;
+}
+.factGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 12px;
+  gap: 9px;
+  margin-top: 10px;
 }
-.metrics > div {
-  min-height: 57px;
-  display: grid;
-  grid-template-columns: 34px 1fr;
-  align-content: center;
+.factGrid > div {
+  display: flex;
   align-items: center;
-  gap: 2px 8px;
-  padding: 7px;
+  gap: 9px;
+  min-width: 0;
+  padding: 8px;
   border: 1px solid #dce6f5;
   border-radius: 12px;
-  background: #f7f9ff;
+  background: linear-gradient(145deg, #fff, #f3f7ff);
+  box-shadow: 0 3px 7px #142e5b0a;
 }
-.metrics > div > span {
-  grid-row: 1/3;
+.factIcon {
   display: grid;
   place-items: center;
-  width: 34px;
-  height: 34px;
+  flex: none;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: #e5efff;
-  color: #0865ed;
+  background: #e3efff;
+  color: #075bea;
+  font-size: 21px;
 }
-.metrics small {
-  font-size: 9px;
-  color: #53627e;
+.factGrid > div:nth-child(2) .factIcon {
+  background: #eee7ff;
+  color: #7538ef;
 }
-.metrics strong {
-  font-size: 13px;
-  overflow-wrap: anywhere;
+.factGrid > div:nth-child(3) .factIcon {
+  background: #e0f8ea;
+  color: #09a85c;
 }
-.middleGrid {
+.factGrid > div:nth-child(4) .factIcon {
+  background: #fff0e3;
+  color: #f47a18;
+}
+.factGrid > div > span:last-child {
   display: grid;
-  grid-template-columns: 1.18fr 0.9fr;
-  gap: 16px;
-  margin-top: 15px;
+  gap: 3px;
+  min-width: 0;
+}
+.factGrid small {
+  font-size: 9px;
+  color: #4c5a7c;
+  white-space: nowrap;
+}
+.factGrid strong {
+  font-size: 15px;
+  line-height: 1.1;
+  font-weight: 900;
+  white-space: nowrap;
+}
+.twoColumn {
+  display: grid;
+  grid-template-columns: 1.2fr 0.9fr;
+  gap: 14px;
   align-items: start;
 }
 .leftStack {
   display: grid;
-  gap: 13px;
+  gap: 12px;
+  min-width: 0;
 }
-.panel,
-.visionPanel {
-  padding: 16px 19px;
+.historyCard,
+.regionCard,
+.visionCard {
+  padding: 13px 15px;
 }
-.panel {
-  min-height: 154px;
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
 }
-.more {
+.sectionTitle > span {
+  flex: none;
+  color: #075bea;
+  font-size: 25px;
+  line-height: 1;
+}
+.sectionTitle h2,
+.sectionTitle h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+.sectionTitle p {
+  margin: 3px 0 0;
+  font-size: 10px;
+  color: #435174;
+}
+.historyBody {
+  display: grid;
+  grid-template-columns: 1.3fr 0.8fr;
+  gap: 8px;
+  align-items: stretch;
+}
+.historyBody > div:first-child {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.historyBody p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0 0 9px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: #15214b;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+}
+.historyBody a {
   display: inline-flex;
-  margin-top: 10px;
-  padding: 6px 12px;
-  border: 1px solid #1767f4;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 12px;
+  border: 1px solid #075bea;
   border-radius: 8px;
   color: #075bea;
-  font-size: 11px;
+  font-size: 10px;
+  font-weight: 800;
+  text-decoration: none;
+}
+.historyPhoto {
+  position: relative;
+  min-height: 118px;
+  overflow: hidden;
+  border-radius: 10px;
+  mask-image: linear-gradient(90deg, transparent, #000 28%);
+}
+.historyPhoto img {
+  object-fit: cover;
+  filter: grayscale(1);
+}
+.regionCard > p {
+  margin: 0 0 8px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.regionBody {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 8px;
+}
+.regionTable {
+  overflow: hidden;
+  border: 1px solid #d8e4f5;
+  border-radius: 8px;
+  background: #fff;
+}
+.regionTable > strong {
+  display: block;
+  padding: 6px 9px;
+  background: #e7efff;
+  color: #17214c;
+  font-size: 10px;
+}
+.regionTable > div {
+  display: grid;
+  grid-template-columns: 38% 62%;
+  gap: 4px;
+  padding: 4px 8px;
+  border-top: 1px solid #e3eaf6;
+  font-size: 9px;
+}
+.regionTable > div b {
   font-weight: 800;
 }
-.visionPanel {
-  min-height: 300px;
+.regionTable > div span {
+  overflow-wrap: anywhere;
+}
+.mapPreview {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 145px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f5f7f5, #e4ebe9);
+  color: #5429d7;
+  text-align: center;
+  text-decoration: none;
+}
+.mapPreview:before,
+.mapPreview:after {
+  position: absolute;
+  inset: -40%;
+  border: 1px solid #d5dedb;
+  border-radius: 45%;
+  content: "";
+  transform: rotate(25deg);
+}
+.mapPreview:after {
+  inset: -25%;
+  transform: rotate(-28deg);
+}
+.mapPreview > span,
+.mapPreview > strong,
+.mapPreview > small {
+  position: relative;
+  z-index: 1;
+}
+.mapPreview > span {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #eee5ff;
+  font-size: 25px;
+}
+.mapPreview strong {
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 3px 8px #142e5b20;
+  font-size: 10px;
+}
+.mapPreview small {
+  font-size: 9px;
+  color: #53617c;
+}
+.visionCard {
+  padding: 14px 15px;
+}
+.visionCard > .sectionTitle > span {
+  color: #1269f8;
 }
 .visionQuote {
   display: flex;
-  gap: 13px;
-  padding: 13px 15px;
-  border: 1px solid #d9ccff;
+  gap: 10px;
+  padding: 10px 13px;
+  border: 1px solid #d8c9ff;
   border-radius: 13px;
-  background: linear-gradient(110deg, #eee8ff, #f8f4ff);
+  background: linear-gradient(110deg, #e5d8ff, #f0eaff);
 }
-.visionQuote > b {
+.visionQuote > span {
+  color: #7442ed;
+  font-family: Georgia, serif;
   font-size: 38px;
-  color: #7448ef;
+  font-weight: 900;
+  line-height: 0.8;
+}
+.visionQuote > div {
+  min-width: 0;
 }
 .visionQuote strong {
-  font-size: 15px;
-  color: #24116f;
+  font-size: 14px;
+  color: #3921a2;
 }
 .visionQuote p {
-  margin: 4px 0;
-  font-size: 12px;
-  line-height: 1.6;
-  font-weight: 700;
+  margin: 4px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  font-weight: 750;
+  color: #171c54;
 }
-.visionPanel h3 {
-  margin: 15px 0 8px;
+.missionTitle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 13px 0 8px;
+}
+.missionTitle > span {
+  color: #075bea;
+  font-size: 22px;
+}
+.missionTitle h3 {
+  margin: 0;
   font-size: 16px;
 }
-.visionPanel ol {
+.visionCard ul {
   display: grid;
-  gap: 8px;
-  padding-left: 23px;
+  gap: 7px;
   margin: 0;
-  font-size: 11px;
-  line-height: 1.55;
+  padding: 0 0 0 3px;
+  list-style: none;
 }
-.muted {
-  color: #71809b !important;
-  font-size: 11px !important;
+.visionCard li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 10px;
+  line-height: 1.4;
 }
-.widePanel {
-  padding: 15px;
-  margin-top: 14px;
+.visionCard li > span {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 21px;
+  height: 21px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: #eee6ff;
+  color: #713ce9;
+  font-size: 13px;
+  font-weight: 900;
 }
-.widePanel h2 {
-  margin-bottom: 3px;
-}
-.emptyContent {
-  padding: 18px;
-  border: 1px dashed #d7e1f0;
-  border-radius: 12px;
+.emptyText {
+  margin: 8px 0;
   color: #71809b;
-  font-size: 11px;
-  text-align: center;
-  background: #f9fbff;
+  font-size: 10px;
 }
-@media (max-width: 850px) {
-  .topGrid {
-    grid-template-columns: 190px 1fr;
+.potentialCard,
+.facilityCard {
+  padding: 13px 15px;
+}
+.potentialCard .sectionTitle > span {
+  color: #0aa58a;
+}
+.facilityCard .sectionTitle > span {
+  color: #075bea;
+}
+.emptyInline {
+  padding: 15px;
+  border: 1px dashed #d5e1f2;
+  border-radius: 10px;
+  background: #f8faff;
+  color: #75829a;
+  font-size: 10px;
+  text-align: center;
+}
+.generalData {
+  padding: 13px 15px;
+}
+.generalData h2 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+.generalData > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 7px 12px;
+  font-size: 10px;
+}
+.generalData strong {
+  font-weight: 850;
+}
+@media (max-width: 950px) {
+  .profileLayout {
+    grid-template-columns: 180px minmax(0, 1fr);
   }
-  .metrics {
-    grid-template-columns: repeat(2, 1fr);
+  .factGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .middleGrid {
+  .twoColumn {
     grid-template-columns: 1fr;
   }
+  .visionCard {
+    grid-row: auto;
+  }
+  .sidebar nav a {
+    font-size: 10px;
+  }
 }
-@media (max-width: 600px) {
-  .container,
+@media (max-width: 640px) {
+  .container {
+    width: calc(100% - 24px);
+  }
+  .hero {
+    min-height: 160px;
+    border-radius: 0 0 18px 18px;
+  }
   .heroInner {
-    width: calc(100% - 28px);
+    width: calc(100% - 32px);
+    padding: 17px 0 30px;
   }
   .hero h1 {
     font-size: 29px;
   }
-  .topGrid {
+  .hero p:not(.breadcrumb) {
+    font-size: 11px;
+  }
+  .desktopBreak {
+    display: none;
+  }
+  .profileLayout {
     grid-template-columns: 1fr;
-    margin-top: -14px;
+    gap: 10px;
+    margin-top: -18px;
+  }
+  .sidebar {
+    position: relative;
+    top: auto;
+    padding: 9px;
+  }
+  .sidebar h2 {
+    font-size: 14px;
+    margin-bottom: 7px;
   }
   .sidebar nav {
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    overflow-x: auto;
+    gap: 5px;
+    scrollbar-width: none;
   }
-  .aboutBody {
+  .sidebar nav::-webkit-scrollbar {
+    display: none;
+  }
+  .sidebar nav a {
+    flex: none;
+    min-height: 31px;
+    padding: 6px 9px;
+    font-size: 9px;
+  }
+  .sidebar nav a > span {
+    font-size: 13px;
+  }
+  .mainContent {
+    gap: 10px;
+  }
+  .aboutCard,
+  .historyCard,
+  .regionCard,
+  .visionCard,
+  .potentialCard,
+  .facilityCard,
+  .generalData {
+    padding: 11px;
+  }
+  .aboutCard > h2 {
+    font-size: 17px;
+  }
+  .aboutGrid {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 8px;
   }
-  .villageVisual {
-    min-height: 130px;
+  .aboutPhoto {
+    min-height: 155px;
   }
-  .metrics {
+  .aboutText {
+    padding: 5px 2px 18px;
+  }
+  .aboutText p {
+    font-size: 10px;
+  }
+  .factGrid {
+    gap: 6px;
+  }
+  .factGrid > div {
+    padding: 7px;
     gap: 7px;
   }
-  .middleGrid {
+  .factIcon {
+    width: 34px;
+    height: 34px;
+    font-size: 17px;
+  }
+  .factGrid small {
+    font-size: 8px;
+  }
+  .factGrid strong {
+    font-size: 12px;
+  }
+  .twoColumn {
+    gap: 10px;
+  }
+  .sectionTitle h2 {
+    font-size: 15px;
+  }
+  .historyBody {
+    grid-template-columns: 1fr 0.75fr;
+  }
+  .historyBody p {
+    font-size: 10px;
+    -webkit-line-clamp: 6;
+  }
+  .historyPhoto {
+    min-height: 130px;
+  }
+  .regionBody {
+    grid-template-columns: 1fr 1fr;
+  }
+  .regionTable > div {
+    font-size: 8px;
+    padding: 4px 6px;
+  }
+  .mapPreview {
+    min-height: 150px;
+  }
+  .visionQuote p {
+    font-size: 10px;
+  }
+  .visionCard li {
+    font-size: 9px;
+  }
+  .potentialCard .sectionTitle p,
+  .facilityCard .sectionTitle p {
+    font-size: 9px;
+  }
+  .emptyInline {
+    padding: 12px;
+    font-size: 9px;
+  }
+}
+@media (max-width: 380px) {
+  .factGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .historyBody,
+  .regionBody {
     grid-template-columns: 1fr;
   }
-  .panel,
-  .visionPanel {
-    padding: 14px;
+  .historyPhoto {
+    min-height: 130px;
+    mask-image: none;
   }
-  .widePanel {
-    padding: 13px;
+  .mapPreview {
+    min-height: 125px;
   }
 }
