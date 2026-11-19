@@ -148,6 +148,7 @@ Empat event ditambahkan ke `src/features/audit/domain/audit.ts`:
 - `src/features/multi-desa/presentation/aksi-template.tsx`
 - `src/app/(admin)/super-admin/template/page.tsx`
 - `src/app/(admin)/super-admin/template/page.test.ts`
+- `src/app/(admin)/super-admin/template/penggunaan/page.test.ts`
 - `src/app/(admin)/super-admin/template/actions.ts`
 - `src/app/(admin)/super-admin/template/baru/page.tsx`
 - `src/app/(admin)/super-admin/template/[templateId]/page.tsx`
@@ -184,7 +185,8 @@ publik yang disentuh.
 | Typecheck | `npm run typecheck` | **PASS** |
 | Lint | `npm run lint` | **PASS** — 0 error, 2 warning `no-console` lama di `scripts/wilayah/generate-wilayah.mjs` |
 | Format | `npm run format:check` | **PASS** |
-| Unit test | `set -o pipefail; npm run test:unit` | **PASS** — 234 file, 2.015 test |
+| Unit test | `set -o pipefail; npm run test:unit` | **PASS** — 235 file, 2.016 test |
+| Regresi tautan tenant | `npx vitest run --config vitest.config.mts 'src/app/(admin)/super-admin/template/penggunaan/page.test.ts'` | **PASS** — 1 test, tautan memakai `/super-admin/tenant?q=` |
 | Build produksi | `npm run build` | **PASS** — 4 route template terdaftar; 2 warning Turbopack lama (filesystem tracing) |
 | Visual login | — | **SKIPPED** — tidak ada sesi login platform di environment ini |
 
@@ -206,6 +208,9 @@ MySQL lokal disposable yang dibuat khusus, bukan database pengembangan.
    tata letak sebenarnya di browser dengan sesi Super Admin belum diverifikasi.
 5. **Race condition update versi.** Unique index mencegah dua baris versi yang sama,
    tetapi dua editor yang menyimpan versi berbeda bersamaan belum diuji.
+6. **Tautan "Lihat desa" menuju daftar tenant dengan filter nama.** Konsol belum
+   memiliki halaman detail tenant terpisah, sehingga tautan mengarah ke
+   `/super-admin/tenant?q=...` yang sudah menerapkan filter pencarian.
 
 ## 9. Rekomendasi berikutnya
 

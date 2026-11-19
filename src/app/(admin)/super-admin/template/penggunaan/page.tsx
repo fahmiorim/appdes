@@ -202,7 +202,7 @@ export default async function SuperAdminPenggunaanTemplatePage({ searchParams }:
                         <td>
                           <Link
                             className="button button-secondary"
-                            href={`/super-admin/desa/${item.villageId}`}
+                            href={`/super-admin/tenant?q=${encodeURIComponent(item.namaDesa ?? "")}`}
                           >
                             Lihat desa
                           </Link>
