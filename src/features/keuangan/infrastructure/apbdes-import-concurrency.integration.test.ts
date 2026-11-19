@@ -133,7 +133,34 @@ describe("AUD-013 impor APBDes dan penyimpanan manual", () => {
 
     const baris = await bacaTahun(desa, tahun);
     expect(baris.find((row) => row.templateUuid === INDUK)?.anggaran).toBe("3000000.00");
-    expect(baris.find((row) => row.templateUuid === INDUK)?.realisasi).toBe("300000.00");
+    // Berkas APBDes tidak membawa realisasi; rekening baru tetap 0,00.
+    expect(baris.find((row) => row.templateUuid === INDUK)?.realisasi).toBe("0.00");
+  }, 60_000);
+
+  it("impor hanya mengganti pagu dan mempertahankan realisasi tersimpan", async () => {
+    if (villageId === null || userId === null) throw new Error("Fixture tidak tersedia.");
+    const desa = villageId;
+    const operator = userId;
+    const tahun = 2040;
+
+    await saveKeuanganNilai(desa, tahun, operator, [
+      { templateUuid: ANAK[0], anggaran: "1000000.00", realisasi: "250000.00" },
+      { templateUuid: ANAK[1], anggaran: "2000000.00", realisasi: "50000.00" },
+    ]);
+
+    // Impor hanya membawa pagu; realisasi berasal dari pencairan/SPJ.
+    await upsertKeuanganBatch(desa, tahun, operator, [
+      { templateUuid: ANAK[0], anggaran: "3000000.00", realisasi: "0.00" },
+      { templateUuid: ANAK[2], anggaran: "1000000.00", realisasi: "0.00" },
+    ]);
+
+    const baris = await bacaTahun(desa, tahun);
+    const nilai = (uuid: string) => baris.find((row) => row.templateUuid === uuid);
+
+    expect(nilai(ANAK[0])).toMatchObject({ anggaran: "3000000.00", realisasi: "250000.00" });
+    expect(nilai(ANAK[1])).toMatchObject({ anggaran: "2000000.00", realisasi: "50000.00" });
+    expect(nilai(ANAK[2])).toMatchObject({ anggaran: "1000000.00", realisasi: "0.00" });
+    expect(nilai(INDUK)).toMatchObject({ anggaran: "6000000.00", realisasi: "300000.00" });
   }, 60_000);
 
   it("hanya menulis kode yang tersentuh, bukan baris nol untuk seluruh chart", async () => {

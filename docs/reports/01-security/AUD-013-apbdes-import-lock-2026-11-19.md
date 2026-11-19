@@ -69,16 +69,31 @@ Perubahan ini mempertahankan maksud komentar lama (nilai eksplisit pada baris ya
 
 Dampak yang terukur: simpan untuk satu desa tidak lagi menyentuh kode template milik desa/cabang lain. Selain mengurangi tulisan, ini menghilangkan gangguan antar-fixture yang membuat dua integration test saling menjatuhkan saat dijalankan paralel (lihat 5.2).
 
+### 4.3 Kebijakan realisasi pada impor
+
+**Keputusan: impor hanya mengganti pagu; realisasi tersimpan dipertahankan.** Rekening yang belum punya baris dibuat dengan realisasi `0.00`.
+
+Alasan:
+
+- Berkas APBDes tidak memiliki kolom realisasi; nilainya selalu diisi `0.00` oleh `transformToUpsert`.
+- Realisasi berasal dari pencairan/SPJ. Mengosongkannya saat operator mengimpor ulang pagu berarti menghapus data transaksional yang tidak dibawa berkas.
+- Impor yang menimpa realisasi juga membuat laporan realisasi tiba-tiba turun ke nol tanpa jejak kesalahan operator.
+
+Implementasi: `saveKeuanganNilai` menerima opsi `pertahankanRealisasi`; saat aktif, nilai realisasi diambil dari baris tersimpan (atau `0n` bila belum ada) alih-alih dari input. `upsertKeuanganBatch` selalu mengaktifkannya, sehingga perbedaan perilaku hanya ada di satu tempat dan tetap berada di dalam kunci serta transaksi yang sama.
+
+Alternatif yang ditolak: menolak impor bila tahun sudah punya realisasi (terlalu menghambat koreksi pagu), dan membiarkan realisasi dikosongkan (kehilangan data).
+
 ## 5. Test dan bukti
 
-### 5.1 Test baru — 4 kasus
+### 5.1 Test baru — 5 kasus
 
 `src/features/keuangan/infrastructure/apbdes-import-concurrency.integration.test.ts`
 
 1. **impor menunggu kunci (desa, tahun) yang sama** — kunci `keuangan:<desa>:<tahun>` dipegang koneksi lain; selama 400 ms tidak boleh ada baris tertulis; setelah kunci dilepas baris muncul.
-2. **mengagregasi induk dari baris impor** — berkas membawa induk `0.00`; setelah impor induk = jumlah anak (anggaran dan realisasi).
+2. **mengagregasi induk dari baris impor** — berkas membawa induk `0.00`; setelah impor induk = jumlah anak. Realisasi induk `0.00` karena rekening baru tidak membawa realisasi.
 3. **hanya menulis kode yang tersentuh** — subtree template lain di chart tidak boleh mendapat baris nol.
-4. **impor dan simpan manual bersamaan** — `Promise.all` pada tiga tahun berbeda, induk harus sama dengan jumlah anak di setiap tahun.
+4. **impor mempertahankan realisasi tersimpan** — pagu diganti, realisasi rekening lama tetap, rekening baru bernilai `0.00`, dan induk menjumlahkan realisasi yang dipertahankan.
+5. **impor dan simpan manual bersamaan** — `Promise.all` pada tiga tahun berbeda, induk harus sama dengan jumlah anak di setiap tahun.
 
 Fixture memakai kode acak per run, desa dan user sendiri, dan membersihkan baris di `afterAll`. Test memakai database uji disposable, bukan database pengembangan/produksi.
 
@@ -101,8 +116,8 @@ Database uji: `desa_test_apbdes_20261119 @ 127.0.0.1` (MySQL 8.0.30, disposable,
 | `npx eslint` (3 file berubah/baru) | **PASS** |
 | `npx prettier --check` (4 file berubah/baru) | **PASS** |
 | `npx vitest run --config vitest.config.mts src/features/keuangan` | **PASS** — 13 file, 165 test |
-| `npx vitest run --config vitest.integration.config.mts src/features/keuangan/infrastructure/apbdes-import-concurrency.integration.test.ts src/features/keuangan/infrastructure/keuangan-concurrency.integration.test.ts` | **PASS** — 2 file, 5 test |
-| `TEST_DATABASE_URL=…/desa_test_suite_apbdes_20261119 TEST_DATABASE_ACK=1 npm run test:integration:ci` (seluruh suite) | **PASS** — 54 file, 295 test, 0 gagal, 0 skip, 153,90 detik, exit 0 |
+| `npx vitest run --config vitest.integration.config.mts src/features/keuangan/infrastructure/apbdes-import-concurrency.integration.test.ts src/features/keuangan/infrastructure/keuangan-concurrency.integration.test.ts` | **PASS** — 2 file, 6 test (termasuk test kebijakan realisasi) |
+| `TEST_DATABASE_URL=…/desa_test_suite_apbdes_20261119 TEST_DATABASE_ACK=1 npm run test:integration:ci` (seluruh suite, commit `bb9a330` — sebelum perubahan kebijakan realisasi) | **PASS** — 54 file, 295 test, 0 gagal, 0 skip, 153,90 detik, exit 0 |
 | `git diff --check` | **PASS** |
 
 ## 6. Keamanan dan multi-tenant
@@ -116,7 +131,7 @@ Database uji: `desa_test_apbdes_20261119 @ 127.0.0.1` (MySQL 8.0.30, disposable,
 
 - Kunci memakai `GET_LOCK` dengan batas tunggu 10 detik dan gagal **fail-closed**: bila satu operasi macet, operasi lain pada desa/tahun yang sama ikut gagal dengan pesan jelas, bukan diam-diam menimpa.
 - Impor kini menimpa pagu induk hasil agregasi, bukan nilai dari berkas. Bila operator mengharapkan pagu induk persis seperti di berkas, perilakunya berubah — tetapi nilai itu memang tidak konsisten dengan anak-anaknya.
-- Realisasi pada impor tetap `0.00` (perilaku lama, tidak diubah task ini). Impor yang dijalankan setelah realisasi tercatat akan mengosongkan realisasi tahun tersebut. Ini perlu keputusan produk tersendiri dan belum ditangani.
+- Kebijakan realisasi sudah diputuskan dan diterapkan (4.3): impor tidak mengubah realisasi tersimpan. Konsekuensinya, operator tidak dapat mengoreksi realisasi lewat impor; koreksi realisasi tetap lewat input manual/transaksi.
 - Perubahan "induk nol tidak ditulis" berlaku untuk semua pemanggil `saveKeuanganNilai`, bukan hanya impor. Pembaca yang mengandalkan adanya baris eksplisit bernilai nol (mis. ekspor yang menghitung baris) perlu diperiksa; pencarian kode tidak menemukan ketergantungan seperti itu, tetapi belum diuji end-to-end di UI.
 - Penguncian hanya mengoordinasi proses yang memakai MySQL yang sama.
 - Suite integration penuh lulus pada database disposable terpisah (`desa_test_suite_apbdes_20261119`), termasuk 4 test baru di berkas ini. Yang belum dicakup: pengujian runtime/UI dan perilaku penguncian pada lebih dari satu instance MySQL.
@@ -127,6 +142,6 @@ Impor APBDes sekarang diserialkan dengan penyimpanan manual memakai kunci `(desa
 
 ## 9. Rekomendasi langkah berikutnya
 
-1. Putuskan kebijakan realisasi pada impor APBDes (pertahankan nilai tersimpan atau nolkan) dan tambahkan test bila kebijakan berubah.
+1. ~~Putuskan kebijakan realisasi pada impor APBDes~~ — selesai: realisasi tersimpan dipertahankan (4.3), dengan test khusus.
 2. Jalankan `npm run test:integration` penuh di CI sebelum merge untuk memastikan perubahan agregasi tidak memengaruhi suite lain.
 3. Pertimbangkan test negatif lintas tenant untuk endpoint impor bila nanti `villageId` dapat berasal dari input.
