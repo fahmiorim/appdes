@@ -31,6 +31,7 @@ const navigation = [
       { href: "/sejarah", label: "Sejarah Desa" },
       { href: "/visi-misi", label: "Visi & Misi" },
       { href: "/wilayah", label: "Wilayah Desa" },
+      { href: "/potensi", label: "Potensi Desa" },
     ],
   },
   {
