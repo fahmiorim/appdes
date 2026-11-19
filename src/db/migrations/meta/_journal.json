@@ -127,6 +127,13 @@
       "when": 1795365363264,
       "tag": "0017_role_tenant_trigger",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1795135260000,
+      "tag": "0018_komentar_email",
+      "breakpoints": true
     }
   ]
 }
