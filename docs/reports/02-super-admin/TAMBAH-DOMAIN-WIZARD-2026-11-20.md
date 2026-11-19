@@ -4,7 +4,7 @@
 - **Tanggal:** 20 November 2026
 - **Branch:** `task/super-admin-tambah-domain`
 - **Base commit:** `a7719ed` (`docs(super-admin): catat commit revisi kartu dan filter domain`)
-- **Commit implementasi:** diisi pada bagian 9 setelah commit dibuat.
+- **Commit implementasi:** `8c2b694` (`feat(super-admin): tambah wizard pendaftaran domain`).
 
 ## 1. Tujuan
 
