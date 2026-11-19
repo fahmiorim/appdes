@@ -48,7 +48,12 @@ export async function simpanIdentitasWebsiteAction(fd: FormData): Promise<void> 
     tandaTangan: text(fd, "tandaTangan"), stempel: text(fd, "stempel"),
     penomoranSurat: text(fd, "penomoranSurat") || "2",
   });
-  const unggahan: Partial<Record<"logo" | "tandaTangan" | "stempel", BerkasUnggahan>> = {};\n  for (const field of ["logo", "tandaTangan", "stempel"] as const) {\n    const file = fd.get(field);\n    if (file instanceof File && file.size > 0) unggahan[field] = { nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()) };\n  }\n  await updateIdentitas(input, unggahan);
+  const unggahan: Partial<Record<"logo" | "tandaTangan" | "stempel", BerkasUnggahan>> = {};
+  for (const field of ["logo", "tandaTangan", "stempel"] as const) {
+    const file = fd.get(field);
+    if (file instanceof File && file.size > 0) unggahan[field] = { nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()) };
+  }
+  await updateIdentitas(input, unggahan);
   revalidatePath("/website");
   revalidatePath("/website/pengaturan");
   redirect("/website/pengaturan?saved=1");
