@@ -423,6 +423,7 @@ describe("AUD-002 composite tenant foreign keys", () => {
       "survey_jawaban_responden_tenant_fk",
       "survey_jawaban_soal_tenant_fk",
       "survey_responden_survey_tenant_fk",
+      "survey_soal_indikator_tenant_fk",
       "survey_soal_survey_tenant_fk",
       "users_resident_tenant_fk",
       "verifikasi_kontak_resident_tenant_fk",
