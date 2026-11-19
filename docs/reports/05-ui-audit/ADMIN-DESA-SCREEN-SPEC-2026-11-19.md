@@ -5,9 +5,9 @@
 - **Branch:** `task/docs-implementation-audit`.
 - **Base commit:** `36c595e`.
 - **Commit implementasi:** `620e221`.
-- **Commit laporan:** commit terakhir pada branch ini.
+- **Commit laporan:** `3f319da`.
 - **Laporan GitHub:** <https://github.com/fahmiorim/appdes/blob/task/docs-implementation-audit/docs/reports/05-ui-audit/ADMIN-DESA-SCREEN-SPEC-2026-11-19.md>.
-- **Pull request:** dibuat setelah laporan di-push; URL dicantumkan pada penyerahan akhir.
+- **Pull request:** <https://github.com/fahmiorim/appdes/pull/162>.
 - **Status:** siap review dokumen, bukan siap merge.
 
 ## Tujuan
@@ -59,7 +59,7 @@ Tidak ada hasil **FAIL** pada pemeriksaan yang dijalankan.
 - Lima halaman baca-saja belum dapat dipakai tenant baru sampai modul/grant ditambahkan; ini gap rilis, bukan sesuatu yang boleh diatasi dengan mematikan guard.
 - Tiga layar penduduk dan halaman Pengaduan tidak memiliki mockup khusus; gap visualnya tidak dapat diukur terhadap mockup yang tidak ada.
 - Working tree masih berisi perubahan dokumen dan aset mockup dari pekerjaan sebelumnya. Laporan ini tidak men-stage atau meng-commit perubahan tersebut.
-- Spesifikasi dan laporan belum di-push pada saat laporan ini ditulis; push dan PR dilakukan setelah commit laporan.
+- Spesifikasi dan laporan sudah di-push; PR #162 dibuat untuk review. Merge tetap menunggu reviewer.
 
 ## Rekomendasi berikutnya
 
