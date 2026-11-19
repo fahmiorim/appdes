@@ -78,7 +78,8 @@ export default async function WilayahPage() {
           <section className={styles.mapCard}>
             <h2><span>◫</span> Peta Wilayah {desa.namaDesa ?? "Desa"}</h2>
             <p className={styles.subtitle}>Peta batas wilayah dan pembagian dusun yang telah dipublikasikan.</p>
-            <div className={styles.mapFrame}>
+            <div className={styles.mapFrame} id="peta-wilayah">
+              {mapPhoto ? <Image className={styles.mapBackdrop} src={mapPhoto} alt="Citra wilayah desa" fill unoptimized sizes="(max-width: 900px) 100vw, 60vw" /> : null}
               {shapes.length ? (
                 <svg className={styles.mapSvg} viewBox="0 0 1000 650" role="img" aria-label={`Peta GIS batas wilayah ${desa.namaDesa ?? "desa"}`}>
                   <defs>
@@ -104,16 +105,19 @@ export default async function WilayahPage() {
             <section className={styles.infoCard}>
               <h2><span>ⓘ</span> Informasi Wilayah</h2>
               <dl>
-                <div><dt>⌖ Luas Wilayah</dt><dd>Belum tersedia</dd></div>\n                <div><dt>▧ Jumlah Dusun</dt><dd>{dusun.length || "—"}</dd></div>
+                <div><dt>⌖ Luas Wilayah</dt><dd>Belum tersedia</dd></div>
+                <div><dt>▧ Jumlah Dusun</dt><dd>{dusun.length || "—"}</dd></div>
                 <div><dt>Jumlah RW</dt><dd>{rw.length || "—"}</dd></div>
                 <div><dt>Jumlah RT</dt><dd>{rt.length || "—"}</dd></div>
-                <div><dt>Jumlah Penduduk</dt><dd>{formatNumber(totalResidents)} jiwa</dd></div>
-                <div><dt>Jumlah KK</dt><dd>{formatNumber(totalFamilies)} KK</dd></div>
-                <div><dt>Luas Wilayah</dt><dd>Belum tersedia</dd></div>
-                <div><dt>Kondisi Geografis</dt><dd>Belum tersedia</dd></div>
+                <div><dt>♧ Jumlah Penduduk</dt><dd>{formatNumber(totalResidents)} jiwa</dd></div>
+                <div><dt>⌂ Jumlah KK</dt><dd>{formatNumber(totalFamilies)} KK</dd></div>
+                <div><dt>⌁ Ketinggian</dt><dd>Belum tersedia</dd></div>
+                <div><dt>♨ Suhu Rata-rata</dt><dd>Belum tersedia</dd></div>
+                <div><dt>≋ Curah Hujan</dt><dd>Belum tersedia</dd></div>
+                <div><dt>▱ Topografi</dt><dd>Belum tersedia</dd></div>
               </dl>
             </section>
-            <section className={styles.infoCard}>
+            <section className={styles.infoCard} id="batas-administratif">
               <h2><span>⇄</span> Batas Wilayah Administratif</h2>
               {boundaryRows.length ? <dl className={styles.boundaries}>{boundaryRows.map(([label,value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl> : <p className={styles.emptySmall}>Informasi batas administratif belum dilengkapi.</p>}
             </section>
@@ -136,7 +140,7 @@ export default async function WilayahPage() {
         </div>
 
         <section className={styles.downloadCard}>
-          <span className={styles.folder}>▱</span><div><h2>Dokumen Wilayah</h2><p>Dokumen peta dan batas wilayah akan tersedia setelah berkas resmi diunggah oleh pemerintah desa.</p></div><span className={styles.pending}>Dokumen PDF belum tersedia</span>
+          <span className={styles.folder}>▱</span><div><h2>Download Dokumen Wilayah</h2><p>Unduh peta, data wilayah, dan dokumen terkait administrasi wilayah desa.</p></div><div className={styles.downloadActions}><span>Peta Wilayah (PDF) · Belum tersedia</span><span>Batas Wilayah (PDF) · Belum tersedia</span><span>Data Dusun (PDF) · Belum tersedia</span></div>
         </section>
       </div>
       <PublicSiteFooter desa={desa} location={location} logoUrl={logoUrl}/>
