@@ -46,10 +46,6 @@ vi.mock("@/features/multi-desa/application/audit-platform-use-cases", () => ({
   ambilAuditPlatform: state.ambilAuditPlatform,
 }));
 
-vi.mock("@/components/ui/card", () => ({
-  Card: () => null,
-}));
-
 const desa = [
   {
     id: 1,
@@ -57,9 +53,12 @@ const desa = [
     slug: "sukamaju",
     code: "1207012001",
     domain: "sukamaju.localhost",
+    district: "Cibadak",
     active: true,
     kuotaMediaMb: 100,
-    tema: null,
+    tema: "tegar",
+    temaNama: "Tegar",
+    temaVersi: "1.0.0",
     pengguna: 4,
     penduduk: 120,
     jenisSurat: 3,
@@ -118,6 +117,10 @@ describe("SuperAdminPage", () => {
 
     expect(html).not.toContain("desa tanpa domain");
     expect(html).toContain("Tidak ada tindakan tertunda");
+    expect(html).toContain("Tema paling populer");
+    expect(html).toContain("Distribusi tenant per kecamatan");
+    expect(html).toContain("Tegar");
+    expect(html).toContain("Cibadak");
   });
 
   it("memuat ringkasan tenant, domain, dan pengguna platform setelah guard lolos", async () => {
@@ -141,6 +144,31 @@ describe("SuperAdminPage", () => {
     expect(state.daftarSemuaDomain).toHaveBeenCalledOnce();
     expect(state.daftarPenggunaPlatform).toHaveBeenCalledOnce();
     expect(state.ambilAuditPlatform).toHaveBeenCalledOnce();
+  });
+
+  it("menjumlahkan pengguna desa dan akun platform pada KPI total pengguna", async () => {
+    state.requireSuperAdmin.mockResolvedValue({ id: "platform-1", villageId: null });
+    state.daftarDesaSuperAdmin.mockResolvedValue(desa);
+    state.daftarSemuaDomain.mockResolvedValue([
+      { id: 1, villageId: 1, domain: "sukamaju.localhost", isPrimary: true },
+    ]);
+    state.daftarPenggunaPlatform.mockResolvedValue([
+      { id: "platform-1", roleSlug: "super-admin" },
+      { id: "platform-2", roleSlug: "super-admin" },
+    ]);
+    state.ambilAuditPlatform.mockResolvedValue({
+      rows: [],
+      total: 0,
+      page: 1,
+      pageSize: 25,
+      pageCount: 1,
+    });
+    const { default: SuperAdminPage } = await import("./page");
+
+    const html = renderToStaticMarkup(await SuperAdminPage());
+
+    expect(html).toContain("Total pengguna");
+    expect(html).toContain("4 desa · 2 platform");
   });
 
   it("menautkan desa nonaktif dan siap purge ke daftar tenant yang sudah terfilter", async () => {

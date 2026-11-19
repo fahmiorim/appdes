@@ -7,8 +7,8 @@ import {
   profilDesaPublik,
 } from "@/features/publik/application/konten-publik";
 
-import styles from "./profil.module.css";
 import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
+import styles from "./profil.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -242,11 +242,7 @@ export default async function ProfilDesaPage() {
         </div>
       </section>
 
-      <PublicSiteFooter
-        desa={desa}
-        location={lokasi}
-        logoUrl={mediaUrl(desa.logo, desa.id)}
-      />
+      <PublicSiteFooter desa={desa} location={lokasi} logoUrl={mediaUrl(desa.logo, desa.id)} />
     </main>
   );
 }
