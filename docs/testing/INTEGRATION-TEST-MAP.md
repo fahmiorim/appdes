@@ -5,13 +5,16 @@ lintas modul yang diuji. Sumber datanya adalah
 `scripts/integration-test-map.json`; daftar test di
 `vitest.integration.config.mts` harus sama persis dengan peta.
 
+Untuk cakupan bukti isolasi tenant per modul dan daftar gap yang belum diuji,
+lihat [Matriks Isolasi Tenant](./TENANT-ISOLATION-MATRIX.md).
+
 ## Ringkasan
 
-- **53** integration test
+- **59** integration test
 - **20** modul
-- **21** test lintas modul:
-  - 20 test schema/migration/composite FK di `src/db/`
-  - 1 test isolasi `villageId` untuk enam modul
+- **26** test lintas modul:
+  - 24 test schema/migration/composite FK di `src/db/`
+  - 2 test isolasi `villageId` lintas modul
 
 ## Modul
 
@@ -25,7 +28,7 @@ lintas modul yang diuji. Sumber datanya adalah
 | kehadiran | 1 | `rekap-kehadiran-tenant-isolation.integration.test.ts` |
 | kelompok | 1 | `kelompok-tenant-isolation.integration.test.ts` |
 | keluarga | 1 | `keluarga-tenant-isolation.integration.test.ts` |
-| keuangan | 1 | `keuangan-concurrency.integration.test.ts` |
+| keuangan | 2 | `apbdes-import-concurrency`, `keuangan-concurrency` |
 | kontak | 1 | `kontak-tenant-isolation.integration.test.ts` |
 | konten | 1 | `dokumen-publik.integration.test.ts` |
 | layanan-mandiri | 3 | `permohonan-status-concurrency`, `integrasi-warga`, `permohonan-tenant-relations` |
@@ -42,8 +45,8 @@ lintas modul yang diuji. Sumber datanya adalah
 
 | Kelompok | Jumlah | Cakupan |
 |---|---:|---|
-| `database-schema` | 20 | Schema, composite FK, migration guard, cascade, restrict, set null, rollback |
-| `tenant-isolation-lintas-modul` | 1 | `anjungan`, `arsip`, `buku-tamu`, `kehadiran`, `keuangan`, `lapak` |
+| `database-schema` | 24 | Schema, composite FK, migration guard, preflight, cascade, restrict, set null, rollback |
+| `tenant-isolation-lintas-modul` | 2 | `anjungan`, `api-eksternal`, `arsip`, `buku-tamu`, `bumindes`, `idm`, `kehadiran`, `keuangan`, `lapak`, `pelanggan`, `pengaduan`, `plugin` |
 
 ## Kebijakan seleksi yang disarankan
 
@@ -53,7 +56,7 @@ lintas modul yang diuji. Sumber datanya adalah
 | Satu modul fitur | Test modul tersebut; tambah `tenant-isolation-lintas-modul` bila modul tercakup |
 | `src/db/**` atau migration | Semua `database-schema`, ditambah test modul yang berubah |
 | RBAC, auth, atau permission | Test `rbac`; pertimbangkan seluruh suite bila menyentuh sesi/tenant |
-| Shared code, API, action, dependency, atau path tidak dikenal | **Seluruh 53 test** sebagai fail-safe |
+| Shared code, API, action, dependency, atau path tidak dikenal | **Seluruh 59 test** sebagai fail-safe |
 
 Prinsipnya: seleksi hanya boleh mempersempit test bila path perubahan dapat
 dipetakan dengan yakin. Path yang tidak dikenal harus menjalankan seluruh suite,

@@ -51,20 +51,24 @@ export const surveySoal = mysqlTable(
     bobot: int("bobot").notNull().default(1),
     /** Peta pilihan → skor 0–5 (JSON) untuk soal pilihan ganda. */
     skorPilihan: text("skor_pilihan"),
-    /** Indikator analisis yang diukur pertanyaan ini. */
-    indikatorId: int("indikator_id").references(() => analisisIndikator.id, {
-      onDelete: "set null",
-    }),
+    /** Indikator analisis yang diukur pertanyaan ini; wajib satu tenant. */
+    indikatorId: int("indikator_id"),
     urutan: int("urutan").default(0),
   },
   (t) => [
     uniqueIndex("survey_soal_village_id_uq").on(t.villageId, t.id),
     index("survey_soal_village_survey_idx").on(t.villageId, t.surveyId),
+    index("survey_soal_village_indikator_idx").on(t.villageId, t.indikatorId),
     foreignKey({
       name: "survey_soal_survey_tenant_fk",
       columns: [t.villageId, t.surveyId],
       foreignColumns: [survey.villageId, survey.id],
     }).onDelete("cascade"),
+    foreignKey({
+      name: "survey_soal_indikator_tenant_fk",
+      columns: [t.villageId, t.indikatorId],
+      foreignColumns: [analisisIndikator.villageId, analisisIndikator.id],
+    }).onDelete("restrict"),
   ],
 );
 
