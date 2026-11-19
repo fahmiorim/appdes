@@ -240,6 +240,7 @@ export const galeriAlbum = mysqlTable(
   (table) => [
     uniqueIndex("galeri_album_village_slug_unique").on(table.villageId, table.slug),
     uniqueIndex("galeri_album_village_id_uq").on(table.villageId, table.id),
+    index("galeri_album_village_category_published_idx").on(table.villageId, table.kategori, table.publishedAt),
   ],
 );
 
