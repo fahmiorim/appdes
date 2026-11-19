@@ -49,7 +49,7 @@ export async function getRiwayatByPendudukId(residentId: number) {
   return getRiwayatByResident(villageId, residentId);
 }
 
-export async function catatKelahiran(input: CatatKelahiranInput, actorId?: string | null) {
+export async function catatKelahiran(input: CatatKelahiranInput) {
   const user = await requirePermission(PENDUDUK_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
   const parsed = catatKelahiranSchema.parse(input);
@@ -94,7 +94,7 @@ export async function catatKelahiran(input: CatatKelahiranInput, actorId?: strin
       type: "birth",
       eventDate: parsed.eventDate,
       reportedAt: new Date(),
-      actorId: actorId ?? user.id,
+      actorId: user.id,
       reason: parsed.reason || null,
       notes: parsed.notes || null,
       referenceNo: parsed.referenceNo || null,
@@ -108,7 +108,7 @@ export async function catatKelahiran(input: CatatKelahiranInput, actorId?: strin
   return { id };
 }
 
-export async function catatKematian(input: CatatKematianInput, actorId?: string | null) {
+export async function catatKematian(input: CatatKematianInput) {
   const user = await requirePermission(PENDUDUK_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
   const parsed = catatKematianSchema.parse(input);
@@ -125,7 +125,7 @@ export async function catatKematian(input: CatatKematianInput, actorId?: string 
     type: "death",
     eventDate: parsed.eventDate,
     reportedAt: new Date(),
-    actorId: actorId ?? user.id,
+    actorId: user.id,
     reason: parsed.reason || null,
     notes: parsed.notes || null,
     referenceNo: parsed.referenceNo || null,
@@ -133,7 +133,7 @@ export async function catatKematian(input: CatatKematianInput, actorId?: string 
   });
 }
 
-export async function catatPindahKeluar(input: CatatPindahKeluarInput, actorId?: string | null) {
+export async function catatPindahKeluar(input: CatatPindahKeluarInput) {
   const user = await requirePermission(PENDUDUK_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
   const parsed = catatPindahKeluarSchema.parse(input);
@@ -150,7 +150,7 @@ export async function catatPindahKeluar(input: CatatPindahKeluarInput, actorId?:
     type: "move_out",
     eventDate: parsed.eventDate,
     reportedAt: new Date(),
-    actorId: actorId ?? user.id,
+    actorId: user.id,
     reason: parsed.reason || null,
     notes: parsed.notes || null,
     referenceNo: parsed.referenceNo || null,
@@ -159,7 +159,7 @@ export async function catatPindahKeluar(input: CatatPindahKeluarInput, actorId?:
   });
 }
 
-export async function catatPerubahan(input: CatatPerubahanInput, actorId?: string | null) {
+export async function catatPerubahan(input: CatatPerubahanInput) {
   const user = await requirePermission(PENDUDUK_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
   const parsed = catatPerubahanSchema.parse(input);
@@ -179,7 +179,7 @@ export async function catatPerubahan(input: CatatPerubahanInput, actorId?: strin
     type: "change",
     eventDate: parsed.eventDate,
     reportedAt: new Date(),
-    actorId: actorId ?? user.id,
+    actorId: user.id,
     reason: parsed.reason || null,
     notes: parsed.notes || null,
     referenceNo: parsed.referenceNo || null,
@@ -187,7 +187,7 @@ export async function catatPerubahan(input: CatatPerubahanInput, actorId?: strin
   });
 }
 
-export async function catatDatang(input: CatatDatangInput, actorId?: string | null) {
+export async function catatDatang(input: CatatDatangInput) {
   const user = await requirePermission(PENDUDUK_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
   const parsed = catatDatangSchema.parse(input);
@@ -232,7 +232,7 @@ export async function catatDatang(input: CatatDatangInput, actorId?: string | nu
       type: "move_in",
       eventDate: parsed.eventDate,
       reportedAt: new Date(),
-      actorId: actorId ?? user.id,
+      actorId: user.id,
       reason: parsed.reason || null,
       notes: parsed.notes || null,
       referenceNo: parsed.referenceNo || null,
