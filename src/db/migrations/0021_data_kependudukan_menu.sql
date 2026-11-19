@@ -28,6 +28,23 @@ WHERE NOT EXISTS (
 );
 --> statement-breakpoint
 
+-- Normalisasi parent dan URL untuk modul yang mungkin sudah ada pada tenant lama.
+UPDATE `modules` child
+INNER JOIN `modules` parent ON parent.`village_id` = child.`village_id` AND parent.`slug` = 'data-kependudukan'
+SET child.`parent_id` = parent.`id`,
+    child.`url` = CASE child.`slug`
+      WHEN 'dashboard-kependudukan' THEN '/penduduk/dashboard'
+      WHEN 'penduduk' THEN '/penduduk'
+      WHEN 'keluarga' THEN '/keluarga'
+      WHEN 'mutasi-penduduk' THEN '/mutasi-penduduk'
+      WHEN 'laporan-penduduk' THEN '/statistik/penduduk'
+      ELSE child.`url`
+    END
+WHERE child.`slug` IN ('dashboard-kependudukan', 'penduduk', 'keluarga', 'mutasi-penduduk', 'laporan-penduduk');
+--> statement-breakpoint
+
+--> statement-breakpoint
+
 INSERT INTO `role_permissions` (`role_id`, `module_id`, `access`)
 SELECT r.`id`, m.`id`, 'manage'
 FROM `roles` r
