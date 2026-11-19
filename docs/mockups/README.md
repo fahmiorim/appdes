@@ -2,7 +2,7 @@
 
 Katalog aset desain Appdes SID. Seluruh gambar di folder ini adalah **referensi visual**, bukan bukti bahwa halaman sudah diimplementasikan atau lulus visual acceptance.
 
-Diperbarui: 19 November 2026. Status implementasi per mockup ada di [audit final](../reports/05-ui-audit/UI-MOCKUP-AUDIT-FINAL-2026-11-18.md). Kelompok **Dashboard Admin Desa** ditambahkan 19 November 2026 dan ditinjau di [review mockup Admin Desa](../reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md). Perluasan **Super Admin** berisi 38 layar dan dipetakan di [audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md).
+Diperbarui: 19 November 2026. Status implementasi mengikuti cakupan masing-masing: 38 layar **Super Admin** dipetakan di [audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md), 10 layar **Admin Desa** ditinjau di [review mockup Admin Desa](../reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md), dan [audit final 42 mockup](../reports/05-ui-audit/UI-MOCKUP-AUDIT-FINAL-2026-11-18.md) tetap menjadi snapshot historis untuk publik, akun, dan pendukung. Audit final tidak mencakup 37 layar Super Admin yang ditambahkan kemudian.
 
 ## Ringkasan
 

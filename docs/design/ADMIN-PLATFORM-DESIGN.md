@@ -107,6 +107,8 @@ Muncul ketika produk dan jumlah tenant bertambah; bukan prasyarat Fase 2.
 
 #### Urutan prioritas yang disarankan
 
+Penempatan area ke fase dan keputusan apakah suatu menu masuk backlog ada di [Master Roadmap §2B](../MASTER_ROADMAP.md#2b-relevansi-fase-terhadap-perluasan-mockup-super-admin-19-november-2026). Katalog ini tidak mengubah prioritas fase.
+
 1. Memisahkan konsol tenant yang sudah ada menjadi halaman: Ringkasan, Tenant, Domain.
 2. Menambah pembacaan audit trail platform (lintas tenant).
 3. Menambah pengguna platform dan pengaturan platform.

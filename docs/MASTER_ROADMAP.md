@@ -1,7 +1,7 @@
 # Master Roadmap — Appdes SID
 
 > Roadmap stabilisasi, penguatan multi-tenant, dan pengembangan Sistem Informasi Desa.  
-> Repository: `fahmiorim/appdes` · Baseline audit statis: 12 November 2026.
+> Repository: `fahmiorim/appdes` · Baseline audit statis: 12 November 2026 · Relevansi perluasan mockup ditinjau: 19 November 2026.
 
 ## 1. Prinsip roadmap
 
@@ -42,6 +42,29 @@ Invarian: host platform/reserved/unknown tidak boleh jatuh ke tenant; tidak ada 
 **Penegakan invarian di kode (18 November 2026):** fallback satu desa kini opt-in lewat `TENANT_LEGACY_SINGLE_HOST_FALLBACK` dan default mati, host tak dikenal di halaman menghasilkan 404, serta konfigurasi ditolak bila host platform `flexidesa.id` dipakai pada production dengan fallback aktif (PR #135, #137, #138). Host platform dipisah dari `DESA_BASE_DOMAIN` lewat `PLATFORM_HOSTS`; `/` menampilkan landing page platform untuk host tersebut (PR #130).
 
 **Catatan baseline:** tenant resolver, wildcard slug, domain alias, provisioning desa, dan host-only cookie sudah ditemukan pada audit statis. Landing page platform sudah ada, tetapi produsen host lain belum: `demo.flexidesa.id`, host reserved, dan classifier domain di proxy belum tersedia. Better Auth masih memakai satu `BETTER_AUTH_URL`, custom domain verification belum ditemukan, dan DNS/TLS/reverse proxy belum diverifikasi.
+
+## 2B. Relevansi fase terhadap perluasan mockup Super Admin (19 November 2026)
+
+**Kesimpulan:** Fase 0–6 dan urutannya tetap relevan. Perluasan menjadi 38 layar Super Admin memperjelas arah konsol, tetapi tidak menciptakan 23 modul siap pakai: audit memetakan 15 layar sebagai sebagian dan 23 layar belum memiliki fitur atau model data. Mockup tidak boleh dipakai sebagai acceptance data, dan tidak ada area baru yang boleh melompati gate keamanan tenant serta operasional Fase 1/5.
+
+| Area di mockup | Kondisi repository | Fase/prioritas | Keputusan |
+|---|---|---|---|
+| Dashboard, tenant, domain, pengguna platform, audit, pengaturan | Tujuh route sudah ada; kedalaman berbeda dari mockup | Fase 2 lanjutan · P1/P2 | Perdalam dengan data nyata dan walkthrough staging. Tidak perlu model data baru untuk memperbaiki tampilan yang sudah didukung. |
+| Wizard provisioning, import tenant, dan matriks peran | Sebagian use case tersedia; alur belum satu paket | Fase 2/3 · P2 | Kerjakan setelah validasi tenant dan template stabil; import wajib memiliki validasi, batas ukuran, dan audit. |
+| Katalog template, editor template, dan tema website | Template fondasi ada; editor dan registry tema belum | Fase 2 (template fondasi) dan Fase 3 (tema situs) · P2 | Pisahkan kontrak "template fondasi tenant" dari "tema website" sebelum membuat UI. Jangan mencampur keduanya dalam satu menu. |
+| Langganan, paket, invoice, dan pembayaran | Belum ada model komersial | Kandidat Fase 7 · P3 | Ditunda sampai keputusan bisnis, provider pembayaran, rekonsiliasi, audit, dan kebijakan pajak/privasi tersedia. |
+| Monitoring, backup, dan manajemen insiden | Sebagian prosedur operasional; belum ada UI terpusat | Fase 5 · P1/P2 | Bangun sumber metrik dan prosedur operasi lebih dulu. UI konsol mengikuti, bukan menggantikan backup/restore yang terbukti. |
+| Pusat keamanan, sesi, firewall, dan pembatasan akses | Kontrol tersebar; firewall berada di infrastruktur | Fase 1/5 · P1 | Kontrol tetap di server/ingress. Dashboard hanya menampilkan status tepercaya dan aksi berizin; jangan menyamakan tampilan dengan jaminan keamanan. |
+| Laporan, analitik penggunaan, dan statistik tenant | Belum ada pipeline event/metrik | Fase 5/6 · P3 | Definisikan metrik, agregasi, retensi, dan privasi sebelum mengumpulkan data. Jangan memakai angka contoh dari mockup. |
+| Dukungan, broadcast, feature flag, dan impersonasi | Belum ada; impersonasi memerlukan keputusan keamanan | Fase 6 · P3 | Masuk backlog setelah audit trail dan permission platform matang. Impersonasi wajib memiliki persetujuan, batas waktu, dan audit. |
+
+**Keputusan roadmap:**
+
+1. Fase 0–6 tidak dipecah atau dinomori ulang karena penambahan mockup.
+2. Area baru di atas adalah backlog platform, bukan tambahan deliverable yang otomatis masuk fase yang sedang berjalan.
+3. Fase 2 tetap ditutup secara operasional melalui walkthrough staging, bukan dengan mengejar seluruh tampilan mockup.
+4. Fase 7 hanya dibuka bila model komersial disetujui; sampai saat itu langganan dan invoice tetap ditunda.
+5. Setiap butir tetap tunduk pada Definition of Done di §7, termasuk otorisasi server-side, isolasi tenant, audit, dan test negatif.
 
 ## 3. Rincian fase
 
@@ -98,7 +121,7 @@ Pekerjaan:
 
 **Prioritas:** P1 · **Prasyarat:** model role dan tenant sudah aman.
 
-**Status kode per 18 November 2026: implementasi repository selesai dan merged ke `main` melalui PR #106–#112.** Hasilnya mencakup bootstrap Super Admin, provisioning berbasis template, konsol tenant, pengelolaan domain, lifecycle retensi/purge, ekspor template, dan cleanup ekspor terjadwal. Ini menandai selesainya pekerjaan kode yang tercantum pada fase ini, bukan bukti deployment atau penerimaan operasional.
+**Status kode per 18 November 2026: implementasi repository selesai dan merged ke `main` melalui PR #106–#112.** Hasilnya mencakup bootstrap Super Admin, provisioning berbasis template, konsol tenant, pengelolaan domain, lifecycle retensi/purge, ekspor template, dan cleanup ekspor terjadwal. Ini menandai selesainya pekerjaan kode yang tercantum pada fase ini, bukan bukti deployment atau penerimaan operasional. Perluasan 38 mockup pada 19 November tidak membatalkan status ini; area baru yang belum didukung dicatat sebagai backlog di §2B.
 
 **Kriteria kode selesai:**
 - Konsol terpisah mengelola provisioning, status, kuota, reset admin, domain, ekspor, dan purge tenant dengan otorisasi server-side.
