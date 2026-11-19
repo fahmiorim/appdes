@@ -15,13 +15,17 @@ export default async function MutasiPendudukPage({searchParams}:{searchParams:Pr
   const type=normalisasiMutationType(typeof params.type==="string"?params.type:null);
   const pageRaw=typeof params.page==="string"?Number(params.page):1;
   const page=Number.isInteger(pageRaw)&&pageRaw>0?pageRaw:1;
-  const result=await listRiwayat({q,type,page,perPage:10});
+  const [result, totals] = await Promise.all([
+    listRiwayat({q,type,page,perPage:10}),
+    Promise.all(MUTATION_TYPES.map(async (kind) => ({ kind, total: (await listRiwayat({type:kind,page:1,perPage:1})).total }))),
+  ]);
+  const countByType = new Map(totals.map((item) => [item.kind, item.total]));
   const counts=Object.entries(MUTATION_TYPE_LABELS);
   return <div className="modul-page data-kependudukan-page">
     <DataKependudukanNav active="/mutasi-penduduk"/>
     <header className="page-heading"><div><span className="eyebrow">Data Kependudukan</span><h1>Mutasi Penduduk</h1><p>Riwayat penduduk masuk, keluar, kelahiran, kematian, dan perubahan data.</p></div><Link className="button button-primary" href="/mutasi-penduduk/baru">+ Catat Mutasi</Link></header>
-    <section className="data-kependudukan-kpis"><article className="data-kpi data-kpi-primary"><span>Total Kejadian</span><strong>{number.format(result.total)}</strong><small>Catatan mutasi sesuai filter</small></article>
-      {counts.slice(0,4).map(([key,label])=><article className="data-kpi" key={key}><span>{label}</span><strong>{key===type?number.format(result.total):"—"}</strong><small>Gunakan filter untuk melihat rincian</small></article>)}
+    <section className="data-kependudukan-kpis"><article className="data-kpi data-kpi-primary"><span>Total Kejadian</span><strong>{number.format(totals.reduce((sum,item)=>sum+item.total,0))}</strong><small>Seluruh catatan mutasi tersimpan</small></article>
+      {counts.slice(0,5).map(([key,label])=><article className="data-kpi" key={key}><span>{label}</span><strong>{number.format(countByType.get(key as (typeof MUTATION_TYPES)[number]) ?? 0)}</strong><small>Total catatan tersimpan</small></article>)}
     </section>
     <section className="platform-card data-panel"><header><h2>Daftar Mutasi Penduduk</h2><p>Catatan kejadian kependudukan berdasarkan tanggal peristiwa.</p></header>
       <form className="data-filter" method="get"><input aria-label="Cari nama, NIK, atau nomor surat" defaultValue={q} name="q" placeholder="Cari nama, NIK, atau nomor surat..." type="search"/><select aria-label="Jenis mutasi" defaultValue={type} name="type"><option value="all">Semua jenis mutasi</option>{MUTATION_TYPES.map((v)=><option key={v} value={v}>{MUTATION_TYPE_LABELS[v]}</option>)}</select><button className="button button-secondary" type="submit">Filter</button></form>
