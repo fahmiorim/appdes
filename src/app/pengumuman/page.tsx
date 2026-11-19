@@ -38,10 +38,11 @@ export default async function PengumumanPage({searchParams}:Props) {
   const selectedCategory=(params.kategori??"").trim().slice(0,80);
   const [categories,agenda]=await Promise.all([daftarKategoriBerita(desa.id),agendaMendatang(desa.id,3)]);
   const announcementCategory=categories.find((item)=>item.slug==="pengumuman");
-  const announcements=announcementCategory?await daftarBerita(desa.id,{limit:60,kategoriSlug:announcementCategory.slug,cari:q||undefined}):[];
+  const defaultCategory=selectedCategory || announcementCategory?.slug;
+  const announcements=defaultCategory?await daftarBerita(desa.id,{limit:60,kategoriSlug:defaultCategory,cari:q||undefined}):await daftarBerita(desa.id,{limit:60,cari:q||undefined});
   const categoryCounts=await Promise.all(categories.map((item)=>hitungBeritaPublik(desa.id,item.slug)));
   const counts=new Map(categories.map((item,index)=>[item.slug,categoryCounts[index]??0]));
-  const shown=selectedCategory&&selectedCategory!=="pengumuman"?[]:announcements;
+  const shown=announcements;
   const location=[desa.namaKecamatan,desa.namaKabupaten,desa.namaPropinsi].filter(Boolean).join(", ");
   const logoUrl=mediaUrl(desa.logo,desa.id);
   const importantLinks=[
