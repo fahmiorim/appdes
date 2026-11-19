@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { StatIcon } from "@/components/ui/stat-icon";
 import { headerPlatform } from "@/features/navigation/domain/header-platform";
 
+import type { DistribusiPlatformItem } from "../domain/ringkasan-platform";
 import type { TitikTrenTenant } from "../domain/tren-tenant";
 
 /**
@@ -188,6 +189,123 @@ export function PlatformTrend({ points }: { points: readonly TitikTrenTenant[] }
         {terakhir ? `${terakhir.total} tenant pada ${terakhir.judul}` : "tanpa data"}.
       </figcaption>
     </figure>
+  );
+}
+
+/** Palet kategori yang konsisten antara donat, legenda, dan bilah. */
+const WARNA_DISTRIBUSI = [
+  "#7c3aed",
+  "#22c55e",
+  "#f59e0b",
+  "#3b82f6",
+  "#ec4899",
+  "#14b8a6",
+] as const;
+
+function warnaDistribusi(label: string, index: number): string {
+  return label === "Belum bertema"
+    ? "#cbd5e1"
+    : (WARNA_DISTRIBUSI[index % WARNA_DISTRIBUSI.length] ?? "#7c3aed");
+}
+
+function segmenDonat(items: readonly DistribusiPlatformItem[], total: number): string[] {
+  let kumulatif = 0;
+  return items.map((item, index) => {
+    const mulai = (kumulatif / total) * 100;
+    kumulatif += item.value;
+    const selesai = (kumulatif / total) * 100;
+    return `${warnaDistribusi(item.label, index)} ${mulai}% ${selesai}%`;
+  });
+}
+
+export function PlatformDonut({
+  items,
+  total,
+  centerLabel,
+  centerValue,
+}: {
+  items: readonly DistribusiPlatformItem[];
+  total: number;
+  centerLabel: string;
+  centerValue: ReactNode;
+}) {
+  if (items.length === 0 || total <= 0) {
+    return (
+      <PlatformEmpty
+        description="Tema aktif akan muncul setelah desa memilih tema publik."
+        title="Belum ada tema aktif"
+      />
+    );
+  }
+
+  const segmen = segmenDonat(items, total);
+
+  return (
+    <div className="platform-donut-layout">
+      <div
+        aria-label={`Sebaran tema dari ${total} desa dalam ${items.length} kelompok`}
+        className="platform-donut"
+        role="img"
+        style={{ background: `conic-gradient(${segmen.join(", ")})` }}
+      >
+        <div className="platform-donut-center">
+          <strong>{centerValue}</strong>
+          <span>{centerLabel}</span>
+        </div>
+      </div>
+      <ul className="platform-distribution-legend">
+        {items.map((item, index) => (
+          <li key={`${item.label}-${index}`}>
+            <span
+              aria-hidden="true"
+              className="platform-distribution-dot"
+              style={{ background: warnaDistribusi(item.label, index) }}
+            />
+            <span className="platform-distribution-label">{item.label}</span>
+            <span className="platform-distribution-value">
+              {item.persentase}% · {item.value} desa
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** Daftar bilah horizontal untuk distribusi tenant per kategori. */
+export function PlatformBarList({
+  items,
+  labelKosong,
+}: {
+  items: readonly DistribusiPlatformItem[];
+  labelKosong: string;
+}) {
+  if (items.length === 0) {
+    return <p className="platform-distribution-empty">{labelKosong}</p>;
+  }
+
+  return (
+    <ul className="platform-bar-list">
+      {items.map((item, index) => (
+        <li key={`${item.label}-${index}`}>
+          <div className="platform-bar-meta">
+            <span>{item.label}</span>
+            <strong>
+              {item.value} desa <small>({item.persentase}%)</small>
+            </strong>
+          </div>
+          <span aria-hidden="true" className="platform-bar-track">
+            <span
+              className="platform-bar-fill"
+              style={{
+                width: `${item.persentase}%`,
+                background: WARNA_DISTRIBUSI[index % WARNA_DISTRIBUSI.length],
+              }}
+            />
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 

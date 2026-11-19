@@ -10,8 +10,12 @@ export const dynamic = "force-dynamic";
 
 function mediaUrl(value: string | null | undefined, villageId: number): string | null {
   if (!value) return null;
-  const segments = value.split(/[\\\\/]/).filter(Boolean);
-  if (segments.length === 0 || segments.some((segment) => segment === "." || segment === ".." || segment.includes(".."))) return null;
+  const segments = value.split(/[\\/]/).filter(Boolean);
+  if (
+    segments.length === 0 ||
+    segments.some((segment) => segment === "." || segment === ".." || segment.includes(".."))
+  )
+    return null;
   const path = segments[0] === String(villageId) ? segments : [String(villageId), ...segments];
   return `/api/publik/media/${path.map(encodeURIComponent).join("/")}`;
 }
