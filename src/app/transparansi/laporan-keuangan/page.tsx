@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { listLaporanDokumenApbdesPublik } from "@/features/keuangan/application/laporan-dokumen-publik-use-cases";
 import { getLaporanApbdesPublik, getLaporanTriwulanPublik } from "@/features/keuangan/application/laporan-publik-use-cases";
-import { formatRupiah, toMinor } from "@/features/keuangan/domain/keuangan";
+import { formatMoney, formatRupiah, toMinor } from "@/features/keuangan/domain/keuangan";
 import { PublicSiteFooter, PublicSiteHeader } from "../../public-site-layout";
 import styles from "./laporan-keuangan.module.css";
 
@@ -51,7 +51,7 @@ export default async function LaporanKeuanganPublikPage({ searchParams }: Props)
   const totalBelanja = belanja?.anggaran ?? "0";
   const realisasiBelanja = belanja?.realisasi ?? "0";
   const sisaBelanja = toMinor(totalBelanja) - toMinor(realisasiBelanja);
-  const sisaBelanjaTampil = formatRupiah(sisaBelanja > 0n ? sisaBelanja.toString() : "0");
+  const sisaBelanjaTampil = formatRupiah(formatMoney(sisaBelanja > 0n ? sisaBelanja : 0n));
   const serapan = Number(totalBelanja) > 0 ? Math.min(100, Number(realisasiBelanja) / Number(totalBelanja) * 100) : 0;
   const location = locationLabel(desa);
   const logoUrl = mediaUrl(desa.logo, desa.id);
