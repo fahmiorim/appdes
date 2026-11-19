@@ -40,11 +40,11 @@ function tugasJabatan(jabatan: string | null): string {
 }
 
 const fungsiUtama = [
-  { title: "Kepala Desa", icon: "⚑", color: "purple", text: "Memimpin penyelenggaraan pemerintahan desa dan bertanggung jawab atas pelaksanaan pembangunan serta pelayanan masyarakat." },
-  { title: "Sekretaris Desa", icon: "▱", color: "blue", text: "Mengoordinasikan administrasi pemerintahan desa, tata usaha, perencanaan, dan pelaporan." },
-  { title: "Kaur", icon: "♧", color: "green", text: "Membantu urusan administrasi sesuai bidang, termasuk tata usaha, keuangan, dan perencanaan." },
-  { title: "Kasi", icon: "⚙", color: "orange", text: "Membantu pelaksanaan urusan pemerintahan, kesejahteraan, dan pelayanan masyarakat." },
-  { title: "BPD", icon: "♧", color: "purple", text: "Menampung dan menyalurkan aspirasi masyarakat serta menjalankan fungsi permusyawaratan desa." },
+  { title: "Kepala Desa", icon: "⚑", iconClass: styles.functionIcon_purple, text: "Memimpin penyelenggaraan pemerintahan desa dan bertanggung jawab atas pelaksanaan pembangunan serta pelayanan masyarakat." },
+  { title: "Sekretaris Desa", icon: "▱", iconClass: styles.functionIcon_blue, text: "Mengoordinasikan administrasi pemerintahan desa, tata usaha, perencanaan, dan pelaporan." },
+  { title: "Kaur", icon: "♧", iconClass: styles.functionIcon_green, text: "Membantu urusan administrasi sesuai bidang, termasuk tata usaha, keuangan, dan perencanaan." },
+  { title: "Kasi", icon: "⚙", iconClass: styles.functionIcon_orange, text: "Membantu pelaksanaan urusan pemerintahan, kesejahteraan, dan pelayanan masyarakat." },
+  { title: "BPD", icon: "♧", iconClass: styles.functionIcon_purple, text: "Menampung dan menyalurkan aspirasi masyarakat serta menjalankan fungsi permusyawaratan desa." },
 ];
 
 export default async function PemerintahanPage() {
@@ -149,7 +149,7 @@ export default async function PemerintahanPage() {
         <section className={styles.sectionCard} id="tugas">
           <div className={styles.sectionHeading}><div><h2><span>▤</span> Tugas &amp; Fungsi Pemerintahan Desa</h2><p>Gambaran fungsi utama unsur pemerintahan desa.</p></div></div>
           <div className={styles.functionGrid}>{fungsiUtama.map((item) => <article className={styles.functionCard} key={item.title}>
-            <span className={styles[`functionIcon_${item.color}`]}>{item.icon}</span><h3>{item.title}</h3><p>{item.text}</p>
+            <span className={item.iconClass}>{item.icon}</span><h3>{item.title}</h3><p>{item.text}</p>
           </article>)}</div>
         </section>
       </div>
