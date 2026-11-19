@@ -62,7 +62,7 @@ export function LayananSuratOnline({ desa, jenisSurat }: Props) {
       </section>
 
       <aside className={styles.sidebar}>
-        <section className={styles.loginPanel}><div className={styles.sideTitle}><span>♙</span><div><h2>Masuk / Daftar Akun</h2><p>Untuk mengajukan surat, silakan masuk ke akun Area Warga terlebih dahulu.</p></div></div><Link href="/masuk" className={styles.loginButton}>↪　Masuk ke Akun</Link><Link href="/daftar" className={styles.registerButton}>＋　Daftar Akun Baru</Link></section>
+        <section className={styles.loginPanel}><div className={styles.sideTitle}><span>♙</span><div><h2>Masuk / Daftar Akun</h2><p>Untuk mengajukan surat, silakan masuk ke akun Area Warga terlebih dahulu.</p></div></div><Link href="/masuk" className={styles.loginButton}>↪　Masuk ke Akun</Link><Link href="/masuk" className={styles.registerButton}>＋　Daftar Akun Baru</Link></section>
         <section className={styles.requirements}><div className={styles.sideTitle}><span>▤</span><div><h2>Syarat Umum Pengajuan</h2><p>Siapkan hal berikut sebelum memulai.</p></div></div><ul><li>Memiliki akun Area Warga.</li><li>Memilih jenis surat yang sesuai kebutuhan.</li><li>Mengisi data dengan benar dan lengkap.</li><li>Menyiapkan dokumen pendukung jika diminta.</li></ul></section>
         <section className={styles.notice}><h2>ⓘ　Informasi</h2><p>Jenis surat yang tampil merupakan layanan aktif yang disediakan {desa}. Persyaratan khusus dan tahapan berikutnya akan ditampilkan pada proses pengajuan setelah Anda masuk.</p><Link href="/kontak">Butuh bantuan? Hubungi desa　→</Link></section>
       </aside>
