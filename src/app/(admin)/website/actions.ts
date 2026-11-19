@@ -9,7 +9,8 @@ import { agendaKegiatan, berita, beritaKategori, dokumenPublik, galeriAlbum, gal
 import { updateIdentitas } from "@/features/desa/application/use-cases";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { desaFormSchema } from "@/features/desa/domain/desa";
-import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";\nimport type { BerkasUnggahan } from "@/features/publik/domain/media";
+import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
+import type { BerkasUnggahan } from "@/features/publik/domain/media";
 import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import {
   createDokumenPublik,
