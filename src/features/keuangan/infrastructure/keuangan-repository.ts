@@ -168,10 +168,12 @@ export async function saveKeuanganNilai(
           }
         }
 
-        // Baris yang boleh diisi langsung (akun/bidang/kegiatan) menyimpan
-        // nilai eksplisit. Jangan timpa dengan nol saat seluruh anaknya masih
-        // kosong — mis. pengguna baru mengisi pagu di tingkat kegiatan.
-        if (sumA === 0n && sumR === 0n && agg.has(item.uuid)) continue;
+        // Induk yang seluruh anaknya nol tidak perlu ditulis: nilai eksplisit
+        // pada baris yang boleh diisi langsung (akun/bidang/kegiatan) tetap
+        // dipertahankan, dan kode tanpa nilai cukup dibaca sebagai 0. Menulis
+        // nol untuk seluruh chart membuat penyimpanan satu desa menyentuh kode
+        // milik subtree lain yang tidak berhubungan.
+        if (sumA === 0n && sumR === 0n) continue;
 
         agg.set(item.uuid, { anggaran: sumA, realisasi: sumR });
       }
@@ -256,16 +258,21 @@ export async function listTemplateUuid(): Promise<Set<string>> {
   return new Set(rows.map((row) => row.uuid));
 }
 
-/** Upsert massal hasil impor APBDes dalam satu transaksi. */
-export async function upsertKeuanganBatch(rows: (typeof keuangan.$inferInsert)[]): Promise<void> {
-  await db.transaction(async (tx) => {
-    for (const data of rows) {
-      await tx
-        .insert(keuangan)
-        .values(data)
-        .onDuplicateKeyUpdate({
-          set: { anggaran: data.anggaran, updatedAt: new Date() },
-        });
-    }
-  });
+/**
+ * Impor massal APBDes.
+ *
+ * Memakai jalur yang sama dengan `saveKeuanganNilai`: kunci per (desa, tahun),
+ * satu transaksi, dan agregasi ulang induk. Tanpa itu, impor yang berjalan
+ * bersamaan dengan penyimpanan manual dapat meninggalkan nilai induk yang tidak
+ * sama dengan jumlah anaknya.
+ */
+export async function upsertKeuanganBatch(
+  villageId: number,
+  tahun: number,
+  createdBy: string,
+  rows: KeuanganBarisUpsert[],
+): Promise<void> {
+  if (rows.length === 0) return;
+
+  await saveKeuanganNilai(villageId, tahun, createdBy, rows);
 }

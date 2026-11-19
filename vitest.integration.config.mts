@@ -46,6 +46,7 @@ export default defineConfig({
       "src/features/bantuan/integrasi-warga.test.ts",
       "src/features/inventaris/infrastructure/inventaris-tenant-isolation.integration.test.ts",
       "src/features/kehadiran/infrastructure/rekap-kehadiran-tenant-isolation.integration.test.ts",
+      "src/features/keuangan/infrastructure/apbdes-import-concurrency.integration.test.ts",
       "src/features/keuangan/infrastructure/keuangan-concurrency.integration.test.ts",
       "src/features/layanan-mandiri/infrastructure/permohonan-status-concurrency.integration.test.ts",
       "src/features/kelompok/infrastructure/kelompok-tenant-isolation.integration.test.ts",

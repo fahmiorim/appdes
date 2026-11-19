@@ -153,8 +153,9 @@ export async function imporApbdesAction(
     // Transform to upsert format
     const upsertData = transformToUpsert(upsertRows, villageId, tahun, user.id);
 
-    // Transactional upsert
-    await upsertKeuanganBatch(upsertData);
+    // Impor diserialkan dengan penyimpanan manual lewat kunci (desa, tahun)
+    // yang sama, lalu induk diagregasi ulang dari nilai yang tersimpan.
+    await upsertKeuanganBatch(villageId, tahun, user.id, upsertData);
 
     // Build error report for invalid rows
     const errors = results
