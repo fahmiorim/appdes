@@ -658,3 +658,149 @@
     font-size: 9px;
   }
 }
+
+/* Penyesuaian komposisi dan panel sesuai mockup Visi & Misi Desa. */
+.columns {
+  grid-template-columns: minmax(0, 1.62fr) minmax(300px, 1fr);
+  gap: 10px;
+}
+.primaryCard {
+  padding: 14px 15px;
+}
+.visionBanner {
+  min-height: 187px;
+  background-position: center 54%;
+}
+.visionQuote {
+  width: 72%;
+  font-size: 22px;
+  line-height: 1.27;
+}
+.sideColumn {
+  grid-template-rows: 1.08fr 1fr 0.92fr;
+  gap: 10px;
+}
+.meaningCard {
+  min-height: 190px;
+}
+.meaningCard p {
+  max-width: 100%;
+  font-size: 14px;
+  line-height: 1.48;
+}
+.sideCard {
+  padding: 14px;
+}
+.valueEmpty {
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(110deg, #f1f7ff, #f6f0ff);
+  text-align: left;
+}
+.valueEmpty > span {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #eee4ff;
+  color: #7b2bf1;
+  font-size: 29px;
+}
+.valueEmpty p {
+  margin: 0;
+  color: #77819a;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.policyCard {
+  grid-template-columns: 44% minmax(0, 1fr);
+  min-height: 218px;
+  margin-top: 11px;
+}
+.policyImage {
+  min-height: 218px;
+}
+.policyContent {
+  padding: 18px 22px 18px 5px;
+}
+.policyEmpty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 9px 12px;
+  border: 1px dashed #d8e3f5;
+  border-radius: 11px;
+  background: #f7faff;
+}
+.policyEmpty > span {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #e9e2ff;
+  color: #7828f0;
+  font-size: 22px;
+}
+.policyEmpty p {
+  margin: 0;
+  color: #73809a;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.callout {
+  grid-template-columns: 125px minmax(0, 1fr) auto;
+  min-height: 96px;
+}
+@media (max-width: 900px) {
+  .columns {
+    grid-template-columns: minmax(0, 1.3fr) minmax(250px, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+  .visionBanner {
+    min-height: 140px;
+  }
+  .visionQuote {
+    font-size: 16px;
+  }
+  .sideColumn {
+    grid-template-rows: auto;
+  }
+  .meaningCard {
+    min-height: 0;
+  }
+  .meaningCard p {
+    font-size: 11px;
+  }
+  .policyCard {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .policyImage {
+    min-height: 135px;
+  }
+  .policyContent {
+    padding: 12px;
+  }
+  .policyEmpty p {
+    font-size: 9px;
+  }
+  .valueEmpty {
+    min-height: 60px;
+  }
+  .callout {
+    grid-template-columns: 52px 1fr;
+    min-height: 0;
+  }
+}

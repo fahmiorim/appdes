@@ -2,8 +2,6 @@ import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 
-import { agendaMendatang } from "@/features/agenda/application/agenda-use-cases";
-import { agendaTanggalPanjang } from "@/features/agenda/domain/agenda";
 import { hostPlatform } from "@/features/desa/application/platform-host";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { getStatistikDesa } from "@/features/desa/application/statistik-desa";
@@ -26,7 +24,7 @@ export const dynamic = "force-dynamic";
 
 function mediaUrl(value: string | null | undefined, villageId: number): string | null {
   if (!value) return null;
-  const parts = value.split(/[\\/]/).filter(Boolean);
+  const parts = value.split(/[\/]/).filter(Boolean);
   if (!parts.length || parts.some((part) => part === "." || part === ".." || part.includes("..")))
     return null;
   const path = parts[0] === String(villageId) ? parts : [String(villageId), ...parts];
@@ -73,17 +71,15 @@ export default async function PublicHomePage() {
   if (adalahHostPlatform((await headers()).get("host"), hostPlatform)) return <PlatformLanding />;
 
   const desa = await getIdentitasFromRequest();
-  const [profil, berita, slider, statistik, agenda, perangkat, albums, announcements] =
-    await Promise.all([
-      profilDesaPublik(desa.id),
-      daftarBerita(desa.id, { limit: 4 }),
-      daftarSliderBeranda(desa.id),
-      getStatistikDesa(desa.id),
-      agendaMendatang(desa.id, 3),
-      daftarPerangkatPublik(desa.id),
-      daftarAlbumGaleri(desa.id),
-      daftarDokumenPublik(desa.id, "pengumuman"),
-    ]);
+  const [profil, berita, slider, statistik, perangkat, albums, announcements] = await Promise.all([
+    profilDesaPublik(desa.id),
+    daftarBerita(desa.id, { limit: 4 }),
+    daftarSliderBeranda(desa.id),
+    getStatistikDesa(desa.id),
+    daftarPerangkatPublik(desa.id),
+    daftarAlbumGaleri(desa.id),
+    daftarDokumenPublik(desa.id, "pengumuman"),
+  ]);
 
   const galleryAlbum = albums.find((album) => album.jumlahFoto > 0) ?? null;
   const galleryPhotos = galleryAlbum ? await daftarFotoAlbum(desa.id, galleryAlbum.id) : [];
@@ -262,8 +258,10 @@ export default async function PublicHomePage() {
               </div>
               <div>
                 <span>⌖</span>
-                <strong>—</strong>
-                <small>Data wilayah</small>
+                <strong>
+                  {formatNumber(statistik.perDusun.reduce((sum, row) => sum + row.total, 0))}
+                </strong>
+                <small>Warga terdata</small>
               </div>
             </div>
           </article>
@@ -356,40 +354,11 @@ export default async function PublicHomePage() {
           </article>
         </section>
 
-        {agenda.length > 0 ? (
-          <section className={styles.agendaPanel}>
-            <div className={styles.cardHeading}>
-              <div>
-                <h2>Agenda Terdekat</h2>
-                <small>Kegiatan pemerintah dan masyarakat desa</small>
-              </div>
-              <Link href="/agenda">Lihat Semua →</Link>
-            </div>
-            <div className={styles.agendaList}>
-              {agenda.slice(0, 3).map((item) => (
-                <article className={styles.agendaItem} key={item.id}>
-                  <span className={styles.agendaDate}>{agendaTanggalPanjang(item.mulai)}</span>
-                  <div>
-                    <strong>{item.judul}</strong>
-                    <small>
-                      {[item.jamMulai, item.lokasi].filter(Boolean).join(" · ") ||
-                        "Informasi agenda desa"}
-                    </small>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
         <section className={styles.profileGallery}>
           <article className={styles.profileCard}>
             <div>
               <h2>⌂　Profil Desa</h2>
-              <p>
-                {cleanText(profil?.sejarah) ||
-                  `Kenali ${desa.namaDesa ?? "desa"} melalui informasi pemerintahan, wilayah, sejarah, dan potensi desa.`}
-              </p>
+              <p>{cleanText(profil?.sejarah) || intro}</p>
               <Link href="/profil">Selengkapnya →</Link>
             </div>
             {profileImage ? (
@@ -415,7 +384,7 @@ export default async function PublicHomePage() {
               <small>Arah pembangunan {desa.namaDesa ?? "desa"}</small>
               <i>›</i>
             </Link>
-            <Link href="/potensi">
+            <Link href="/profil#potensi">
               <span>♧</span>
               <b>Potensi Desa</b>
               <small>Potensi unggulan dan ekonomi desa</small>

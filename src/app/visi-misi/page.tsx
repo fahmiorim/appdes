@@ -173,14 +173,11 @@ export default async function VisiMisiPage() {
               <h2>
                 <span>ⓘ</span> Makna Visi
               </h2>
-              {visi ? (
-                <p>{visi}</p>
-              ) : (
-                <p className={styles.muted}>
-                  Penjelasan makna visi belum tersedia. Pemerintah desa dapat melengkapinya melalui
-                  konten profil desa.
-                </p>
-              )}
+              <p>
+                Visi menjadi gambaran kondisi desa yang ingin diwujudkan bersama. Pernyataan visi di
+                atas merupakan arah dan cita-cita pembangunan yang menjadi pedoman dalam pelaksanaan
+                misi desa.
+              </p>
             </section>
             <section className={styles.sideCard}>
               <h2>
@@ -190,7 +187,8 @@ export default async function VisiMisiPage() {
                 Tujuan pembangunan yang ditetapkan pemerintah desa.
               </p>
               <div className={styles.emptySide}>
-                Tujuan pembangunan belum dipublikasikan secara terstruktur.
+                Tujuan pembangunan khusus belum ditampilkan. Lihat butir misi di sebelah kiri
+                sebagai langkah strategis yang telah dipublikasikan desa.
               </div>
             </section>
             <section className={styles.sideCard}>
@@ -200,7 +198,10 @@ export default async function VisiMisiPage() {
               <p className={styles.sideIntro}>
                 Prinsip dasar penyelenggaraan pemerintahan dan pembangunan desa.
               </p>
-              <div className={styles.valueEmpty}>Nilai dasar desa belum tersedia.</div>
+              <div className={styles.valueEmpty}>
+                <span aria-hidden="true">◇</span>
+                <p>Nilai-nilai dasar resmi belum dipublikasikan oleh pemerintah desa.</p>
+              </div>
             </section>
           </aside>
         </div>
@@ -215,7 +216,13 @@ export default async function VisiMisiPage() {
               <span>▱</span> Arah Kebijakan Pembangunan
             </h2>
             <p>Fokus kebijakan pembangunan jangka menengah yang ditetapkan pemerintah desa.</p>
-            <div className={styles.emptySide}>Arah kebijakan pembangunan belum dipublikasikan.</div>
+            <div className={styles.policyEmpty}>
+              <span aria-hidden="true">▱</span>
+              <p>
+                Arah kebijakan pembangunan jangka menengah belum dipublikasikan oleh pemerintah
+                desa.
+              </p>
+            </div>
           </div>
         </section>
 
