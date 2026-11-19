@@ -1,6 +1,19 @@
 import { describe, expect, it } from "vitest";
 
-import { klasifikasiJenisDomain } from "./jenis-domain";
+import { klasifikasiJenisDomain, susunSubdomainPlatform } from "./jenis-domain";
+
+describe("susunSubdomainPlatform", () => {
+  it("menggabungkan slug dan base domain", () => {
+    expect(susunSubdomainPlatform("sukamaju", "desa.id")).toBe("sukamaju.desa.id");
+    expect(susunSubdomainPlatform(" Sukamaju ", "*.Desa.ID.")).toBe("sukamaju.desa.id");
+  });
+
+  it("tidak mengarang host bila slug atau base domain kosong", () => {
+    expect(susunSubdomainPlatform(null, "desa.id")).toBeNull();
+    expect(susunSubdomainPlatform("sukamaju", null)).toBeNull();
+    expect(susunSubdomainPlatform("sukamaju", " ")).toBeNull();
+  });
+});
 
 describe("klasifikasiJenisDomain", () => {
   it("mengenali slug desa di bawah base domain sebagai subdomain", () => {

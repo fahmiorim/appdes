@@ -173,9 +173,7 @@ export function AdminSidebar({
                           <div className="platform-nav-sub" id={idSubmenu}>
                             {item.anak.map((anak) => (
                               <Link
-                                aria-current={
-                                  menuPlatformAktif(anak.href, pathname) ? "page" : undefined
-                                }
+                                aria-current={pathname === anak.href ? "page" : undefined}
                                 className="platform-nav-sublink"
                                 href={anak.href}
                                 key={anak.href}

@@ -21,6 +21,7 @@ export function PlatformPageHeader({
   path,
   actions,
   backHref,
+  backLabel,
   judul,
 }: {
   /** Rute halaman; judul dan deskripsi diambil dari `HEADER_PLATFORM`. */
@@ -29,6 +30,8 @@ export function PlatformPageHeader({
   actions?: ReactNode;
   /** Tautan kembali di kiri judul, bila halaman adalah submenu. */
   backHref?: string;
+  /** Label aksesibel tautan kembali; default menyebut dashboard. */
+  backLabel?: string;
   /** Override judul visual tanpa mengubah breadcrumb. */
   judul?: string;
 }) {
@@ -38,7 +41,11 @@ export function PlatformPageHeader({
     <div className="platform-page-header">
       <div className="platform-page-heading">
         {backHref ? (
-          <Link aria-label="Kembali ke dashboard" className="platform-page-back" href={backHref}>
+          <Link
+            aria-label={backLabel ?? "Kembali ke dashboard"}
+            className="platform-page-back"
+            href={backHref}
+          >
             ←
           </Link>
         ) : null}

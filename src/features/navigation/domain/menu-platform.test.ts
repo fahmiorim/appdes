@@ -31,11 +31,14 @@ describe("MENU_PLATFORM", () => {
     expect(MENU_PLATFORM.every((item) => item.grup.trim().length > 0)).toBe(true);
   });
 
-  it("menyediakan submenu Daftar domain di bawah Desa & Domain", () => {
+  it("menyediakan submenu Daftar Domain dan Tambah Domain", () => {
     const desaDomain = MENU_PLATFORM.find((item) => item.href === "/super-admin/domain");
 
     expect(desaDomain?.label).toBe("Desa & Domain");
-    expect(desaDomain?.anak).toEqual([{ href: "/super-admin/domain", label: "Daftar domain" }]);
+    expect(desaDomain?.anak).toEqual([
+      { href: "/super-admin/domain", label: "Daftar Domain" },
+      { href: "/super-admin/domain/tambah", label: "Tambah Domain" },
+    ]);
     expect(desaDomain?.anak?.every((item) => item.href.startsWith("/super-admin"))).toBe(true);
     expect(MENU_PLATFORM.some((item) => item.href === "/super-admin/tenant")).toBe(false);
   });

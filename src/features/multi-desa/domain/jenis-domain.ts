@@ -8,6 +8,21 @@
 
 export type JenisDomain = "subdomain" | "custom";
 
+/** Host subdomain platform dari slug desa dan base domain; `null` bila belum lengkap. */
+export function susunSubdomainPlatform(
+  slug: string | null | undefined,
+  baseDomain: string | null | undefined,
+): string | null {
+  const label = slug?.trim().toLowerCase();
+  const base = baseDomain?.trim().toLowerCase().replace(/\.$/, "").replace(/^\*\./, "");
+  if (!label || !base) return null;
+
+  const host = `${label}.${base}`;
+  return /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(host)
+    ? host
+    : null;
+}
+
 export function klasifikasiJenisDomain(
   domain: string,
   baseDomain: string | null | undefined,

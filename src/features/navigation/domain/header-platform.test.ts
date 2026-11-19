@@ -34,6 +34,19 @@ describe("headerPlatform", () => {
     expect(headerPlatform("/super-admin/domain").title).toBe("Daftar domain");
   });
 
+  it("memberi breadcrumb Tambah Domain tanpa memakai header Daftar domain", () => {
+    const header = headerPlatform("/super-admin/domain/tambah");
+
+    expect(header.title).toBe("Tambah Domain");
+    expect(header.description).toBe(
+      "Daftarkan subdomain atau custom domain baru untuk tenant desa.",
+    );
+    expect(header.remah).toEqual([
+      { label: "Desa & Domain" },
+      { label: "Daftar Domain", href: "/super-admin/domain" },
+    ]);
+  });
+
   it("jatuh ke ringkasan untuk pathname yang tidak dikenal", () => {
     expect(headerPlatform("/super-admin/tidak-ada").title).toBe("Ringkasan platform");
   });

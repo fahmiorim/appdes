@@ -62,6 +62,23 @@ export async function listSemuaDomain(): Promise<DomainDesaRow[]> {
     .orderBy(asc(villageDomains.villageId), asc(villageDomains.id));
 }
 
+/** Satu domain berdasarkan id, untuk pemeriksaan jaringan konsol platform. */
+export async function getDomainPlatform(domainId: number): Promise<DomainDesaRow | null> {
+  const [row] = await db
+    .select({
+      id: villageDomains.id,
+      villageId: villageDomains.villageId,
+      domain: villageDomains.domain,
+      isPrimary: villageDomains.isPrimary,
+      createdAt: villageDomains.createdAt,
+    })
+    .from(villageDomains)
+    .where(eq(villageDomains.id, domainId))
+    .limit(1);
+
+  return row ?? null;
+}
+
 /** Domain/alias milik satu desa. */
 export async function listDomainDesa(villageId: number): Promise<DomainDesaRow[]> {
   return db

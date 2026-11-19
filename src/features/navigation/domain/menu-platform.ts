@@ -35,7 +35,10 @@ export const MENU_PLATFORM: readonly MenuPlatformItem[] = [
     label: "Desa & Domain",
     icon: "⇄",
     grup: "Desa & Domain",
-    anak: [{ href: "/super-admin/domain", label: "Daftar domain" }],
+    anak: [
+      { href: "/super-admin/domain", label: "Daftar Domain" },
+      { href: "/super-admin/domain/tambah", label: "Tambah Domain" },
+    ],
   },
   {
     href: "/super-admin/pengguna",

@@ -15,12 +15,16 @@ import {
   purgeDesa,
 } from "@/features/multi-desa/application/lifecycle-desa-use-cases";
 import {
+  periksaDnsSatuDomain,
   periksaDnsSemuaDomain,
+  periksaSslSatuDomain,
   periksaSslSemuaDomain,
   type RingkasanDns,
   type RingkasanSsl,
 } from "@/features/multi-desa/application/pemantauan-domain-use-cases";
 import { buatDesaBaru } from "@/features/multi-desa/application/provisioning-use-cases";
+import type { DataDns } from "@/features/multi-desa/domain/status-dns";
+import type { DataSsl } from "@/features/multi-desa/domain/status-ssl";
 import { successState, toErrorState, type ActionState } from "@/lib/action-state";
 
 /**
@@ -32,7 +36,12 @@ import { successState, toErrorState, type ActionState } from "@/lib/action-state
  * memeriksa desa sebelum mengubah data.
  */
 
-const HALAMAN = ["/super-admin", "/super-admin/tenant", "/super-admin/domain"] as const;
+const HALAMAN = [
+  "/super-admin",
+  "/super-admin/tenant",
+  "/super-admin/domain",
+  "/super-admin/domain/tambah",
+] as const;
 
 /** Ringkasan, konsol tenant, dan daftar domain memuat data yang sama. */
 function segarkanHalaman(): void {
@@ -187,6 +196,40 @@ export async function periksaDnsMassalAction(
       `Pemeriksaan DNS selesai: ${hasil.normal} normal, ${hasil.bermasalah} bermasalah.`,
       hasil,
       hasil.bermasalah > 0 ? "warning" : undefined,
+    );
+  } catch (error) {
+    return toErrorState(error);
+  }
+}
+
+export async function periksaDnsDomainAction(domainId: number): Promise<ActionState<DataDns>> {
+  try {
+    const hasil = await periksaDnsSatuDomain(domainId);
+
+    segarkanHalaman();
+    return successState(
+      hasil.status === "normal"
+        ? `DNS normal: ${hasil.addresses.join(", ")}`
+        : (hasil.error ?? "DNS belum mengarah ke alamat publik."),
+      hasil,
+      hasil.status === "normal" ? undefined : "warning",
+    );
+  } catch (error) {
+    return toErrorState(error);
+  }
+}
+
+export async function periksaSslDomainAction(domainId: number): Promise<ActionState<DataSsl>> {
+  try {
+    const hasil = await periksaSslSatuDomain(domainId);
+
+    segarkanHalaman();
+    return successState(
+      hasil.status === "aktif"
+        ? `Sertifikat aktif${hasil.issuer ? ` dari ${hasil.issuer}` : ""}.`
+        : (hasil.error ?? "Sertifikat TLS belum aktif."),
+      hasil,
+      hasil.status === "aktif" ? undefined : "warning",
     );
   } catch (error) {
     return toErrorState(error);
