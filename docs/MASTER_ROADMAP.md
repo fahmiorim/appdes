@@ -45,7 +45,7 @@ Invarian: host platform/reserved/unknown tidak boleh jatuh ke tenant; tidak ada 
 
 ## 2B. Relevansi fase terhadap perluasan mockup Super Admin (19 November 2026)
 
-**Kesimpulan:** Fase 0–6 dan urutannya tetap relevan. Perluasan menjadi 39 layar Super Admin memperjelas arah konsol, tetapi tidak menciptakan 24 modul siap pakai: audit 38 layar memetakan 15 layar sebagai sebagian dan 23 belum memiliki fitur atau model data, sedangkan layar Laporan & Analitik yang ke-39 juga belum punya model data. Mockup tidak boleh dipakai sebagai acceptance data, dan tidak ada area baru yang boleh melompati gate keamanan tenant serta operasional Fase 1/5.
+**Kesimpulan:** Fase 0–6 dan urutannya tetap relevan. Perluasan menjadi 39 layar Super Admin memperjelas arah konsol, tetapi tidak menciptakan fitur baru yang siap pakai: audit 38 layar memetakan 15 layar sebagai sebagian dan 23 belum memiliki fitur atau model data, sedangkan layar Laporan & Analitik yang ke-39 juga belum punya model data — seluruhnya **24 layar** belum siap. Mockup tidak boleh dipakai sebagai acceptance data, dan tidak ada area baru yang boleh melompati gate keamanan tenant serta operasional Fase 1/5.
 
 Ekspansi 46 layar Admin Desa pada hari yang sama tidak mengubah urutan fase. Backend modul desa (kehadiran, inventaris, keluarga, mutasi penduduk, bumindes, pembangunan, statistik, kesehatan, bantuan, survei, dan persuratan) sudah tersedia di server, tetapi UI belum merata: 12 halaman Admin Desa ada, dua area berfungsi penuh, penduduk punya daftar/detail/form, dan lima halaman lain masih baca-saja serta belum mendapat modul/grant template sehingga dapat ditolak 403 pada tenant baru. Pekerjaan berikutnya adalah menghubungkan UI ke use case yang ada dan menyemai modul/grant untuk halaman yang sudah tersedia, bukan membangun backend baru. Rincian per modul ada di [audit kesiapan backend mockup baru](./reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md); temuan menu/grant dan pemetaan layar terbaru ada di [audit mockup dan dokumen](./reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
 
@@ -181,7 +181,7 @@ Pekerjaan:
 - Lakukan restore drill berkala di staging; catat RPO/RTO aktual.
 - Tambahkan monitoring disk, database, worker/queue, proses WhatsApp, sertifikat TLS, dan domain.
 - Sediakan log terpusat, alert, prosedur insiden, dan SOP operasional.
-- Perbaiki race condition agregasi keuangan, kuota media, dan transisi status surat. (Ketiganya sudah memakai transaksi atau lock di repository per 18 November 2026; validasi beban nyata belum dilakukan.)
+- Perbaiki race condition agregasi keuangan, kuota media, dan transisi status surat. (**Selesai di kode** untuk tiga jalur utama: transaksi plus kunci MySQL per 16–17 November 2026, lihat [AUD-034](./reports/01-security/AUD-034-race-conditions.md). Sisa: `upsertKeuanganBatch` pada impor APBDes belum memakai kunci yang sama, sehingga impor bersamaan dengan simpan manual masih dapat membuat induk tidak konsisten; validasi beban nyata juga belum dilakukan.)
 
 **Kriteria selesai:**
 - Restore DB dan media berhasil pada lingkungan bersih.
