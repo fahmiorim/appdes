@@ -89,6 +89,15 @@ describe("template bawaan yang dikirim", () => {
     expect([...pemegangManage]).toEqual([ROLE_ADMINISTRATOR]);
   });
 
+  it("menyediakan lima modul Website Desa dengan hak kelola administrator", () => {
+    const expected = ["website-dashboard", "website-pengaturan", "website-halaman", "website-konten", "website-dokumen"];
+    for (const slug of expected) {
+      expect(template.modules.some((module) => module.slug === slug)).toBe(true);
+      expect(template.akses).toContainEqual({ roleSlug: ROLE_ADMINISTRATOR, moduleSlug: slug, access: "manage" });
+    }
+    expect(template.modules.find((module) => module.slug === "website-desa")).toMatchObject({ isGroup: true, url: null });
+  });
+
   it("menyediakan menu penduduk dengan akses baca untuk role non-admin", () => {
     const penduduk = template.modules.find((modul) => modul.slug === "penduduk");
     expect(penduduk).toMatchObject({
