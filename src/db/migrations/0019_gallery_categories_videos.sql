@@ -1,6 +1,6 @@
 ALTER TABLE galeri_album
   ADD COLUMN kategori VARCHAR(80) NULL AFTER keterangan,
-  ADD COLUMN published_at TIMESTAMP NULL AFTER kategori;
+  ADD COLUMN published_at TIMESTAMP NULL AFTER kategori,\n  ADD INDEX galeri_album_village_category_published_idx (village_id, kategori, published_at);
 
 CREATE TABLE galeri_video (
   id INT NOT NULL AUTO_INCREMENT,
