@@ -1,5 +1,7 @@
 import "server-only";
 
+import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
+import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { GRUP_AKSES_RESOURCE, type RoleFormInput } from "@/features/rbac/domain/grup";
 import { fromCrudPermissions, toCrudPermissions } from "@/features/rbac/domain/permission";
@@ -81,6 +83,15 @@ export async function createRoleData(input: RoleFormInput): Promise<{ id: number
   }
 
   const role = await createRole({ villageId, name: input.name });
+
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.grupAksesCreate,
+    resource: GRUP_AKSES_RESOURCE,
+    resourceId: String(role.id),
+  });
+
   return { id: role.id };
 }
 
@@ -97,6 +108,14 @@ export async function updateRoleData(id: number, input: RoleFormInput): Promise<
   }
 
   await updateRole(villageId, id, { name: input.name });
+
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.grupAksesUpdate,
+    resource: GRUP_AKSES_RESOURCE,
+    resourceId: String(id),
+  });
 }
 
 export async function deleteRoleData(id: number): Promise<void> {
@@ -107,6 +126,14 @@ export async function deleteRoleData(id: number): Promise<void> {
   if (role.isSystem) throw conflict("Grup sistem tidak dapat dihapus.");
 
   await deleteRole(villageId, id);
+
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.grupAksesDelete,
+    resource: GRUP_AKSES_RESOURCE,
+    resourceId: String(id),
+  });
 }
 
 export async function saveRolePermissions(
@@ -135,4 +162,13 @@ export async function saveRolePermissions(
   });
 
   await setRolePermissions(villageId, roleId, mapped);
+
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.grupAksesPermission,
+    resource: GRUP_AKSES_RESOURCE,
+    resourceId: String(roleId),
+    details: { jumlahModul: mapped.length },
+  });
 }

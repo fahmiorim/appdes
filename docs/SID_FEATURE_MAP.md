@@ -1,7 +1,7 @@
 # SID Feature Map — Appdes
 
 > Peta modul, fungsi, status bukti implementasi, prioritas, dan pekerjaan lanjutan.
-> Repository: `fahmiorim/appdes` · Status kode Fase 2 diperbarui 18 November 2026.
+> Repository: `fahmiorim/appdes` · Status kode Fase 2 diperbarui 18 November 2026; status referensi UI diperbarui 19 November 2026.
 >
 > Inventaris route, Server Action, repository, dan use case per modul:
 > [`architecture/MODULE-INVENTORY.md`](architecture/MODULE-INVENTORY.md).
@@ -10,7 +10,9 @@
 
 Status di bawah menunjukkan keberadaan struktur/kode yang teridentifikasi pada repository. Status ini **bukan jaminan bahwa seluruh alur siap dipakai di produksi**.
 
-**Cakupan UI admin (18 November 2026):** UI pengelolaan modul SID **belum tersedia**. Halaman admin yang ada hanya delapan path di `RUTE_ADMIN_TERSEDIA`: `/beranda` dan tujuh halaman konsol platform (`/super-admin`, `tenant`, `domain`, `pengguna`, `audit`, `template`, `pengaturan`). Modul SID lain hanya memiliki route handler ekspor, PDF, atau berkas. Halaman publik yang ada adalah situs desa, bukan UI pengelolaan.
+**Cakupan UI (19 November 2026):** UI pengelolaan modul SID **belum tersedia**. Halaman admin yang ada hanya delapan path di `RUTE_ADMIN_TERSEDIA`: `/beranda` dan tujuh halaman konsol platform (`/super-admin`, `tenant`, `domain`, `pengguna`, `audit`, `template`, `pengaturan`). Login Admin Desa `/masuk-admin` sudah terpisah dari login warga, tetapi itu halaman autentikasi, bukan UI pengelolaan modul. Modul SID lain hanya memiliki route handler ekspor, PDF, atau berkas. Halaman publik yang ada adalah situs desa, bukan UI pengelolaan.
+
+**Referensi mockup bukan status implementasi.** Per 19 November 2026 katalog berisi 38 layar Super Admin dan 10 layar Admin Desa. Audit memetakan 15 layar Super Admin sebagai sebagian dan 23 layar belum memiliki fitur/model data. Area seperti langganan, analitik penggunaan, pusat keamanan, dan editor template belum menjadi bagian modul yang ada; jangan menambahkannya ke peta ini sebagai "tersedia" sebelum use case, permission, dan model data dibuat. Pemetaan rinci ada di [audit mockup Super Admin](reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md) dan [review mockup Admin Desa](reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md).
 
 | Kategori | Definisi |
 |---|---|
@@ -72,6 +74,10 @@ Daftar ini adalah target modul, bukan bukti UI tersedia. UI pengelolaan modul SI
 | GIS lanjutan | Menambah beban data dan risiko privasi | Use case jelas, sumber data, privacy review, uji performa. |
 | Lapak/BUMDes kompleks | Bukan prasyarat SID dasar | Kebutuhan desa dan model operasional tervalidasi. |
 | Plugin ecosystem | Menambah permukaan keamanan dan kompatibilitas | Permission sandbox, versioning, review/signing plugin. |
+| Langganan, invoice, dan pembayaran platform | Belum ada model komersial; menyentuh data finansial dan integrasi payment gateway | Keputusan model bisnis, provider pembayaran, rekonsiliasi, audit, dan kebijakan pajak/privasi. Jangan dianggap bagian Fase 2. |
+| Analitik penggunaan dan telemetri tenant | Belum ada pipeline event/metrik; berisiko mengumpulkan data pribadi tanpa dasar yang jelas | Definisikan metrik, retensi, agregasi, akses, dan privasi lebih dulu; kaitkan dengan observabilitas Fase 5. |
+| Editor template dan pemilihan tema website | Istilah "template fondasi tenant" dan "tema website" masih tercampur; `theme` baru diisi seed dan registry yang dirujuk schema belum ada | Pisahkan kontrak template vs tema, buat model data dan validasi tenant, lalu tetapkan permission serta audit perubahan. |
+| Pusat keamanan/firewall di konsol | Sebagian besar kontrol bersifat infrastruktur, bukan fitur aplikasi; dashboard tidak boleh disalahartikan sebagai kontrol keamanan | Terapkan kontrol di ingress/host, siapkan sumber status yang tepercaya, dan batasi aksi ke operator berwenang. |
 
 ## 5. Validasi sebelum backlog final
 

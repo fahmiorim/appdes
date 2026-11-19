@@ -7,6 +7,7 @@ import { saveRolePermissions } from "./grup-use-cases";
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/dal", () => ({ requirePermission: vi.fn() }));
 vi.mock("@/features/desa/application/resolve-village", () => ({ resolveVillageId: vi.fn() }));
+vi.mock("@/features/audit/application/audit-use-cases", () => ({ recordAuditEvent: vi.fn() }));
 vi.mock("@/features/rbac/infrastructure/rbac-repository", () => ({
   createRole: vi.fn(),
   deleteRole: vi.fn(),
@@ -59,6 +60,10 @@ describe("saveRolePermissions", () => {
     await saveRolePermissions(2, [izinBaca]);
 
     expect(repo.setRolePermissions).toHaveBeenCalledWith(7, 2, [{ moduleId: 1, access: "read" }]);
+    const audit = await import("@/features/audit/application/audit-use-cases");
+    expect(audit.recordAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ event: "grup-akses.permission", resourceId: "2" }),
+    );
   });
 
   it("menolak grup desa lain sebelum mengubah izin", async () => {

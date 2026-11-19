@@ -17,6 +17,7 @@ import {
   findPendudukHidupByNik,
   findPendudukOptionByNik,
   getPendudukDetailById,
+  getRingkasanPenduduk,
   headOfFamilyExists,
   insertPenduduk,
   listPendudukOptions,
@@ -25,8 +26,10 @@ import {
   updatePenduduk as updatePendudukRow,
   validatePendudukTenantReferences,
   type PendudukListResult,
+  type RingkasanPenduduk,
 } from "@/features/penduduk/infrastructure/penduduk-repository";
 import { getPendudukReferenceData } from "@/features/penduduk/infrastructure/reference-repository";
+import { listWilayahOptions } from "@/features/wilayah/infrastructure/wilayah-repository";
 import { requirePermission } from "@/lib/dal";
 import { conflict, notFound } from "@/lib/errors";
 
@@ -54,6 +57,44 @@ export async function listPenduduk(params: ListPendudukParams): Promise<Penduduk
   const villageId = await resolveVillageId(user);
 
   return listPendudukRows({ villageId, ...params });
+}
+
+/** Ringkasan KPI halaman penduduk; izin dan desa berasal dari sesi. */
+export async function getRingkasanPendudukData(): Promise<RingkasanPenduduk> {
+  const user = await requirePermission(PENDUDUK_RESOURCE, "read");
+  const villageId = await resolveVillageId(user);
+
+  return getRingkasanPenduduk(villageId);
+}
+
+export interface PendudukFilterOptions {
+  dusun: string[];
+  rw: string[];
+  rt: string[];
+}
+
+/** Pilihan wilayah untuk toolbar filter; tidak memuat katalog formulir. */
+export async function getPendudukFilterOptionsData(): Promise<PendudukFilterOptions> {
+  const user = await requirePermission(PENDUDUK_RESOURCE, "read");
+  const villageId = await resolveVillageId(user);
+  const wilayah = await listWilayahOptions(villageId);
+
+  const unik = (nilai: string[]): string[] =>
+    [...new Set(nilai.filter((item) => item !== ""))].sort((a, b) => a.localeCompare(b, "id"));
+
+  return {
+    dusun: unik(wilayah.map((row) => row.dusun)),
+    rw: unik(wilayah.map((row) => row.rw)),
+    rt: unik(wilayah.map((row) => row.rt)),
+  };
+}
+
+/** Detail penduduk dengan desa dari sesi, bukan dari parameter URL. */
+export async function getPendudukDetailData(id: number) {
+  const user = await requirePermission(PENDUDUK_RESOURCE, "read");
+  const villageId = await resolveVillageId(user);
+
+  return getPendudukDetailById(villageId, id);
 }
 
 /** Opsi penduduk desa untuk pencarian NIK; villageId dari sesi, izin baca modul penduduk. */

@@ -1,16 +1,221 @@
 import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { ReactNode } from "react";
 
-import { Card } from "@/components/ui/card";
-import { StatIcon } from "@/components/ui/stat-icon";
-import { dashboardStats } from "@/features/dashboard/application/dashboard-use-cases";
-import { getNamaDesaUseCase } from "@/features/desa/application/use-cases";
+import {
+  dashboardAktivitasTerbaru,
+  dashboardPermohonanTerbaru,
+  dashboardStatistikUmur,
+  dashboardStats,
+  dashboardTrenPermohonan,
+} from "@/features/dashboard/application/dashboard-use-cases";
+import { labelAktivitas, toneAktivitas } from "@/features/dashboard/domain/aktivitas";
+import { waktuRelatif } from "@/features/dashboard/domain/waktu-relatif";
+import { getStatistikDesa } from "@/features/desa/application/statistik-desa";
+import { getIdentitasDesaUseCase } from "@/features/desa/application/use-cases";
+import { labelPermohonanStatus } from "@/features/layanan-mandiri/domain/layanan-mandiri";
 import { isSuperAdminUser } from "@/features/multi-desa/application/provisioning-use-cases";
+import { hasPermission } from "@/features/rbac/application/authorization";
+import { RESOURCES } from "@/features/rbac/domain/resources";
 import { verifySession } from "@/lib/dal";
 
+import { StatistikPenduduk } from "./statistik-penduduk";
+import { TrenLayananSurat } from "./tren-layanan-surat";
+
 export const metadata: Metadata = {
-  title: "Beranda",
+  title: "Dashboard Admin Desa",
 };
+
+const FORMAT_HARI = new Intl.DateTimeFormat("id-ID", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+/**
+ * Pintasan beranda hanya menautkan halaman yang benar-benar tersedia.
+ * Setiap pintasan memakai izin baca modulnya agar tidak menjadi tautan 403.
+ */
+const AKSES_CEPAT = [
+  { label: "Data Penduduk", href: "/penduduk", ikon: "penduduk", resource: RESOURCES.penduduk },
+  { label: "Arsip Surat", href: "/persuratan/surat", ikon: "surat", resource: RESOURCES.surat },
+  { label: "Berita Desa", href: "/konten/berita", ikon: "berita", resource: RESOURCES.berita },
+  { label: "Galeri Desa", href: "/konten/galeri", ikon: "galeri", resource: RESOURCES.galeri },
+  { label: "Keuangan Desa", href: "/keuangan", ikon: "apbdes", resource: RESOURCES.keuangan },
+  {
+    label: "Pengaduan Warga",
+    href: "/pengaduan-admin",
+    ikon: "pengaduan",
+    resource: RESOURCES.pengaduan,
+  },
+] as const;
+
+function Ikon({ children }: { children: ReactNode }) {
+  return (
+    <svg
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={1.7}
+      viewBox="0 0 24 24"
+    >
+      {children}
+    </svg>
+  );
+}
+
+function ikonKpi(jenis: "penduduk" | "keluarga" | "surat" | "pengaduan") {
+  if (jenis === "penduduk") {
+    return (
+      <Ikon>
+        <circle cx="9" cy="8" r="3.1" />
+        <path d="M3.4 19.5a5.8 5.8 0 0 1 11.2 0" />
+        <path d="M16.2 5.4a3.1 3.1 0 0 1 0 5.2" />
+        <path d="M18.1 14.3a5.8 5.8 0 0 1 3 5.2" />
+      </Ikon>
+    );
+  }
+  if (jenis === "keluarga") {
+    return (
+      <Ikon>
+        <path d="M4 10.5 12 4l8 6.5" />
+        <path d="M6 9.8V20h12V9.8" />
+        <path d="M10 20v-4.6h4V20" />
+      </Ikon>
+    );
+  }
+  if (jenis === "surat") {
+    return (
+      <Ikon>
+        <path d="M6 3.5h8.2L19 8.3V20.5H6z" />
+        <path d="M14 3.5v5h5" />
+        <path d="M9 13h6" />
+        <path d="M9 16.5h4.5" />
+      </Ikon>
+    );
+  }
+  return (
+    <Ikon>
+      <path d="M4 5.5h16v10H9l-5 4z" />
+      <path d="M8 9.5h8" />
+      <path d="M8 12.5h5" />
+    </Ikon>
+  );
+}
+
+function ikonAktivitas(event: string) {
+  if (event.startsWith("pengguna.") || event.startsWith("penduduk.")) {
+    return (
+      <Ikon>
+        <circle cx="12" cy="8" r="3.2" />
+        <path d="M5.5 19.5a6.5 6.5 0 0 1 13 0" />
+      </Ikon>
+    );
+  }
+  if (event.startsWith("grup-akses.")) {
+    return (
+      <Ikon>
+        <path d="M12 3.5 19 6v5.4c0 4.2-2.9 7.6-7 9.1-4.1-1.5-7-4.9-7-9.1V6z" />
+        <path d="m9.3 11.8 1.9 1.9 3.5-3.6" />
+      </Ikon>
+    );
+  }
+  if (event.startsWith("auth.")) {
+    return (
+      <Ikon>
+        <circle cx="8" cy="12" r="3.4" />
+        <path d="M11.4 12H21" />
+        <path d="M18 12v3" />
+      </Ikon>
+    );
+  }
+  if (event.startsWith("pengaduan.")) {
+    return (
+      <Ikon>
+        <path d="M4 5.5h16v10H9l-5 4z" />
+        <path d="M8 9.5h8" />
+      </Ikon>
+    );
+  }
+  if (event.startsWith("surat.") || event.startsWith("permohonan.")) {
+    return (
+      <Ikon>
+        <path d="M6 3.5h8.2L19 8.3V20.5H6z" />
+        <path d="M14 3.5v5h5" />
+        <path d="M9 13h6" />
+      </Ikon>
+    );
+  }
+  return (
+    <Ikon>
+      <path d="M4.5 7h15" />
+      <path d="M4.5 12h15" />
+      <path d="M4.5 17h9" />
+    </Ikon>
+  );
+}
+
+function ikonAksesCepat(jenis: string) {
+  if (jenis === "penduduk") {
+    return (
+      <Ikon>
+        <circle cx="10" cy="8" r="3" />
+        <path d="M4.5 19.5a5.5 5.5 0 0 1 11 0" />
+        <path d="M18 8v6" />
+        <path d="M15 11h6" />
+      </Ikon>
+    );
+  }
+  if (jenis === "surat") {
+    return (
+      <Ikon>
+        <path d="M6 3.5h8.2L19 8.3V20.5H6z" />
+        <path d="M14 3.5v5h5" />
+        <path d="M12 12v5" />
+        <path d="M9.5 14.5h5" />
+      </Ikon>
+    );
+  }
+  if (jenis === "berita") {
+    return (
+      <Ikon>
+        <path d="M4 19.5 16.8 6.7l3.5 3.5L7.5 23z" />
+        <path d="m14.8 8.7 3.5 3.5" />
+        <path d="M4 19.5h4" />
+      </Ikon>
+    );
+  }
+  if (jenis === "galeri") {
+    return (
+      <Ikon>
+        <rect height="14" rx="2" width="18" x="3" y="5" />
+        <circle cx="8.5" cy="10" r="1.5" />
+        <path d="m4.5 17 4.5-4 3 2.6 3-3 4.5 4.4" />
+      </Ikon>
+    );
+  }
+  if (jenis === "apbdes") {
+    return (
+      <Ikon>
+        <ellipse cx="12" cy="6.2" rx="7.5" ry="2.7" />
+        <path d="M4.5 6.2v5.6c0 1.5 3.4 2.7 7.5 2.7s7.5-1.2 7.5-2.7V6.2" />
+        <path d="M4.5 11.8v5.6c0 1.5 3.4 2.7 7.5 2.7s7.5-1.2 7.5-2.7v-5.6" />
+      </Ikon>
+    );
+  }
+  return (
+    <Ikon>
+      <path d="M4 5.5h16v10H9l-5 4z" />
+      <path d="M8 9.5h8" />
+      <path d="M8 12.5h5" />
+    </Ikon>
+  );
+}
 
 export default async function AdminHomePage() {
   const user = await verifySession();
@@ -19,80 +224,292 @@ export default async function AdminHomePage() {
     redirect("/super-admin");
   }
 
-  const village = user.villageId === null ? null : await getNamaDesaUseCase(user.villageId);
-  const stats = user.villageId === null ? null : await dashboardStats(user.villageId);
+  const villageId = user.villageId;
+  const aksesCepat = AKSES_CEPAT.filter((item) =>
+    hasPermission(user.permissions, item.resource, "read"),
+  );
+
+  const data =
+    villageId === null
+      ? null
+      : await Promise.all([
+          getIdentitasDesaUseCase(villageId),
+          dashboardStats(villageId),
+          getStatistikDesa(villageId),
+          dashboardStatistikUmur(villageId),
+          dashboardTrenPermohonan(villageId),
+          dashboardPermohonanTerbaru(villageId),
+          dashboardAktivitasTerbaru(villageId),
+        ]);
+
+  const identitas = data?.[0] ?? null;
+  const stats = data?.[1] ?? null;
+  const statistik = data?.[2] ?? null;
+  const perUmur = data?.[3] ?? [];
+  const tren = data?.[4] ?? [];
+  const permohonan = data?.[5] ?? [];
+  const aktivitas = data?.[6] ?? [];
+
+  const namaDesa = identitas?.namaDesa ?? "Desa";
+  const wilayah = [identitas?.namaKecamatan, identitas?.namaKabupaten]
+    .map((bagian) => bagian?.trim())
+    .filter((bagian): bagian is string => Boolean(bagian));
+
+  const sekarang = new Date();
+
+  const chipPenduduk =
+    stats && stats.residentsBaru > 0
+      ? { tone: "hijau", teks: `+${stats.residentsBaru.toLocaleString("id-ID")} jiwa bulan ini` }
+      : { tone: "netral", teks: "Tidak ada penambahan bulan ini" };
+
+  const chipKeluarga =
+    stats && stats.familiesBaru > 0
+      ? { tone: "hijau", teks: `+${stats.familiesBaru.toLocaleString("id-ID")} KK bulan ini` }
+      : { tone: "netral", teks: "Tidak ada penambahan bulan ini" };
 
   return (
-    <>
-      <div className="page-heading">
+    <div className="beranda">
+      <div className="beranda-head">
         <div>
-          <span className="eyebrow">Ringkasan desa</span>
-          <h1>Selamat datang, {user.name.split(" ")[0]}</h1>
-          <p>
-            {village
-              ? `Berikut gambaran data administrasi ${village}.`
-              : "Akun ini tidak terhubung dengan desa."}
-          </p>
+          <h1>Dashboard Admin Desa</h1>
+          <p>Selamat datang, {user.name}. Kelola data, layanan, dan informasi desa di sini.</p>
         </div>
+        <span className="beranda-date">
+          <Ikon>
+            <rect height="15" rx="2.5" width="16" x="4" y="5.5" />
+            <path d="M8 3.5v4" />
+            <path d="M16 3.5v4" />
+            <path d="M4 10.5h16" />
+          </Ikon>
+          {FORMAT_HARI.format(sekarang)}
+        </span>
       </div>
 
-      {stats ? (
+      {stats && statistik ? (
         <>
-          <div className="section-heading">
-            <div>
-              <h2>Data administrasi</h2>
-              <p>Angka yang tercatat pada desa Anda saat ini.</p>
-            </div>
+          <div className="beranda-kpi-grid">
+            <article className="beranda-card beranda-kpi" data-tone="biru">
+              <span className="beranda-kpi-icon">{ikonKpi("penduduk")}</span>
+              <div className="beranda-kpi-body">
+                <span className="beranda-kpi-label">Jumlah Penduduk</span>
+                <strong className="beranda-kpi-value">
+                  {statistik.total.toLocaleString("id-ID")} <span>jiwa</span>
+                </strong>
+                <span className="beranda-chip" data-tone={chipPenduduk.tone}>
+                  {chipPenduduk.teks}
+                </span>
+              </div>
+            </article>
+
+            <article className="beranda-card beranda-kpi" data-tone="ungu">
+              <span className="beranda-kpi-icon">{ikonKpi("keluarga")}</span>
+              <div className="beranda-kpi-body">
+                <span className="beranda-kpi-label">Jumlah KK</span>
+                <strong className="beranda-kpi-value">
+                  {stats.families.toLocaleString("id-ID")} <span>KK</span>
+                </strong>
+                <span className="beranda-chip" data-tone={chipKeluarga.tone}>
+                  {chipKeluarga.teks}
+                </span>
+              </div>
+            </article>
+
+            <article className="beranda-card beranda-kpi" data-tone="ungu">
+              <span className="beranda-kpi-icon">{ikonKpi("surat")}</span>
+              <div className="beranda-kpi-body">
+                <span className="beranda-kpi-label">Permohonan Surat</span>
+                <strong className="beranda-kpi-value">
+                  {stats.permohonan.toLocaleString("id-ID")}
+                </strong>
+                <span className="beranda-chip" data-tone="ungu">
+                  {stats.permohonanMenunggu.toLocaleString("id-ID")} menunggu
+                </span>
+              </div>
+            </article>
+
+            <article className="beranda-card beranda-kpi" data-tone="merah">
+              <span className="beranda-kpi-icon">{ikonKpi("pengaduan")}</span>
+              <div className="beranda-kpi-body">
+                <span className="beranda-kpi-label">Pengaduan</span>
+                <strong className="beranda-kpi-value">
+                  {stats.complaints.toLocaleString("id-ID")}
+                </strong>
+                <span
+                  className="beranda-chip"
+                  data-tone={stats.complaintsBaru > 0 ? "merah" : "hijau"}
+                >
+                  {stats.complaintsBaru > 0
+                    ? `${stats.complaintsBaru.toLocaleString("id-ID")} belum ditindaklanjuti`
+                    : "Semua ditindaklanjuti"}
+                </span>
+              </div>
+            </article>
           </div>
-          <div className="stats-grid">
-            <Card>
-              <StatIcon>
-                <circle cx="9" cy="8" r="3.2" />
-                <path d="M2.8 20a6.2 6.2 0 0 1 12.4 0" />
-                <path d="M16.4 5.6a3.2 3.2 0 0 1 0 6.4" />
-                <path d="M18.3 14.4a6.2 6.2 0 0 1 3.1 5.6" />
-              </StatIcon>
-              <div className="stat-card-label">Total penduduk</div>
-              <div className="stat-card-value">{stats.residents.toLocaleString("id-ID")}</div>
-              <div className="stat-card-note">Data penduduk terdaftar di desa</div>
-            </Card>
-            <Card>
-              <StatIcon>
-                <path d="M4 10.5 12 4l8 6.5" />
-                <path d="M6 9.8V20h12V9.8" />
-                <path d="M10 20v-4.6h4V20" />
-              </StatIcon>
-              <div className="stat-card-label">Kartu keluarga</div>
-              <div className="stat-card-value">{stats.families.toLocaleString("id-ID")}</div>
-              <div className="stat-card-note">Jumlah KK yang tercatat</div>
-            </Card>
-            <Card>
-              <StatIcon>
-                <path d="M6 3.5h8.2L19 8.3V20.5H6z" />
-                <path d="M14 3.5v5h5" />
-                <path d="M9 13h6" />
-                <path d="M9 16.5h4.5" />
-              </StatIcon>
-              <div className="stat-card-label">Surat desa</div>
-              <div className="stat-card-value">{stats.letters.toLocaleString("id-ID")}</div>
-              <div className="stat-card-note">Total surat pada sistem</div>
-            </Card>
+
+          <div className="beranda-grid">
+            <StatistikPenduduk
+              lakiLaki={statistik.lakiLaki}
+              perempuan={statistik.perempuan}
+              perDusun={statistik.perDusun}
+              perUmur={perUmur}
+            />
+
+            <section className="beranda-card" aria-labelledby="tren-layanan-surat">
+              <div className="beranda-card-head">
+                <h2 className="beranda-card-title" id="tren-layanan-surat">
+                  <span className="beranda-title-icon" aria-hidden="true">
+                    <Ikon>
+                      <path d="M4 19V5" />
+                      <path d="M4 19h16" />
+                      <path d="m7 14 3.5-3.5 3 2.5L20 7" />
+                    </Ikon>
+                  </span>
+                  Tren Layanan Surat
+                </h2>
+                <span className="beranda-range">6 Bulan Terakhir</span>
+              </div>
+              <TrenLayananSurat titik={tren} />
+            </section>
+
+            <section className="beranda-card" aria-labelledby="permohonan-terbaru">
+              <div className="beranda-card-head">
+                <h2 className="beranda-card-title" id="permohonan-terbaru">
+                  <span className="beranda-title-icon" aria-hidden="true">
+                    <Ikon>
+                      <path d="M6 3.5h8.2L19 8.3V20.5H6z" />
+                      <path d="M14 3.5v5h5" />
+                      <path d="M9 13h6" />
+                    </Ikon>
+                  </span>
+                  Permohonan Surat Terbaru
+                </h2>
+              </div>
+
+              {permohonan.length === 0 ? (
+                <p className="beranda-empty">Belum ada permohonan surat yang masuk.</p>
+              ) : (
+                <ul className="beranda-doc-list">
+                  {permohonan.map((baris) => (
+                    <li key={baris.id}>
+                      <span className="beranda-doc-icon" aria-hidden="true">
+                        <Ikon>
+                          <path d="M6 3.5h8.2L19 8.3V20.5H6z" />
+                          <path d="M14 3.5v5h5" />
+                          <path d="M9 13h6" />
+                          <path d="M9 16.5h4.5" />
+                        </Ikon>
+                      </span>
+                      <div className="beranda-doc-main">
+                        <strong>{baris.jenisSurat}</strong>
+                        <span>{baris.pemohon}</span>
+                      </div>
+                      <span className="beranda-doc-time">
+                        {waktuRelatif(baris.diajukanPada, sekarang)}
+                      </span>
+                      <span className="beranda-chip" data-status={baris.status}>
+                        {labelPermohonanStatus(baris.status)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="beranda-card" aria-labelledby="aktivitas-terbaru">
+              <div className="beranda-card-head">
+                <h2 className="beranda-card-title" id="aktivitas-terbaru">
+                  <span className="beranda-title-icon" aria-hidden="true">
+                    <Ikon>
+                      <path d="M3 12h4l2.5-6 4 12 2.5-6h5" />
+                    </Ikon>
+                  </span>
+                  Aktivitas Terbaru
+                </h2>
+              </div>
+
+              {aktivitas.length === 0 ? (
+                <p className="beranda-empty">Belum ada aktivitas tercatat.</p>
+              ) : (
+                <ol className="beranda-feed">
+                  {aktivitas.map((catatan) => (
+                    <li key={catatan.id}>
+                      <span
+                        className="beranda-feed-icon"
+                        data-tone={toneAktivitas(catatan.event)}
+                        aria-hidden="true"
+                      >
+                        {ikonAktivitas(catatan.event)}
+                      </span>
+                      <div className="beranda-feed-body">
+                        <strong>{labelAktivitas(catatan.event)}</strong>
+                        <span>
+                          {catatan.actorName ?? "Sistem"} ·{" "}
+                          {waktuRelatif(catatan.createdAt, sekarang)}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </section>
+          </div>
+
+          <div className="beranda-bottom">
+            <section className="beranda-card" aria-labelledby="akses-cepat">
+              <div className="beranda-card-head">
+                <h2 className="beranda-card-title" id="akses-cepat">
+                  <span className="beranda-title-icon" aria-hidden="true">
+                    <Ikon>
+                      <path d="M13 3 5 13.5h5L9.5 21 19 10h-5.5z" />
+                    </Ikon>
+                  </span>
+                  Akses Cepat
+                </h2>
+              </div>
+
+              {aksesCepat.length === 0 ? (
+                <p className="beranda-empty">Belum ada modul yang dapat diakses oleh akun ini.</p>
+              ) : (
+                <ul className="beranda-quick">
+                  {aksesCepat.map((item) => (
+                    <li key={item.label}>
+                      <Link className="beranda-quick-tile" href={item.href}>
+                        <span className="beranda-quick-icon">{ikonAksesCepat(item.ikon)}</span>
+                        <span className="beranda-quick-label">{item.label}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <aside className="beranda-profil" aria-labelledby="profil-desa">
+              <div className="beranda-profil-head">
+                <Image
+                  alt=""
+                  className="beranda-profil-logo"
+                  height={56}
+                  src={identitas?.logo ?? "/images/logo.png"}
+                  unoptimized
+                  width={56}
+                />
+                <div>
+                  <strong id="profil-desa">{namaDesa}</strong>
+                  <span>{wilayah.length > 0 ? wilayah.join(", ") : "Wilayah belum diisi"}</span>
+                </div>
+              </div>
+              <Link className="beranda-profil-link" href="/profil">
+                Lihat Profil Desa <span aria-hidden="true">→</span>
+              </Link>
+            </aside>
           </div>
         </>
       ) : (
-        <section className="dashboard-section">
+        <section className="beranda-card">
           <h2>Data desa belum tersedia</h2>
-          <p>Akun ini belum terhubung dengan tenant desa.</p>
+          <p className="beranda-empty">Akun ini belum terhubung dengan tenant desa.</p>
         </section>
       )}
-
-      <section className="dashboard-section">
-        <h2>Mulai bekerja</h2>
-        <p>
-          Gunakan menu administrasi untuk mengelola data, pelayanan, dan informasi desa sesuai
-          dengan hak akses akun Anda.
-        </p>
-      </section>
-    </>
+    </div>
   );
 }

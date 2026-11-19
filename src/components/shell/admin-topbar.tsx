@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -8,18 +9,29 @@ import { authClient } from "@/lib/auth-client";
 
 import { PlatformTopbarHead } from "./platform-topbar-head";
 
+/**
+ * Label breadcrumb untuk halaman Admin Desa yang sudah tersedia.
+ *
+ * Daftar ini sengaja eksplisit dan mengikuti `RUTE_ADMIN_TERSEDIA`: rute yang
+ * belum punya halaman tidak boleh muncul sebagai tujuan breadcrumb. Tambahkan
+ * entri saat halamannya dibuat.
+ */
+const LABEL_HALAMAN_DESA: Readonly<Record<string, string>> = {
+  "/beranda": "Beranda",
+};
+
 export function AdminTopbar({
   name,
-  villageName,
   isPlatformAdmin = false,
 }: {
   name: string;
-  villageName: string;
-  /** Konsol platform memakai judul halamannya sendiri, bukan label ruang kerja. */
+  /** Konsol platform memakai judul halamannya sendiri, bukan breadcrumb desa. */
   isPlatformAdmin?: boolean;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const labelHalaman = isPlatformAdmin ? null : (LABEL_HALAMAN_DESA[pathname] ?? null);
 
   async function handleSignOut() {
     setIsSigningOut(true);
@@ -44,10 +56,18 @@ export function AdminTopbar({
       {isPlatformAdmin ? (
         <PlatformTopbarHead />
       ) : (
-        <div className="admin-topbar-context">
-          <span className="admin-topbar-title">Ruang kerja administrasi</span>
-          <strong>{villageName || "Administrasi Platform"}</strong>
-        </div>
+        <nav className="admin-breadcrumb" aria-label="Breadcrumb">
+          <ol>
+            <li>
+              {labelHalaman ? (
+                <Link href="/beranda">Dashboard</Link>
+              ) : (
+                <span aria-current="page">Dashboard</span>
+              )}
+            </li>
+            {labelHalaman ? <li aria-current="page">{labelHalaman}</li> : null}
+          </ol>
+        </nav>
       )}
       <div className="admin-topbar-user">
         <span className="admin-user-chip">

@@ -1,11 +1,12 @@
 # FlexiDesa Design System
 
-> Status: **Draft v0.3 — referensi visual 42 mockup telah diinventarisasi; 39 di antaranya ditinjau melalui contact sheet, login diperiksa pada resolusi penuh, dan token awal diturunkan dari bukti visual.**
-> Sumber referensi: 42 mockup di `docs/mockups/public/`, `docs/mockups/account/`, `docs/mockups/support/`, dan `docs/mockups/platform/`.
+> Status: **Draft v0.4 — 89 mockup telah diinventarisasi; 42 mockup diaudit pada 18 November 2026, seluruh 38 layar Super Admin dan 10 layar Admin Desa ditinjau pada 19 November 2026, dan token awal diturunkan dari bukti visual.**
+> Sumber referensi: 89 mockup di `docs/mockups/public/`, `docs/mockups/account/`, `docs/mockups/support/`, `docs/mockups/platform/`, dan `docs/mockups/village/`.
+> Audit terbaru tidak mengubah status token menjadi stable. Mockup adalah arah visual, bukan bukti implementasi atau acceptance data.
 
 ## 1. Tujuan dan aturan sumber kebenaran
 
-Design System ini menjadi kontrak visual bersama untuk website publik desa, area akun/warga, dashboard Admin Desa, dan kelak Super Admin.
+Design System ini menjadi kontrak visual bersama untuk website publik desa, area akun/warga, dashboard Admin Desa, serta konsol Super Admin platform.
 
 Urutan sumber kebenaran:
 1. Screenshot halaman yang sesuai di folder `docs/mockups/`.
@@ -78,8 +79,14 @@ Referensi yang diperiksa: `docs/mockups/account/Modern Indonesian Village Login 
 | Main text | `#111A3B` | Heading dan teks utama |
 | Muted text | `#58688B` | Deskripsi dan metadata |
 | Border | `#DCE4F5` | Outline input, divider, card |
+| Action purple (Admin Desa) | `#7A20F0` | Tab aktif, tombol, CTA, dan grafik pada persona desa sesuai `docs/mockups/village/` |
+| Action purple strong | `#6512CF` | Hover/pressed aksi desa |
+| Action purple soft | `#EDE1FF` | Latar chip/ikon aksi dan segmen donut sekunder |
+| Action purple border | `#DCC6FF` | Outline ikon dan chip aksi |
 
 Nilai tersebut adalah token baseline v0.3; tetap lakukan contrast check dan screenshot comparison sebelum status stable.
+
+Warna aksi ungu hanya berlaku untuk persona Admin Desa (shell `data-desa="true"` dan halaman desa). Konsol Platform Super Admin **saat ini** memakai `--color-brand` biru; tautan, status informasi, dan warna status semantik tidak ikut berubah. Mockup 38 layar Super Admin memperlihatkan sidebar navy dan aksi utama yang lebih gelap/ungu, tetapi arah tersebut belum disetujui sebagai token. Jangan mengubah warna konsol platform sebelum ada keputusan produk, sampel visual, dan pemeriksaan kontras.
 
 ### 4.1.2 Aset visual reusable
 
@@ -218,17 +225,19 @@ Sebelum mengubah status dokumen menjadi stable:
 - Uji kontras dan responsive behavior.
 - Minta review desain/produk dan update tabel token dengan nilai aktual.
 
-## 10. Status dan keputusan implementasi (14 November 2026)
+## 10. Status dan keputusan implementasi (19 November 2026)
 
 | Area | Status |
 |---|---|
-| Inventaris mockup | 42 file terdaftar: 21 publik, 12 akun, 7 pendukung, 2 platform |
-| Audit struktur repository | Dilakukan pada `main` `681753b`; halaman UI aktif: `/masuk`, `/beranda`, `/super-admin` |
-| Audit visual referensi | Contact sheet 39 PNG halaman desa/akun/pendukung ditinjau; login, beranda publik, dan 404 diperiksa pada resolusi penuh. Tiga mockup platform belum melalui audit visual yang sama |
+| Inventaris mockup | 89 file terdaftar: 21 publik, 11 akun, 7 pendukung, 40 platform (2 landing/login + 38 konsol Super Admin), dan 10 Admin Desa |
+| Audit struktur repository | Baseline 18 November 2026 pada `main`: `/masuk`, `/beranda`, dan tujuh halaman `/super-admin/*`. Login Admin Desa terpisah ditambahkan pada PR #155; bukan UI pengelolaan modul SID |
+| Audit visual referensi | 42 mockup diaudit pada 18 November 2026. Pada 19 November, seluruh 38 layar Super Admin ditinjau lewat contact sheet (layar utama pada resolusi 1400 px) dan 10 layar Admin Desa ditinjau. Audit ini tidak mengukur pixel, kontras final, atau viewport implementasi |
 | Prinsip dan semantik token | Draft; dapat dipakai sebagai kontrak semantik |
 | Baseline warna | Draft v0.3 diturunkan dari sampel visual; perlu contrast check dan browser comparison |
 | Komponen bersama | Spesifikasi awal; perlu visual review dan konsolidasi |
-| Admin Desa dan Super Admin | Tidak memiliki screenshot khusus; perlu keputusan produk yang dicatat terpisah dari referensi screenshot |
+| Admin Desa | 10 referensi di `docs/mockups/village/`; selisih dengan implementasi dicatat di [review mockup Admin Desa](../reports/05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md) |
+| Super Admin | 38 referensi di `docs/mockups/platform/super-admin/`; baru 7 route konsol dengan kedalaman berbeda. Pemetaan dan 23 area tanpa model data ada di [audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md) |
+| Arah visual Super Admin | Belum diputuskan. Mockup memakai sidebar navy dan aksi gelap/ungu; implementasi masih biru di sidebar putih. Perbedaan ini dicatat di [spesifikasi Admin dan Super Admin](./ADMIN-PLATFORM-DESIGN.md), bukan diselesaikan diam-diam di Design System |
 | Responsive rules final | Belum diverifikasi pada viewport desktop/mobile |
 | Visual regression baseline | Belum dibuat; perlu runtime browser dan fixture sintetis |
 
@@ -240,10 +249,10 @@ Sebelum mengubah status dokumen menjadi stable:
 
 ### 10.2 Gate sebelum status Stable
 
-1. Render dan periksa 42 PNG asli; catat ukuran, viewport, warna, tipografi, grid, radius, shadow, ikon, dan elemen berulang.
+1. Lanjutkan audit 89 PNG; catat ukuran, viewport, warna, tipografi, grid, radius, shadow, ikon, dan elemen berulang. Jangan mengklaim seluruh aset sudah pixel-perfect hanya karena contact sheet sudah dilihat.
 2. Audit minimal tiga referensi representatif per kelompok serta seluruh pola unik.
 3. Revisi token hanya berdasarkan hasil inspeksi; sertakan nilai dan bukti referensi.
-4. Bandingkan `/masuk` dengan screenshot login pada ukuran viewport yang sama.
-5. Buat spesifikasi visual Admin Desa dan Super Admin sebagai keputusan produk baru karena tidak ada screenshot khusus.
+4. Bandingkan `/masuk` dan `/masuk-admin` dengan screenshot login pada ukuran viewport yang sama.
+5. Selaraskan spesifikasi visual Admin Desa dengan sepuluh referensi di `docs/mockups/village/`, lalu putuskan arah visual Super Admin berdasarkan 38 referensi tanpa menyalin angka contoh dari gambar.
 6. Jalankan aplikasi pada browser, ambil screenshot desktop dan mobile, lalu lakukan visual comparison.
 7. Perbarui matriks dengan status `implemented`, `visually reviewed`, atau `accepted` hanya jika bukti tersedia.

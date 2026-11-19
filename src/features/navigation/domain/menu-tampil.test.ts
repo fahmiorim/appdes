@@ -27,10 +27,13 @@ describe("ruteTersedia", () => {
     expect(ruteTersedia("/beranda")).toBe(true);
     expect(ruteTersedia("/super-admin")).toBe(true);
     expect(ruteTersedia("/beranda?tab=ringkasan")).toBe(true);
+    expect(ruteTersedia("/penduduk")).toBe(true);
+    expect(ruteTersedia("/konten/berita")).toBe(true);
+    expect(ruteTersedia("/pengaturan/pengguna")).toBe(true);
   });
 
   it("menolak rute yang belum punya halaman", () => {
-    expect(ruteTersedia("/penduduk")).toBe(false);
+    expect(ruteTersedia("/penduduk/tambah")).toBe(false);
     expect(ruteTersedia("/keuangan/laporan")).toBe(false);
     expect(ruteTersedia(null)).toBe(false);
   });
@@ -51,7 +54,7 @@ describe("ratakanMenu", () => {
     expect(ratakanMenu(menu)).toEqual([
       { kind: "grup", label: "Kependudukan", url: null, tersedia: false },
       { kind: "item", label: "Beranda", url: "/beranda", tersedia: true },
-      { kind: "item", label: "Data Penduduk", url: "/penduduk", tersedia: false },
+      { kind: "item", label: "Data Penduduk", url: "/penduduk", tersedia: true },
     ]);
   });
 

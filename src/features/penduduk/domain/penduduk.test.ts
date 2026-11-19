@@ -5,6 +5,7 @@ import {
   isActiveResident,
   pendudukFormSchema,
   pendudukLabel,
+  samarkanNik,
 } from "@/features/penduduk/domain/penduduk";
 import { NO_SELECTION } from "@/lib/forms";
 
@@ -150,6 +151,12 @@ describe("pembantu domain lain", () => {
       "Budi (NIK 3201012001120001)",
     );
     expect(pendudukLabel({ name: "Budi", nationalId: null })).toBe("Budi");
+  });
+
+  it("menyamarkan NIK tanpa kehilangan seluruh konteks", () => {
+    expect(samarkanNik("3201012001120001")).toBe("320101••••••01");
+    expect(samarkanNik(null)).toBe("—");
+    expect(samarkanNik("123")).toBe("••••••••");
   });
 });
 

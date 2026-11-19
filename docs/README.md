@@ -19,7 +19,7 @@ Indeks dokumen repository. Gunakan halaman ini untuk menentukan dokumen mana yan
 | [`decisions/`](./decisions/) | Architecture Decision Record (ADR) |
 | [`deployment/`](./deployment/) | Instalasi, environment, database, backup, dan operasi |
 | [`design/`](./design/) | Spesifikasi desain yang masih menjadi acuan implementasi |
-| [`mockups/`](./mockups/) | 42 gambar referensi UI, dikelompokkan per area |
+| [`mockups/`](./mockups/) | 89 gambar referensi UI, dikelompokkan per area |
 | [`testing/`](./testing/) | Peta integration test dan panduan visual QA |
 | [`reports/`](./reports/) | Laporan task, audit, dan snapshot hasil pemeriksaan |
 

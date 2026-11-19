@@ -9,6 +9,7 @@ import { createPenggunaData, listPenggunaWithMeta, updatePenggunaData } from "./
 
 vi.mock("@/lib/dal", () => ({ requirePermission: vi.fn(), requireUser: vi.fn() }));
 vi.mock("@/features/desa/application/resolve-village", () => ({ resolveVillageId: vi.fn() }));
+vi.mock("@/features/audit/application/audit-use-cases", () => ({ recordAuditEvent: vi.fn() }));
 vi.mock("@/features/pengguna/infrastructure/pengguna-repository", () => ({
   createPengguna: vi.fn(),
   deletePengguna: vi.fn(),
@@ -77,12 +78,19 @@ describe("createPenggunaData", () => {
     await expect(createPenggunaData(createInput)).rejects.toThrow("tidak tersedia untuk desa ini");
   });
 
-  it("menerima role milik desa sendiri", async () => {
+  it("menerima role milik desa sendiri dan mencatat audit tanpa kata sandi", async () => {
     vi.mocked(rbac.getRoleById).mockResolvedValue(role() as never);
+    const audit = await import("@/features/audit/application/audit-use-cases");
 
     await expect(createPenggunaData(createInput)).resolves.toEqual({ id: "u-baru" });
     expect(penggunaRepo.createPengguna).toHaveBeenCalledWith(
       expect.objectContaining({ roleId: 9 }),
+    );
+    expect(audit.recordAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ event: "pengguna.create", resourceId: "u-baru" }),
+    );
+    expect(JSON.stringify(vi.mocked(audit.recordAuditEvent).mock.calls)).not.toContain(
+      "rahasia123",
     );
   });
 });

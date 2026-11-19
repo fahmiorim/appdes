@@ -18,6 +18,16 @@ export async function getNamaDesaUseCase(villageId: number): Promise<string | nu
   return getNamaDesa(villageId);
 }
 
+/**
+ * Identitas desa untuk tenant yang sudah diverifikasi pemanggilnya.
+ *
+ * Berbeda dari `getIdentitas()` yang membaca sesi sendiri, fungsi ini menerima
+ * `villageId` dari sesi yang sudah diverifikasi di layout/halaman.
+ */
+export async function getIdentitasDesaUseCase(villageId: number): Promise<IdentitasDesa | null> {
+  return getIdentitasDesa(villageId);
+}
+
 export async function getIdentitas(): Promise<IdentitasDesa | null> {
   const user = await requirePermission(IDENTITAS_DESA_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
