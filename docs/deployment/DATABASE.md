@@ -135,9 +135,10 @@ DATABASE_URL=mysql://sid_app:GANTI_PASSWORD_APP@127.0.0.1:3306/sid_production
 | `npm run db:push` | Menyamakan schema langsung ke database | **Tidak** |
 | `npm run db:studio` | GUI database | Jangan diekspos ke production |
 
-Repository saat ini memiliki 13 migration: baseline
-`src/db/migrations/0000_baseline.sql` serta `0001`–`0012` untuk composite
-foreign key, kontrol tenant, dan lifecycle retensi tenant. Tidak ada mekanisme down/rollback otomatis;
+Repository saat ini memiliki 16 migration: baseline
+`src/db/migrations/0000_baseline.sql` serta `0001`–`0015` untuk composite
+foreign key, kontrol tenant, lifecycle retensi tenant, serta menu penduduk dan
+pengguna/grup akses. Tidak ada mekanisme down/rollback otomatis;
 rollback aplikasi harus disertai pemulihan backup yang sesuai.
 
 ### 5.2 Sebelum migrasi
@@ -245,8 +246,9 @@ sekali. Template memuat role, modul, matriks akses, tema, dan menu publik.
 
 Batas yang perlu diketahui operator:
 
-- Template bawaan masih minimal (hanya role `administrator`), karena katalog
-  halaman admin saat ini baru `/beranda`. Modul lain ditambahkan ke template
+- Template bawaan berisi 4 role (`administrator`, `sekretaris`, `operator`,
+  `kepala-desa`), 5 modul (`beranda`, `penduduk`, grup `pengaturan`,
+  `pengguna`, `grup-akses`), dan 11 grant. Modul lain ditambahkan ke template
   ketika halamannya tersedia.
 - Katalog jenis surat, buku bumindes, dan kategori inventaris **tidak** dibuat
   otomatis. Ketiganya data master milik desa dan tidak diwariskan dari tenant

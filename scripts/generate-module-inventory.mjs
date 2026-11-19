@@ -156,7 +156,7 @@ Ini adalah inventaris faktual, bukan daftar fitur yang dijanjikan.
 - ${totalPages} halaman (\`page.tsx\`), ${layouts.length} layout, dan ${totalRoutes} route handler.
 - ${actions.length} berkas berisi \`"use server"\` (Server Action).
 - ${modules.length} direktori fitur di \`src/features\`; ${totalRepo} berkas \`*-repository.ts\` dan ${totalApp} berkas application/use case non-test.
-- ${adminPages.length} halaman admin: \`/beranda\` dan \`/super-admin/*\`.
+- ${adminPages.length} halaman admin (termasuk \`/beranda\` dan \`/super-admin/*\`).
 
 > Metode: \`git ls-tree -r --name-only ${ref}\`; hitungan \`page.tsx\`,
 > \`route.ts\`, \`layout.tsx\`, \`src/features/*/application/*.ts\` non-test, dan

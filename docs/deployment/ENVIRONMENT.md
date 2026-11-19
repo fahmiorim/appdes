@@ -206,14 +206,15 @@ mengaktifkan mode `bsre` sebelum provider dan keamanan TLS diuji.
 | `TTE_USERNAME` | Username akun BSrE | Untuk `bsre` | `desa-contoh` | Bukan secret, tetap batasi akses |
 | `TTE_NIK` | NIK penandatangan, 16 digit | Untuk `bsre` | `3201010101010001` | Data pribadi; jangan dipublikasikan |
 | `TTE_PASSWORD` | Passphrase BSrE | Untuk `bsre` | `GANTI_PASSPHRASE_TTE` | **Secret**; hanya dibaca dari environment, jangan simpan di DB/log |
-| `TTE_SSL` | Opsi konfigurasi TLS TTE | Tidak | `true` | Default `true`; opsi `false` tidak boleh dipakai di production |
+| `TTE_ALLOWED_HOSTS` | Allowlist host provider TTE, dipisah koma: `host` (port 443) atau `host:port` | Untuk `bsre` | `tte.example.go.id` | Exact match tanpa wildcard/suffix. Kosong atau tidak sah berarti **semua** provider ditolak (fail-closed); konfigurasi provider juga tidak dapat disimpan tanpa allowlist |
 | `TTE_TIMEOUT` | Timeout request TTE (milidetik) | Tidak | `30000` | Dibaca langsung dari `process.env`; tidak ada di `.env.example` dan tidak divalidasi Zod, pastikan bilangan bulat |
 
-**Peringatan:** kode menerima `TTE_SSL=false` dan menyimpannya pada konfigurasi,
-tetapi efek opsi tersebut terhadap verifikasi TLS klien belum terbukti di
-pemeriksaan ini. Jangan memakai `false` di production. Temuan ini tercatat
-sebagai AUD-020 di `docs/TECHNICAL_AUDIT.md`; verifikasi runtime diperlukan
-sebelum mengaktifkan TTE.
+**Peringatan:** verifikasi sertifikat TLS **selalu aktif**. `TTE_SSL` sudah
+dihapus dari skema environment dan diabaikan oleh `parseKonfigTte`; tidak ada
+opsi untuk mematikan verifikasi lewat environment maupun konfigurasi desa.
+Isi `TTE_ALLOWED_HOSTS` dengan origin provider yang disetujui sebelum
+mengaktifkan mode `bsre`. Temuan sebelumnya tercatat sebagai AUD-020 di
+`docs/TECHNICAL_AUDIT.md`; kontrolnya sudah diterapkan di kode.
 
 ## 5. WhatsApp/Baileys (opsional)
 
@@ -291,7 +292,7 @@ TRUST_PROXY=true
 # TTE_USERNAME=
 # TTE_NIK=
 # TTE_PASSWORD=
-# TTE_SSL=true
+# TTE_ALLOWED_HOSTS=tte.example.go.id
 # TTE_TIMEOUT=30000
 ```
 

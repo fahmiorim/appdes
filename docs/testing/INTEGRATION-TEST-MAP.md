@@ -53,7 +53,7 @@ lintas modul yang diuji. Sumber datanya adalah
 | Satu modul fitur | Test modul tersebut; tambah `tenant-isolation-lintas-modul` bila modul tercakup |
 | `src/db/**` atau migration | Semua `database-schema`, ditambah test modul yang berubah |
 | RBAC, auth, atau permission | Test `rbac`; pertimbangkan seluruh suite bila menyentuh sesi/tenant |
-| Shared code, API, action, dependency, atau path tidak dikenal | **Seluruh 47 test** sebagai fail-safe |
+| Shared code, API, action, dependency, atau path tidak dikenal | **Seluruh 53 test** sebagai fail-safe |
 
 Prinsipnya: seleksi hanya boleh mempersempit test bila path perubahan dapat
 dipetakan dengan yakin. Path yang tidak dikenal harus menjalankan seluruh suite,
