@@ -6,6 +6,8 @@
 > **Metode:** audit statis source code, schema, route, konfigurasi, dan test.
 >
 > **Catatan pembaruan (18 November 2026):** isi temuan dipertahankan sebagai snapshot audit awal. Status kode terkini untuk setiap temuan yang sudah diremediasi dicatat pada tabel di awal §5 dan pada temuan yang buktinya berubah (AUD-021, AUD-029).
+>
+> **Catatan status (19 November 2026):** inventaris kode kini 48 `page.tsx` (19 halaman admin: 12 Admin Desa + 7 konsol platform), 82 route handler, 52 direktori fitur, 16 migrasi (`0000`–`0015`), dan 50 berkas `*.integration.test.ts` (53 test terpetakan). Temuan AUD di bawah tetap snapshot; status UI per layer ada di [audit mockup dan dokumen](./reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
 
 ## 1. Ringkasan eksekutif
 
@@ -36,8 +38,8 @@ Inventaris statis yang teridentifikasi:
 - Sekitar 52 prefix fitur (sekitar 51 direktori fitur aktual).
 - Sekitar 191 file test.
 - 78 file schema TypeScript di `src/db/schema/`.
-- Satu baseline SQL migration saat audit: `src/db/migrations/0000_baseline.sql` (per 18 November 2026 sudah 13 migrasi, `0000`–`0012`).
-- Sekitar 91 page/API route (per 18 November 2026: 36 halaman `page.tsx` dan 81 route handler; 274 berkas test; 79 berkas schema).
+- Satu baseline SQL migration saat audit: `src/db/migrations/0000_baseline.sql` (per 19 November 2026: 16 migrasi, `0000`–`0015`).
+- 130 entri halaman/API (per 19 November 2026: 48 halaman `page.tsx`, 82 route handler, 52 direktori fitur, dan 79 berkas schema; 284 berkas test termasuk 50 integration test).
 - Stack utama: Next.js 16.4.2, React 19.3.0, TypeScript, MySQL, Drizzle ORM, Better Auth, Zod, Vitest.
 
 Tidak dilakukan:

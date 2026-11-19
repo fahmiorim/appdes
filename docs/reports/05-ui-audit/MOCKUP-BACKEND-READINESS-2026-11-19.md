@@ -7,6 +7,8 @@
 - **Commit hasil:** `ba1bc18` (dokumen; pembaruan SHA ini dicatat pada commit lanjutan di branch yang sama).
 - **Jenis task:** audit dan dokumentasi; tidak mengubah source code, schema, migration, atau data.
 
+> **Catatan delta (19 November 2026, setelah laporan ini dibuat):** laporan ini adalah **snapshot pada base `0ffeda6`**. PR #159 kemudian menambahkan `/penduduk/baru` dan `/penduduk/[id]/ubah`, sehingga jumlah halaman Admin Desa menjadi 12, bukan 11. Status route, menu, grant, dan angka terkini ada di [audit mockup dan dokumen](./MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md). Isi schema/use case di bawah tetap acuan; klaim “11 halaman” dan “penduduk belum punya form” adalah kondisi historis.
+
 ## 1. Ringkasan eksekutif
 
 - Katalog sekarang mencatat **126 PNG**: 21 website publik, 11 akun, 7 pendukung, 41 platform (2 landing/login + **39 Super Admin**), dan **46 Admin Desa**.

@@ -2,7 +2,7 @@
 
 Katalog aset desain Appdes SID. Seluruh gambar di folder ini adalah **referensi visual**, bukan bukti bahwa halaman sudah diimplementasikan atau lulus visual acceptance.
 
-Diperbarui: 19 November 2026. Katalog kini mencatat **126 PNG**. Status implementasi mengikuti cakupan masing-masing: 39 layar **Super Admin** dipetakan di [audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md), 46 layar **Admin Desa** dan kesiapan backend-nya dipetakan di [audit kesiapan backend mockup baru](../reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md), dan [audit final 42 mockup](../reports/05-ui-audit/UI-MOCKUP-AUDIT-FINAL-2026-11-18.md) tetap menjadi snapshot historis untuk publik, akun, dan pendukung.
+Diperbarui: 19 November 2026. Katalog kini mencatat **126 PNG**. Status implementasi mengikuti cakupan masing-masing: [audit mockup dan dokumen 19 November 2026](../reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md) memetakan 39 layar **Super Admin** dan 46 layar **Admin Desa** terhadap route, menu, grant, dan backend; [audit kesiapan backend](../reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md) menyimpan snapshot backend pada base `0ffeda6` (11 halaman Admin Desa saat itu); [audit final 42 mockup](../reports/05-ui-audit/UI-MOCKUP-AUDIT-FINAL-2026-11-18.md) tetap menjadi snapshot historis untuk publik, akun, dan pendukung.
 
 ## Ringkasan
 
@@ -73,7 +73,7 @@ Folder `account/` memuat 11 referensi akun warga. Folder `platform/` memuat land
 
 ## D. Platform — 41
 
-Landing dan login berada langsung di `platform/`; 39 layar konsol berada di `platform/super-admin/`. Sebelum implementasi, baca [audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md) untuk status dan risiko per area.
+Landing dan login berada langsung di `platform/`; 39 layar konsol berada di `platform/super-admin/`. Sebelum implementasi, baca [audit mockup dan dokumen](../reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md) untuk status terbaru; [audit 38 layar Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md) tetap menjadi pemetaan rinci per layar dan risiko per area.
 
 ### D.1 Landing dan login — 2
 
@@ -128,7 +128,9 @@ Landing dan login berada langsung di `platform/`; 39 layar konsol berada di `pla
 
 ## E. Dashboard Admin Desa — 46
 
-Diperbarui 19 November 2026. Folder `village/` sekarang memuat **46 PNG** dalam 11 folder area dan satu layar pengaturan di akar folder. Seluruh file berukuran 1536 × 1024 dan hanya tersedia dalam satu varian desktop.
+Diperbarui 19 November 2026. Folder `village/` sekarang memuat **46 PNG** dalam 10 folder area dan satu layar pengaturan di akar folder (11 area). Seluruh 46 file berukuran 1536 × 1024 dan hanya tersedia dalam satu varian desktop.
+
+> Dua file berbeda memakai nama `FlexiDesa Template Dashboard.png`: satu di `Administrasi Surat/` (template surat) dan satu di `platform/super-admin/Manajemen Template/` (template tenant). Selalu gunakan path folder lengkap, jangan nama file saja.
 
 Sepuluh layar lama yang dulu berada langsung di `village/` sudah tidak ada di path tersebut. Tautan lama pada laporan historis dipertahankan sebagai jejak audit, tetapi jangan dipakai sebagai path aktif. Rincian fitur, modul, schema, route, dan kesiapan backend per area ada di [audit kesiapan backend mockup baru](../reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md).
 
@@ -242,10 +244,11 @@ Sepuluh layar lama yang dulu berada langsung di `village/` sudah tidak ada di pa
 5. Perbedaan implementasi dari referensi dicatat di laporan audit, bukan dengan mengubah gambar referensi.
 6. Referensi visual bukan pengganti pengujian browser; status implementasi mengikuti laporan audit sesuai cakupannya (lihat [Referensi](#referensi)), bukan gambar referensi.
 7. Untuk layar Admin Desa, folder `village/` menjadi acuan visual utama. Folder `public/` adalah versi publik desa dan tidak boleh dijadikan pengganti dashboard admin.
-8. Keberadaan PNG tidak berarti route, use case, atau tabelnya sudah ada. Periksa [audit kesiapan backend mockup baru](../reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md) sebelum mengklaim modul siap.
+8. Keberadaan PNG tidak berarti route, use case, atau tabelnya sudah ada. Periksa [audit mockup dan dokumen](../reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md) untuk status route/menu terbaru dan [audit kesiapan backend](../reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md) untuk schema/use case sebelum mengklaim modul siap.
 
 ## Referensi
 
+- [Audit mockup dan dokumen 19 November 2026](../reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md)
 - [Audit kesiapan backend mockup baru](../reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md)
 - [Audit final mockup ↔ UI ↔ backend](../reports/05-ui-audit/UI-MOCKUP-AUDIT-FINAL-2026-11-18.md)
 - [Design system](../design/DESIGN-SYSTEM.md)

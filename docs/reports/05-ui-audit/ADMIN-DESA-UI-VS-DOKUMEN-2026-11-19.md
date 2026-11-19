@@ -7,6 +7,8 @@
 - **Sifat:** audit **report-only**. Tidak ada perubahan source code, schema, migration, konfigurasi, atau data pada task ini.
 - **Status:** siap review sebagai laporan audit.
 
+> **Catatan delta (19 November 2026, setelah laporan ini dibuat):** PR #159 sudah masuk `main`; `/penduduk/baru` dan `/penduduk/[id]/ubah` kini ada, sehingga jumlah halaman Admin Desa menjadi 12. Status route/menu/grant terbaru dan pemetaan 46 mockup ada di [audit mockup dan dokumen](./MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md). Temuan di bawah tetap snapshot base `92e1a90`.
+
 ## 1. Tujuan dan batas
 
 Audit ini menjawab satu pertanyaan: **apakah UI Admin Desa yang sudah dibangun sesuai dengan dokumen desain dan mockup yang menjadi acuannya, dan di mana selisihnya?**

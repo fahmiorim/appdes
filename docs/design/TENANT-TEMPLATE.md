@@ -29,7 +29,7 @@ perubahan perilaku provisioning.
 | Slug role/modul wajib unik di dalam template, dan unik per `(village_id, slug)` di database | `template-tenant.ts`, `src/db/schema/rbac.ts:40,71` | Tidak boleh ada role/modul duplikat; nama role juga unik per tenant (`roles_village_name_uq`). |
 | Akses harus menunjuk role dan modul yang ada di template | `template-tenant.ts` | Matriks akses tidak boleh menyebut slug di luar daftar. |
 | Slug modul adalah kunci izin yang dipakai halaman | `src/features/rbac/domain/resources.ts`, `authorization.ts` (`readableResources`) | Slug modul template harus sama dengan `RESOURCES`; kalau tidak, grant tidak pernah cocok dengan pemeriksaan halaman. |
-| Halaman admin desa yang tersedia: `/beranda`, `/penduduk`, `/pengaturan/pengguna`, dan `/pengaturan/grup-akses`; folder fitur lain belum punya `page.tsx` | `RUTE_ADMIN_TERSEDIA` dan `find src/app/(admin) -name page.tsx` → 17 berkas (10 halaman Admin Desa + 7 halaman konsol platform) | Modul yang belum punya halaman tidak disemai agar sidebar tidak penuh label "Segera". |
+| Halaman admin desa yang tersedia: 12 halaman — `/beranda`, `/penduduk` (+ detail/baru/ubah), `/keuangan`, `/konten/berita`, `/konten/galeri`, `/persuratan/surat`, `/pengaduan-admin`, `/pengaturan/pengguna`, dan `/pengaturan/grup-akses` | `RUTE_ADMIN_TERSEDIA` dan `find src/app/(admin) -name page.tsx` → 19 berkas (12 halaman Admin Desa + 7 halaman konsol platform) | Template masih menyemai 5 modul fondasi yang sudah tersedia di sidebar. Lima halaman baca-saja lain belum disemai karena belum punya form/CRUD; lihat §4.2. |
 | Menu menandai rute yang belum ada sebagai nonaktif "Segera", bukan tautan mati | `src/features/navigation/domain/menu-tampil.ts` (`RUTE_ADMIN_TERSEDIA`, `ratakanMenu`), `.admin-nav-pending` di `globals.css` | Menyemai banyak modul sekarang berarti sidebar penuh label "Segera". |
 | Daftar kelompok modul bisa tanpa grant; hak baca induk turun dari anak | `applyParentInheritance` di `src/features/rbac/domain/permission.ts` | Grup navigasi tidak perlu grant sendiri; cukup anaknya. |
 | `menu_publik` dibaca oleh situs publik melalui `getNavPublik` | `src/features/publik/application/nav-publik.ts`; 9 halaman publik memanggilnya; beranda, berita, profil, dan agenda masih menulis daftar tautan sendiri | Menyemai menu publik memengaruhi 9 halaman tersebut; halaman publik lain (termasuk beranda, berita, profil, dan agenda) belum ikut sampai peralihan selesai. |
@@ -182,10 +182,21 @@ Lima modul disemai karena halamannya sudah ada: `beranda`, `penduduk`, grup
   `/beranda` difilter dari daftar modul; `pengguna` dan `grup-akses` dirender di
   bawah grup `pengaturan`.
 
-Modul yang halamannya belum ada (keluarga, surat, IDM, keuangan, …) **tetap tidak**
-disemai. Jika disemai, sidebar akan menampilkan belasan label "Segera" dan
-matriks akses menjanjikan hak atas halaman yang tidak bisa dibuka. Matriks target
-untuk modul tersebut ada di §5.
+Modul yang halamannya belum ada (keluarga, IDM, …) **tetap tidak** disemai.
+Jika disemai, sidebar akan menampilkan belasan label "Segera" dan matriks akses
+menjanjikan hak atas halaman yang tidak bisa dibuka. Matriks target untuk modul
+tersebut ada di §5.
+
+Per 19 November 2026 ada lima halaman baca-saja Admin Desa di luar lima modul
+template: `/keuangan`, `/konten/berita`, `/konten/galeri`, `/persuratan/surat`,
+dan `/pengaduan-admin`. Tiga route tambahan `/penduduk/[id]`, `/penduduk/baru`,
+dan `/penduduk/[id]/ubah` adalah bagian dari modul `penduduk`. Halaman baca-saja itu
+memanggil `requirePermission` untuk `keuangan`, `berita`/`galeri`, `surat`, dan
+`pengaduan`; resource tersebut tidak ada di grant template. Akibatnya tenant baru
+belum dapat membukanya (403) dan tidak melihatnya di sidebar sampai modul serta
+grant ditambahkan. Ini dicatat sebagai gap implementasi pada
+[audit mockup dan dokumen](../reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md),
+bukan alasan menambah semua modul tanpa alur tulis.
 
 ### 4.3 Menu publik
 

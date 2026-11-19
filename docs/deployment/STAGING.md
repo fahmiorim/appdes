@@ -89,9 +89,10 @@ curl -fsS -H 'Host: staging.example.go.id' \
   http://127.0.0.1:3000/api/publik/informasi | head -c 500
 ```
 
-Halaman `/masuk` dan `/` dapat dibuka setelah tenant staging tersedia. Buat akun
-Super Admin dengan prosedur bootstrap di [DATABASE.md](./DATABASE.md) bagian 6,
-lalu provision tenant uji dari konsol `/super-admin`. Gunakan data sintetis dan
+Halaman `/masuk`, `/masuk-admin`, `/super-admin-login`, dan `/` dapat dibuka
+setelah tenant staging tersedia. Buat akun Super Admin dengan prosedur bootstrap
+di [DATABASE.md](./DATABASE.md) bagian 6, lalu provision tenant uji dari konsol
+`/super-admin`. Gunakan data sintetis dan
 jangan menjalankan alur destructive pada tenant yang berisi data penting.
 
 ## 6. Integration test pada database disposable

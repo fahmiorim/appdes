@@ -45,9 +45,9 @@ Invarian: host platform/reserved/unknown tidak boleh jatuh ke tenant; tidak ada 
 
 ## 2B. Relevansi fase terhadap perluasan mockup Super Admin (19 November 2026)
 
-**Kesimpulan:** Fase 0–6 dan urutannya tetap relevan. Perluasan menjadi 39 layar Super Admin memperjelas arah konsol, tetapi tidak menciptakan 23 modul siap pakai: audit memetakan 15 layar sebagai sebagian dan 23 layar belum memiliki fitur atau model data. Mockup tidak boleh dipakai sebagai acceptance data, dan tidak ada area baru yang boleh melompati gate keamanan tenant serta operasional Fase 1/5.
+**Kesimpulan:** Fase 0–6 dan urutannya tetap relevan. Perluasan menjadi 39 layar Super Admin memperjelas arah konsol, tetapi tidak menciptakan 24 modul siap pakai: audit 38 layar memetakan 15 layar sebagai sebagian dan 23 belum memiliki fitur atau model data, sedangkan layar Laporan & Analitik yang ke-39 juga belum punya model data. Mockup tidak boleh dipakai sebagai acceptance data, dan tidak ada area baru yang boleh melompati gate keamanan tenant serta operasional Fase 1/5.
 
-Ekspansi 46 layar Admin Desa pada hari yang sama tidak mengubah urutan fase. Backend modul desa (kehadiran, inventaris, keluarga, mutasi penduduk, bumindes, pembangunan, statistik, kesehatan, bantuan, survei, dan persuratan) sudah tersedia di server, sedangkan UI-nya belum; pekerjaan berikutnya adalah menghubungkan UI ke use case yang ada, bukan membangun backend baru. Rincian per modul ada di [audit kesiapan backend mockup baru](./reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md).
+Ekspansi 46 layar Admin Desa pada hari yang sama tidak mengubah urutan fase. Backend modul desa (kehadiran, inventaris, keluarga, mutasi penduduk, bumindes, pembangunan, statistik, kesehatan, bantuan, survei, dan persuratan) sudah tersedia di server, tetapi UI belum merata: 12 halaman Admin Desa ada, dua area berfungsi penuh, penduduk punya daftar/detail/form, dan lima halaman lain masih baca-saja serta belum mendapat modul/grant template sehingga dapat ditolak 403 pada tenant baru. Pekerjaan berikutnya adalah menghubungkan UI ke use case yang ada dan menyemai modul/grant untuk halaman yang sudah tersedia, bukan membangun backend baru. Rincian per modul ada di [audit kesiapan backend mockup baru](./reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md); temuan menu/grant dan pemetaan layar terbaru ada di [audit mockup dan dokumen](./reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
 
 | Area di mockup | Kondisi repository | Fase/prioritas | Keputusan |
 |---|---|---|---|
@@ -123,7 +123,7 @@ Pekerjaan:
 
 **Prioritas:** P1 · **Prasyarat:** model role dan tenant sudah aman.
 
-**Status kode per 18 November 2026: implementasi repository selesai dan merged ke `main` melalui PR #106–#112.** Hasilnya mencakup bootstrap Super Admin, provisioning berbasis template, konsol tenant, pengelolaan domain, lifecycle retensi/purge, ekspor template, dan cleanup ekspor terjadwal. Ini menandai selesainya pekerjaan kode yang tercantum pada fase ini, bukan bukti deployment atau penerimaan operasional. Perluasan 38 mockup pada 19 November tidak membatalkan status ini; area baru yang belum didukung dicatat sebagai backlog di §2B.
+**Status kode per 18 November 2026: implementasi repository selesai dan merged ke `main` melalui PR #106–#112.** Hasilnya mencakup bootstrap Super Admin, provisioning berbasis template, konsol tenant, pengelolaan domain, lifecycle retensi/purge, ekspor template, dan cleanup ekspor terjadwal. Ini menandai selesainya pekerjaan kode yang tercantum pada fase ini, bukan bukti deployment atau penerimaan operasional. Perluasan 39 mockup pada 19 November tidak membatalkan status ini; area baru yang belum didukung dicatat sebagai backlog di §2B.
 
 **Kriteria kode selesai:**
 - Konsol terpisah mengelola provisioning, status, kuota, reset admin, domain, ekspor, dan purge tenant dengan otorisasi server-side.
@@ -134,7 +134,7 @@ Pekerjaan:
 **Validasi operasional yang masih terbuka:**
 - Lakukan walkthrough konsol pada staging dengan tenant sintetis, termasuk provisioning, reset admin, perubahan domain, ekspor, dan status retensi.
 - Pasang systemd timer cleanup pada server yang dituju, lalu verifikasi jadwal dan log eksekusinya.
-- Tinjau template bawaan yang masih minimal sebelum onboarding tenant nyata.
+- Tinjau template bawaan (4 role, 5 modul, 11 grant) sebelum onboarding tenant nyata; halaman baca-saja yang sudah ada belum disemai sebagai modul.
 - Uji bootstrap dan login Super Admin pada lingkungan staging yang disetujui; jangan menguji pada production tanpa prosedur rilis.
 
 ### Fase 3 — Stabilkan core SID

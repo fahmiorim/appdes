@@ -20,14 +20,14 @@ Kedua surface memakai Design System FlexiDesa:
 
 ### Referensi visual
 
-Sepuluh mockup di `docs/mockups/village/` menjadi acuan tampilan Admin Desa: beranda, data penduduk, statistik penduduk, administrasi surat, berita dan informasi, pemerintahan desa, transparansi APBDes, pengaduan masyarakat, pengaturan desa, serta manajemen pengguna dan hak akses. Ringkasan pola, warna hasil sampling, serta pemetaan route dan gap ada di laporan review; jangan menyalin data pribadi dari gambar ke fixture.
+Empat puluh enam mockup di `docs/mockups/village/` (11 area) menjadi acuan tampilan Admin Desa. Ringkasan pola, pemetaan route, dan gap ada di [audit mockup dan dokumen](../reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md); backend per area ada di [audit kesiapan backend](../reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md). Jangan menyalin data pribadi dari gambar ke fixture.
 
 ### Shell
 - Sidebar tetap di desktop, lebar target 264 px.
 - Brand dan nama tenant terlihat di bagian atas.
 - Navigasi dikelompokkan berdasarkan pekerjaan: Beranda, Data Desa, Penduduk, Persuratan, Keuangan, Layanan, dan Pengaturan.
 - Item hanya tampil bila modul aktif dan pengguna memiliki permission.
-- Topbar menampilkan konteks nama desa dan identitas pengguna.
+- Topbar menampilkan breadcrumb dan identitas pengguna; nama desa tampil di sidebar.
 
 ### Beranda
 - Judul halaman dan nama desa.
@@ -123,7 +123,7 @@ Menu admin desa dibangun dari tabel `modules` yang dibatasi tenant, sedangkan ak
 
 ## 4. Batasan saat ini
 
-- Admin sidebar desa menampilkan Beranda, Data Penduduk, dan grup Pengaturan (Pengguna & Hak Akses serta Grup Akses). Kelompok menu lain di §2 (Data Desa, Persuratan, Keuangan, Layanan) masih target, belum fitur yang sudah diimplementasikan.
+- Sidebar desa yang disemai template menampilkan Beranda, Data Penduduk, dan grup Pengaturan (Pengguna & Hak Akses serta Grup Akses). Halaman `/keuangan`, `/konten/berita`, `/konten/galeri`, `/persuratan/surat`, dan `/pengaduan-admin` sudah ada sebagai route baca-saja, tetapi belum mendapat baris modul dan grant di template; untuk tenant baru halaman itu tidak otomatis muncul dan dapat ditolak 403. Kelompok menu lain di §2 masih target.
 - Konsol Super Admin sudah memiliki tujuh halaman (Ringkasan, Tenant, Domain, Pengguna platform, Audit trail, Template, Pengaturan) dengan menu sidebar bergrup, breadcrumb, header halaman, dan KPI bertone yang sama. Mockup lain (paket, monitoring, keamanan, laporan, peta sebaran, ekspor) belum memiliki model data/halaman. Halaman Template dan Pengaturan masih baca-saja karena sumbernya artefak kode dan environment; MFA, undangan anggota tim, monitor, backup, feature flag per tenant, dan langganan belum ada.
 - Audit trail platform dapat dicari, difilter per desa dan jenis peristiwa, menampilkan detail perubahan, serta diekspor ke CSV (maksimal 5.000 baris per unduhan). Retensi dan arsip audit terpusat belum ada.
 - Pengelolaan pengguna platform hanya menjangkau akun `village_id IS NULL`; akun administrator desa tetap dikelola dari konsol tenant masing-masing.

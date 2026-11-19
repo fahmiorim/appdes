@@ -6,6 +6,8 @@
 - **Status:** dokumentasi selesai; **tidak ada perubahan source code**. Belum di-push atas permintaan pemilik task.
 - **Sifat dokumen:** snapshot audit. Status implementasi halaman yang dicatat di sini berlaku pada base commit di atas; shell sudah diselaraskan setelahnya (lihat §6).
 
+> **Catatan delta (19 November 2026, setelah laporan ini dibuat):** sepuluh layar lama di path `docs/mockups/village/` sudah dihapus dan digantikan 46 layar baru dalam 11 area. Path di laporan ini tidak lagi aktif; status terkini ada di [audit mockup dan dokumen](./MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
+
 ## 1. Tujuan dan batas
 
 Review ini menjawab tiga hal:
