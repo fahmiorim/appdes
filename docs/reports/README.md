@@ -26,6 +26,7 @@ Gunakan laporan sesuai cakupannya; tidak ada satu laporan yang mewakili seluruh 
 | [Audit final 42 mockup](./05-ui-audit/UI-MOCKUP-AUDIT-FINAL-2026-11-18.md) | 21 publik, 11 akun, 7 pendukung, landing/login, dashboard Super Admin lama | Snapshot historis 18 November; jangan dipakai sebagai katalog lengkap |
 | [Katalog mockup](../mockups/README.md) | 89 path dan pengelompokan aset | Sumber inventaris file |
 | [Sinkronisasi dokumen mockup](./05-ui-audit/DOCS-SYNC-MOCKUP-2026-11-19.md) | Penyelarasan Design System, peta fitur, dan roadmap | Catatan keputusan relevansi fase dan backlog platform |
+| [Perbaikan check CI PR #156](./05-ui-audit/CI-FIX-PR-156-2026-11-19.md) | Perbaikan format dan integration test template tenant | Bukti akar masalah dan validasi 1.979 unit + 290 integration test |
 
 Dokumen di `archive/` dipertahankan untuk jejak audit. Jangan mengutipnya sebagai status terbaru tanpa memeriksa laporan penggantinya.
 
