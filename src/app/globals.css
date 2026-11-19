@@ -5844,3 +5844,6 @@ a.beranda-quick-tile:hover {
   font-size: 11.5px;
   line-height: 1.6;
 }
+
+/* Admin gallery metadata and video management */
+.galeri-admin-form{display:flex;flex-wrap:wrap;gap:6px;min-width:280px}.galeri-admin-form input,.galeri-video-form input,.galeri-video-form textarea{min-width:0;padding:8px 10px;border:1px solid var(--border,#dce4f0);border-radius:8px;background:var(--surface,#fff);font:inherit;font-size:12px}.galeri-admin-form input{max-width:180px}.galeri-admin-form button,.galeri-video-form button,.modul-table form button{padding:8px 12px;border:0;border-radius:8px;background:#6425e8;color:#fff;font-size:11px;font-weight:800;cursor:pointer}.galeri-video-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0 20px}.galeri-video-form label{display:grid;gap:6px;font-size:12px;font-weight:700}.galeri-video-form label:nth-child(2),.galeri-video-form label:nth-child(3){grid-column:1/-1}.galeri-video-form textarea{resize:vertical}.galeri-video-form button{justify-self:start}@media(max-width:640px){.galeri-video-form{grid-template-columns:1fr}.galeri-video-form label:nth-child(2),.galeri-video-form label:nth-child(3){grid-column:auto}}
