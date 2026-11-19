@@ -4,7 +4,7 @@
 - **Tanggal:** 20 November 2026
 - **Branch:** `task/super-admin-mockup-phase-1`
 - **Base commit:** `d28e9df` (`feat(super-admin): tambah submenu dan ringkasan daftar tenant`)
-- **Commit implementasi:** diisi setelah commit dibuat
+- **Commit implementasi:** `26bebf1`
 - **Laporan lama:** `DAFTAR-TENANT-SUBMENU-2026-11-20.md` dipindahkan ke `archive/` karena submenu **Daftar tenant** sudah digantikan oleh **Desa & Domain → Daftar domain**.
 
 ## 1. Tujuan
