@@ -9,6 +9,7 @@ import {
   dokumenPublik,
   galeriAlbum,
   galeriFoto,
+  galeriVideo,
   halamanStatis,
   jabatanPerangkat,
   menuPublik,
@@ -200,6 +201,8 @@ export async function listAlbumGaleri(villageId: number, cari?: string): Promise
       nama: galeriAlbum.nama,
       slug: galeriAlbum.slug,
       keterangan: galeriAlbum.keterangan,
+      kategori: galeriAlbum.kategori,
+      publishedAt: galeriAlbum.publishedAt,
       sampul: galeriAlbum.sampul,
       urut: galeriAlbum.urut,
     })
@@ -242,6 +245,8 @@ export async function getAlbumBySlug(
       nama: galeriAlbum.nama,
       slug: galeriAlbum.slug,
       keterangan: galeriAlbum.keterangan,
+      kategori: galeriAlbum.kategori,
+      publishedAt: galeriAlbum.publishedAt,
       sampul: galeriAlbum.sampul,
     })
     .from(galeriAlbum)
@@ -849,4 +854,30 @@ export async function listSlugBerita(villageId: number): Promise<string[]> {
     .from(berita)
     .where(and(beritaLayakTayang(villageId), isNotNull(berita.slug)));
   return rows.map((row) => row.slug);
+}
+
+
+export interface VideoGaleriPublik {
+  id: number;
+  judul: string;
+  keterangan: string | null;
+  url: string;
+  provider: string;
+  thumbnail: string | null;
+  publishedAt: Date | null;
+}
+
+export async function listVideoGaleriPublik(villageId: number, limit = 8): Promise<VideoGaleriPublik[]> {
+  return db.select({
+    id: galeriVideo.id,
+    judul: galeriVideo.judul,
+    keterangan: galeriVideo.keterangan,
+    url: galeriVideo.url,
+    provider: galeriVideo.provider,
+    thumbnail: galeriVideo.thumbnail,
+    publishedAt: galeriVideo.publishedAt,
+  }).from(galeriVideo)
+    .where(and(eq(galeriVideo.villageId, villageId), eq(galeriVideo.aktif, true), lte(galeriVideo.publishedAt, new Date())))
+    .orderBy(desc(galeriVideo.publishedAt), desc(galeriVideo.id))
+    .limit(limit);
 }
