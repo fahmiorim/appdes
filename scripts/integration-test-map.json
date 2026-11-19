@@ -51,7 +51,10 @@
     "keluarga": [
       "src/features/keluarga/infrastructure/keluarga-tenant-isolation.integration.test.ts"
     ],
-    "keuangan": ["src/features/keuangan/infrastructure/keuangan-concurrency.integration.test.ts"],
+    "keuangan": [
+      "src/features/keuangan/infrastructure/apbdes-import-concurrency.integration.test.ts",
+      "src/features/keuangan/infrastructure/keuangan-concurrency.integration.test.ts"
+    ],
     "kontak": ["src/features/kontak/application/kontak-tenant-isolation.integration.test.ts"],
     "konten": ["src/features/konten/dokumen-publik.integration.test.ts"],
     "layanan-mandiri": [
