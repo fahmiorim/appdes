@@ -471,3 +471,27 @@ export async function ubahDokumenWebsiteAction(fd: FormData): Promise<void> {
   if (file instanceof File && file.size > 0 && current.berkas) await hapusMedia(current.berkas);
   revalidatePath("/website/dokumen"); revalidatePath("/website"); redirect("/website/dokumen?saved=1");
 }
+
+
+export async function hapusWidgetWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-halaman", "delete");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  if (!id) throw new Error("Widget tidak valid.");
+  await db.delete(widget).where(and(eq(widget.villageId, villageId), eq(widget.id, id)));
+  revalidatePath("/website/halaman"); redirect("/website/halaman?deleted=1#widget");
+}
+
+export async function hapusAlbumGaleriWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "delete");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  if (!id) throw new Error("Album tidak valid.");
+  const photos = await db.select({ gambar: galeriFoto.gambar }).from(galeriFoto).where(and(eq(galeriFoto.villageId, villageId), eq(galeriFoto.albumId, id)));
+  const [album] = await db.select({ sampul: galeriAlbum.sampul }).from(galeriAlbum).where(and(eq(galeriAlbum.villageId, villageId), eq(galeriAlbum.id, id))).limit(1);
+  if (!album) throw new Error("Album tidak ditemukan.");
+  await db.delete(galeriAlbum).where(and(eq(galeriAlbum.villageId, villageId), eq(galeriAlbum.id, id)));
+  for (const photo of photos) await hapusMedia(photo.gambar);
+  if (album.sampul) await hapusMedia(album.sampul);
+  revalidatePath("/website/konten"); revalidatePath("/website"); redirect("/website/konten?deleted=1#galeri");
+}
