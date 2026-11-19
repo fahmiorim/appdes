@@ -1,6 +1,7 @@
 import "server-only";
 
 import {
+  countBerita,
   getAlbumBySlug,
   getBeritaBySlug,
   getHalamanBySlug,
@@ -35,6 +36,10 @@ export async function daftarBerita(
   opsi: { limit?: number; kategoriSlug?: string; headlineSaja?: boolean; cari?: string } = {},
 ) {
   return listBerita(villageId, opsi);
+}
+
+export async function hitungBeritaPublik(villageId: number, kategoriSlug?: string) {
+  return countBerita(villageId, kategoriSlug);
 }
 
 export async function detailBerita(villageId: number, slug: string) {
