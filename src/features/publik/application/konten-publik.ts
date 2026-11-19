@@ -7,6 +7,7 @@ import {
   getProfilDesa,
   listAlbumGaleri,
   listBerita,
+  listDokumenPublik,
   listFotoAlbum,
   listKategoriBerita,
   listPerangkatDesa,
@@ -24,6 +25,10 @@ import {
  * Tidak ada pemeriksaan izin karena ini konten publik; isolasi tenant tetap
  * dijaga `villageId` yang berasal dari host (`getIdentitasFromRequest`).
  */
+
+export async function daftarDokumenPublik(villageId: number, kategori?: string) {
+  return listDokumenPublik(villageId, kategori);
+}
 
 export async function daftarBerita(
   villageId: number,

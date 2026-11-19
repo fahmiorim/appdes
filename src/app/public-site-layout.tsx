@@ -61,15 +61,9 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
   { href: "/kontak", label: "Kontak" },
 ];
 
-export function PublicSiteHeader({ desa, location, logoUrl, activePath = "/" }: Props) {
+export function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Props) {
   return (
     <>
-      <div className={styles.topline}>
-        <div className={styles.container}>
-          <span>Website Resmi Pemerintah Desa</span>
-          <span>{location || "Transparan · Informatif · Melayani"}</span>
-        </div>
-      </div>
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <Link href="/" className={styles.brand} aria-label={`Beranda ${desa.namaDesa ?? "desa"}`}>
@@ -177,10 +171,7 @@ export function PublicSiteFooter({ desa, location, logoUrl }: Props) {
         </div>
         <div className={styles.footerColumn}>
           <strong>Ikuti Kami</strong>
-          <span>Media sosial resmi pemerintah desa</span>
-          <div className={styles.socials} aria-label="Media sosial">
-            ▶　f　◎　♪
-          </div>
+          <span>Media sosial resmi belum dikonfigurasi oleh pengelola desa.</span>
         </div>
       </div>
       <div className={styles.footerBottom}>

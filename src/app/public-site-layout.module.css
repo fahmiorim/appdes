@@ -23,7 +23,7 @@
 }
 .headerInner {
   width: min(1180px, calc(100% - 40px));
-  min-height: 66px;
+  min-height: 54px;
   margin: auto;
   display: flex;
   align-items: center;
@@ -76,7 +76,7 @@
   align-items: center;
   justify-content: center;
   gap: clamp(10px, 1.65vw, 24px);
-  height: 66px;
+  height: 54px;
   color: #101a3b;
   font-size: 10px;
   font-weight: 800;
@@ -224,11 +224,7 @@
 .contactColumn span {
   line-height: 1.6;
 }
-.socials {
-  color: #fff;
-  font-size: 17px;
-  letter-spacing: 1px;
-}
+
 .footerBottom {
   min-height: 38px;
   display: flex;
