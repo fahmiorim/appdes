@@ -117,3 +117,4 @@ export default async function ProfilDesaPage() {
       <PublicSiteFooter desa={desa} location={lokasi} logoUrl={logo} />
     </main>
   );
+}
