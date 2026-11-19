@@ -1,0 +1,32 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+
+import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
+import { listRiwayat } from "@/features/penduduk/application/riwayat-penduduk-use-cases";
+import { MUTATION_TYPE_LABELS, MUTATION_TYPES, normalisasiMutationType } from "@/features/penduduk/domain/riwayat-penduduk";
+
+export const metadata: Metadata = { title: "Mutasi Penduduk" };
+const number = new Intl.NumberFormat("id-ID");
+const date = new Intl.DateTimeFormat("id-ID",{day:"2-digit",month:"short",year:"numeric"});
+
+export default async function MutasiPendudukPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
+  const params=await searchParams;
+  const q=typeof params.q==="string"?params.q.trim().slice(0,100):"";
+  const type=normalisasiMutationType(typeof params.type==="string"?params.type:null);
+  const pageRaw=typeof params.page==="string"?Number(params.page):1;
+  const page=Number.isInteger(pageRaw)&&pageRaw>0?pageRaw:1;
+  const result=await listRiwayat({q,type,page,perPage:10});
+  const counts=Object.entries(MUTATION_TYPE_LABELS);
+  return <div className="modul-page data-kependudukan-page">
+    <DataKependudukanNav active="/mutasi-penduduk"/>
+    <header className="page-heading"><div><span className="eyebrow">Data Kependudukan</span><h1>Mutasi Penduduk</h1><p>Riwayat penduduk masuk, keluar, kelahiran, kematian, dan perubahan data.</p></div><Link className="button button-primary" href="/mutasi-penduduk/baru">+ Catat Mutasi</Link></header>
+    <section className="data-kependudukan-kpis"><article className="data-kpi data-kpi-primary"><span>Total Kejadian</span><strong>{number.format(result.total)}</strong><small>Catatan mutasi sesuai filter</small></article>
+      {counts.slice(0,4).map(([key,label])=><article className="data-kpi" key={key}><span>{label}</span><strong>{key===type?number.format(result.total):"—"}</strong><small>Gunakan filter untuk melihat rincian</small></article>)}
+    </section>
+    <section className="platform-card data-panel"><header><h2>Daftar Mutasi Penduduk</h2><p>Catatan kejadian kependudukan berdasarkan tanggal peristiwa.</p></header>
+      <form className="data-filter" method="get"><input aria-label="Cari nama, NIK, atau nomor surat" defaultValue={q} name="q" placeholder="Cari nama, NIK, atau nomor surat..." type="search"/><select aria-label="Jenis mutasi" defaultValue={type} name="type"><option value="all">Semua jenis mutasi</option>{MUTATION_TYPES.map((v)=><option key={v} value={v}>{MUTATION_TYPE_LABELS[v]}</option>)}</select><button className="button button-secondary" type="submit">Filter</button></form>
+      {result.rows.length?<div className="table-scroll"><table className="data-table"><thead><tr><th>Tanggal</th><th>Jenis Mutasi</th><th>Nama Penduduk</th><th>NIK</th><th>Keterangan</th></tr></thead><tbody>{result.rows.map(row=><tr key={row.id}><td>{date.format(new Date(row.eventDate+"T00:00:00"))}</td><td><span className="data-status">{MUTATION_TYPE_LABELS[row.type]}</span></td><td>{row.residentName??"Data penduduk tidak tersedia"}</td><td>{row.residentNationalId?row.residentNationalId.replace(/^(\d{6})\d+(\d{4})$/,"$1••••••$2"):"—"}</td><td>{row.reason??row.notes??row.referenceNo??"—"}</td></tr>)}</tbody></table></div>:<p className="modul-empty">Belum ada catatan mutasi untuk filter ini.</p>}
+      <footer className="data-pagination"><span>Menampilkan {number.format(result.rows.length)} dari {number.format(result.total)} kejadian</span><div>{page>1?<Link href={`?q=${encodeURIComponent(q)}&type=${type}&page=${page-1}`}>Sebelumnya</Link>:null}{result.rows.length===10?<Link href={`?q=${encodeURIComponent(q)}&type=${type}&page=${page+1}`}>Berikutnya</Link>:null}</div></footer>
+    </section>
+  </div>;
+}
