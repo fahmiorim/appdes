@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import styles from "./public-site-layout.module.css";
+import styles from "./public-site-layout.module.css";\nimport { listMenuPublik } from "@/features/publik/infrastructure/content-repository";
 
 export type PublicVillageIdentity = {
   id: number;
@@ -89,7 +89,7 @@ export function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Props) {
           </Link>
 
           <nav className={styles.nav} aria-label="Navigasi utama">
-            {navigation.map((item) =>
+            {menu.map((item) =>
               "href" in item ? (
                 <Link
                   key={item.href}
