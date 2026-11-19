@@ -20,7 +20,14 @@ export function safeNextPath(value: string | string[] | undefined): string {
   }
 
   if (url.origin !== NEXT_PATH_ORIGIN) return DEFAULT_NEXT_PATH;
-  if (url.pathname === "/masuk" || url.pathname.startsWith("/masuk/")) return DEFAULT_NEXT_PATH;
+  if (
+    url.pathname === "/masuk" ||
+    url.pathname.startsWith("/masuk/") ||
+    url.pathname === "/masuk-admin" ||
+    url.pathname.startsWith("/masuk-admin/")
+  ) {
+    return DEFAULT_NEXT_PATH;
+  }
 
   return `${url.pathname}${url.search}${url.hash}`;
 }

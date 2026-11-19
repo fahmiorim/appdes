@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { LoginForm } from "@/app/(auth)/masuk/login-form";
@@ -109,6 +110,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
 
               <p className="login-card-help">
                 Mengalami kendala masuk? Hubungi administrator desa Anda.
+              </p>
+              <p className="login-card-switch">
+                Administrator desa? <Link href="/masuk-admin">Masuk ke ruang kerja</Link>
               </p>
             </section>
           </div>

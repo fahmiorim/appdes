@@ -1597,6 +1597,22 @@ input:focus-visible {
   line-height: 1.5;
 }
 
+.login-card-switch {
+  margin: 8px 0 0;
+  color: #647294;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.login-card-switch a {
+  color: #0b5bd3;
+  font-weight: 800;
+}
+
+.login-card-switch a:hover {
+  color: #0847bd;
+}
+
 .login-benefits {
   position: relative;
   z-index: 1;

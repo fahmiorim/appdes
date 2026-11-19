@@ -17,6 +17,8 @@ describe("safeNextPath", () => {
     "/\t/evil.test",
     "/\n/evil.test",
     "/masuk?next=/beranda",
+    "/masuk-admin",
+    "/masuk-admin?next=/beranda",
   ])("mengganti redirect non-lokal %s dengan beranda", (next) => {
     expect(safeNextPath(next)).toBe("/beranda");
   });
