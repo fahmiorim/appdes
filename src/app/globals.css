@@ -6363,11 +6363,86 @@ a.beranda-quick-tile:hover {
 }
 
 .domain-toolbar .tenant-search {
-  flex: 1 1 280px;
+  flex: 1 1 300px;
 }
 
 .domain-toolbar .tenant-filter {
-  width: 155px;
+  width: 145px;
+}
+
+.domain-filter-button {
+  min-height: 38px;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.domain-filter-button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.domain-filter-button.is-dirty {
+  border-color: #cdbcf3;
+  background: #f8f3ff;
+  color: #6d28d9;
+}
+
+/* Kartu KPI domain mengikuti mockup: ikon di kiri, teks bertumpuk di kanan. */
+.platform-stat-grid.is-domain .platform-stat {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  column-gap: 14px;
+  min-height: 90px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  box-shadow: 0 6px 16px rgb(58 34 98 / 4%);
+}
+
+.platform-stat-grid.is-domain .platform-stat-top {
+  display: contents;
+}
+
+.platform-stat-grid.is-domain .stat-icon {
+  width: 48px;
+  height: 48px;
+  grid-column: 1;
+  grid-row: 1 / span 3;
+  align-self: center;
+  border-radius: 11px;
+}
+
+.platform-stat-grid.is-domain .stat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.platform-stat-grid.is-domain .stat-card-label {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.platform-stat-grid.is-domain .stat-card-value {
+  grid-column: 2;
+  grid-row: 2;
+  margin-top: 1px;
+  font-size: 26px;
+  line-height: 1.05;
+}
+
+.platform-stat-grid.is-domain .stat-card-note {
+  grid-column: 2;
+  grid-row: 3;
+  margin-top: 1px;
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .domain-action {
@@ -6493,6 +6568,10 @@ a.beranda-quick-tile:hover {
 @media (max-width: 760px) {
   .domain-toolbar .tenant-filter {
     flex-basis: calc(50% - 6px);
+  }
+
+  .domain-filter-button {
+    flex: 1 1 100%;
   }
 
   .domain-action .button {

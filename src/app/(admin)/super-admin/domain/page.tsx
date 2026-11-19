@@ -25,6 +25,10 @@ export const metadata: Metadata = {
 };
 
 const angka = new Intl.NumberFormat("id-ID");
+const formatPersen = new Intl.NumberFormat("id-ID", {
+  maximumFractionDigits: 1,
+  minimumFractionDigits: 1,
+});
 
 type Props = { searchParams: Promise<{ q?: string | string[] }> };
 
@@ -52,6 +56,7 @@ export default async function SuperAdminDomainPage({ searchParams }: Props) {
         villageId: item.villageId,
         villageName: pemilik?.name ?? `Desa #${item.villageId}`,
         villageSlug: pemilik?.slug ?? null,
+        villageDistrict: pemilik?.district ?? null,
         villageActive: pemilik?.active ?? false,
         domain: item.domain,
         jenis: klasifikasiJenisDomain(item.domain, env.DESA_BASE_DOMAIN, pemilik?.slug),
@@ -69,15 +74,13 @@ export default async function SuperAdminDomainPage({ searchParams }: Props) {
     );
 
   const totalDomain = rows.length;
-  const domainUtama = rows.filter((item) => item.isPrimary).length;
-  const domainAlias = totalDomain - domainUtama;
-  const dnsNormal = rows.filter((item) => item.dns.status === "normal").length;
-  const dnsBermasalah = rows.filter((item) => item.dns.status === "bermasalah").length;
-  const dnsBelum = rows.filter((item) => item.dns.status === "belum-diperiksa").length;
+  const subdomain = rows.filter((item) => item.jenis === "subdomain").length;
+  const custom = totalDomain - subdomain;
   const sslAktif = rows.filter((item) => item.ssl.status === "aktif").length;
   const sslSegera = rows.filter((item) => item.ssl.status === "segera-expired").length;
   const sslBermasalah = rows.filter((item) => item.ssl.status === "bermasalah").length;
-  const sslBelum = rows.filter((item) => item.ssl.status === "belum-diperiksa").length;
+  const persentase = (jumlah: number) =>
+    totalDomain === 0 ? "0,0%" : `${formatPersen.format((jumlah / totalDomain) * 100)}%`;
   const desaBerdomain = new Set(rows.map((item) => item.villageId)).size;
   const desaTanpaDomain = Math.max(0, desa.length - desaBerdomain);
 
@@ -108,7 +111,7 @@ export default async function SuperAdminDomainPage({ searchParams }: Props) {
         judul="Desa & Domain — Daftar Domain"
         path="/super-admin/domain"
       />
-      <div className="platform-stat-grid is-enam">
+      <div className="platform-stat-grid is-enam is-domain">
         <PlatformStat
           icon={
             <>
@@ -117,35 +120,35 @@ export default async function SuperAdminDomainPage({ searchParams }: Props) {
               <path d="M12 3.6c2.4 2.4 3.6 5.2 3.6 8.4s-1.2 6-3.6 8.4c-2.4-2.4-3.6-5.2-3.6-8.4s1.2-6 3.6-8.4" />
             </>
           }
-          label="Total domain"
-          note={`${angka.format(domainUtama)} utama · ${angka.format(domainAlias)} alias`}
+          label="Total Domain"
+          note="(Desa/Tenant)"
           tone="ungu"
           value={angka.format(totalDomain)}
         />
         <PlatformStat
           icon={
             <>
-              <circle cx="12" cy="12" r="8.4" />
-              <path d="m8.4 12 2.4 2.4 4.8-5" />
+              <path d="M10 13a4 4 0 0 0 5.7.1l2.1-2.1a4 4 0 0 0-5.7-5.7l-1.2 1.2" />
+              <path d="M14 11a4 4 0 0 0-5.7-.1l-2.1 2.1a4 4 0 0 0 5.7 5.7l1.2-1.2" />
             </>
           }
-          label="DNS normal"
-          note={`${angka.format(dnsBermasalah)} bermasalah · ${angka.format(dnsBelum)} belum diperiksa`}
+          label="Subdomain Aktif"
+          note={`${persentase(subdomain)} dari total`}
           tone="hijau"
-          value={angka.format(dnsNormal)}
+          value={angka.format(subdomain)}
         />
         <PlatformStat
           icon={
             <>
               <circle cx="12" cy="12" r="8.4" />
-              <path d="M12 7.6v5.2" />
-              <path d="M12 16.6h.01" />
+              <path d="M3.6 12h16.8" />
+              <path d="M12 3.6c2.4 2.4 3.6 5.2 3.6 8.4s-1.2 6-3.6 8.4c-2.4-2.4-3.6-5.2-3.6-8.4s1.2-6 3.6-8.4" />
             </>
           }
-          label="DNS bermasalah"
-          note="Resolusi gagal atau menunjuk alamat internal"
-          tone="merah"
-          value={angka.format(dnsBermasalah)}
+          label="Custom Domain"
+          note={`${persentase(custom)} dari total`}
+          tone="biru"
+          value={angka.format(custom)}
         />
         <PlatformStat
           icon={
@@ -154,8 +157,8 @@ export default async function SuperAdminDomainPage({ searchParams }: Props) {
               <path d="m8.8 12 2.2 2.2 4.2-4.4" />
             </>
           }
-          label="SSL aktif"
-          note={`${angka.format(sslBelum)} domain belum diperiksa`}
+          label="SSL Aktif"
+          note={`${persentase(sslAktif)} dari total`}
           tone="hijau"
           value={angka.format(sslAktif)}
         />
@@ -166,8 +169,8 @@ export default async function SuperAdminDomainPage({ searchParams }: Props) {
               <path d="M12 7.4v5.2l3.2 1.8" />
             </>
           }
-          label="SSL segera expired"
-          note="Masa berlaku ≤ 30 hari"
+          label="SSL Segera Expired"
+          note="(< 30 hari)"
           tone="oranye"
           value={angka.format(sslSegera)}
         />
@@ -178,8 +181,8 @@ export default async function SuperAdminDomainPage({ searchParams }: Props) {
               <path d="m8.8 8.8 6.4 6.4M15.2 8.8l-6.4 6.4" />
             </>
           }
-          label="SSL bermasalah"
-          note="Verifikasi, masa berlaku, atau koneksi gagal"
+          label="SSL Bermasalah"
+          note={`(${persentase(sslBermasalah)})`}
           tone="merah"
           value={angka.format(sslBermasalah)}
         />

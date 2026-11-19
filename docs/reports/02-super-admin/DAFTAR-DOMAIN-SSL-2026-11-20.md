@@ -2,9 +2,9 @@
 
 - **Task:** menyesuaikan halaman **Desa & Domain → Daftar domain** dengan mockup, menghapus menu Daftar tenant, serta menambahkan pemeriksaan DNS dan SSL yang benar-benar dijalankan.
 - **Tanggal:** 20 November 2026
-- **Branch:** `task/super-admin-mockup-phase-1`
+- **Branch:** `task/super-admin-daftar-domain-ssl`
 - **Base commit:** `d28e9df` (`feat(super-admin): tambah submenu dan ringkasan daftar tenant`)
-- **Commit implementasi:** `26bebf1`
+- **Commit implementasi:** `26bebf1`, `40b98db`, `85de3da`, dan commit revisi kartu/filter pada branch yang sama.
 - **Laporan lama:** `DAFTAR-TENANT-SUBMENU-2026-11-20.md` dipindahkan ke `archive/` karena submenu **Daftar tenant** sudah digantikan oleh **Desa & Domain → Daftar domain**.
 
 ## 1. Tujuan
@@ -20,7 +20,8 @@
 - Halaman `/super-admin/domain` sudah menampilkan domain, tetapi belum memiliki status DNS/SSL, masa berlaku sertifikat, tombol pemeriksaan, atau dialog tambah domain.
 - Halaman tenant tetap diperlukan sebagai konsol pengelolaan (status, kuota, domain, ekspor, purge), tetapi tidak boleh menjadi menu **Daftar tenant** tersendiri. Route-nya dipertahankan sebagai halaman pengelolaan yang ditautkan dari kolom **Aksi**.
 - Belum ada tabel cache untuk hasil TLS/DNS. Agar status tidak dikarang, pemeriksaan harus dijalankan server-side lalu disimpan; halaman hanya membaca cache tersebut.
-- Mockup menampilkan KPI **Subdomain Aktif** dan **Custom Domain**. Keduanya bukan indikator kesehatan dan domain sudah terlihat di kolom **Jenis**, sehingga KPI diganti dengan metrik yang benar-benar dipantau: DNS normal/bermasalah dan SSL aktif/segera expired/bermasalah.
+- Mockup menampilkan enam KPI: **Total Domain**, **Subdomain Aktif**, **Custom Domain**, **SSL Aktif**, **SSL Segera Expired**, dan **SSL Bermasalah**. Revisi terakhir mengembalikan KPI ke susunan mockup tersebut karena kartu DNS dianggap belum sesuai.
+- Mockup juga memakai empat filter (**Semua Kecamatan**, **Semua Jenis Domain**, **Semua Status**, **Semua SSL**) dan tombol **Filter**. Sebelumnya toolbar hanya memiliki tiga filter yang langsung diterapkan tanpa tombol.
 
 ## 3. File yang diperiksa
 
@@ -61,8 +62,8 @@
 
 | File | Alasan |
 |---|---|
-| `src/app/(admin)/super-admin/domain/page.tsx` | Menggabungkan domain, desa, cache DNS/SSL; menghitung KPI; merender tombol pemeriksaan dan dialog tambah domain. |
-| `src/app/(admin)/super-admin/domain/page.test.ts` | Test baru untuk guard, KPI, tombol, kolom, cache kosong, pencarian, dan pagination. |
+| `src/app/(admin)/super-admin/domain/page.tsx` | Menggabungkan domain, desa, cache DNS/SSL; menghitung enam KPI mockup; merender tombol pemeriksaan dan dialog tambah domain. |
+| `src/app/(admin)/super-admin/domain/page.test.ts` | Test untuk guard, enam KPI, filter mockup, tombol, kolom, cache kosong, pencarian, dan pagination. |
 | `src/app/(admin)/super-admin/actions.ts` | Server Action `periksaSslMassalAction` dan `periksaDnsMassalAction`; revalidasi `/super-admin/domain`. |
 | `src/features/multi-desa/application/pemantauan-domain-use-cases.ts` | Use case baca cache dan pemeriksaan massal dengan konkurensi 4. |
 | `src/features/multi-desa/application/pemantauan-domain-use-cases.test.ts` | Test penolakan non-super-admin, pemeriksaan SSL, dan pemeriksaan DNS. |
@@ -79,11 +80,11 @@
 | `src/db/schema/index.ts` | Ekspor schema baru. |
 | `src/db/migrations/0019_flashy_starhawk.sql` | Migration aditif tabel SSL. |
 | `src/db/migrations/0020_smooth_rachel_grey.sql` | Migration aditif tabel DNS. |
-| `src/features/multi-desa/presentation/domain-console.tsx` | Tabel 10 kolom, filter jenis/DNS/SSL, badge status, masa berlaku, domain utama, pagination. |
+| `src/features/multi-desa/presentation/domain-console.tsx` | Tabel 10 kolom, filter kecamatan/jenis/status/SSL dengan tombol **Filter**, badge status, masa berlaku, domain utama, pagination. |
 | `src/features/multi-desa/presentation/tombol-pemeriksaan.tsx` | Tombol massal dengan status pending dan hasil Server Action. |
 | `src/features/multi-desa/presentation/dialog-tambah-domain.tsx` | Dialog tambah domain dengan pilihan desa dari server. |
 | `src/features/multi-desa/infrastructure/kelola-desa-repository.ts` | Menyertakan `createdAt` pada baris domain. |
-| `src/app/globals.css` | Gaya toolbar, badge DNS/SSL, jenis domain, tombol aksi, dialog, dan ringkasan domain. |
+| `src/app/globals.css` | Gaya kartu KPI horizontal, toolbar empat filter dan tombol **Filter**, badge DNS/SSL, jenis domain, tombol aksi, dialog, dan ringkasan domain. |
 
 ## 5. Perubahan
 
@@ -97,14 +98,16 @@
 
 ### Halaman daftar domain
 
-Enam KPI dihitung dari data server:
+Enam KPI dihitung dari data server dan disusun mengikuti mockup:
 
-1. Total domain, dengan rincian utama/alias.
-2. DNS normal, dengan rincian bermasalah/belum diperiksa.
-3. DNS bermasalah.
-4. SSL aktif, dengan rincian belum diperiksa.
-5. SSL segera expired (≤ 30 hari).
-6. SSL bermasalah.
+1. **Total Domain** — jumlah seluruh domain, catatan `(Desa/Tenant)`.
+2. **Subdomain Aktif** — jumlah domain berjenis subdomain, catatan persentase dari total.
+3. **Custom Domain** — jumlah domain berjenis custom, catatan persentase dari total.
+4. **SSL Aktif** — jumlah status SSL `aktif`, catatan persentase dari total.
+5. **SSL Segera Expired** — jumlah status `segera-expired`, catatan `(< 30 hari)`.
+6. **SSL Bermasalah** — jumlah status `bermasalah`, catatan persentase dalam tanda kurung.
+
+Kartu memakai layout horizontal seperti mockup: ikon kotak di kiri, lalu label, angka besar, dan catatan bertumpuk di kanan. Enam kartu tetap satu baris pada layar lebar dan turun menjadi 3/2/1 kolom pada layar lebih kecil.
 
 Header memiliki tombol **Cek SSL massal**, **Cek DNS massal**, dan **Tambah Domain**. Tabel memakai kolom:
 
@@ -113,7 +116,8 @@ Header memiliki tombol **Cek SSL massal**, **Cek DNS massal**, dan **Tambah Doma
 - **Jenis** dihitung dari `DESA_BASE_DOMAIN` dan slug desa, bukan dari pola nama domain.
 - **Domain Utama** menampilkan **Utama** atau **Alias** dari `village_domains.isPrimary`.
 - Domain yang belum pernah diperiksa ditampilkan **Belum diperiksa**; tidak pernah dianggap aktif.
-- Filter tersedia untuk jenis, status DNS, dan status SSL; pencarian mencakup nama desa, slug, domain, dan alamat hasil resolusi.
+- Toolbar memakai pencarian lebar dan empat select: **Semua Kecamatan** (dari kecamatan desa pada baris), **Semua Jenis Domain**, **Semua Status** (aktif/nonaktif desa), dan **Semua SSL**. Perubahan select baru diterapkan setelah tombol **Filter** ditekan; tombol berubah warna bila ada draft yang belum diterapkan.
+- Pencarian mencakup nama desa, slug, domain, dan alamat hasil resolusi.
 - Pagination 10/25/50 baris berjalan di klien.
 
 ### Pemeriksaan DNS dan SSL
@@ -166,7 +170,7 @@ Perintah yang benar-benar dijalankan:
 |---|---|
 | `npm run db:generate` | **PASS** — menghasilkan `0020_smooth_rachel_grey.sql` untuk `domain_dns_checks`. |
 | `npm run typecheck` | **PASS** — `next typegen && tsc --noEmit`. |
-| `npx vitest run "src/app/(admin)/super-admin/domain/page.test.ts" src/features/multi-desa/application/pemantauan-domain-use-cases.test.ts src/features/multi-desa/domain/status-ssl.test.ts src/features/multi-desa/domain/status-dns.test.ts src/features/multi-desa/domain/jenis-domain.test.ts src/features/navigation/domain/menu-platform.test.ts` | **PASS** — 6 file, 27 test. |
+| `npx vitest run "src/app/(admin)/super-admin/domain/page.test.ts" src/features/multi-desa/application/pemantauan-domain-use-cases.test.ts src/features/multi-desa/domain/status-ssl.test.ts src/features/multi-desa/domain/status-dns.test.ts src/features/multi-desa/domain/jenis-domain.test.ts src/features/navigation/domain/menu-platform.test.ts` | **PASS** — 6 file, 27 test, dijalankan ulang setelah revisi kartu dan filter. |
 | `npx vitest run "src/app/(admin)/super-admin/tenant/page.test.ts" src/features/navigation/domain/header-platform.test.ts src/features/navigation/domain/menu-platform.test.ts src/features/multi-desa/presentation/dialog-form-tenant.test.ts` | **PASS** — 4 file, 20 test. |
 | `npm run lint` | **PASS** — 0 error; 2 warning lama `no-console` di `scripts/wilayah/generate-wilayah.mjs`. |
 | `npm run format:check` | **PASS** — seluruh file sesuai Prettier setelah perbaikan. |
@@ -180,17 +184,17 @@ Test fokus yang dijalankan mencakup guard non-super-admin, penolakan use case, p
 ## 9. Risiko dan batasan
 
 - **Migration baru diterapkan di database lokal.** Setiap environment lain, termasuk production, tetap harus menjalankan 0019/0020 sebelum kode ini dipakai. Tanpa itu halaman akan gagal membaca cache.
-- **Belum ada visual QA.** Tampilan tabel 10 kolom, badge, dialog, dan tombol massal belum diperiksa di browser.
+- **Belum ada visual QA ber-login.** Layout kartu dan toolbar sudah disesuaikan berdasarkan mockup dan markup yang dirender, tetapi halaman belum dibuka di browser dengan sesi Super Admin.
 - **Pemeriksaan jaringan belum diuji end-to-end.** Test memakai mock untuk pemeriksa; handshake TLS dan resolver nyata belum dijalankan pada domain publik dari lingkungan ini.
 - Domain pengembangan seperti `*.localhost` memang ditolak oleh guard host publik, sehingga akan tampil **Bermasalah** setelah pemeriksaan. Itu perilaku keamanan yang disengaja, bukan bug status.
 - Pemeriksaan massal dapat berjalan lama untuk ratusan domain karena timeout per alamat. Belum ada background job, progres per domain, atau batas waktu total.
 - Cache belum memiliki masa kedaluwarsa otomatis; status adalah hasil pemeriksaan terakhir sampai tombol dijalankan lagi. Waktu `checkedAt` belum ditampilkan di tabel.
 - Checkbox baris pada mockup tidak dibuat karena belum ada aksi massal per baris. Aksi yang tersedia baru **Kelola**.
 - Kolom **Domain Utama** menampilkan **Utama/Alias**; mockup menampilkan label jenis yang sama dengan kolom **Jenis**, sehingga interpretasi ini dipilih agar tidak menduplikasi kolom.
-- Filter **Semua Kecamatan** dari mockup belum ditambahkan; filter yang tersedia adalah jenis, DNS, dan SSL.
+- Filter **Semua Kecamatan** hanya berisi kecamatan yang muncul pada baris domain; desa tanpa domain tidak menjadi pilihan karena tidak ada baris untuk difilter.
 - Route `/super-admin/tenant` masih ada sebagai konsol pengelolaan tersembunyi. Menghapus route sepenuhnya akan memutus aksi **Kelola** dan kemampuan mengelola tenant.
 - Test penuh seluruh repository tidak dijalankan ulang; validasi difokuskan pada file yang berubah.
 
 ## 10. Kesimpulan
 
-Halaman **Desa & Domain → Daftar domain** sekarang mengikuti struktur mockup dan menampilkan status DNS/SSL dari pemeriksaan server-side nyata dengan cache database. Menu **Daftar tenant** sudah dihapus dari navigasi. Database pengembangan lokal sudah dimigrasikan dan error tabel cache sudah teratasi; production tetap memerlukan migration 0019/0020. Tampilan belum diverifikasi lewat browser dengan sesi Super Admin.
+Halaman **Desa & Domain → Daftar domain** sekarang mengikuti struktur mockup, termasuk enam kartu KPI dan toolbar empat filter dengan tombol **Filter**, serta menampilkan status DNS/SSL dari pemeriksaan server-side nyata dengan cache database. Menu **Daftar tenant** sudah dihapus dari navigasi. Database pengembangan lokal sudah dimigrasikan dan error tabel cache sudah teratasi; production tetap memerlukan migration 0019/0020. Tampilan final belum diverifikasi lewat browser dengan sesi Super Admin.

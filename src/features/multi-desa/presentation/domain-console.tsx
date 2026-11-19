@@ -28,6 +28,7 @@ export interface DomainConsoleRow {
   villageId: number;
   villageName: string;
   villageSlug: string | null;
+  villageDistrict: string | null;
   villageActive: boolean;
   domain: string;
   jenis: JenisDomain;
@@ -38,8 +39,22 @@ export interface DomainConsoleRow {
 }
 
 type FilterJenis = "semua" | JenisDomain;
-type FilterDns = "semua" | StatusDns;
+type FilterStatus = "semua" | "aktif" | "nonaktif";
 type FilterSsl = "semua" | StatusSsl;
+
+interface NilaiFilter {
+  kecamatan: string;
+  jenis: FilterJenis;
+  status: FilterStatus;
+  ssl: FilterSsl;
+}
+
+const FILTER_AWAL: NilaiFilter = {
+  kecamatan: "semua",
+  jenis: "semua",
+  status: "semua",
+  ssl: "semua",
+};
 
 const angka = new Intl.NumberFormat("id-ID");
 const tanggal = new Intl.DateTimeFormat("id-ID", {
@@ -58,11 +73,20 @@ export function DomainConsole({
   queryAwal?: string;
 }) {
   const [query, setQuery] = useState(queryAwal);
-  const [jenis, setJenis] = useState<FilterJenis>("semua");
-  const [statusDns, setStatusDns] = useState<FilterDns>("semua");
-  const [statusSsl, setStatusSsl] = useState<FilterSsl>("semua");
+  const [filter, setFilter] = useState<NilaiFilter>(FILTER_AWAL);
+  const [draft, setDraft] = useState<NilaiFilter>(FILTER_AWAL);
   const [halaman, setHalaman] = useState(1);
   const [perHalaman, setPerHalaman] = useState<number>(10);
+
+  const pilihanKecamatan = useMemo(
+    () =>
+      [
+        ...new Set(
+          rows.map((item) => item.villageDistrict).filter((item): item is string => Boolean(item)),
+        ),
+      ].sort((a, b) => a.localeCompare(b, "id")),
+    [rows],
+  );
 
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("id-ID");
@@ -78,18 +102,23 @@ export function DomainConsole({
         .join(" ")
         .toLocaleLowerCase("id-ID");
 
-      const cocokJenis = jenis === "semua" || item.jenis === jenis;
-      const cocokDns = statusDns === "semua" || item.dns.status === statusDns;
-      const cocokSsl = statusSsl === "semua" || item.ssl.status === statusSsl;
+      const cocokKecamatan =
+        filter.kecamatan === "semua" || item.villageDistrict === filter.kecamatan;
+      const cocokJenis = filter.jenis === "semua" || item.jenis === filter.jenis;
+      const cocokStatus =
+        filter.status === "semua" ||
+        (filter.status === "aktif" ? item.villageActive : !item.villageActive);
+      const cocokSsl = filter.ssl === "semua" || item.ssl.status === filter.ssl;
 
       return (
+        cocokKecamatan &&
         cocokJenis &&
-        cocokDns &&
+        cocokStatus &&
         cocokSsl &&
         (!normalizedQuery || searchable.includes(normalizedQuery))
       );
     });
-  }, [jenis, query, rows, statusDns, statusSsl]);
+  }, [filter, query, rows]);
 
   const totalHalaman = Math.max(1, Math.ceil(filtered.length / perHalaman));
   const halamanAktif = Math.min(halaman, totalHalaman);
@@ -102,11 +131,26 @@ export function DomainConsole({
     setHalaman(1);
   }
 
+  function ubahDraft(patch: Partial<NilaiFilter>) {
+    setDraft((sebelumnya) => ({ ...sebelumnya, ...patch }));
+  }
+
+  function terapkanFilter() {
+    setFilter(draft);
+    setHalaman(1);
+  }
+
+  const filterBerubah =
+    draft.kecamatan !== filter.kecamatan ||
+    draft.jenis !== filter.jenis ||
+    draft.status !== filter.status ||
+    draft.ssl !== filter.ssl;
+
   return (
     <>
       <div className="tenant-toolbar domain-toolbar">
         <label className="tenant-search tenant-search-dengan-ikon">
-          <span className="sr-only">Cari desa, slug, atau alamat domain</span>
+          <span className="sr-only">Cari nama desa, domain, atau tenant</span>
           <span aria-hidden="true" className="tenant-search-icon">
             <svg fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
               <circle cx="10.8" cy="10.8" r="6.4" />
@@ -116,44 +160,76 @@ export function DomainConsole({
           <input
             className="form-input"
             type="search"
-            placeholder="Cari desa atau domain..."
+            placeholder="Cari nama desa, domain, atau tenant..."
             value={query}
             onChange={(event) => ubahFilter(() => setQuery(event.target.value))}
           />
         </label>
         <select
+          aria-label="Filter kecamatan"
+          className="form-input tenant-filter"
+          value={draft.kecamatan}
+          onChange={(event) => ubahDraft({ kecamatan: event.target.value })}
+        >
+          <option value="semua">Semua Kecamatan</option>
+          {pilihanKecamatan.map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+        </select>
+        <select
           aria-label="Filter jenis domain"
           className="form-input tenant-filter"
-          value={jenis}
-          onChange={(event) => ubahFilter(() => setJenis(event.target.value as FilterJenis))}
+          value={draft.jenis}
+          onChange={(event) => ubahDraft({ jenis: event.target.value as FilterJenis })}
         >
-          <option value="semua">Semua jenis</option>
+          <option value="semua">Semua Jenis Domain</option>
           <option value="subdomain">Subdomain</option>
           <option value="custom">Custom</option>
         </select>
         <select
-          aria-label="Filter status DNS"
+          aria-label="Filter status desa"
           className="form-input tenant-filter"
-          value={statusDns}
-          onChange={(event) => ubahFilter(() => setStatusDns(event.target.value as FilterDns))}
+          value={draft.status}
+          onChange={(event) => ubahDraft({ status: event.target.value as FilterStatus })}
         >
-          <option value="semua">Semua DNS</option>
-          <option value="normal">DNS normal</option>
-          <option value="bermasalah">DNS bermasalah</option>
-          <option value="belum-diperiksa">Belum diperiksa</option>
+          <option value="semua">Semua Status</option>
+          <option value="aktif">Aktif</option>
+          <option value="nonaktif">Nonaktif</option>
         </select>
         <select
           aria-label="Filter status SSL"
           className="form-input tenant-filter"
-          value={statusSsl}
-          onChange={(event) => ubahFilter(() => setStatusSsl(event.target.value as FilterSsl))}
+          value={draft.ssl}
+          onChange={(event) => ubahDraft({ ssl: event.target.value as FilterSsl })}
         >
           <option value="semua">Semua SSL</option>
-          <option value="aktif">SSL aktif</option>
+          <option value="aktif">Aktif</option>
           <option value="segera-expired">Segera expired</option>
-          <option value="bermasalah">SSL bermasalah</option>
+          <option value="bermasalah">Bermasalah</option>
           <option value="belum-diperiksa">Belum diperiksa</option>
         </select>
+        <button
+          className={
+            filterBerubah
+              ? "button button-secondary domain-filter-button is-dirty"
+              : "button button-secondary domain-filter-button"
+          }
+          onClick={terapkanFilter}
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            viewBox="0 0 24 24"
+          >
+            <path d="M4 5h16l-6.2 7.2V20l-3.6-2v-5.8Z" />
+          </svg>
+          Filter
+        </button>
       </div>
 
       <div className="tenant-table-scroll">
