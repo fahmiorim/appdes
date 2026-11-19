@@ -8,26 +8,33 @@ import { hostPlatform } from "@/features/desa/application/platform-host";
 import { adalahHostPlatform } from "@/features/desa/domain/host";
 import { susunPetaDesa, villageIdDariHost } from "@/features/desa/domain/tenant";
 import {
-  getFirstVillageId,
   getIdentitasDesa,
+  getSoleVillageId,
   listVillageDomains,
   type IdentitasDesa,
 } from "@/features/desa/infrastructure/desa-repository";
 import type { CurrentUser } from "@/lib/dal";
 import { env } from "@/lib/env";
-import { notFound } from "@/lib/errors";
+import { forbidden, notFound } from "@/lib/errors";
 
 /**
  * Tentukan `village_id` efektif untuk operasi tulis/admin.
  *
- * Prioritas: penugasan desa pada sesi → desa pertama (mode satu-desa). Super
- * admin tanpa penugasan desa tetap bisa bekerja pada instalasi satu-desa.
+ * Prioritas: penugasan desa pada sesi → desa tunggal (mode satu-desa). Akun
+ * platform tanpa penugasan desa **tidak** boleh memilih desa pertama saat ada
+ * lebih dari satu desa aktif; tanpa aturan ini, operasi desa dapat menulis ke
+ * tenant yang salah. Fallback hanya berlaku bila tepat satu desa aktif.
  */
 export async function resolveVillageId(user: CurrentUser): Promise<number> {
   if (user.villageId !== null) return user.villageId;
 
-  const villageId = await getFirstVillageId();
-  if (villageId === null) throw notFound("Identitas desa belum dikonfigurasi.");
+  const { villageId, jumlah } = await getSoleVillageId();
+  if (jumlah === 0) throw notFound("Identitas desa belum dikonfigurasi.");
+  if (jumlah > 1 || villageId === null) {
+    throw forbidden(
+      "Akun platform tidak memiliki penugasan desa. Pilih desa secara eksplisit sebelum menjalankan operasi desa.",
+    );
+  }
 
   return villageId;
 }
