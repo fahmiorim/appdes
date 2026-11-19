@@ -1,4 +1,4 @@
-import { foreignKey, index, int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, index, int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 import { villages } from "./village";
 
@@ -17,7 +17,7 @@ export const galeriVideo = mysqlTable(
     url: varchar("url", { length: 500 }).notNull(),
     provider: varchar("provider", { length: 20 }).notNull(),
     thumbnail: varchar("thumbnail", { length: 255 }),
-    aktif: int("aktif").notNull().default(1),
+    aktif: boolean("aktif").notNull().default(true),
     publishedAt: timestamp("published_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
