@@ -114,7 +114,9 @@ describe("alat ekspor template tenant", () => {
 
     expect(template.sumber).toMatchObject({ jenis: "ekspor", villageId });
     expect(template.roles.map((role) => role.slug)).toContain("administrator");
-    expect(template.modules.map((modul) => modul.slug)).toEqual(["beranda"]);
+    expect(template.modules.map((modul) => modul.slug).sort()).toEqual(
+      TENANT_TEMPLATE.modules.map((modul) => modul.slug).sort(),
+    );
     expect(template.akses).toHaveLength(TENANT_TEMPLATE.akses.length);
     expect(template.akses).toContainEqual({
       roleSlug: "administrator",

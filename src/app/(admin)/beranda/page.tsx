@@ -468,9 +468,7 @@ export default async function AdminHomePage() {
               </div>
 
               {aksesCepat.length === 0 ? (
-                <p className="beranda-empty">
-                  Belum ada modul yang dapat diakses oleh akun ini.
-                </p>
+                <p className="beranda-empty">Belum ada modul yang dapat diakses oleh akun ini.</p>
               ) : (
                 <ul className="beranda-quick">
                   {aksesCepat.map((item) => (

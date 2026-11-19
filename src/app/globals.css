@@ -5170,7 +5170,9 @@ a.beranda-quick-tile:hover {
 
 .penduduk-filter {
   display: grid;
-  grid-template-columns: minmax(190px, 2fr) repeat(3, minmax(112px, 1fr)) repeat(2, minmax(82px, 0.7fr)) auto;
+  grid-template-columns:
+    minmax(190px, 2fr) repeat(3, minmax(112px, 1fr)) repeat(2, minmax(82px, 0.7fr))
+    auto;
   align-items: end;
   gap: 8px;
   padding: 0 18px 14px;

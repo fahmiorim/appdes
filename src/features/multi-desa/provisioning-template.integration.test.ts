@@ -15,6 +15,7 @@ import {
   villageDomains,
   villages,
 } from "@/db/schema";
+import { TENANT_TEMPLATE } from "@/db/templates/tenant-template";
 import { provisionDesa } from "@/features/multi-desa/infrastructure/provisioning-repository";
 import { siapkanDatabaseUji } from "@/testing/migrasi-uji";
 
@@ -146,17 +147,22 @@ describe("provisioning desa dari template platform", () => {
       "administrator",
     ]);
 
-    // Template bawaan hanya membawa modul yang benar-benar punya halaman, dan
-    // tidak mewarisi modul desa sumber (`khusus-sumber`).
+    // Template bawaan membawa seluruh modul yang punya halaman, dan tidak
+    // mewarisi modul desa sumber (`khusus-sumber`).
     const modulBaru = await db
       .select({ id: modules.id, slug: modules.slug, isActive: modules.isActive })
       .from(modules)
       .where(eq(modules.villageId, hasil.id));
-    expect(modulBaru.map((modul) => ({ slug: modul.slug, isActive: modul.isActive }))).toEqual([
-      { slug: "beranda", isActive: true },
-    ]);
+    const urutSlug = (a: { slug: string }, b: { slug: string }) => a.slug.localeCompare(b.slug);
+    expect(
+      modulBaru.map((modul) => ({ slug: modul.slug, isActive: modul.isActive })).sort(urutSlug),
+    ).toEqual(
+      TENANT_TEMPLATE.modules
+        .map((modul) => ({ slug: modul.slug, isActive: modul.isActive }))
+        .sort(urutSlug),
+    );
 
-    // Matriks akses: administrator manage, role lain hanya membaca beranda.
+    // Matriks akses beranda: administrator manage, role lain hanya membaca.
     const modulBeranda = modulBaru.find((modul) => modul.slug === "beranda");
     if (!modulBeranda) throw new Error("Modul beranda tidak terbentuk dari template.");
     const grantBaru = await db
