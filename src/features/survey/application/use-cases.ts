@@ -199,7 +199,7 @@ export async function simpanSoalData(
   };
 
   if (id === null) {
-    const baru = await insertSoal(input.surveyId, values);
+    const baru = await insertSoal(villageId, input.surveyId, values);
     return { id: baru, surveyId: input.surveyId };
   }
 
@@ -252,6 +252,7 @@ export async function simpanRespondenData(
   }
 
   const id = await insertResponden(
+    villageId,
     input.surveyId,
     { nama: input.nama, nik: input.nik },
     soal.map((item) => ({
@@ -342,6 +343,7 @@ export async function importSurveyCsvData(
   for (const baris of hasil.baris) {
     try {
       await insertResponden(
+        villageId,
         surveyId,
         { nama: baris.nama, nik: baris.nik },
         soal.map((item) => ({
@@ -395,6 +397,7 @@ export async function simpanResponsPublikData(
   }
 
   const id = await insertResponden(
+    villageId,
     surveyId,
     input,
     soal.map((item) => ({

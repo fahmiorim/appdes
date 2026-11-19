@@ -113,6 +113,13 @@
       "when": 1795192563264,
       "tag": "0015_menu_penduduk",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "5",
+      "when": 1795278963264,
+      "tag": "0016_tenant_child_tables",
+      "breakpoints": true
     }
   ]
 }
