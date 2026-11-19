@@ -6,6 +6,7 @@ Folder ini hanya memuat spesifikasi desain yang masih menjadi acuan implementasi
 |---|---|
 | [DESIGN-SYSTEM.md](./DESIGN-SYSTEM.md) | Token, komponen, pola halaman, dan aturan aksesibilitas |
 | [ADMIN-PLATFORM-DESIGN.md](./ADMIN-PLATFORM-DESIGN.md) | Spesifikasi visual Admin Desa dan Super Admin |
+| [ADMIN-DESA-SCREEN-SPEC.md](./ADMIN-DESA-SCREEN-SPEC.md) | Spesifikasi per layar untuk 12 halaman Admin Desa: mockup acuan, layout, data, permission, backend, gap, dan test |
 | [TENANT-TEMPLATE.md](./TENANT-TEMPLATE.md) | Desain isi template tenant bawaan |
 
 Referensi gambar ada di [mockups/](../mockups/README.md). Audit visual historis dan draft yang sudah digantikan berada di [reports/05-ui-audit/archive/](../reports/05-ui-audit/archive/); jangan memakai dokumen arsip sebagai status desain terbaru.
