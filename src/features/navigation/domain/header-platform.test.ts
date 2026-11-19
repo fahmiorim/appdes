@@ -26,7 +26,11 @@ describe("headerPlatform", () => {
   });
 
   it("memakai header menu induk untuk sub-rute", () => {
-    expect(headerPlatform("/super-admin/tenant/12").title).toBe("Tenant desa");
+    expect(headerPlatform("/super-admin/tenant/12").title).toBe("Daftar tenant");
+  });
+
+  it("menampilkan Manajemen tenant sebagai remah Daftar tenant", () => {
+    expect(headerPlatform("/super-admin/tenant").remah).toEqual([{ label: "Manajemen tenant" }]);
   });
 
   it("jatuh ke ringkasan untuk pathname yang tidak dikenal", () => {

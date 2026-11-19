@@ -9,10 +9,17 @@
  * keduanya tidak melenceng saat menu ditambah.
  */
 
+export interface RemahPlatform {
+  readonly label: string;
+  readonly href?: string;
+}
+
 export interface HeaderPlatform {
   readonly eyebrow: string;
   readonly title: string;
   readonly description: string;
+  /** Induk navigasi yang ditampilkan sebelum judul halaman. */
+  readonly remah?: readonly RemahPlatform[];
   /** Aksi utama halaman, bila ada. */
   readonly aksi?: { readonly label: string; readonly href: string };
 }
@@ -24,10 +31,11 @@ export const HEADER_PLATFORM: Readonly<Record<string, HeaderPlatform>> = {
     description: "Pantau tenant desa, domain, akses platform, dan retensi data dalam satu tempat.",
   },
   "/super-admin/tenant": {
-    eyebrow: "Konsol platform",
-    title: "Tenant desa",
+    eyebrow: "Manajemen tenant",
+    title: "Daftar tenant",
     description:
-      "Kelola status, kuota media, domain, akses administrator, ekspor, dan purge tenant desa.",
+      "Kelola seluruh tenant desa: status, kuota media, domain, akses administrator, ekspor, dan purge.",
+    remah: [{ label: "Manajemen tenant" }],
   },
   "/super-admin/domain": {
     eyebrow: "Konsol platform",

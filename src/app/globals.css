@@ -2213,6 +2213,28 @@ input:focus-visible {
   margin-bottom: 18px;
 }
 
+.platform-stat-grid.is-enam {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+@media (max-width: 1500px) {
+  .platform-stat-grid.is-enam {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .platform-stat-grid.is-enam {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .platform-stat-grid.is-enam {
+    grid-template-columns: 1fr;
+  }
+}
+
 .platform-stat-grid > * {
   min-width: 0;
 
@@ -3019,6 +3041,66 @@ input:focus-visible {
 .admin-sidebar[data-platform="true"] .admin-nav-link[aria-current="page"] .admin-nav-icon {
   background: rgb(255 255 255 / 18%);
   color: #fff;
+}
+.platform-nav-item {
+  display: grid;
+  gap: 3px;
+}
+.admin-sidebar[data-platform="true"] .platform-nav-parent {
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+.admin-sidebar[data-platform="true"] .platform-nav-parent[data-aktif="true"] {
+  border-color: rgb(255 255 255 / 10%);
+  background: rgb(124 58 237 / 16%);
+  color: #fff;
+}
+.admin-sidebar[data-platform="true"] .platform-nav-parent[data-aktif="true"] .admin-nav-icon {
+  background: rgb(255 255 255 / 12%);
+  color: #fff;
+}
+.platform-nav-caret {
+  margin-left: auto;
+  color: #b8a6dc;
+  font-size: 12px;
+  line-height: 1;
+  transition: transform 140ms ease;
+}
+.platform-nav-parent[aria-expanded="true"] .platform-nav-caret {
+  transform: rotate(180deg);
+}
+.platform-nav-sub {
+  display: grid;
+  gap: 2px;
+  margin: 0 0 5px 41px;
+  padding-left: 9px;
+  border-left: 1px solid rgb(255 255 255 / 14%);
+}
+.platform-nav-sublink {
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: #cfc2e8;
+  font-size: 11.5px;
+  font-weight: 650;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+.platform-nav-sublink:hover {
+  background: rgb(255 255 255 / 8%);
+  color: #fff;
+}
+.platform-nav-sublink[aria-current="page"] {
+  background: linear-gradient(100deg, #7c3aed 0%, #9333ea 100%);
+  color: #fff;
+  box-shadow: 0 8px 18px rgb(76 22 120 / 34%);
 }
 .platform-sidebar-footer {
   display: grid;

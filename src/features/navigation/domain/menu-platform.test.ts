@@ -30,6 +30,16 @@ describe("MENU_PLATFORM", () => {
   it("memberi grup berlabel pada setiap item", () => {
     expect(MENU_PLATFORM.every((item) => item.grup.trim().length > 0)).toBe(true);
   });
+
+  it("menyediakan submenu Daftar tenant di bawah Manajemen tenant", () => {
+    const manajemenTenant = MENU_PLATFORM.find((item) => item.href === "/super-admin/tenant");
+
+    expect(manajemenTenant?.label).toBe("Manajemen tenant");
+    expect(manajemenTenant?.anak).toEqual([
+      { href: "/super-admin/tenant", label: "Daftar tenant" },
+    ]);
+    expect(manajemenTenant?.anak?.every((item) => item.href.startsWith("/super-admin"))).toBe(true);
+  });
 });
 
 describe("grupMenuPlatform", () => {

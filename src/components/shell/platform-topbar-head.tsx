@@ -16,7 +16,7 @@ import { headerPlatform } from "@/features/navigation/domain/header-platform";
  */
 export function PlatformTopbarHead() {
   const pathname = usePathname();
-  const { title } = headerPlatform(pathname);
+  const { title, remah = [] } = headerPlatform(pathname);
   const diRingkasan = pathname === "/super-admin";
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -58,6 +58,20 @@ export function PlatformTopbarHead() {
               <Link href="/super-admin">Dashboard Super Admin</Link>
             )}
           </li>
+          {diRingkasan
+            ? null
+            : remah.map((item, index) => (
+                <li key={`${item.label}-${index}`}>
+                  <span aria-hidden="true" className="platform-breadcrumb-sep">
+                    ›
+                  </span>
+                  {item.href ? (
+                    <Link href={item.href}>{item.label}</Link>
+                  ) : (
+                    <span>{item.label}</span>
+                  )}
+                </li>
+              ))}
           {diRingkasan ? null : (
             <li aria-current="page">
               <span aria-hidden="true" className="platform-breadcrumb-sep">

@@ -23,6 +23,7 @@ export function AdminSidebar({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [submenuTertutup, setSubmenuTertutup] = useState<Record<string, boolean>>({});
   const triggerRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLElement>(null);
   const homeHref = isPlatformAdmin ? "/super-admin" : "/beranda";
@@ -122,20 +123,72 @@ export function AdminSidebar({
             ? grupMenuPlatform().map((kelompok) => (
                 <div className="platform-nav-group" key={kelompok.grup}>
                   <div className="admin-nav-label">{kelompok.grup}</div>
-                  {kelompok.item.map((item) => (
-                    <Link
-                      className="admin-nav-link"
-                      href={item.href}
-                      key={item.href}
-                      aria-current={menuPlatformAktif(item.href, pathname) ? "page" : undefined}
-                      onClick={() => setOpen(false)}
-                    >
-                      <span className="admin-nav-icon" aria-hidden="true">
-                        {item.icon}
-                      </span>
-                      <span>{item.label}</span>
-                    </Link>
-                  ))}
+                  {kelompok.item.map((item) => {
+                    const aktif = menuPlatformAktif(item.href, pathname);
+
+                    if (!item.anak?.length) {
+                      return (
+                        <Link
+                          className="admin-nav-link"
+                          href={item.href}
+                          key={item.href}
+                          aria-current={aktif ? "page" : undefined}
+                          onClick={() => setOpen(false)}
+                        >
+                          <span className="admin-nav-icon" aria-hidden="true">
+                            {item.icon}
+                          </span>
+                          <span>{item.label}</span>
+                        </Link>
+                      );
+                    }
+
+                    const idSubmenu = `platform-submenu-${item.href.replace(/[^a-z0-9]+/gi, "-")}`;
+                    const terbuka = !submenuTertutup[item.href];
+
+                    return (
+                      <div className="platform-nav-item" key={item.href}>
+                        <button
+                          aria-controls={idSubmenu}
+                          aria-expanded={terbuka}
+                          className="admin-nav-link platform-nav-parent"
+                          data-aktif={aktif ? "true" : undefined}
+                          onClick={() =>
+                            setSubmenuTertutup((sebelumnya) => ({
+                              ...sebelumnya,
+                              [item.href]: terbuka,
+                            }))
+                          }
+                          type="button"
+                        >
+                          <span className="admin-nav-icon" aria-hidden="true">
+                            {item.icon}
+                          </span>
+                          <span>{item.label}</span>
+                          <span aria-hidden="true" className="platform-nav-caret">
+                            ⌄
+                          </span>
+                        </button>
+                        {terbuka ? (
+                          <div className="platform-nav-sub" id={idSubmenu}>
+                            {item.anak.map((anak) => (
+                              <Link
+                                aria-current={
+                                  menuPlatformAktif(anak.href, pathname) ? "page" : undefined
+                                }
+                                className="platform-nav-sublink"
+                                href={anak.href}
+                                key={anak.href}
+                                onClick={() => setOpen(false)}
+                              >
+                                {anak.label}
+                              </Link>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
                 </div>
               ))
             : null}

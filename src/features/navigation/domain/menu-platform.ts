@@ -13,17 +13,30 @@
  * Fungsi di file ini murni (tanpa I/O) agar dapat diuji tanpa database.
  */
 
+export interface MenuPlatformAnak {
+  readonly href: string;
+  readonly label: string;
+}
+
 export interface MenuPlatformItem {
   readonly href: string;
   readonly label: string;
   readonly icon: string;
   /** Label grup pada sidebar; item dengan grup sama tampil berurutan. */
   readonly grup: string;
+  /** Submenu yang ditampilkan saat grup dibuka. */
+  readonly anak?: readonly MenuPlatformAnak[];
 }
 
 export const MENU_PLATFORM: readonly MenuPlatformItem[] = [
   { href: "/super-admin", label: "Dashboard", icon: "▦", grup: "Menu utama" },
-  { href: "/super-admin/tenant", label: "Manajemen tenant", icon: "⌂", grup: "Tenant" },
+  {
+    href: "/super-admin/tenant",
+    label: "Manajemen tenant",
+    icon: "⌂",
+    grup: "Tenant",
+    anak: [{ href: "/super-admin/tenant", label: "Daftar tenant" }],
+  },
   { href: "/super-admin/domain", label: "Domain tenant", icon: "⇄", grup: "Tenant" },
   {
     href: "/super-admin/pengguna",
