@@ -105,7 +105,15 @@ Verifikasi tambahan (skrip sementara, tidak di-commit): database dimigrasi sampa
 - `users.role_id` tetap application-enforced sesuai ADR-002; bukan bagian task ini.
 - Suite integration penuh belum dijalankan ulang untuk branch ini.
 
-## 8. Rekomendasi
+## 8. Revisi 20 November 2026 — perbaikan CI
+
+Run CI pertama PR #169 gagal pada `src/db/tenant-composite-fk.integration.test.ts`: berkas itu menyimpan daftar nama constraint composite secara hardcoded, dan lima constraint baru dari `0016` tidak ada di daftar tersebut (`expected 68`, diterima `73`). Perbaikannya adalah menambahkan lima nama constraint baru ke daftar inventaris — tidak ada assertion yang dihapus atau dilonggarkan.
+
+| Pemeriksaan | Perintah | Hasil |
+| --- | --- | --- |
+| Integration test terdampak | `TEST_DATABASE_URL=…/desa_test_tcfk … vitest run --config vitest.integration.config.mts src/db/tenant-composite-fk.integration.test.ts` | **PASS** — 10 test |
+
+## 9. Rekomendasi
 
 1. Review diff schema + migration, lalu jalankan migration di staging sebelum deploy kode.
 2. Setelah PR ini masuk, lanjutkan item terpisah: evaluasi model role platform bila constraint `users.role_id` tetap diinginkan.
