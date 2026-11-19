@@ -54,6 +54,7 @@ const navigation = [
       { href: "/agenda", label: "Agenda Kegiatan" },
       { href: "/statistik", label: "Statistik Desa" },
       { href: "/transparansi/apbdes", label: "APBDes & Transparansi Anggaran" },
+      { href: "/transparansi/laporan-keuangan", label: "Laporan Keuangan Desa" },
     ],
   },
   { href: "/galeri", label: "Galeri" },
@@ -140,6 +141,7 @@ export function PublicSiteFooter({ desa, location, logoUrl }: Props) {
           <Link href="/pengumuman">Pengumuman</Link>
           <Link href="/agenda">Agenda Kegiatan</Link>
           <Link href="/galeri">Galeri</Link>
+          <Link href="/transparansi/laporan-keuangan">Laporan Keuangan</Link>
         </div>
         <div className={styles.footerColumn + " " + styles.contactColumn}>
           <strong>Kontak Desa</strong>
