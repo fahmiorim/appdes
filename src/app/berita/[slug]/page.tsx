@@ -65,7 +65,7 @@ export default async function DetailBeritaPage({params}:Props){
   const kepalaDesa=perangkat.find(item=>(item.jabatan??"").toLocaleLowerCase("id-ID").includes("kepala desa"));
   const authorName=kepalaDesa?judulOrang(kepalaDesa.nama,kepalaDesa.gelarBelakang):"Admin Desa";
   const authorImage=kepalaDesa?mediaUrl(kepalaDesa.foto,desa.id):null;
-  const shareUrl=encodeURIComponent(`https://${desa.domain??""}/berita/${encodeURIComponent(berita.slug)}`);
+  const shareUrl=encodeURIComponent(`/berita/${encodeURIComponent(berita.slug)}`);
   const shareText=encodeURIComponent(berita.judul);
 
   return <main className={styles.site}>
