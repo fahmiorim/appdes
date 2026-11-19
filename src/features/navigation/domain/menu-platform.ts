@@ -5,7 +5,7 @@
  * platform memakai `villageId === null` dan tidak memiliki baris modul. Karena
  * itu menu platform ditulis eksplisit di sini: setiap tautan dijamin menunjuk
  * halaman yang benar-benar ada, dan urutannya mengikuti alur kerja operator
- * (ringkasan → tenant → domain → akses → audit → template → pengaturan).
+ * (ringkasan → desa & domain → akses → audit → template → pengaturan).
  *
  * `grup` dipakai sidebar untuk memisahkan pekerjaan seperti mockup konsol.
  * Nilainya harus berurutan: sidebar mencetak label saat grup berubah.
@@ -31,13 +31,12 @@ export interface MenuPlatformItem {
 export const MENU_PLATFORM: readonly MenuPlatformItem[] = [
   { href: "/super-admin", label: "Dashboard", icon: "▦", grup: "Menu utama" },
   {
-    href: "/super-admin/tenant",
-    label: "Manajemen tenant",
-    icon: "⌂",
-    grup: "Tenant",
-    anak: [{ href: "/super-admin/tenant", label: "Daftar tenant" }],
+    href: "/super-admin/domain",
+    label: "Desa & Domain",
+    icon: "⇄",
+    grup: "Desa & Domain",
+    anak: [{ href: "/super-admin/domain", label: "Daftar domain" }],
   },
-  { href: "/super-admin/domain", label: "Domain tenant", icon: "⇄", grup: "Tenant" },
   {
     href: "/super-admin/pengguna",
     label: "Pengguna platform",

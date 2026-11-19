@@ -26,7 +26,7 @@ import {
 import { pastikanSuperAdmin } from "../guard";
 
 export const metadata: Metadata = {
-  title: "Daftar Tenant",
+  title: "Konsol Tenant",
   robots: { index: false, follow: false },
 };
 
@@ -63,6 +63,7 @@ export default async function SuperAdminTenantPage({ searchParams }: Props) {
     <>
       <PlatformPageHeader
         actions={<DialogDaftarDesa aksi={buatDesaAction} />}
+        backHref="/super-admin"
         path="/super-admin/tenant"
       />
       <div className="platform-stat-grid is-enam">

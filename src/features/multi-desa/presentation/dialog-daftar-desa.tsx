@@ -68,7 +68,7 @@ export function DialogDaftarDesa({ aksi }: { aksi: AksiBuatDesa }) {
   return (
     <>
       <button className="button button-primary" type="button" onClick={buka}>
-        Daftarkan desa
+        Tambah tenant
       </button>
 
       <dialog

@@ -11,8 +11,8 @@ import { headerPlatform } from "@/features/navigation/domain/header-platform";
  *
  * Judul dan deskripsi halaman tidak lagi dirender di sini — keduanya menjadi
  * header konten (`PlatformPageHeader`) seperti mockup konsol. Pencarian
- * mengirim `q` ke konsol tenant, satu-satunya daftar lintas desa yang bisa
- * dicari; tidak ada hasil pencarian palsu di top bar.
+ * mengirim `q` ke daftar domain lintas desa; tidak ada hasil pencarian palsu
+ * di top bar.
  */
 export function PlatformTopbarHead() {
   const pathname = usePathname();
@@ -85,7 +85,7 @@ export function PlatformTopbarHead() {
 
       <div className="platform-topbar-tools">
         <form
-          action="/super-admin/tenant"
+          action="/super-admin/domain"
           className="platform-topbar-search"
           method="get"
           role="search"
@@ -103,9 +103,9 @@ export function PlatformTopbarHead() {
             </svg>
           </span>
           <input
-            aria-label="Cari tenant desa"
+            aria-label="Cari desa atau domain"
             name="q"
-            placeholder="Cari desa, domain, atau kode..."
+            placeholder="Cari desa atau domain..."
             ref={inputRef}
             type="search"
           />

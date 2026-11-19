@@ -485,7 +485,7 @@ function PanelKelola({
 }
 
 const TAB_STATUS: readonly { nilai: StatusTenantFilter; label: string }[] = [
-  { nilai: "semua", label: "Semua" },
+  { nilai: "semua", label: "Semua tenant" },
   { nilai: "aktif", label: "Aktif" },
   { nilai: "nonaktif", label: "Nonaktif" },
   { nilai: "siap-purge", label: "Siap purge" },
@@ -616,12 +616,18 @@ export function TenantConsole({
         </div>
       </div>
       <div className="tenant-toolbar">
-        <label className="tenant-search">
+        <label className="tenant-search tenant-search-dengan-ikon">
           <span className="sr-only">Cari nama desa, kode, slug, domain, atau kecamatan</span>
+          <span aria-hidden="true" className="tenant-search-icon">
+            <svg fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+              <circle cx="10.8" cy="10.8" r="6.4" />
+              <path d="m15.6 15.6 4 4" />
+            </svg>
+          </span>
           <input
             className="form-input"
             type="search"
-            placeholder="Cari nama desa, kode, domain, atau kecamatan..."
+            placeholder="Cari desa, domain, atau kode..."
             value={query}
             onChange={(event) => {
               setQuery(event.target.value);
@@ -663,35 +669,30 @@ export function TenantConsole({
           ))}
           {adaTanpaTema ? <option value="__tanpa__">Belum memilih tema</option> : null}
         </select>
-        <span className="tenant-result-count">
-          {totalHalaman > 1
-            ? `Menampilkan ${angka.format(mulai + 1)}–${angka.format(nomorAkhir)} dari ${angka.format(filtered.length)} desa`
-            : `Menampilkan ${angka.format(filtered.length)} dari ${angka.format(desa.length)} desa`}
-        </span>
       </div>
 
       <div className="tenant-table-scroll">
-        <table className="tenant-table">
+        <table className="tenant-table tenant-table-list">
           <thead>
             <tr>
+              <th scope="col">#</th>
               <th scope="col">Desa</th>
               <th scope="col">Domain</th>
               <th scope="col">Kecamatan</th>
               <th scope="col">Tema</th>
               <th scope="col">Pengguna</th>
-              <th scope="col">Penduduk</th>
               <th scope="col">Kuota media</th>
               <th scope="col">Terdaftar</th>
               <th scope="col">Status</th>
-              <th scope="col">Retensi</th>
               <th scope="col">Aksi</th>
             </tr>
           </thead>
           <tbody>
             {terlihat.length > 0 ? (
-              terlihat.map((item) => (
+              terlihat.map((item, index) => (
                 <TrTenant
                   key={item.id}
+                  nomor={mulai + index + 1}
                   desa={item}
                   domain={domain}
                   aksi={aksi}
@@ -703,7 +704,7 @@ export function TenantConsole({
               ))
             ) : (
               <tr>
-                <td className="tenant-empty" colSpan={11}>
+                <td className="tenant-empty" colSpan={10}>
                   {desa.length === 0
                     ? "Belum ada tenant desa yang terdaftar."
                     : "Tidak ada desa yang sesuai dengan pencarian atau filter."}
@@ -716,9 +717,16 @@ export function TenantConsole({
 
       {filtered.length > 0 ? (
         <div className="tenant-pagination">
-          <span className="form-help">
-            Halaman {angka.format(halamanAktif)} dari {angka.format(totalHalaman)}
-          </span>
+          <div className="tenant-pagination-summary">
+            <span>
+              {totalHalaman > 1
+                ? `Menampilkan ${angka.format(mulai + 1)}–${angka.format(nomorAkhir)} dari ${angka.format(filtered.length)} desa`
+                : `Menampilkan ${angka.format(filtered.length)} dari ${angka.format(desa.length)} desa`}
+            </span>
+            <span className="sr-only">
+              Halaman {angka.format(halamanAktif)} dari {angka.format(totalHalaman)}
+            </span>
+          </div>
           <div
             aria-label="Navigasi halaman tenant"
             className="tenant-pagination-pages"
@@ -785,12 +793,14 @@ export function TenantConsole({
 }
 
 function TrTenant({
+  nomor,
   desa,
   domain,
   aksi,
   terbuka,
   onToggle,
 }: {
+  nomor: number;
   desa: DesaKonsolRow;
   domain: DomainKonsolRow[];
   aksi: AksiKonsol;
@@ -800,11 +810,12 @@ function TrTenant({
   return (
     <>
       <tr>
-        <td>
+        <td className="tenant-row-number">{nomor}</td>
+        <td className="tenant-cell-name">
           <strong>{desa.name || "Tanpa nama"}</strong>
           <span className="tenant-secondary">
             Kode: {desa.code || "—"}
-            {desa.slug ? ` · Slug: ${desa.slug}` : ""}
+            {desa.slug ? ` · ${desa.slug}` : ""}
           </span>
         </td>
         <td>{desa.domain || <span className="tenant-secondary">Belum diatur</span>}</td>
@@ -823,7 +834,6 @@ function TrTenant({
           )}
         </td>
         <td>{angka.format(desa.pengguna)}</td>
-        <td>{angka.format(desa.penduduk)}</td>
         <td>
           {desa.kuotaMediaMb === null ? (
             <span className="tenant-secondary">Tanpa batas</span>
@@ -837,24 +847,37 @@ function TrTenant({
             <span aria-hidden="true" />
             {desa.active ? "Aktif" : "Nonaktif"}
           </span>
-        </td>
-        <td>
-          <RetensiBadge desa={desa} />
+          {desa.statusRetensi !== "aktif" ? (
+            <span className="tenant-secondary tenant-status-note">
+              <RetensiBadge desa={desa} />
+            </span>
+          ) : null}
         </td>
         <td>
           <button
-            className="button button-secondary tenant-expand"
-            type="button"
             aria-expanded={terbuka}
+            aria-label={`${terbuka ? "Tutup" : "Kelola"} ${desa.name || "tenant"}`}
+            className="button button-secondary tenant-expand tenant-row-action"
             onClick={onToggle}
+            type="button"
           >
+            <svg
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={1.8}
+              viewBox="0 0 24 24"
+            >
+              <path d="M2.5 12s3.6-6 9.5-6 9.5 6 9.5 6-3.6 6-9.5 6-9.5-6-9.5-6Z" />
+              <circle cx="12" cy="12" r="2.8" />
+            </svg>
             {terbuka ? "Tutup" : "Kelola"}
           </button>
         </td>
       </tr>
       {terbuka ? (
         <tr className="tenant-panel-row">
-          <td colSpan={11}>
+          <td colSpan={10}>
             <PanelKelola desa={desa} domain={domain} aksi={aksi} />
           </td>
         </tr>

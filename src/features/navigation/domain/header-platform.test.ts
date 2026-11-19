@@ -26,11 +26,12 @@ describe("headerPlatform", () => {
   });
 
   it("memakai header menu induk untuk sub-rute", () => {
-    expect(headerPlatform("/super-admin/tenant/12").title).toBe("Daftar tenant");
+    expect(headerPlatform("/super-admin/tenant/12").title).toBe("Konsol tenant");
   });
 
-  it("menampilkan Manajemen tenant sebagai remah Daftar tenant", () => {
-    expect(headerPlatform("/super-admin/tenant").remah).toEqual([{ label: "Manajemen tenant" }]);
+  it("menampilkan Desa & Domain sebagai remah Daftar domain", () => {
+    expect(headerPlatform("/super-admin/domain").remah).toEqual([{ label: "Desa & Domain" }]);
+    expect(headerPlatform("/super-admin/domain").title).toBe("Daftar domain");
   });
 
   it("jatuh ke ringkasan untuk pathname yang tidak dikenal", () => {

@@ -14,6 +14,12 @@ import {
   eksporDataDesa,
   purgeDesa,
 } from "@/features/multi-desa/application/lifecycle-desa-use-cases";
+import {
+  periksaDnsSemuaDomain,
+  periksaSslSemuaDomain,
+  type RingkasanDns,
+  type RingkasanSsl,
+} from "@/features/multi-desa/application/pemantauan-domain-use-cases";
 import { buatDesaBaru } from "@/features/multi-desa/application/provisioning-use-cases";
 import { successState, toErrorState, type ActionState } from "@/lib/action-state";
 
@@ -26,9 +32,9 @@ import { successState, toErrorState, type ActionState } from "@/lib/action-state
  * memeriksa desa sebelum mengubah data.
  */
 
-const HALAMAN = ["/super-admin", "/super-admin/tenant"] as const;
+const HALAMAN = ["/super-admin", "/super-admin/tenant", "/super-admin/domain"] as const;
 
-/** Ringkasan dan konsol tenant memuat data yang sama. */
+/** Ringkasan, konsol tenant, dan daftar domain memuat data yang sama. */
 function segarkanHalaman(): void {
   for (const path of HALAMAN) revalidatePath(path);
 }
@@ -146,6 +152,42 @@ export async function jadikanUtamaAction(
 
     segarkanHalaman();
     return successState("Domain utama diperbarui.");
+  } catch (error) {
+    return toErrorState(error);
+  }
+}
+
+export async function periksaSslMassalAction(
+  _state: ActionState<RingkasanSsl>,
+  _formData: FormData,
+): Promise<ActionState<RingkasanSsl>> {
+  try {
+    const hasil = await periksaSslSemuaDomain();
+
+    segarkanHalaman();
+    return successState(
+      `Pemeriksaan SSL selesai: ${hasil.aktif} aktif, ${hasil.segeraExpired} segera expired, ${hasil.bermasalah} bermasalah.`,
+      hasil,
+      hasil.bermasalah > 0 ? "warning" : undefined,
+    );
+  } catch (error) {
+    return toErrorState(error);
+  }
+}
+
+export async function periksaDnsMassalAction(
+  _state: ActionState<RingkasanDns>,
+  _formData: FormData,
+): Promise<ActionState<RingkasanDns>> {
+  try {
+    const hasil = await periksaDnsSemuaDomain();
+
+    segarkanHalaman();
+    return successState(
+      `Pemeriksaan DNS selesai: ${hasil.normal} normal, ${hasil.bermasalah} bermasalah.`,
+      hasil,
+      hasil.bermasalah > 0 ? "warning" : undefined,
+    );
   } catch (error) {
     return toErrorState(error);
   }

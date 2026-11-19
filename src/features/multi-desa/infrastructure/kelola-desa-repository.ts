@@ -27,6 +27,7 @@ export interface DomainDesaRow {
   villageId: number;
   domain: string;
   isPrimary: boolean;
+  createdAt: Date;
 }
 
 /** Satu desa untuk validasi/pengelolaan. */
@@ -55,6 +56,7 @@ export async function listSemuaDomain(): Promise<DomainDesaRow[]> {
       villageId: villageDomains.villageId,
       domain: villageDomains.domain,
       isPrimary: villageDomains.isPrimary,
+      createdAt: villageDomains.createdAt,
     })
     .from(villageDomains)
     .orderBy(asc(villageDomains.villageId), asc(villageDomains.id));
@@ -68,6 +70,7 @@ export async function listDomainDesa(villageId: number): Promise<DomainDesaRow[]
       villageId: villageDomains.villageId,
       domain: villageDomains.domain,
       isPrimary: villageDomains.isPrimary,
+      createdAt: villageDomains.createdAt,
     })
     .from(villageDomains)
     .where(eq(villageDomains.villageId, villageId))

@@ -31,18 +31,18 @@ export const HEADER_PLATFORM: Readonly<Record<string, HeaderPlatform>> = {
     description: "Pantau tenant desa, domain, akses platform, dan retensi data dalam satu tempat.",
   },
   "/super-admin/tenant": {
-    eyebrow: "Manajemen tenant",
-    title: "Daftar tenant",
+    eyebrow: "Desa & Domain",
+    title: "Konsol tenant",
     description:
-      "Kelola seluruh tenant desa: status, kuota media, domain, akses administrator, ekspor, dan purge.",
-    remah: [{ label: "Manajemen tenant" }],
+      "Kelola status, kuota media, domain, akses administrator, ekspor, dan purge tiap desa.",
+    remah: [{ label: "Desa & Domain" }],
   },
   "/super-admin/domain": {
-    eyebrow: "Konsol platform",
-    title: "Domain tenant",
+    eyebrow: "Desa & Domain",
+    title: "Daftar domain",
     description:
-      "Semua hostname yang mengarah ke desa. Domain utama dipakai untuk mengenali tenant dari host; alias lain mengarah ke desa yang sama.",
-    aksi: { label: "Buka konsol tenant", href: "/super-admin/tenant" },
+      "Kelola domain dan alamat website publik seluruh desa/tenant pada platform FlexiDesa.",
+    remah: [{ label: "Desa & Domain" }],
   },
   "/super-admin/pengguna": {
     eyebrow: "Konsol platform",
