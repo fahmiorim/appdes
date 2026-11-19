@@ -33,11 +33,11 @@ function mediaUrl(value: string | null | undefined, villageId: number): string |
 }
 
 function cleanText(value: string | null | undefined, limit = 320): string {
-  return (value ?? "").replace(/<script\\b[^>]*>[\\s\\S]*?<\\/script>/gi, " ")
-    .replace(/<style\\b[^>]*>[\\s\\S]*?<\\/style>/gi, " ")
+  return (value ?? "").replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
     .replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&")
     .replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'").replace(/\\s+/g, " ").trim().slice(0, limit);
+    .replace(/&#39;/gi, "'").replace(/\s+/g, " ").trim().slice(0, limit);
 }
 
 function formatNumber(value: number): string {
@@ -132,7 +132,7 @@ export default async function PublicHomePage() {
               <div><span>♙</span><strong>{formatNumber(statistik.total)}</strong><small>Jumlah Penduduk</small></div>
               <div><span>⌂</span><strong>{formatNumber(statistik.keluarga)}</strong><small>Kepala Keluarga</small></div>
               <div><span>◎</span><strong>{formatNumber(statistik.perDusun.length)}</strong><small>Dusun</small></div>
-              <div><span>⌖</span><strong>{formatNumber(statistik.perDusun.reduce((sum, row) => sum + row.total, 0))}</strong><small>Warga terdata</small></div>
+              <div><span>⌖</span><strong>—</strong><small>Data wilayah</small></div>
             </div>
           </article>
         </section>
@@ -162,12 +162,12 @@ export default async function PublicHomePage() {
 
         <section className={styles.profileGallery}>
           <article className={styles.profileCard}>
-            <div><h2>⌂　Profil Desa</h2><p>{cleanText(profil?.sejarah) || intro}</p><Link href="/profil">Selengkapnya →</Link></div>
+            <div><h2>⌂　Profil Desa</h2><p>{cleanText(profil?.sejarah) || `Kenali ${desa.namaDesa ?? "desa"} melalui informasi pemerintahan, wilayah, sejarah, dan potensi desa.`}</p><Link href="/profil">Selengkapnya →</Link></div>
             {profileImage ? <Image src={profileImage} alt={`Dokumentasi ${desa.namaDesa ?? "desa"}`} width={440} height={260} unoptimized/> : <div className={styles.profileImageFallback}>Foto Desa<br/><small>Tambahkan foto pada galeri atau slider</small></div>}
           </article>
           <article className={styles.profileMenu}>
             <Link href="/visi-misi"><span>♡</span><b>Visi & Misi</b><small>Arah pembangunan {desa.namaDesa ?? "desa"}</small><i>›</i></Link>
-            <Link href="/profil#potensi"><span>♧</span><b>Potensi Desa</b><small>Potensi unggulan dan ekonomi desa</small><i>›</i></Link>
+            <Link href="/potensi"><span>♧</span><b>Potensi Desa</b><small>Potensi unggulan dan ekonomi desa</small><i>›</i></Link>
             <Link href="/pemerintahan"><span>♙</span><b>Struktur Pemerintahan</b><small>Susunan perangkat dan lembaga desa</small><i>›</i></Link>
           </article>
         </section>
