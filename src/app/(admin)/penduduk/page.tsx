@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { StatIcon } from "@/components/ui/stat-icon";
+import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
 import {
   getPendudukFilterOptionsData,
   getRingkasanPendudukData,
@@ -93,7 +94,8 @@ export default async function PendudukPage({
   const akhir = Math.min(hasil.page * hasil.pageSize, hasil.total);
 
   return (
-    <div className="modul-page penduduk-page">
+    <div className="modul-page penduduk-page data-kependudukan-page">
+      <DataKependudukanNav active="/penduduk" />
       <div className="page-heading">
         <div>
           <span className="eyebrow">Kependudukan</span>
