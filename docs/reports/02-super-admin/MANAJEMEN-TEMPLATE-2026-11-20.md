@@ -4,7 +4,7 @@
 - **Task:** Melanjutkan konsol Super Admin per menu. Menu Manajemen Template mencakup empat halaman mockup: katalog, detail/edit, penggunaan & pembaruan, dan tambah template.
 - **Branch:** `task/super-admin-manajemen-template`
 - **Base commit:** `0b18f438a724af68080775000f143061e410842f` (`origin/main`)
-- **Commit pekerjaan:** `[diisi setelah commit]`
+- **Commit kode:** `3c3e157`
 - **Status:** Siap review. Belum di-merge dan belum di-deploy.
 
 ## 1. Tujuan dan keputusan scope
