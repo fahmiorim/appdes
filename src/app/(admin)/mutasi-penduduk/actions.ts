@@ -1,0 +1,43 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import {
+  catatDatang, catatKelahiran, catatKematian, catatPindahKeluar, catatPerubahan,
+} from "@/features/penduduk/application/riwayat-penduduk-use-cases";
+
+function text(form: FormData, key: string): string {
+  const value = form.get(key);
+  return typeof value === "string" ? value.trim() : "";
+}
+function optionalId(form: FormData, key: string): number | null {
+  const value = text(form,key);
+  if (!value) return null;
+  const parsed=Number(value);
+  return Number.isInteger(parsed)&&parsed>0?parsed:null;
+}
+async function selesai() {
+  revalidatePath("/mutasi-penduduk");
+  revalidatePath("/penduduk");
+  redirect("/mutasi-penduduk");
+}
+export async function catatKelahiranAction(form:FormData) {
+  await catatKelahiran({eventDate:text(form,"eventDate"),name:text(form,"name"),nationalId:text(form,"nationalId"),gender:text(form,"gender") as "male"|"female"|"" ,familyId:optionalId(form,"familyId"),regionId:optionalId(form,"regionId"),address:text(form,"address"),fatherName:text(form,"fatherName"),motherName:text(form,"motherName"),reason:text(form,"reason"),notes:text(form,"notes"),referenceNo:text(form,"referenceNo")});
+  await selesai();
+}
+export async function catatDatangAction(form:FormData) {
+  await catatDatang({eventDate:text(form,"eventDate"),name:text(form,"name"),nationalId:text(form,"nationalId"),gender:text(form,"gender") as "male"|"female"|"" ,birthDate:text(form,"birthDate"),birthPlace:text(form,"birthPlace"),familyId:optionalId(form,"familyId"),regionId:optionalId(form,"regionId"),address:text(form,"address"),fromAddress:text(form,"fromAddress"),reason:text(form,"reason"),notes:text(form,"notes"),referenceNo:text(form,"referenceNo")});
+  await selesai();
+}
+export async function catatKematianAction(form:FormData) {
+  await catatKematian({residentId:Number(text(form,"residentId")),eventDate:text(form,"eventDate"),reason:text(form,"reason"),notes:text(form,"notes"),referenceNo:text(form,"referenceNo")});
+  await selesai();
+}
+export async function catatPindahKeluarAction(form:FormData) {
+  await catatPindahKeluar({residentId:Number(text(form,"residentId")),eventDate:text(form,"eventDate"),toAddress:text(form,"toAddress"),destination:text(form,"destination"),reason:text(form,"reason"),notes:text(form,"notes"),referenceNo:text(form,"referenceNo")});
+  await selesai();
+}
+export async function catatPerubahanAction(form:FormData) {
+  await catatPerubahan({residentId:Number(text(form,"residentId")),eventDate:text(form,"eventDate"),lifeStatus:text(form,"lifeStatus") as "alive"|"moved"|"deceased",reason:text(form,"reason"),notes:text(form,"notes"),referenceNo:text(form,"referenceNo")});
+  await selesai();
+}
