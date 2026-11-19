@@ -8,6 +8,7 @@ import {
 } from "@/features/publik/application/konten-publik";
 
 import styles from "./profil.module.css";
+import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
 
 export const dynamic = "force-dynamic";
 
@@ -67,51 +68,12 @@ export default async function ProfilDesaPage() {
 
   return (
     <main className={styles.site}>
-      <div className={styles.topline}>
-        <div className={styles.container + " " + styles.toplineInner}>
-          <span>Website Resmi Pemerintah Desa</span>
-          <span>{lokasi || "Informasi resmi dan layanan desa"}</span>
-        </div>
-      </div>
-
-      <header className={styles.header}>
-        <div className={styles.container + " " + styles.headerInner}>
-          <Link href="/" className={styles.brand}>
-            {desa.logo ? (
-              <Image
-                src={mediaUrl(desa.logo, desa.id) ?? "/images/logo.png"}
-                alt=""
-                width={46}
-                height={46}
-                className={styles.logo}
-                unoptimized
-              />
-            ) : (
-              <span className={styles.logoFallback} aria-hidden="true">
-                D
-              </span>
-            )}
-            <span>
-              <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>
-                {desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}
-              </small>
-            </span>
-          </Link>
-          <nav className={styles.nav} aria-label="Navigasi utama">
-            <Link href="/">Beranda</Link>
-            <Link href="/profil" aria-current="page">
-              Profil Desa
-            </Link>
-            <Link href="/#berita">Berita</Link>
-            <Link href="/#agenda">Agenda</Link>
-          </nav>
-          <Link href="/masuk" className={styles.login}>
-            Masuk <span aria-hidden="true">↗</span>
-          </Link>
-        </div>
-      </header>
-
+      <PublicSiteHeader
+        desa={desa}
+        location={lokasi}
+        logoUrl={mediaUrl(desa.logo, desa.id)}
+        activePath="/profil"
+      />
       <section className={styles.hero}>
         <div className={styles.container}>
           <nav className={styles.breadcrumb} aria-label="Breadcrumb">
@@ -280,23 +242,11 @@ export default async function ProfilDesaPage() {
         </div>
       </section>
 
-      <footer className={styles.footer}>
-        <div className={styles.container + " " + styles.footerInner}>
-          <div>
-            <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-            <p>{lokasi || "Website resmi pemerintah desa"}</p>
-          </div>
-          <div className={styles.footerLinks}>
-            <Link href="/">Beranda</Link>
-            <Link href="/profil">Profil Desa</Link>
-            <Link href="/#berita">Berita</Link>
-            <Link href="/masuk">Layanan Warga</Link>
-          </div>
-          <small>
-            © {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. Didukung FlexiDesa.
-          </small>
-        </div>
-      </footer>
+      <PublicSiteFooter
+        desa={desa}
+        location={lokasi}
+        logoUrl={mediaUrl(desa.logo, desa.id)}
+      />
     </main>
   );
 }
