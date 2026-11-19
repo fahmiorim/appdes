@@ -271,8 +271,8 @@ export default async function AdminHomePage() {
     <div className="beranda">
       <div className="beranda-head">
         <div>
-          <h1>Dashboard Admin Desa</h1>
-          <p>Selamat datang, {user.name}. Kelola data, layanan, dan informasi desa di sini.</p>
+          <h1>Selamat Datang, {user.name}</h1>
+          <p>Kelola layanan, data, dan pembangunan {namaDesa} dengan mudah dan terintegrasi.</p>
         </div>
         <span className="beranda-date">
           <Ikon>
