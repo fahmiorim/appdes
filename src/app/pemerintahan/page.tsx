@@ -126,7 +126,7 @@ export default async function PemerintahanPage() {
           {perangkat.length ? <div className={styles.officialGrid}>{perangkat.map((item) => <Link href={`/perangkat/${item.id}`} className={styles.officialCard} key={item.id}>
             {fotoPerangkat(item, styles.officialPhoto)}
             <div className={styles.officialBody}><h3>{namaLengkap(item)}</h3><span className={styles.rolePill}>{item.jabatan ?? "Perangkat Desa"}</span><p>{tugasJabatan(item.jabatan)}</p></div>
-          </article>)}</div> : <div className={styles.emptyState}><strong>Data perangkat desa belum dipublikasikan</strong><p>Informasi aparatur akan muncul setelah pemerintah desa mempublikasikan data perangkat.</p></div>}
+          </Link>)}</div> : <div className={styles.emptyState}><strong>Data perangkat desa belum dipublikasikan</strong><p>Informasi aparatur akan muncul setelah pemerintah desa mempublikasikan data perangkat.</p></div>}
         </section>
 
         <section className={styles.sectionCard} id="bpd">
