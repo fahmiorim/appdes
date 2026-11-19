@@ -38,3 +38,29 @@ WHERE r.`slug` = 'administrator'
     SELECT 1 FROM `role_permissions` rp
     WHERE rp.`role_id` = r.`id` AND rp.`module_id` = m.`id`
   );
+
+--> statement-breakpoint
+
+-- Role yang sebelumnya sudah dapat membaca Data Penduduk tetap melihat grup dan dashboard.
+INSERT INTO `role_permissions` (`role_id`, `module_id`, `access`)
+SELECT existing.`role_id`, target.`id`, 'read'
+FROM `role_permissions` existing
+INNER JOIN `modules` source ON source.`id` = existing.`module_id` AND source.`slug` = 'penduduk'
+INNER JOIN `modules` target ON target.`village_id` = source.`village_id` AND target.`slug` = 'data-kependudukan'
+WHERE existing.`access` IN ('read', 'write', 'manage')
+  AND NOT EXISTS (
+    SELECT 1 FROM `role_permissions` rp
+    WHERE rp.`role_id` = existing.`role_id` AND rp.`module_id` = target.`id`
+  );
+--> statement-breakpoint
+
+INSERT INTO `role_permissions` (`role_id`, `module_id`, `access`)
+SELECT existing.`role_id`, target.`id`, 'read'
+FROM `role_permissions` existing
+INNER JOIN `modules` source ON source.`id` = existing.`module_id` AND source.`slug` = 'penduduk'
+INNER JOIN `modules` target ON target.`village_id` = source.`village_id` AND target.`slug` = 'dashboard-kependudukan'
+WHERE existing.`access` IN ('read', 'write', 'manage')
+  AND NOT EXISTS (
+    SELECT 1 FROM `role_permissions` rp
+    WHERE rp.`role_id` = existing.`role_id` AND rp.`module_id` = target.`id`
+  );
