@@ -27,6 +27,8 @@ Nama host sistem lain seperti `www`, `admin`, `demo`, `api`, `mail`, `autodiscov
 
 Area Admin Desa pada hostname tenant tidak memakai prefiks `/admin`; halamannya berada di `/beranda`, `/penduduk`, `/keuangan`, `/konten/*`, `/persuratan/surat`, `/pengaduan-admin`, dan `/pengaturan/*`, sesuai `RUTE_ADMIN_TERSEDIA`. Rute tersebut berbeda otoritas dari `admin.flexidesa.id`, yang hanya untuk Super Admin platform. Jangan menyamakan role administrator desa dengan role Super Admin platform.
 
+**Status 19 November 2026:** 12 halaman Admin Desa sudah memiliki `page.tsx`, tetapi menu tenant baru tetap dibangun dari modul yang disemai template (5 modul). Halaman `keuangan`, `konten/*`, `persuratan/surat`, dan `pengaduan-admin` belum mendapat modul/grant, sehingga route-nya ada tetapi belum dapat dibuka tenant baru tanpa penambahan modul dan permission. Detail ada di [audit mockup dan dokumen](../reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
+
 ## 2. Baseline implementasi yang ditemukan
 
 Pemeriksaan statis pada baseline di atas menemukan fondasi berikut:

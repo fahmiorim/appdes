@@ -6,6 +6,8 @@
 - **Jenis task:** audit UI dan dokumentasi; tidak mengubah source code, schema, migration, atau data
 - **Status:** siap review
 
+> **Catatan delta (19 November 2026, setelah laporan ini dibuat):** laporan ini memetakan 38 layar pada base `a715cc1`. Satu layar baru, `Laporan & Analitik/FlexiDesa Report Analytics Dashboard.png`, menambah total menjadi 39 dan belum memiliki model data. Status terkini ada di [audit mockup dan dokumen](./MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md); matriks 38 layar di bawah tetap acuan rinci per area.
+
 ## 1. Tujuan
 
 Audit ulang dilakukan setelah folder `docs/mockups/` berubah cukup besar:

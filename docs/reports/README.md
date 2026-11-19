@@ -21,9 +21,10 @@ Gunakan laporan sesuai cakupannya; tidak ada satu laporan yang mewakili seluruh 
 
 | Acuan | Cakupan | Cara memakai |
 |---|---|---|
-| [Kesiapan backend mockup baru](./05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md) | 39 layar Super Admin dan 46 layar Admin Desa: modul, schema, use case, route, status backend | Acuan terkini untuk menjawab "fitur ini sudah ada backend-nya atau belum" |
-| [Audit UI Admin Desa vs dokumen](./05-ui-audit/ADMIN-DESA-UI-VS-DOKUMEN-2026-11-19.md) | Implementasi `origin/main` terhadap Design System, spesifikasi Admin, peta fitur, dan 10 mockup | Status selisih saat audit; bedakan temuan baru, gap baca-saja, dan penundaan yang sudah disepakati |
-| [Audit mockup Super Admin](./05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md) | 38 layar Super Admin per 19 November pagi; 9 area baru, status route/model data | Acuan historis konsol platform; layar Laporan & Export baru dicatat di audit kesiapan backend |
+| [Audit mockup dan dokumen](./05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md) | Status terkini 39 layar Super Admin dan 46 layar Admin Desa terhadap 12 halaman Admin Desa, menu, grant, route, dan backend | **Acuan terkini** untuk "layar ini sudah bisa dipakai atau belum" dan koreksi klaim dokumen |
+| [Kesiapan backend mockup baru](./05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md) | Snapshot 39 layar Super Admin dan 46 layar Admin Desa pada base `0ffeda6`; saat itu 11 halaman Admin Desa | Acuan schema/use case per area; jumlah halaman dan status route di dalamnya sudah historis |
+| [Audit UI Admin Desa vs dokumen](./05-ui-audit/ADMIN-DESA-UI-VS-DOKUMEN-2026-11-19.md) | Implementasi `origin/main` terhadap Design System, spesifikasi Admin, peta fitur, dan 10 mockup lama | Snapshot sebelum PR #159; jumlah halaman dan status route terbaru ada di audit mockup dan dokumen |
+| [Audit mockup Super Admin](./05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md) | 38 layar Super Admin per 19 November pagi; 9 area baru, status route/model data | Pemetaan rinci per layar; layar Laporan & Analitik ke-39 dan status terbaru ada di audit mockup dan dokumen |
 | [Review mockup Admin Desa](./05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md) | 10 layar Admin Desa lama | Snapshot sebelum ekspansi 46 layar; path lama tidak lagi aktif |
 | [Audit final 42 mockup](./05-ui-audit/UI-MOCKUP-AUDIT-FINAL-2026-11-18.md) | 21 publik, 11 akun, 7 pendukung, landing/login, dashboard Super Admin lama | Snapshot historis 18 November; jangan dipakai sebagai katalog lengkap |
 | [Katalog mockup](../mockups/README.md) | 126 path dan pengelompokan aset | Sumber inventaris file |
