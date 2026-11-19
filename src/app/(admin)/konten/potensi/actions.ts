@@ -1,29 +1,59 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { and, eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+
 import { db } from "@/db";
 import { potensiDesa, potensiIndikator } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { requirePermission } from "@/lib/dal";
 
-const categories = new Set(["pertanian", "perkebunan", "peternakan", "perikanan", "umkm", "wisata"]);
-function value(form: FormData, key: string) { return String(form.get(key) ?? "").trim(); }
+const categories = new Set([
+  "pertanian",
+  "perkebunan",
+  "peternakan",
+  "perikanan",
+  "umkm",
+  "wisata",
+]);
+function value(form: FormData, key: string) {
+  return String(form.get(key) ?? "").trim();
+}
 function slugify(input: string) {
-  return input.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 170);
+  return input
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 170);
 }
 function metrics(raw: string) {
-  return raw.split("\n").map((line) => line.trim()).filter(Boolean).slice(0, 8).map((line, index) => {
-    const [label, ...rest] = line.split("|");
-    return { label: label.trim().slice(0, 100), nilai: rest.join("|").trim().slice(0, 100), urut: index };
-  }).filter((item) => item.label && item.nilai);
+  return raw
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(0, 8)
+    .map((line, index) => {
+      const [label = "", ...rest] = line.split("|");
+      return {
+        label: label.trim().slice(0, 100),
+        nilai: rest.join("|").trim().slice(0, 100),
+        urut: index,
+      };
+    })
+    .filter((item) => item.label && item.nilai);
 }
 async function scope() {
   const user = await requirePermission(RESOURCES.profilDesa, "update");
   return resolveVillageId(user);
 }
-function refresh() { revalidatePath("/konten/potensi"); revalidatePath("/potensi"); revalidatePath("/profil"); }
+function refresh() {
+  revalidatePath("/konten/potensi");
+  revalidatePath("/potensi");
+  revalidatePath("/profil");
+}
 
 export async function simpanPotensi(form: FormData) {
   const villageId = await scope();
@@ -39,15 +69,41 @@ export async function simpanPotensi(form: FormData) {
   const unggulan = value(form, "unggulan") === "on";
   const aktif = value(form, "aktif") === "on";
   const indikator = metrics(value(form, "indikator"));
-  if (!categories.has(kategori) || !judul || !slug) throw new Error("Kategori, judul, dan slug wajib diisi dengan benar.");
+  if (!categories.has(kategori) || !judul || !slug)
+    throw new Error("Kategori, judul, dan slug wajib diisi dengan benar.");
   if (id > 0) {
-    await db.update(potensiDesa).set({ kategori, judul, slug, ringkasan, deskripsi, gambar, lokasi, kontak, unggulan, aktif })
+    await db
+      .update(potensiDesa)
+      .set({ kategori, judul, slug, ringkasan, deskripsi, gambar, lokasi, kontak, unggulan, aktif })
       .where(and(eq(potensiDesa.id, id), eq(potensiDesa.villageId, villageId)));
-    await db.delete(potensiIndikator).where(and(eq(potensiIndikator.villageId, villageId), eq(potensiIndikator.potensiId, id)));
-    if (indikator.length) await db.insert(potensiIndikator).values(indikator.map((item) => ({ ...item, villageId, potensiId: id })));
+    await db
+      .delete(potensiIndikator)
+      .where(and(eq(potensiIndikator.villageId, villageId), eq(potensiIndikator.potensiId, id)));
+    if (indikator.length)
+      await db
+        .insert(potensiIndikator)
+        .values(indikator.map((item) => ({ ...item, villageId, potensiId: id })));
   } else {
-    const [created] = await db.insert(potensiDesa).values({ villageId, kategori, judul, slug, ringkasan, deskripsi, gambar, lokasi, kontak, unggulan, aktif }).$returningId();
-    if (created?.id && indikator.length) await db.insert(potensiIndikator).values(indikator.map((item) => ({ ...item, villageId, potensiId: created.id })));
+    const [created] = await db
+      .insert(potensiDesa)
+      .values({
+        villageId,
+        kategori,
+        judul,
+        slug,
+        ringkasan,
+        deskripsi,
+        gambar,
+        lokasi,
+        kontak,
+        unggulan,
+        aktif,
+      })
+      .$returningId();
+    if (created?.id && indikator.length)
+      await db
+        .insert(potensiIndikator)
+        .values(indikator.map((item) => ({ ...item, villageId, potensiId: created.id })));
   }
   refresh();
 }
@@ -56,6 +112,8 @@ export async function hapusPotensi(form: FormData) {
   const villageId = await scope();
   const id = Number(value(form, "id"));
   if (!Number.isSafeInteger(id) || id < 1) throw new Error("ID potensi tidak valid.");
-  await db.delete(potensiDesa).where(and(eq(potensiDesa.id, id), eq(potensiDesa.villageId, villageId)));
+  await db
+    .delete(potensiDesa)
+    .where(and(eq(potensiDesa.id, id), eq(potensiDesa.villageId, villageId)));
   refresh();
 }

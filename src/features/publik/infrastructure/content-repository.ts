@@ -1,6 +1,20 @@
 import "server-only";
 
-import { and, asc, count, desc, eq, inArray, isNotNull, isNull, like, lte, ne, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  like,
+  lte,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -10,12 +24,12 @@ import {
   galeriAlbum,
   galeriFoto,
   galeriVideo,
-  potensiDesa,
-  potensiIndikator,
   halamanStatis,
   jabatanPerangkat,
   menuPublik,
   perangkatDesa,
+  potensiDesa,
+  potensiIndikator,
   profilDesa,
   slider,
   widget,
@@ -384,6 +398,8 @@ export interface PerangkatRingkas {
   nip: string | null;
   jenisKelamin: string | null;
   foto: string | null;
+  tempatLahir: string | null;
+  tanggalLahir: string | null;
   urut: number;
   periode: string | null;
 }
@@ -399,6 +415,8 @@ export async function listPerangkatDesa(villageId: number): Promise<PerangkatRin
       nip: perangkatDesa.nip,
       jenisKelamin: perangkatDesa.jenisKelamin,
       foto: perangkatDesa.foto,
+      tempatLahir: perangkatDesa.tempatLahir,
+      tanggalLahir: perangkatDesa.tanggalLahir,
       urut: perangkatDesa.urut,
       periode: perangkatDesa.periode,
     })
@@ -860,7 +878,6 @@ export async function listSlugBerita(villageId: number): Promise<string[]> {
   return rows.map((row) => row.slug);
 }
 
-
 export interface VideoGaleriPublik {
   id: number;
   judul: string;
@@ -871,21 +888,31 @@ export interface VideoGaleriPublik {
   publishedAt: Date | null;
 }
 
-export async function listVideoGaleriPublik(villageId: number, limit = 8): Promise<VideoGaleriPublik[]> {
-  return db.select({
-    id: galeriVideo.id,
-    judul: galeriVideo.judul,
-    keterangan: galeriVideo.keterangan,
-    url: galeriVideo.url,
-    provider: galeriVideo.provider,
-    thumbnail: galeriVideo.thumbnail,
-    publishedAt: galeriVideo.publishedAt,
-  }).from(galeriVideo)
-    .where(and(eq(galeriVideo.villageId, villageId), eq(galeriVideo.aktif, true), or(isNull(galeriVideo.publishedAt), lte(galeriVideo.publishedAt, new Date()))))
+export async function listVideoGaleriPublik(
+  villageId: number,
+  limit = 8,
+): Promise<VideoGaleriPublik[]> {
+  return db
+    .select({
+      id: galeriVideo.id,
+      judul: galeriVideo.judul,
+      keterangan: galeriVideo.keterangan,
+      url: galeriVideo.url,
+      provider: galeriVideo.provider,
+      thumbnail: galeriVideo.thumbnail,
+      publishedAt: galeriVideo.publishedAt,
+    })
+    .from(galeriVideo)
+    .where(
+      and(
+        eq(galeriVideo.villageId, villageId),
+        eq(galeriVideo.aktif, true),
+        or(isNull(galeriVideo.publishedAt), lte(galeriVideo.publishedAt, new Date())),
+      ),
+    )
     .orderBy(desc(galeriVideo.publishedAt), desc(galeriVideo.id))
     .limit(limit);
 }
-
 
 /* ---------------------------------------------------------------- potensi desa */
 
@@ -900,24 +927,57 @@ export interface PotensiDesaRingkas {
   lokasi: string | null;
   kontak: string | null;
   unggulan: boolean;
+  aktif: boolean;
   indikator: { id: number; label: string; nilai: string }[];
 }
 
-export async function listPotensiDesa(villageId: number, includeInactive = false): Promise<PotensiDesaRingkas[]> {
+export async function listPotensiDesa(
+  villageId: number,
+  includeInactive = false,
+): Promise<PotensiDesaRingkas[]> {
   const conditions = [eq(potensiDesa.villageId, villageId)];
   if (!includeInactive) conditions.push(eq(potensiDesa.aktif, true));
-  const rows = await db.select({
-    id: potensiDesa.id, kategori: potensiDesa.kategori, judul: potensiDesa.judul,
-    slug: potensiDesa.slug, ringkasan: potensiDesa.ringkasan, deskripsi: potensiDesa.deskripsi,
-    gambar: potensiDesa.gambar, lokasi: potensiDesa.lokasi, kontak: potensiDesa.kontak,
-    unggulan: potensiDesa.unggulan, urut: potensiDesa.urut,
-  }).from(potensiDesa).where(and(...conditions)).orderBy(asc(potensiDesa.urut), asc(potensiDesa.id));
+  const rows = await db
+    .select({
+      id: potensiDesa.id,
+      kategori: potensiDesa.kategori,
+      judul: potensiDesa.judul,
+      slug: potensiDesa.slug,
+      ringkasan: potensiDesa.ringkasan,
+      deskripsi: potensiDesa.deskripsi,
+      gambar: potensiDesa.gambar,
+      lokasi: potensiDesa.lokasi,
+      kontak: potensiDesa.kontak,
+      unggulan: potensiDesa.unggulan,
+      aktif: potensiDesa.aktif,
+      urut: potensiDesa.urut,
+    })
+    .from(potensiDesa)
+    .where(and(...conditions))
+    .orderBy(asc(potensiDesa.urut), asc(potensiDesa.id));
   const ids = rows.map((row) => row.id);
-  const indicators = ids.length ? await db.select({
-    id: potensiIndikator.id, potensiId: potensiIndikator.potensiId,
-    label: potensiIndikator.label, nilai: potensiIndikator.nilai,
-  }).from(potensiIndikator).where(and(eq(potensiIndikator.villageId, villageId), inArray(potensiIndikator.potensiId, ids))).orderBy(asc(potensiIndikator.urut), asc(potensiIndikator.id)) : [];
+  const indicators = ids.length
+    ? await db
+        .select({
+          id: potensiIndikator.id,
+          potensiId: potensiIndikator.potensiId,
+          label: potensiIndikator.label,
+          nilai: potensiIndikator.nilai,
+        })
+        .from(potensiIndikator)
+        .where(
+          and(eq(potensiIndikator.villageId, villageId), inArray(potensiIndikator.potensiId, ids)),
+        )
+        .orderBy(asc(potensiIndikator.urut), asc(potensiIndikator.id))
+    : [];
   const byPotensi = new Map<number, { id: number; label: string; nilai: string }[]>();
-  for (const item of indicators) byPotensi.set(item.potensiId, [...(byPotensi.get(item.potensiId) ?? []), { id: item.id, label: item.label, nilai: item.nilai }]);
-  return rows.map(({ urut: _urut, ...row }) => ({ ...row, indikator: byPotensi.get(row.id) ?? [] }));
+  for (const item of indicators)
+    byPotensi.set(item.potensiId, [
+      ...(byPotensi.get(item.potensiId) ?? []),
+      { id: item.id, label: item.label, nilai: item.nilai },
+    ]);
+  return rows.map(({ urut: _urut, ...row }) => ({
+    ...row,
+    indikator: byPotensi.get(row.id) ?? [],
+  }));
 }

@@ -22,7 +22,10 @@ type Props = {
   activePath?: string;
 };
 
-const navigation = [
+type NavigationLink = { href: string; label: string };
+type NavigationGroup = { label: string; children: NavigationLink[] };
+
+const navigation: readonly (NavigationLink | NavigationGroup)[] = [
   { href: "/", label: "Beranda" },
   {
     label: "Profil Desa",
@@ -59,16 +62,25 @@ const navigation = [
   { href: "/kontak", label: "Kontak" },
 ];
 
-export function PublicSiteHeader({ desa, location, logoUrl, activePath = "/" }: Props) {
+export function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Props) {
   return (
     <>
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <Link href="/" className={styles.brand} aria-label={`Beranda ${desa.namaDesa ?? "desa"}`}>
             {logoUrl ? (
-              <Image src={logoUrl} alt="" width={46} height={46} className={styles.logo} unoptimized />
+              <Image
+                src={logoUrl}
+                alt=""
+                width={46}
+                height={46}
+                className={styles.logo}
+                unoptimized
+              />
             ) : (
-              <span className={styles.logoFallback} aria-hidden="true">D</span>
+              <span className={styles.logoFallback} aria-hidden="true">
+                D
+              </span>
             )}
             <span className={styles.brandText}>
               <strong>Sistem Informasi Desa</strong>
@@ -90,10 +102,15 @@ export function PublicSiteHeader({ desa, location, logoUrl, activePath = "/" }: 
                 </Link>
               ) : (
                 <details className={styles.dropdown} key={item.label}>
-                  <summary>{item.label}<span aria-hidden="true">⌄</span></summary>
+                  <summary>
+                    {item.label}
+                    <span aria-hidden="true">⌄</span>
+                  </summary>
                   <div className={styles.dropdownMenu}>
                     {item.children.map((child) => (
-                      <Link key={child.href} href={child.href}>{child.label}</Link>
+                      <Link key={child.href} href={child.href}>
+                        {child.label}
+                      </Link>
                     ))}
                   </div>
                 </details>
@@ -102,8 +119,12 @@ export function PublicSiteHeader({ desa, location, logoUrl, activePath = "/" }: 
           </nav>
 
           <div className={styles.headerActions}>
-            <Link href="/cari" className={styles.searchLink} aria-label="Cari informasi">⌕</Link>
-            <Link href="/masuk" className={styles.login}>♙ <span>Masuk</span></Link>
+            <Link href="/cari" className={styles.searchLink} aria-label="Cari informasi">
+              ⌕
+            </Link>
+            <Link href="/masuk" className={styles.login}>
+              ♙ <span>Masuk</span>
+            </Link>
           </div>
         </div>
       </header>
@@ -124,7 +145,10 @@ export function PublicSiteFooter({ desa, location, logoUrl }: Props) {
               <small>{location}</small>
             </div>
           </div>
-          <p>Portal informasi resmi desa untuk pelayanan publik yang transparan, informatif, dan mudah diakses masyarakat.</p>
+          <p>
+            Portal informasi resmi desa untuk pelayanan publik yang transparan, informatif, dan
+            mudah diakses masyarakat.
+          </p>
         </div>
         <div className={styles.footerColumn}>
           <strong>Menu</strong>
@@ -149,11 +173,12 @@ export function PublicSiteFooter({ desa, location, logoUrl }: Props) {
         <div className={styles.footerColumn}>
           <strong>Ikuti Kami</strong>
           <span>Media sosial resmi pemerintah desa</span>
-
         </div>
       </div>
       <div className={styles.footerBottom}>
-        <span>© {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. All rights reserved.</span>
+        <span>
+          © {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. All rights reserved.
+        </span>
         <span>Pemerintah Desa {desa.namaDesa ?? ""}　|　Transparan · Informatif · Melayani</span>
       </div>
     </footer>
