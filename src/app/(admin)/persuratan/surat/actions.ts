@@ -46,6 +46,21 @@ export async function buatKonsepSuratAction(formData: FormData) {
   redirect(`/persuratan/surat/${id}?berhasil=dibuat`);
 }
 
+export async function perbaruiKonsepSuratAction(formData: FormData) {
+  const id = angkaId(formData);
+  const parsed = ambilInputSurat(formData);
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Periksa kembali data surat.";
+    redirect(`/persuratan/surat/${id}/edit?error=${encodeURIComponent(message)}`);
+  }
+
+  const { updateSuratDraftData } = await import("@/features/surat/application/surat-use-cases");
+  await updateSuratDraftData(id, parsed.data);
+  revalidatePath("/persuratan/surat");
+  revalidatePath(`/persuratan/surat/${id}`);
+  redirect(`/persuratan/surat/${id}?berhasil=diperbarui`);
+}
+
 export async function ajukanVerifikasiSuratAction(formData: FormData) {
   const id = angkaId(formData);
   const konfirmasiSyarat = formData.get("konfirmasiSyarat") === "on";
