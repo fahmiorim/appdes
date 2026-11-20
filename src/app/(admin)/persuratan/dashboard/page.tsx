@@ -178,6 +178,8 @@ export default async function DashboardAdministrasiSuratPage() {
           <Link className="beranda-quick-tile" href="/persuratan/jenis-surat">Template & Jenis Surat</Link>
           <Link className="beranda-quick-tile" href="/persuratan/master">Klasifikasi & Persyaratan</Link>
           <Link className="beranda-quick-tile" href="/persuratan/arsip">Arsip & Riwayat Surat</Link>
+          <Link className="beranda-quick-tile" href="/persuratan/surat-masuk">Buku Agenda Surat Masuk</Link>
+          <Link className="beranda-quick-tile" href="/persuratan/surat-keluar">Buku Agenda Surat Keluar</Link>
         </div>
       </Panel>
     </div>
