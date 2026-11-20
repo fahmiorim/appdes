@@ -96,6 +96,13 @@ describe("template bawaan yang dikirim", () => {
     expect(akses).toEqual(["administrator:manage", "kepala-desa:read", "operator:read", "sekretaris:read"]);
   });
 
+  it("menyediakan modul Permohonan Surat dengan grant sesuai role", () => {
+    const modul = template.modules.find((item) => item.slug === "permohonan-surat");
+    expect(modul).toMatchObject({ name: "Permohonan Surat", url: "/permohonan-surat", isActive: true });
+    const akses = template.akses.filter((grant) => grant.moduleSlug === "permohonan-surat").map((grant) => `${grant.roleSlug}:${grant.access}`).sort();
+    expect(akses).toEqual(["administrator:manage", "kepala-desa:read", "operator:read", "sekretaris:read"]);
+  });
+
   it("menyediakan menu penduduk dengan akses baca untuk role non-admin", () => {
     const penduduk = template.modules.find((modul) => modul.slug === "penduduk");
     expect(penduduk).toMatchObject({
