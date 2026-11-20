@@ -12,7 +12,7 @@ export function SuratDinasForm({ row, klasifikasi }: {
       <Link className="button button-secondary" href="/persuratan/surat-dinas">Kembali</Link>
     </div>
     <section className="modul-card">
-      <form action={simpanSuratDinasAction} className="modul-form-grid">
+      <form action={simpanSuratDinasAction} className="modul-form-grid" encType="multipart/form-data">
         {row ? <input type="hidden" name="id" value={row.id}/> : null}
         <label className="modul-field"><span>Nomor surat *</span><input name="letterNumber" required maxLength={100} defaultValue={row?.letterNumber ?? ""}/></label>
         <label className="modul-field"><span>Tanggal surat *</span><input name="letterDate" type="date" required defaultValue={row?.letterDate ?? ""}/></label>
@@ -21,9 +21,12 @@ export function SuratDinasForm({ row, klasifikasi }: {
         <label className="modul-field"><span>Perihal *</span><input name="subject" required maxLength={200} defaultValue={row?.subject ?? ""}/></label>
         <label className="modul-field"><span>Klasifikasi</span><select name="classificationId" defaultValue={row?.classificationId?.toString() ?? "none"}><option value="none">Tanpa klasifikasi</option>{klasifikasi.map(item=><option key={item.id} value={item.id}>{item.code} — {item.name}</option>)}</select></label>
         <label className="modul-field" style={{gridColumn:"1 / -1"}}><span>Isi / ringkasan surat</span><textarea name="content" rows={6} maxLength={4000} defaultValue={row?.content ?? ""}/></label>
-        <label className="modul-field"><span>Jalur berkas lampiran arsip</span><input name="archiveFile" maxLength={255} placeholder="Contoh: umum/surat-dinas/berkas.pdf" defaultValue={row?.archiveFile ?? ""}/></label>
+        <label className="modul-field"><span>Unggah lampiran surat (PDF, maksimal 20 MB)</span><input name="archiveUpload" type="file" accept="application/pdf,.pdf"/></label>
         <label className="modul-field"><span>Lokasi arsip fisik</span><input name="archiveLocation" maxLength={150} defaultValue={row?.archiveLocation ?? ""}/></label>
-        {row?.archiveFile ? <label className="modul-field" style={{gridColumn:"1 / -1",display:"flex",alignItems:"center",gap:8}}><input type="checkbox" name="hapusArsip"/> Hapus referensi lampiran arsip saat disimpan</label> : null}
+        {row?.archiveFile ? <div className="modul-field" style={{gridColumn:"1 / -1",display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
+          <span>Lampiran tersimpan: <a className="table-action-link" href={`/api/admin/persuratan/surat-dinas/${row.id}/lampiran`} target="_blank" rel="noreferrer">Lihat / unduh PDF →</a></span>
+          <label style={{display:"flex",alignItems:"center",gap:8}}><input type="checkbox" name="hapusArsip"/> Hapus lampiran saat disimpan</label>
+        </div> : null}
         <div style={{gridColumn:"1 / -1",display:"flex",justifyContent:"flex-end",gap:10}}><Link className="button button-secondary" href="/persuratan/surat-dinas">Batal</Link><button className="button button-primary" type="submit">Simpan Surat Dinas</button></div>
       </form>
     </section>
