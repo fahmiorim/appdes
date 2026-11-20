@@ -1,5 +1,5 @@
 export * from "./kesehatan";
-export * from "./layanan-publik";
+export * from "./layanan-publik";\nexport * from "./pengajuan-layanan";
 export * from "./pendapat";
 export * from "./kontak";
 /**
