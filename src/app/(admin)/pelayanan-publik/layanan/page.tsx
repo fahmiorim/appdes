@@ -1,0 +1,12 @@
+import Link from "next/link";
+import { getLayananPageData } from "@/features/pelayanan/application/layanan-use-cases";
+import { hapusLayananAction } from "./actions";
+export const metadata={title:"Daftar Layanan Publik"};
+export default async function LayananPage({searchParams}:{searchParams:Promise<{q?:string;tersimpan?:string;dihapus?:string}>}) {
+ const p=await searchParams,q=(p.q??"").slice(0,100);const d=await getLayananPageData(q);
+ return <div className="modul-page"><div className="page-heading"><div><span className="eyebrow">Pelayanan Publik</span><h1>Daftar Layanan</h1><p>Kelola jenis layanan, persyaratan, estimasi waktu, biaya, dan status layanan desa.</p></div>{d.canCreate?<Link className="button button-primary" href="/pelayanan-publik/layanan/baru">＋ Tambah Layanan</Link>:null}</div>
+ {p.tersimpan?<div className="alert alert-info">Layanan berhasil disimpan.</div>:null}{p.dihapus?<div className="alert alert-info">Layanan berhasil dihapus.</div>:null}
+ <section className="modul-card"><form method="get" className="modul-filter-row"><input name="q" defaultValue={q} placeholder="Cari nama atau kategori layanan…"/><button className="button button-secondary">Cari</button></form>
+ <div className="modul-scroll"><table className="modul-table"><thead><tr><th>Nama layanan</th><th>Kategori</th><th>Estimasi</th><th>Biaya</th><th>Status</th><th>Aksi</th></tr></thead><tbody>{d.rows.map(r=><tr key={r.id}><td><strong>{r.nama}</strong><br/><small>{r.deskripsi??""}</small></td><td>{r.kategori}</td><td>{r.estimasiHari} hari kerja</td><td>{r.biaya===0?"Gratis":new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(r.biaya)}</td><td>{r.aktif?"Aktif":"Nonaktif"}</td><td><div style={{display:"flex",gap:8}}><Link className="button button-secondary" href={"/pelayanan-publik/layanan/"+r.id}>Detail</Link>{d.canUpdate?<Link className="button button-secondary" href={"/pelayanan-publik/layanan/"+r.id+"/edit"}>Ubah</Link>:null}{d.canDelete?<form action={hapusLayananAction}><input type="hidden" name="id" value={r.id}/><button className="button button-danger-ghost">Hapus</button></form>:null}</div></td></tr>)}</tbody></table></div>
+ {d.rows.length===0?<p className="modul-empty">Belum ada layanan. Tambahkan layanan pertama untuk mulai mengelola katalog desa.</p>:null}<p>Menampilkan {d.rows.length} dari {d.total} layanan.</p></section></div>;
+}
