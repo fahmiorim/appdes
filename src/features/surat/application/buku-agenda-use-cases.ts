@@ -13,6 +13,7 @@ import {
   listSuratMasuk, listSuratKeluar, saveSuratMasuk, saveSuratKeluar,
 } from "@/features/surat/infrastructure/buku-agenda-repository";
 import { requirePermission } from "@/lib/dal";
+import { hasPermission } from "@/features/rbac/application/authorization";
 import { notFound, validationError } from "@/lib/errors";
 
 export async function getBukuAgendaData(jenis: "masuk" | "keluar", search = "") {
@@ -23,7 +24,12 @@ export async function getBukuAgendaData(jenis: "masuk" | "keluar", search = "") 
     jenis === "masuk" ? listSuratMasuk(villageId, search) : listSuratKeluar(villageId, search),
     listKlasifikasi(villageId),
   ]);
-  return { rows, klasifikasi };
+  return {
+    rows, klasifikasi,
+    canCreate: hasPermission(user.permissions, resource, "create"),
+    canUpdate: hasPermission(user.permissions, resource, "update"),
+    canDelete: hasPermission(user.permissions, resource, "delete"),
+  };
 }
 
 export async function getBukuAgendaEditorData(jenis: "masuk" | "keluar", id?: number) {
