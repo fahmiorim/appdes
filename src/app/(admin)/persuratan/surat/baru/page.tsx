@@ -46,7 +46,7 @@ export default async function BuatSuratPage({ searchParams }: { searchParams: Se
         <section className="modul-card" style={{ padding: 24 }}>
           <h2 className="beranda-card-title">Belum ada jenis surat aktif</h2>
           <p className="modul-muted">Aktifkan atau buat jenis surat terlebih dahulu sebelum membuat surat baru.</p>
-          <Link href="/persuratan/jenis-surat" className="button button-primary">Kelola Jenis Surat</Link>
+          <Link href="/persuratan/surat" className="button button-secondary">Kembali ke Administrasi Surat</Link>
         </section>
       ) : (
         <SuratForm
