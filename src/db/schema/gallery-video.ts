@@ -11,7 +11,9 @@ export const galeriVideo = mysqlTable(
   "galeri_video",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
     judul: varchar("judul", { length: 150 }).notNull(),
     keterangan: text("keterangan"),
     url: varchar("url", { length: 500 }).notNull(),
@@ -20,7 +22,10 @@ export const galeriVideo = mysqlTable(
     aktif: boolean("aktif").notNull().default(true),
     publishedAt: timestamp("published_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   (table) => [
     index("galeri_video_village_published_idx").on(table.villageId, table.aktif, table.publishedAt),

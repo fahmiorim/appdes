@@ -49,12 +49,19 @@ export async function getLaporanApbdesPublik(villageId: number, tahunParam?: num
     listKeuanganTriwulan(villageId, tahun),
   ]);
   const baris = laporanRpApbd(rows, AKUN_LAPORAN);
-  const pendapatan = rows.filter((row) => row.templateUuid.startsWith("4.") && row.level === 3 && (toMinor(row.anggaran) > 0n || toMinor(row.realisasi) > 0n)).map((row) => ({
-    kode: row.templateUuid,
-    uraian: row.uraian,
-    anggaran: row.anggaran,
-    realisasi: row.realisasi,
-  }));
+  const pendapatan = rows
+    .filter(
+      (row) =>
+        row.templateUuid.startsWith("4.") &&
+        row.level === 3 &&
+        (toMinor(row.anggaran) > 0n || toMinor(row.realisasi) > 0n),
+    )
+    .map((row) => ({
+      kode: row.templateUuid,
+      uraian: row.uraian,
+      anggaran: row.anggaran,
+      realisasi: row.realisasi,
+    }));
   const bidang = listBidangBelanja(rows).map((row) => ({
     kode: row.templateUuid,
     uraian: row.uraian,

@@ -7,9 +7,15 @@ import { daftarSemuaDomain } from "@/features/multi-desa/application/kelola-desa
 import { daftarPenggunaPlatform } from "@/features/multi-desa/application/pengguna-platform-use-cases";
 import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisioning-use-cases";
 import { hariMenujuPurge, statusRetensi } from "@/features/multi-desa/domain/lifecycle-tenant";
+import {
+  distribusiKecamatan,
+  distribusiTema,
+} from "@/features/multi-desa/domain/ringkasan-platform";
 import { hitungTrenTenant } from "@/features/multi-desa/domain/tren-tenant";
 import {
+  PlatformBarList,
   PlatformCard,
+  PlatformDonut,
   PlatformEmpty,
   PlatformPageHeader,
   PlatformStat,
@@ -45,8 +51,21 @@ export default async function SuperAdminPage() {
   }));
 
   const totalAktif = rows.filter((item) => item.active).length;
-  const totalPenduduk = rows.reduce((total, item) => total + item.penduduk, 0);
-  const totalPengguna = rows.reduce((total, item) => total + item.pengguna, 0);
+  const totalPenggunaDesa = rows.reduce((total, item) => total + item.pengguna, 0);
+  const totalPengguna = totalPenggunaDesa + penggunaPlatform.length;
+  const tema = distribusiTema(rows, 5);
+  const temaDonut =
+    tema.tanpaTema > 0
+      ? [
+          ...tema.items,
+          {
+            label: "Belum bertema",
+            value: tema.tanpaTema,
+            persentase: tema.total > 0 ? Math.round((tema.tanpaTema / tema.total) * 100) : 0,
+          },
+        ]
+      : tema.items;
+  const kecamatan = distribusiKecamatan(rows, 5);
   const desaBerdomain = new Set(domain.map((item) => item.villageId)).size;
   const desaTanpaDomain = rows.length - desaBerdomain;
   const siapPurge = rows.filter((item) => item.statusRetensi === "siap-purge");
@@ -183,11 +202,66 @@ export default async function SuperAdminPage() {
               <path d="M18.3 14.4a6.2 6.2 0 0 1 3.1 5.6" />
             </>
           }
-          label="Pengguna desa"
-          note={`${angka.format(totalPenduduk)} penduduk tercatat`}
+          label="Total pengguna"
+          note={`${angka.format(totalPenggunaDesa)} desa · ${angka.format(penggunaPlatform.length)} platform`}
           tone="oranye"
           value={angka.format(totalPengguna)}
         />
+      </div>
+
+      <div className="platform-dashboard-secondary">
+        <PlatformCard
+          actions={
+            <Link className="button button-secondary" href="/super-admin/template">
+              Kelola tema
+            </Link>
+          }
+          description="Pilihan tema publik yang benar-benar dipakai tenant saat ini."
+          title="Ringkasan tema publik"
+        >
+          <div className="platform-summary-grid">
+            <div>
+              <span>Tema aktif</span>
+              <strong>{angka.format(tema.temaUnik)}</strong>
+              <small>slug berbeda digunakan</small>
+            </div>
+            <div>
+              <span>Desa bertema</span>
+              <strong>{angka.format(tema.bertema)}</strong>
+              <small>
+                {tema.total > 0 ? Math.round((tema.bertema / tema.total) * 100) : 0}% dari total
+                tenant
+              </small>
+            </div>
+            <div className={tema.tanpaTema > 0 ? "is-attention" : undefined}>
+              <span>Belum bertema</span>
+              <strong>{angka.format(tema.tanpaTema)}</strong>
+              <small>perlu memilih tema</small>
+            </div>
+          </div>
+        </PlatformCard>
+
+        <PlatformCard
+          actions={
+            <Link className="button button-secondary" href="/super-admin/template">
+              Lihat tema
+            </Link>
+          }
+          description="Lima tema teratas berdasarkan jumlah tenant yang memakainya."
+          title="Tema paling populer"
+        >
+          <PlatformDonut
+            centerLabel="desa bertema"
+            centerValue={angka.format(tema.bertema)}
+            items={temaDonut}
+            total={tema.total}
+          />
+          {tema.tanpaTema > 0 && tema.items.length > 0 ? (
+            <p className="platform-distribution-note">
+              {angka.format(tema.tanpaTema)} desa belum memilih tema dan ditandai abu-abu.
+            </p>
+          ) : null}
+        </PlatformCard>
       </div>
 
       <div className="platform-dashboard-grid">
@@ -279,6 +353,21 @@ export default async function SuperAdminPage() {
           </PlatformCard>
         </div>
         <div className="platform-dashboard-side">
+          <PlatformCard
+            description="Sebaran tenant berdasarkan kecamatan yang tercatat pada profil desa."
+            title="Distribusi tenant per kecamatan"
+          >
+            <PlatformBarList
+              items={kecamatan.items}
+              labelKosong="Belum ada desa dengan data kecamatan. Lengkapi profil desa agar sebaran dapat ditampilkan."
+            />
+            {kecamatan.tanpaKecamatan > 0 && kecamatan.items.length > 0 ? (
+              <p className="platform-distribution-note">
+                {angka.format(kecamatan.tanpaKecamatan)} desa belum mengisi kecamatan.
+              </p>
+            ) : null}
+          </PlatformCard>
+
           <PlatformCard
             description="Kondisi tenant yang membutuhkan tindakan operator."
             title="Perlu perhatian"

@@ -19,9 +19,14 @@ export interface DesaSuperAdminRow {
   slug: string | null;
   code: string | null;
   domain: string | null;
+  district: string | null;
   active: boolean;
   kuotaMediaMb: number | null;
+  /** Slug tema publik aktif; `null` bila desa belum memilih tema. */
   tema: string | null;
+  /** Nama tampilan tema aktif; cache dari manifest tema. */
+  temaNama: string | null;
+  temaVersi: string | null;
   pengguna: number;
   penduduk: number;
   jenisSurat: number;
@@ -42,6 +47,7 @@ export async function listDesaSuperAdmin(): Promise<DesaSuperAdminRow[]> {
       slug: villages.slug,
       code: villages.code,
       domain: villages.domain,
+      district: villages.district,
       active: villages.active,
       kuotaMediaMb: villages.kuotaMediaMb,
       createdAt: villages.createdAt,
@@ -49,6 +55,14 @@ export async function listDesaSuperAdmin(): Promise<DesaSuperAdminRow[]> {
       purgedAt: villages.purgedAt,
       tema: sql<string | null>`(
         SELECT t.slug FROM theme t
+        WHERE t.village_id = ${villages.id} AND t.aktif = 1
+        LIMIT 1 )`,
+      temaNama: sql<string | null>`(
+        SELECT t.nama FROM theme t
+        WHERE t.village_id = ${villages.id} AND t.aktif = 1
+        LIMIT 1 )`,
+      temaVersi: sql<string | null>`(
+        SELECT t.versi FROM theme t
         WHERE t.village_id = ${villages.id} AND t.aktif = 1
         LIMIT 1 )`,
       // Kolom luar wajib dikualifikasi: interpolasi `${villages.id}` dirender
