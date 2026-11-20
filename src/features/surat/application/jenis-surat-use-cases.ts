@@ -2,7 +2,7 @@ import "server-only";
 
 import { requirePermission } from "@/lib/dal";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
-import { SURAT_RESOURCE, JENIS_SURAT_RESOURCE, jenisSuratFormSchema, type JenisSuratDTO } from "@/features/surat/domain/surat";
+import { JENIS_SURAT_RESOURCE, jenisSuratFormSchema } from "@/features/surat/domain/surat";
 import { parseIsianFields, parseSyaratIds, validateIsianFields } from "@/features/surat/domain/isian";
 import { listKlasifikasi, listJenisSurat, listSyaratSurat, getJenisSurat, jenisSuratExists, createJenisSurat, updateJenisSurat, deleteJenisSurat, countSuratByJenis } from "@/features/surat/infrastructure/master-repository";
 import { notFound, conflict, validationError } from "@/lib/errors";
@@ -33,7 +33,11 @@ export async function simpanJenisSuratData(id: number | null, raw: unknown): Pro
   const parsed = jenisSuratFormSchema.safeParse(raw);
   if (!parsed.success) throw validationError(parsed.error.issues[0]?.message ?? "Data jenis surat tidak valid.");
   const input = parsed.data;
+  let rawFields: unknown;
+  try { rawFields = JSON.parse(input.formIsian); } catch { throw validationError("Format isian dinamis harus berupa JSON yang valid."); }
+  if (!Array.isArray(rawFields)) throw validationError("Daftar isian dinamis harus berupa array.");
   const fields = parseIsianFields(input.formIsian);
+  if (fields.length !== rawFields.length) throw validationError("Ada definisi isian dinamis yang tidak valid.");
   const fieldError = validateIsianFields(fields);
   if (fieldError) throw validationError(fieldError);
   const syaratIds = parseSyaratIds(input.syaratSurat);
