@@ -23,7 +23,7 @@ async function selesai() {
   redirect("/mutasi-penduduk");
 }
 export async function catatKelahiranAction(form:FormData) {
-  await catatKelahiran({eventDate:text(form,"eventDate"),name:text(form,"name"),nationalId:text(form,"nationalId"),gender:text(form,"gender") as CatatKelahiranInput["gender"] ,familyId:optionalId(form,"familyId"),regionId:optionalId(form,"regionId"),address:text(form,"address"),fatherName:text(form,"fatherName"),motherName:text(form,"motherName"),reason:text(form,"reason"),notes:text(form,"notes"),referenceNo:text(form,"referenceNo")});
+  await catatKelahiran({eventDate:text(form,"eventDate"),name:text(form,"name"),nationalId:text(form,"nationalId"),gender:text(form,"gender") as CatatKelahiranInput["gender"] ,familyId:optionalId(form,"familyId"),familyRelationId:optionalId(form,"familyRelationId"),regionId:optionalId(form,"regionId"),address:text(form,"address"),fatherName:text(form,"fatherName"),motherName:text(form,"motherName"),reason:text(form,"reason"),notes:text(form,"notes"),referenceNo:text(form,"referenceNo")});
   await selesai();
 }
 export async function catatDatangAction(form:FormData) {
