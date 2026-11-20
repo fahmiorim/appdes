@@ -14,7 +14,7 @@ CREATE TABLE `layanan_publik` (
   CONSTRAINT `layanan_publik_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE INDEX `layanan_publik_village_active_idx` ON `layanan_publik` (`village_id`,`aktif`);
+CREATE UNIQUE INDEX `layanan_publik_village_id_uq` ON `layanan_publik` (`village_id`,`id`);\n--> statement-breakpoint\nCREATE INDEX `layanan_publik_village_active_idx` ON `layanan_publik` (`village_id`,`aktif`);
 --> statement-breakpoint
 CREATE INDEX `layanan_publik_village_name_idx` ON `layanan_publik` (`village_id`,`nama`);
 --> statement-breakpoint
