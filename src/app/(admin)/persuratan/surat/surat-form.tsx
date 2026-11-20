@@ -51,8 +51,8 @@ export function SuratForm({
         </label>
         <label style={{ display: "grid", gap: 7, fontSize: 12, fontWeight: 700 }}>
           Penduduk / pemohon
-          <select name="residentId" defaultValue={initial?.residentId?.toString() ?? "none"}>
-            <option value="none">{selected?.requiresResident ? "Pilih penduduk (wajib)" : "Tanpa penduduk terkait"}</option>
+          <select name="residentId" required={selected?.requiresResident ?? false} defaultValue={initial?.residentId?.toString() ?? "none"}>
+            <option value="none" disabled={selected?.requiresResident ?? false}>{selected?.requiresResident ? "Pilih penduduk (wajib)" : "Tanpa penduduk terkait"}</option>
             {penduduk.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.nationalId}</option>)}
           </select>
         </label>
