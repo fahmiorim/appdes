@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import type { IsianField } from "@/features/surat/domain/isian";
+import type { PendudukLuarSurat } from "@/features/surat/domain/pengikut";
 
 interface JenisOption {
   id: number;
@@ -28,7 +29,7 @@ export function SuratForm({
   jenis: JenisOption[];
   penduduk: PendudukOption[];
   tanggalDefault: string;
-  initial?: { id?: number; typeId: number; residentId: number | null; letterDate: string; purpose: string | null; isiSurat: Record<string, string> };
+  initial?: { id?: number; typeId: number; residentId: number | null; letterDate: string; purpose: string | null; isiSurat: Record<string, string>; pengikut: number[]; luar: PendudukLuarSurat[] };
   action: (formData: FormData) => void | Promise<void>;
 }) {
   const [typeId, setTypeId] = useState(initial?.typeId.toString() ?? jenis[0]?.id.toString() ?? "");
@@ -37,6 +38,8 @@ export function SuratForm({
   return (
     <form action={action} className="modul-card" style={{ padding: 22, display: "grid", gap: 20 }}>
       {initial?.id ? <input type="hidden" name="id" value={initial.id} /> : null}
+      {initial?.pengikut.map((residentId) => <input key={residentId} type="hidden" name="pengikut" value={residentId} />)}
+      {initial?.luar.map((item, index) => <input key={index} type="hidden" name="luar" value={JSON.stringify(item)} />)}
       <div>
         <h2 className="beranda-card-title">Informasi Surat</h2>
         <p className="modul-muted">Pilih jenis surat dan lengkapi data penerbitan. Nomor surat akan dibuat saat seluruh tahap verifikasi disetujui.</p>
