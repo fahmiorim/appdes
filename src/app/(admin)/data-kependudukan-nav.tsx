@@ -1,17 +1,25 @@
 import Link from "next/link";
 
+import { KELUARGA_RESOURCE } from "@/features/keluarga/domain/keluarga";
+import { PENDUDUK_RESOURCE } from "@/features/penduduk/domain/penduduk";
+import { RESOURCES } from "@/features/rbac/domain/resources";
+import { hasPermission } from "@/features/rbac/application/authorization";
+import { verifySession } from "@/lib/dal";
+
 const links = [
-  { href: "/penduduk/dashboard", label: "Dashboard" },
-  { href: "/penduduk", label: "Data Penduduk" },
-  { href: "/keluarga", label: "Kartu Keluarga" },
-  { href: "/mutasi-penduduk", label: "Mutasi Penduduk" },
-  { href: "/statistik/penduduk", label: "Statistik & Laporan" },
+  { href: "/penduduk/dashboard", label: "Dashboard", resource: PENDUDUK_RESOURCE },
+  { href: "/penduduk", label: "Data Penduduk", resource: PENDUDUK_RESOURCE },
+  { href: "/keluarga", label: "Kartu Keluarga", resource: KELUARGA_RESOURCE },
+  { href: "/mutasi-penduduk", label: "Mutasi Penduduk", resource: PENDUDUK_RESOURCE },
+  { href: "/statistik/penduduk", label: "Statistik & Laporan", resource: RESOURCES.laporanPenduduk },
 ];
 
-export function DataKependudukanNav({ active }: { active: string }) {
+export async function DataKependudukanNav({ active }: { active: string }) {
+  const user=await verifySession();
+  const visible=links.filter(item=>hasPermission(user.permissions,item.resource,"read"));
   return (
     <nav aria-label="Navigasi Data Kependudukan" className="data-kependudukan-nav">
-      {links.map((item) => (
+      {visible.map((item) => (
         <Link aria-current={active === item.href ? "page" : undefined}
           className={active === item.href ? "is-active" : ""} href={item.href} key={item.href}>
           {item.label}
