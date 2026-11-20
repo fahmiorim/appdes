@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 
 import { hasPermission } from "@/features/rbac/application/authorization";
 import { findRoleById } from "@/features/rbac/infrastructure/rbac-repository";
-import { getSuratPrintData } from "@/features/surat/application/surat-use-cases";
+import { getRiwayatSuratData, getSuratPrintData } from "@/features/surat/application/surat-use-cases";
+import { AUDIT_EVENT_LABELS, type AuditEvent } from "@/features/audit/domain/audit";
 import {
   LETTER_STATUS_LABELS,
   SURAT_RESOURCE,
@@ -59,7 +60,7 @@ export default async function DetailSuratPage({
   const id = Number(rawId);
   if (!Number.isSafeInteger(id) || id < 1) notFound();
 
-  const data = await getSuratPrintData(id);
+  const [data, riwayat] = await Promise.all([getSuratPrintData(id), getRiwayatSuratData(id)]);
   const { surat, jenis, content } = data;
   const user = await getCurrentUser();
   if (!user) notFound();
@@ -184,6 +185,11 @@ export default async function DetailSuratPage({
           )}
         </section>
       </div>
+
+      <section className="modul-card" style={{ padding: 20, marginTop: 16 }}>
+        <div className="beranda-card-head"><div><h2 className="beranda-card-title">Riwayat Aktivitas Surat</h2><p className="modul-muted">Catatan tindakan yang tercatat di audit trail aplikasi.</p></div><span className="beranda-chip" data-tone="ungu">{riwayat.length} aktivitas</span></div>
+        {riwayat.length === 0 ? <p className="modul-muted">Belum ada catatan aktivitas untuk surat ini. Aktivitas lama yang terjadi sebelum pencatatan audit diaktifkan tidak dapat ditampilkan.</p> : <ol style={{display:"grid",gap:14,listStyle:"none",padding:0,margin:0}}>{riwayat.map((item)=>{let detail: Record<string, unknown> = {}; try { detail = item.details ? JSON.parse(item.details) as Record<string, unknown> : {}; } catch {} const label = (AUDIT_EVENT_LABELS as Partial<Record<AuditEvent,string>>)[item.event as AuditEvent] ?? item.event; return <li key={item.id} style={{display:"grid",gridTemplateColumns:"12px 1fr",gap:12}}><span style={{width:10,height:10,marginTop:5,borderRadius:99,background:"var(--color-brand,#7c3aed)"}}/><div><strong style={{display:"block",fontSize:13}}>{label}</strong><span className="modul-muted">{item.actorName ?? "Sistem"} · {new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeStyle:"short"}).format(new Date(item.createdAt))}</span>{Object.keys(detail).length>0 ? <p className="modul-muted" style={{margin:"4px 0 0"}}>{Object.entries(detail).map(([key,value])=>`${key}: ${String(value)}`).join(" · ")}</p> : null}</div></li>;})}</ol>}
+      </section>
 
       <section className="modul-card" style={{ padding: 20, marginTop: 16 }}>
         <div className="beranda-card-head">
