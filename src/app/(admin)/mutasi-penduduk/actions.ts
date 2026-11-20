@@ -20,6 +20,9 @@ function optionalId(form: FormData, key: string): number | null {
 async function selesai() {
   revalidatePath("/mutasi-penduduk");
   revalidatePath("/penduduk");
+  revalidatePath("/penduduk/dashboard");
+  revalidatePath("/keluarga");
+  revalidatePath("/statistik/penduduk");
   redirect("/mutasi-penduduk");
 }
 export async function catatKelahiranAction(form:FormData) {
