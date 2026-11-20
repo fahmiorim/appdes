@@ -29,7 +29,7 @@ function template(overrides: Partial<TemplateTenant> = {}): TemplateTenant {
         isHidden: false,
         isActive: true,
         sortOrder: 1,
-        parentSlug: null,
+        parentSlug: "data-kependudukan",
       },
     ],
     akses: [{ roleSlug: ROLE_ADMINISTRATOR, moduleSlug: "penduduk", access: "manage" }],
@@ -98,7 +98,7 @@ describe("template bawaan yang dikirim", () => {
     expect(template.modules.find((module) => module.slug === "website-desa")).toMatchObject({ isGroup: true, url: null });
   });
 
-  it("menyediakan menu penduduk dengan akses baca untuk role non-admin", () => {
+  it("menyediakan grup Data Kependudukan dan lima halaman dengan akses role yang sesuai", () => {\n    expect(template.modules.find((modul) => modul.slug === "data-kependudukan")).toMatchObject({ isGroup: true, url: null, parentSlug: null });\n    for (const [slug, url] of [["dashboard-kependudukan", "/penduduk/dashboard"], ["penduduk", "/penduduk"], ["keluarga", "/keluarga"], ["mutasi-penduduk", "/mutasi-penduduk"], ["laporan-penduduk", "/statistik/penduduk"]]) {\n      expect(template.modules.find((modul) => modul.slug === slug)).toMatchObject({ url, parentSlug: "data-kependudukan" });\n    }\n  });\n\n  it("menyediakan akses baca penduduk untuk role non-admin", () => {
     const penduduk = template.modules.find((modul) => modul.slug === "penduduk");
     expect(penduduk).toMatchObject({
       name: "Data Penduduk",
