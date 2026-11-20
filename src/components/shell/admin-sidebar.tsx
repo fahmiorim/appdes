@@ -126,7 +126,7 @@ export function AdminSidebar({
                   {kelompok.item.map((item) => {
                     const aktif = menuPlatformAktif(item.href, pathname);
 
-                    if (!item.anak?.length) {
+                    if (!item.submenu?.length) {
                       return (
                         <Link
                           className="admin-nav-link"
@@ -171,17 +171,17 @@ export function AdminSidebar({
                         </button>
                         {terbuka ? (
                           <div className="platform-nav-sub" id={idSubmenu}>
-                            {item.anak.map((anak) => (
+                            {item.submenu.map((sub) => (
                               <Link
                                 aria-current={
-                                  menuPlatformAktif(anak.href, pathname) ? "page" : undefined
+                                  menuPlatformAktif(sub.href, pathname) ? "page" : undefined
                                 }
                                 className="platform-nav-sublink"
-                                href={anak.href}
-                                key={anak.href}
+                                href={sub.href}
+                                key={sub.href}
                                 onClick={() => setOpen(false)}
                               >
-                                {anak.label}
+                                {sub.label}
                               </Link>
                             ))}
                           </div>

@@ -35,9 +35,18 @@ describe("MENU_PLATFORM", () => {
     const desaDomain = MENU_PLATFORM.find((item) => item.href === "/super-admin/domain");
 
     expect(desaDomain?.label).toBe("Desa & Domain");
-    expect(desaDomain?.anak).toEqual([{ href: "/super-admin/domain", label: "Daftar domain" }]);
-    expect(desaDomain?.anak?.every((item) => item.href.startsWith("/super-admin"))).toBe(true);
+    expect(desaDomain?.submenu).toEqual([{ href: "/super-admin/domain", label: "Daftar domain" }]);
+    expect(desaDomain?.submenu?.every((item) => item.href.startsWith("/super-admin"))).toBe(true);
     expect(MENU_PLATFORM.some((item) => item.href === "/super-admin/tenant")).toBe(false);
+  });
+
+  it("menautkan katalog, penggunaan, dan fondasi template pada submenu", () => {
+    const template = MENU_PLATFORM.find((item) => item.href === "/super-admin/template");
+    expect(template?.submenu?.map((item) => item.href)).toEqual([
+      "/super-admin/template",
+      "/super-admin/template/penggunaan",
+      "/super-admin/template/fondasi",
+    ]);
   });
 });
 

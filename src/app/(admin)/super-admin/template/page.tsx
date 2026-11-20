@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
-import { getTemplateTenantPlatform } from "@/features/multi-desa/application/platform-info-use-cases";
+import { daftarTemplateWebsite } from "@/features/multi-desa/application/template-website-use-cases";
+import { KatalogTemplate } from "@/features/multi-desa/presentation/katalog-template";
 import {
   PlatformCard,
-  PlatformEmpty,
   PlatformPageHeader,
   PlatformStat,
-  PlatformStatus,
 } from "@/features/multi-desa/presentation/platform-ui";
 
 import { pastikanSuperAdmin } from "../guard";
 
 export const metadata: Metadata = {
-  title: "Template Tenant",
+  title: "Katalog Template",
   robots: { index: false, follow: false },
 };
 
@@ -21,189 +21,93 @@ const angka = new Intl.NumberFormat("id-ID");
 export default async function SuperAdminTemplatePage() {
   await pastikanSuperAdmin();
 
-  const template = await getTemplateTenantPlatform();
-  const namaInduk = new Map(template.modules.map((modul) => [modul.slug, modul.name]));
-  const aksesPerRole = new Map<string, number>();
-  for (const grant of template.akses) {
-    aksesPerRole.set(grant.roleSlug, (aksesPerRole.get(grant.roleSlug) ?? 0) + 1);
-  }
+  const templates = await daftarTemplateWebsite();
+  const terbit = templates.filter((item) => item.status === "published").length;
+  const totalTenant = templates.reduce((total, item) => total + item.jumlahTenant, 0);
+  const perluPembaruan = templates.reduce((total, item) => total + item.jumlahTertinggal, 0);
 
   return (
     <>
-      <PlatformPageHeader path="/super-admin/template" />
-      <div className="platform-stat-grid">
+      <PlatformPageHeader
+        actions={
+          <>
+            <Link className="button button-secondary" href="/super-admin/template/fondasi">
+              Fondasi tenant
+            </Link>
+            <Link className="button button-primary" href="/super-admin/template/baru">
+              + Tambah template
+            </Link>
+          </>
+        }
+        path="/super-admin/template"
+      />
+
+      <div className="platform-stat-grid template-stat-grid">
         <PlatformStat
           icon={
             <>
-              <path d="M6 3.8h9.2L19 7.6v12.6H6z" />
-              <path d="M14.6 3.8v4h4" />
+              <rect height="12" rx="1.5" width="16" x="4" y="4" />
+              <path d="M4 9h16M9.4 9v7M14.6 9v7" />
             </>
           }
-          label="Versi template"
-          note={`Sumber: ${template.sumber.jenis} · ${template.sumber.dibuatPada}`}
+          label="Total template"
+          note="Metadata tema pada katalog platform"
           tone="ungu"
-          value={template.versi}
+          value={angka.format(templates.length)}
         />
         <PlatformStat
           icon={
             <>
-              <circle cx="12" cy="8.4" r="3.4" />
-              <path d="M5.4 20a6.6 6.6 0 0 1 13.2 0" />
+              <circle cx="12" cy="12" r="8.2" />
+              <path d="m8.2 12.2 2.4 2.4 5.2-5.2" />
             </>
           }
-          label="Role"
-          note="Dibuat ulang untuk setiap tenant"
-          tone="biru"
-          value={angka.format(template.roles.length)}
-        />
-        <PlatformStat
-          icon={
-            <>
-              <rect height="6" rx="1.6" width="7" x="3.5" y="4" />
-              <rect height="6" rx="1.6" width="7" x="13.5" y="4" />
-              <rect height="6" rx="1.6" width="7" x="3.5" y="14" />
-              <rect height="6" rx="1.6" width="7" x="13.5" y="14" />
-            </>
-          }
-          label="Modul"
-          note={`${angka.format(template.modules.filter((modul) => modul.isGroup).length)} grup, ${angka.format(template.modules.filter((modul) => !modul.isGroup).length)} item`}
+          label="Template terbit"
+          note="Terbit di katalog platform"
           tone="hijau"
-          value={angka.format(template.modules.length)}
+          value={angka.format(terbit)}
         />
         <PlatformStat
           icon={
             <>
-              <path d="M4.5 7.5h15" />
-              <path d="M4.5 12h15" />
-              <path d="M4.5 16.5h9" />
+              <circle cx="8.4" cy="8" r="2.8" />
+              <path d="M3 19a5.4 5.4 0 0 1 10.8 0M15.8 6.2a2.8 2.8 0 0 1 0 5.4M17.4 14.2A5.4 5.4 0 0 1 21 19" />
             </>
           }
-          label="Aturan akses"
-          note="Pasangan role × modul"
+          label="Total penggunaan"
+          note="Tenant dengan tema aktif yang cocok"
+          tone="biru"
+          value={angka.format(totalTenant)}
+        />
+        <PlatformStat
+          icon={
+            <>
+              <path d="M20 7v5h-5M4 17v-5h5" />
+              <path d="M6.1 9A7 7 0 0 1 18.7 7.4M17.9 15A7 7 0 0 1 5.3 16.6" />
+            </>
+          }
+          label="Perlu pembaruan"
+          note="Tenant yang masih di versi lama"
           tone="oranye"
-          value={angka.format(template.akses.length)}
+          value={angka.format(perluPembaruan)}
         />
       </div>
 
       <PlatformCard
-        description="Jumlah modul yang dapat dibaca atau dikelola tiap role."
-        flush
-        title="Role dan akses"
+        description="Katalog tema tampilan website. Token tampilan dapat dipratinjau; unggahan kode atau ZIP tidak didukung."
+        title="Katalog template"
       >
-        <div className="tenant-table-scroll">
-          <table className="tenant-table">
-            <thead>
-              <tr>
-                <th scope="col">Role</th>
-                <th scope="col">Slug</th>
-                <th scope="col">Sistem</th>
-                <th scope="col">Aturan akses</th>
-              </tr>
-            </thead>
-            <tbody>
-              {template.roles.map((role) => (
-                <tr key={role.slug}>
-                  <td>
-                    <strong>{role.name}</strong>
-                  </td>
-                  <td>{role.slug}</td>
-                  <td>{role.isSystem ? "Ya" : "Tidak"}</td>
-                  <td>{angka.format(aksesPerRole.get(role.slug) ?? 0)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </PlatformCard>
-
-      <PlatformCard
-        description="Modul level platform yang dibuat untuk setiap desa baru."
-        flush
-        title="Modul dan menu"
-      >
-        {template.modules.length > 0 ? (
-          <div className="tenant-table-scroll">
-            <table className="tenant-table">
-              <thead>
-                <tr>
-                  <th scope="col">Modul</th>
-                  <th scope="col">Slug</th>
-                  <th scope="col">URL</th>
-                  <th scope="col">Induk</th>
-                  <th scope="col">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {template.modules.map((modul) => (
-                  <tr key={modul.slug}>
-                    <td>
-                      <strong>{modul.name}</strong>
-                      {modul.icon ? <span className="tenant-secondary">{modul.icon}</span> : null}
-                    </td>
-                    <td>{modul.slug}</td>
-                    <td>{modul.url ?? <span className="tenant-secondary">—</span>}</td>
-                    <td>
-                      {modul.parentSlug ? (
-                        (namaInduk.get(modul.parentSlug) ?? modul.parentSlug)
-                      ) : (
-                        <span className="tenant-secondary">Tingkat atas</span>
-                      )}
-                    </td>
-                    <td>
-                      <PlatformStatus
-                        aktif={modul.isActive}
-                        label={modul.isActive ? "Aktif" : "Nonaktif"}
-                      />
-                      {modul.isHidden ? (
-                        <span className="tenant-secondary">Disembunyikan</span>
-                      ) : null}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {templates.length > 0 ? (
+          <KatalogTemplate templates={templates} />
         ) : (
-          <PlatformEmpty
-            description="Sidebar desa baru akan kosong sampai modul ditambahkan ke template."
-            title="Template tidak memuat modul"
-          />
+          <div className="template-empty">
+            <strong>Belum ada template</strong>
+            <p>Tambahkan template pertama untuk mulai membangun katalog tema.</p>
+            <Link className="button button-primary" href="/super-admin/template/baru">
+              Tambah template
+            </Link>
+          </div>
         )}
-      </PlatformCard>
-
-      <PlatformCard
-        description="Nilai awal yang dipakai website desa baru."
-        title="Tema dan menu publik"
-      >
-        <dl className="platform-def">
-          <div className="platform-def-row">
-            <dt>Tema bawaan</dt>
-            <dd>
-              {template.tema ? (
-                <>
-                  {template.tema.nama} · slug <strong>{template.tema.slug}</strong> · versi{" "}
-                  {template.tema.versi}
-                </>
-              ) : (
-                "Website desa baru memakai tema bawaan aplikasi."
-              )}
-            </dd>
-          </div>
-          <div className="platform-def-row">
-            <dt>Menu publik</dt>
-            <dd>
-              {template.menuPublik.length > 0
-                ? template.menuPublik.map((menu) => menu.nama).join(", ")
-                : "Belum ada menu publik pada template."}
-            </dd>
-            <span className="platform-badge">{angka.format(template.menuPublik.length)} menu</span>
-          </div>
-        </dl>
-
-        <p className="form-help">
-          Template bersifat baca-saja di konsol dan diperbarui lewat rilis aplikasi, bukan dari
-          halaman ini.
-        </p>
       </PlatformCard>
     </>
   );

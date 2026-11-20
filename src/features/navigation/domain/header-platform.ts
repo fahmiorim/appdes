@@ -58,9 +58,27 @@ export const HEADER_PLATFORM: Readonly<Record<string, HeaderPlatform>> = {
   },
   "/super-admin/template": {
     eyebrow: "Konsol platform",
-    title: "Template tenant",
+    title: "Manajemen template",
     description:
-      "Fondasi yang disalin ke setiap desa baru: role, modul, matriks akses, tema, dan menu publik. Katalog surat dan data master desa sengaja tidak termasuk.",
+      "Katalog tema website: token tampilan, status publikasi, penggunaan tenant, dan distribusi versi. Unggahan kode atau paket ZIP tidak termasuk.",
+  },
+  "/super-admin/template/baru": {
+    eyebrow: "Manajemen template",
+    title: "Tambah template",
+    description:
+      "Buat metadata tema baru dari token tampilan yang tervalidasi. Template tersimpan sebagai draf sampai diterbitkan.",
+  },
+  "/super-admin/template/penggunaan": {
+    eyebrow: "Manajemen template",
+    title: "Penggunaan & pembaruan",
+    description:
+      "Lihat tenant yang memakai setiap tema dan kirim versi terbaru hanya kepada tenant yang memakai slug template tersebut.",
+  },
+  "/super-admin/template/fondasi": {
+    eyebrow: "Manajemen template",
+    title: "Fondasi tenant",
+    description:
+      "Bacaan template fondasi yang disalin ke desa baru: role, modul, matriks akses, tema, dan menu publik. Diperbarui lewat rilis aplikasi.",
   },
   "/super-admin/pengaturan": {
     eyebrow: "Konsol platform",

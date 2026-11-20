@@ -5,7 +5,7 @@
  * platform memakai `villageId === null` dan tidak memiliki baris modul. Karena
  * itu menu platform ditulis eksplisit di sini: setiap tautan dijamin menunjuk
  * halaman yang benar-benar ada, dan urutannya mengikuti alur kerja operator
- * (ringkasan → desa & domain → akses → audit → template → pengaturan).
+ * (ringkasan → tenant → domain → akses → audit → template → pengaturan).
  *
  * `grup` dipakai sidebar untuk memisahkan pekerjaan seperti mockup konsol.
  * Nilainya harus berurutan: sidebar mencetak label saat grup berubah.
@@ -13,7 +13,7 @@
  * Fungsi di file ini murni (tanpa I/O) agar dapat diuji tanpa database.
  */
 
-export interface MenuPlatformAnak {
+export interface SubmenuPlatformItem {
   readonly href: string;
   readonly label: string;
 }
@@ -24,8 +24,8 @@ export interface MenuPlatformItem {
   readonly icon: string;
   /** Label grup pada sidebar; item dengan grup sama tampil berurutan. */
   readonly grup: string;
-  /** Submenu yang ditampilkan saat grup dibuka. */
-  readonly anak?: readonly MenuPlatformAnak[];
+  /** Submenu hanya ditampilkan saat menu induk aktif. */
+  readonly submenu?: readonly SubmenuPlatformItem[];
 }
 
 export const MENU_PLATFORM: readonly MenuPlatformItem[] = [
@@ -35,7 +35,7 @@ export const MENU_PLATFORM: readonly MenuPlatformItem[] = [
     label: "Desa & Domain",
     icon: "⇄",
     grup: "Desa & Domain",
-    anak: [{ href: "/super-admin/domain", label: "Daftar domain" }],
+    submenu: [{ href: "/super-admin/domain", label: "Daftar domain" }],
   },
   {
     href: "/super-admin/pengguna",
@@ -44,7 +44,17 @@ export const MENU_PLATFORM: readonly MenuPlatformItem[] = [
     grup: "Platform",
   },
   { href: "/super-admin/audit", label: "Audit trail", icon: "≡", grup: "Platform" },
-  { href: "/super-admin/template", label: "Template tenant", icon: "◫", grup: "Platform" },
+  {
+    href: "/super-admin/template",
+    label: "Manajemen template",
+    icon: "◫",
+    grup: "Platform",
+    submenu: [
+      { href: "/super-admin/template", label: "Katalog template" },
+      { href: "/super-admin/template/penggunaan", label: "Penggunaan & pembaruan" },
+      { href: "/super-admin/template/fondasi", label: "Fondasi tenant" },
+    ],
+  },
   { href: "/super-admin/pengaturan", label: "Pengaturan", icon: "⚙", grup: "Platform" },
 ] as const;
 
