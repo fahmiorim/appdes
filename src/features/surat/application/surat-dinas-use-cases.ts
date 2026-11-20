@@ -77,8 +77,15 @@ export async function simpanSuratDinasData(
     newPath = await simpanBerkasMedia(villageId, unggahan, KATEGORI_LAMPIRAN, "archiveFile");
   }
 
-  const archiveFile = input.hapusArsip ? null : newPath ?? existing?.archiveFile ?? input.archiveFile ?? null;
-  const savedId = await saveSuratDinas(villageId, id, { ...input, archiveFile, hapusArsip: false });
+  const archiveFile = input.hapusArsip ? null : newPath ?? existing?.archiveFile ?? null;
+  let savedId: number;
+  try {
+    savedId = await saveSuratDinas(villageId, id, { ...input, archiveFile, hapusArsip: false });
+  } catch (error) {
+    // Jangan tinggalkan file yatim bila penulisan metadata gagal.
+    if (newPath) await hapusMedia(newPath);
+    throw error;
+  }
 
   // Hapus berkas lama hanya setelah DB menunjuk berkas baru/NULL. Batasi
   // penghapusan pada folder tenant kategori surat, jangan percaya jalur input.
