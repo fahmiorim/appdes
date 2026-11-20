@@ -29,7 +29,7 @@ CREATE INDEX `pengajuan_layanan_tenant_layanan_idx` ON `pengajuan_layanan` (`vil
 --> statement-breakpoint
 ALTER TABLE `pengajuan_layanan` ADD CONSTRAINT `pengajuan_layanan_village_fk` FOREIGN KEY (`village_id`) REFERENCES `villages`(`id`) ON DELETE cascade ON UPDATE no action;
 --> statement-breakpoint
-ALTER TABLE `pengajuan_layanan` ADD CONSTRAINT `pengajuan_layanan_service_tenant_fk` FOREIGN KEY (`village_id`,`layanan_id`) REFERENCES `layanan_publik`(`village_id`,`id`) ON DELETE restrict ON UPDATE no action;--> statement-breakpoint\nALTER TABLE `pengajuan_layanan` ADD CONSTRAINT `pengajuan_layanan_resident_tenant_fk` FOREIGN KEY (`village_id`,`resident_id`) REFERENCES `residents`(`village_id`,`id`) ON DELETE set null ON UPDATE no action;
+ALTER TABLE `pengajuan_layanan` ADD CONSTRAINT `pengajuan_layanan_service_tenant_fk` FOREIGN KEY (`village_id`,`layanan_id`) REFERENCES `layanan_publik`(`village_id`,`id`) ON DELETE restrict ON UPDATE no action;--> statement-breakpoint\nALTER TABLE `pengajuan_layanan` ADD CONSTRAINT `pengajuan_layanan_resident_tenant_fk` FOREIGN KEY (`village_id`,`resident_id`) REFERENCES `residents`(`village_id`,`id`) ON DELETE restrict ON UPDATE no action;
 --> statement-breakpoint
 ALTER TABLE `pengajuan_layanan` ADD CONSTRAINT `pengajuan_layanan_petugas_fk` FOREIGN KEY (`petugas_id`) REFERENCES `users`(`id`) ON DELETE set null ON UPDATE no action;
 --> statement-breakpoint
