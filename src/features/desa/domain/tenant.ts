@@ -34,7 +34,7 @@ export interface BarisDesa {
  * Susun peta domain dari daftar desa.
  *
  * `daftar` harus terurut menaik berdasarkan id agar `desaPertamaId` konsisten
- * dengan `getFirstVillageId()`. Domain disimpan ternormalisasi; baris tanpa
+ * dengan urutan query tenant. Domain disimpan ternormalisasi; baris tanpa
  * domain dilewati. Bila ada domain duplikat (seharusnya dicegah indeks unik),
  * desa dengan id lebih kecil yang dipakai.
  */
