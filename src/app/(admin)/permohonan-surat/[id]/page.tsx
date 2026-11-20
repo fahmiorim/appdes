@@ -25,10 +25,10 @@ const FORMAT_TANGGAL = new Intl.DateTimeFormat("id-ID", {
 });
 
 function statusTone(status: number): string {
-  if (status === 3 || status === 4) return "berhasil";
-  if (status === 5) return "netral";
-  if (status === 0) return "peringatan";
-  return "biru";
+  if (status === 3 || status === 4) return "hijau";
+  if (status === 5) return "merah";
+  if (status === 0) return "netral";
+  return "ungu";
 }
 
 function tanggal(value: Date | null): string {
