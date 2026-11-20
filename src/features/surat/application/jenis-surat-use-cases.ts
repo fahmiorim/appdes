@@ -36,6 +36,9 @@ export async function simpanJenisSuratData(id: number | null, raw: unknown): Pro
   const parsed = jenisSuratFormSchema.safeParse(raw);
   if (!parsed.success) throw validationError(parsed.error.issues[0]?.message ?? "Data jenis surat tidak valid.");
   const input = parsed.data;
+  if (input.classificationId !== null && !(await getKlasifikasi(villageId, input.classificationId))) {
+    throw validationError("Klasifikasi tidak ditemukan pada desa aktif.");
+  }
   let rawFields: unknown;
   try { rawFields = JSON.parse(input.formIsian); } catch { throw validationError("Format isian dinamis harus berupa JSON yang valid."); }
   if (!Array.isArray(rawFields)) throw validationError("Daftar isian dinamis harus berupa array.");
