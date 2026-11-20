@@ -11,7 +11,7 @@ export const statusPengajuanSchema=z.object({
 export const pengajuanInputSchema=z.object({
  layananId:z.coerce.number().int().positive(),
  namaPemohon:z.string().trim().min(3).max(150),
- nik:z.string().trim().regex(/^$|^\\d{16}$/,"NIK harus 16 digit."),
+ nik:z.string().trim().regex(/^$|^\d{16}$/,"NIK harus 16 digit."),
  telepon:z.string().trim().max(30),
  email:z.string().trim().email().or(z.literal("")),
  alamat:z.string().trim().max(2000),
