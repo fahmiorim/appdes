@@ -28,6 +28,7 @@ interface Props {
   references: PendudukReferenceData;
   /** Diisi pada mode ubah; `undefined` pada mode tambah. */
   penduduk?: PendudukDTO;
+  familyId?: number | null;
 }
 
 function OpsiKatalog({ options }: { options: ReferenceOption[] }) {
