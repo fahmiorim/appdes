@@ -81,3 +81,16 @@ WHERE existing.`access` IN ('read', 'write', 'manage')
     SELECT 1 FROM `role_permissions` rp
     WHERE rp.`role_id` = existing.`role_id` AND rp.`module_id` = target.`id`
   );
+
+--> statement-breakpoint
+
+INSERT INTO `role_permissions` (`role_id`, `module_id`, `access`)
+SELECT r.`id`, m.`id`, 'read'
+FROM `roles` r
+INNER JOIN `modules` m ON m.`village_id` = r.`village_id`
+WHERE r.`slug` IN ('sekretaris', 'operator', 'kepala-desa')
+  AND m.`slug` = 'laporan-penduduk'
+  AND NOT EXISTS (
+    SELECT 1 FROM `role_permissions` rp
+    WHERE rp.`role_id` = r.`id` AND rp.`module_id` = m.`id`
+  );
