@@ -108,8 +108,20 @@ export async function listPengajuanLayananWarga(villageId: number, residentId: n
     .limit(50);
 }
 
-export async function listBerkasPengajuan(villageId: number, pengajuanId: number) {
-  return db.select().from(pengajuanLayananBerkas).where(and(eq(pengajuanLayananBerkas.villageId, villageId), eq(pengajuanLayananBerkas.pengajuanId, pengajuanId))).orderBy(pengajuanLayananBerkas.id);
+export async function listBerkasPengajuan(villageId: number, pengajuanId: number, jenis?: "persyaratan" | "hasil") {
+  const where = [eq(pengajuanLayananBerkas.villageId, villageId), eq(pengajuanLayananBerkas.pengajuanId, pengajuanId)];
+  if (jenis) where.push(eq(pengajuanLayananBerkas.jenis, jenis));
+  return db.select().from(pengajuanLayananBerkas).where(and(...where)).orderBy(pengajuanLayananBerkas.id);
+}
+
+export async function buatBerkasHasilPengajuan(villageId: number, pengajuanId: number, files: Array<{ namaPersyaratan: string; jalur: string; namaAsli: string; ukuran: number }>) {
+  return db.transaction(async (tx) => {
+    const [request] = await tx.select({ status: pengajuanLayanan.status }).from(pengajuanLayanan)
+      .where(and(eq(pengajuanLayanan.villageId, villageId), eq(pengajuanLayanan.id, pengajuanId))).limit(1);
+    if (!request) throw notFound("Pengajuan tidak ditemukan.");
+    if (!["diproses", "selesai"].includes(request.status)) throw conflict("Dokumen hasil hanya dapat ditambahkan saat pengajuan diproses atau selesai.");
+    if (files.length) await tx.insert(pengajuanLayananBerkas).values(files.map((file) => ({ villageId, pengajuanId, ...file, jenis: "hasil", mime: "application/pdf" })));
+  });
 }
 export async function getBerkasPengajuan(villageId: number, pengajuanId: number, berkasId: number) {
   const [row] = await db.select().from(pengajuanLayananBerkas).where(and(eq(pengajuanLayananBerkas.villageId, villageId), eq(pengajuanLayananBerkas.pengajuanId, pengajuanId), eq(pengajuanLayananBerkas.id, berkasId))).limit(1);
