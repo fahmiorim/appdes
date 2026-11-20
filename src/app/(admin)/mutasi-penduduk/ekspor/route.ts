@@ -1,6 +1,6 @@
 import { getIdentitas } from "@/features/desa/application/get-identitas";
 import { listRiwayatExport } from "@/features/penduduk/application/riwayat-penduduk-use-cases";
-import { buildRiwayatPendudukCsv, MUTATION_TYPES, normalisasiMutationType, riwayatPendudukFilename } from "@/features/penduduk/domain/riwayat-penduduk";
+import { buildRiwayatPendudukCsv, normalisasiMutationType, riwayatPendudukFilename } from "@/features/penduduk/domain/riwayat-penduduk";
 
 export async function GET(request:Request) {
   const url=new URL(request.url);
