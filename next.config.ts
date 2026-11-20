@@ -16,6 +16,8 @@ const nextConfig: NextConfig = {
    */
   experimental: {
     authInterrupts: true,
+    // Lampiran surat dinas berupa PDF hingga 20 MB + overhead multipart.
+    serverActions: { bodySizeLimit: "25mb" },
   },
 
   /**
