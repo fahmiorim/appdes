@@ -29,6 +29,9 @@ describe("ruteTersedia", () => {
     expect(ruteTersedia("/beranda?tab=ringkasan")).toBe(true);
     expect(ruteTersedia("/penduduk")).toBe(true);
     expect(ruteTersedia("/persuratan/dashboard")).toBe(true);
+    expect(ruteTersedia("/persuratan/surat")).toBe(true);
+    expect(ruteTersedia("/persuratan/jenis-surat")).toBe(true);
+    expect(ruteTersedia("/persuratan/arsip")).toBe(true);
     expect(ruteTersedia("/permohonan-surat")).toBe(true);
     expect(ruteTersedia("/konten/berita")).toBe(true);
     expect(ruteTersedia("/pengaturan/pengguna")).toBe(true);
