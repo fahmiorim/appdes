@@ -1,22 +1,22 @@
 import "server-only";
 
 import {
+  countBerita,
   getAlbumBySlug,
   getBeritaBySlug,
   getHalamanBySlug,
   getProfilDesa,
   listAlbumGaleri,
   listBerita,
-  listVideoGaleriPublik,
-  listPotensiDesa,
-  countBerita,
   listDokumenPublik,
   listFotoAlbum,
   listKategoriBerita,
   listPerangkatDesa,
+  listPotensiDesa,
   listSliderBeranda,
   listSlugBerita,
   listSlugHalaman,
+  listVideoGaleriPublik,
   listWidget,
   tambahHitBerita,
 } from "@/features/publik/infrastructure/content-repository";
@@ -100,7 +100,6 @@ export async function daftarSlugHalaman(villageId: number) {
 export async function daftarVideoGaleriPublik(villageId: number, limit = 8) {
   return listVideoGaleriPublik(villageId, limit);
 }
-
 
 export async function daftarPotensiDesa(villageId: number, includeInactive = false) {
   return listPotensiDesa(villageId, includeInactive);
