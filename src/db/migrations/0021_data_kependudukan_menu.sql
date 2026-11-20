@@ -1,6 +1,6 @@
 -- Group and child navigation for Admin Desa population management.
 INSERT INTO `modules` (`village_id`, `slug`, `name`, `url`, `icon`, `is_group`, `is_hidden`, `is_active`, `sort_order`, `parent_id`)
-SELECT v.`id`, 'data-kependudukan', 'Data Kependudukan', NULL, '♙', 1, 0, 1, 3, 0
+SELECT v.`id`, 'data-kependudukan', 'Data Kependudukan', NULL, '♙', 1, 0, 1, 5, 0
 FROM `villages` v
 WHERE NOT EXISTS (
   SELECT 1 FROM `modules` m WHERE m.`village_id` = v.`id` AND m.`slug` = 'data-kependudukan'
