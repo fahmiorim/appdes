@@ -1,4 +1,12 @@
-import { foreignKey, index, int, mysqlTable, text, varchar } from "drizzle-orm/mysql-core";
+import {
+  foreignKey,
+  index,
+  int,
+  mysqlTable,
+  text,
+  uniqueIndex,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { analisisKategori } from "./analisis";
 import { villages } from "./village";
@@ -22,6 +30,7 @@ export const analisisIndikator = mysqlTable(
     keterangan: text("keterangan"),
   },
   (table) => [
+    uniqueIndex("analisis_indikator_village_id_uq").on(table.villageId, table.id),
     index("analisis_indikator_village_kategori_idx").on(table.villageId, table.kategoriId),
     foreignKey({
       name: "analisis_indikator_kategori_tenant_fk",
