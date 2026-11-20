@@ -9,7 +9,7 @@ import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
 import type { BerkasUnggahan } from "@/features/publik/domain/media";
 import { PENGAJUAN_RESOURCE, pengajuanInputSchema, statusPengajuanSchema } from "../domain/pengajuan";
-import { buatPengajuanLayanan, getPengajuanLayanan, listLayananAktif, listPengajuanLayanan, listRiwayatPengajuan, updateStatusPengajuan } from "../infrastructure/pengajuan-repository";
+import { buatPengajuanLayanan, getPengajuanLayanan, listLayananAktif, listPengajuanLayanan, listRiwayatPengajuan, updateStatusPengajuan, listBerkasPengajuan, getBerkasPengajuan } from "../infrastructure/pengajuan-repository";
 
 export async function getLayananPublikWargaData() {
   const user = await requireWargaAktif();
@@ -19,30 +19,39 @@ export async function getLayananPublikWargaData() {
   return { profil, layanan, kontakEmail: user.email.endsWith(".warga.desa.local") ? "" : user.email };
 }
 
-export async function ajukanLayananWargaData(raw: unknown, unggahan: BerkasUnggahan | null) {
+export async function ajukanLayananWargaData(raw: unknown, unggahan: BerkasUnggahan[]) {
   const user = await requireWargaAktif();
   const villageId = await resolveVillageId(user);
   const parsed = pengajuanInputSchema.safeParse(raw);
   if (!parsed.success) throw validationError(parsed.error.issues[0]?.message ?? "Data pengajuan tidak valid.");
-  if (!unggahan || unggahan.ukuran === 0) throw validationError("Lampiran PDF wajib diunggah.");
-  if (unggahan.mime?.toLowerCase() !== "application/pdf" || unggahan.ukuran > 20 * 1024 * 1024) {
-    throw validationError("Lampiran hanya menerima PDF dengan ukuran maksimal 20 MB.");
-  }
   const profil = await getWargaProfile(villageId, user.residentId);
   if (!profil) throw notFound("Data penduduk tidak ditemukan pada desa ini.");
-  let lampiran: string | null = null;
-  lampiran = await simpanBerkasMedia(villageId, unggahan, "permohonan", "lampiran");
+  const layanan = (await listLayananAktif(villageId)).find((item) => item.id === parsed.data.layananId);
+  if (!layanan) throw notFound("Layanan tidak ditemukan atau sedang tidak aktif.");
+  const requiredDocs = (layanan.persyaratan ?? "").split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+  if (requiredDocs.length > 20) throw validationError("Konfigurasi persyaratan layanan melebihi 20 dokumen. Hubungi operator desa.");
+  if (unggahan.length !== requiredDocs.length) throw validationError("Unggah seluruh dokumen persyaratan yang diminta.");
+  const savedFiles: Array<{ namaPersyaratan: string; jalur: string; namaAsli: string; ukuran: number }> = [];
+  try {
+    for (let i = 0; i < requiredDocs.length; i += 1) {
+      const file = unggahan[i];
+      if (!file || file.mime?.toLowerCase() !== "application/pdf" || file.ukuran > 20 * 1024 * 1024) throw validationError("Setiap persyaratan wajib berupa PDF maksimal 20 MB.");
+      const jalur = await simpanBerkasMedia(villageId, file, "permohonan", "berkas_" + i);
+      savedFiles.push({ namaPersyaratan: requiredDocs[i].slice(0, 180), jalur, namaAsli: file.nama.slice(0, 255), ukuran: file.ukuran });
+    }
+  } catch (error) { for (const file of savedFiles) await hapusMedia(file.jalur); throw error; }
+  const lampiran: string | null = null;
   const nomorTiket = "PL-" + new Date().toISOString().slice(0, 10).replaceAll("-", "") + "-" + randomUUID().slice(0, 8).toUpperCase();
   try {
     const id = await buatPengajuanLayanan({
       villageId, layananId: parsed.data.layananId, residentId: user.residentId, nomorTiket,
       namaPemohon: profil.name, nik: profil.nationalId, telepon: parsed.data.telepon,
       email: parsed.data.email || null, alamat: profil.address, keperluan: parsed.data.keperluan,
-      lampiran,
+      lampiran, berkas: savedFiles,
     });
     return { id, nomorTiket };
   } catch (error) {
-    if (lampiran) await hapusMedia(lampiran);
+    for (const file of savedFiles) await hapusMedia(file.jalur);
     throw error;
   }
 }
@@ -105,4 +114,39 @@ export async function bacaLampiranPengajuanWargaData(id: number) {
   const bytes = await bacaMedia(detail.request.lampiran);
   if (bytes.length < 5 || bytes[0] !== 0x25 || bytes[1] !== 0x50 || bytes[2] !== 0x44 || bytes[3] !== 0x46 || bytes[4] !== 0x2d) throw notFound("Lampiran PDF tidak valid.");
   return bytes;
+}
+
+export async function listBerkasPengajuanAdminData(id: number) {
+  const user = await requirePermission(PENGAJUAN_RESOURCE, "read");
+  const villageId = await resolveVillageId(user);
+  if (!await getPengajuanLayanan(villageId, id)) throw notFound("Pengajuan tidak ditemukan.");
+  return listBerkasPengajuan(villageId, id);
+}
+export async function bacaBerkasPengajuanAdminData(id: number, berkasId: number) {
+  const user = await requirePermission(PENGAJUAN_RESOURCE, "read");
+  const villageId = await resolveVillageId(user);
+  const row = await getBerkasPengajuan(villageId, id, berkasId);
+  if (!row || !row.jalur.startsWith(villageId + "/permohonan/")) throw notFound("Berkas tidak ditemukan.");
+  const { bacaMedia } = await import("@/features/publik/infrastructure/media-storage");
+  const bytes = await bacaMedia(row.jalur);
+  if (bytes.length < 5 || bytes[0] !== 0x25 || bytes[1] !== 0x50 || bytes[2] !== 0x44 || bytes[3] !== 0x46 || bytes[4] !== 0x2d) throw notFound("Berkas PDF tidak valid.");
+  return { bytes, namaAsli: row.namaAsli };
+}
+export async function listBerkasPengajuanWargaData(id: number) {
+  const user = await requireWargaAktif();
+  const villageId = await resolveVillageId(user);
+  const detail = await getPengajuanLayanan(villageId, id);
+  if (!detail || detail.request.residentId !== user.residentId) throw notFound("Pengajuan tidak ditemukan.");
+  return listBerkasPengajuan(villageId, id);
+}
+export async function bacaBerkasPengajuanWargaData(id: number, berkasId: number) {
+  const user = await requireWargaAktif();
+  const villageId = await resolveVillageId(user);
+  const detail = await getPengajuanLayanan(villageId, id);
+  const row = await getBerkasPengajuan(villageId, id, berkasId);
+  if (!detail || detail.request.residentId !== user.residentId || !row || !row.jalur.startsWith(villageId + "/permohonan/")) throw notFound("Berkas tidak ditemukan.");
+  const { bacaMedia } = await import("@/features/publik/infrastructure/media-storage");
+  const bytes = await bacaMedia(row.jalur);
+  if (bytes.length < 5 || bytes[0] !== 0x25 || bytes[1] !== 0x50 || bytes[2] !== 0x44 || bytes[3] !== 0x46 || bytes[4] !== 0x2d) throw notFound("Berkas PDF tidak valid.");
+  return { bytes, namaAsli: row.namaAsli };
 }
