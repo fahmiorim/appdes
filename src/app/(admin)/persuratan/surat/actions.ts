@@ -8,6 +8,7 @@ import {
   createSuratDraftData,
   deleteSuratData,
   rejectSuratData,
+  updateSuratDraftData,
   verifySuratData,
 } from "@/features/surat/application/surat-use-cases";
 import { suratFormSchema, type VerificationStep } from "@/features/surat/domain/surat";
@@ -54,7 +55,6 @@ export async function perbaruiKonsepSuratAction(formData: FormData) {
     redirect(`/persuratan/surat/${id}/edit?error=${encodeURIComponent(message)}`);
   }
 
-  const { updateSuratDraftData } = await import("@/features/surat/application/surat-use-cases");
   await updateSuratDraftData(id, parsed.data);
   revalidatePath("/persuratan/surat");
   revalidatePath(`/persuratan/surat/${id}`);
