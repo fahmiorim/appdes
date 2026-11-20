@@ -12,6 +12,7 @@ import {
   buatKonsepSuratPermohonanAction,
   kembalikanPermohonanAction,
   mulaiPemeriksaanPermohonanAction,
+  tandaiPermohonanDiambilAction,
 } from "../actions";
 
 type Params = Promise<{ id: string }>;
@@ -40,6 +41,7 @@ const PESAN_BERHASIL: Record<string, string> = {
   dikembalikan: "Permohonan dikembalikan kepada warga dengan alasan.",
   dibatalkan: "Permohonan berhasil dibatalkan.",
   konsep: "Konsep surat berhasil dibuat dan diteruskan ke alur verifikasi.",
+  diambil: "Permohonan ditandai sudah diambil.",
 };
 
 export default async function DetailPermohonanSuratPage({
@@ -161,6 +163,12 @@ export default async function DetailPermohonanSuratPage({
               <form action={mulaiPemeriksaanPermohonanAction}>
                 <input type="hidden" name="id" value={id} />
                 <button type="submit" className="button button-primary">Mulai Pemeriksaan</button>
+              </form>
+            ) : null}
+            {status === 3 ? (
+              <form action={tandaiPermohonanDiambilAction}>
+                <input type="hidden" name="id" value={id} />
+                <button type="submit" className="button button-primary">Tandai Sudah Diambil</button>
               </form>
             ) : null}
             {status === 1 && permohonan.letterId === null ? (
