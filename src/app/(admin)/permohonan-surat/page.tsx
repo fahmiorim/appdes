@@ -38,10 +38,10 @@ function tanggal(value: Date | null): string {
 }
 
 function toneStatus(status: number): string {
-  if (status === 3 || status === 4) return "berhasil";
-  if (status === 5) return "netral";
-  if (status === 0) return "peringatan";
-  return "biru";
+  if (status === 3 || status === 4) return "hijau";
+  if (status === 5) return "merah";
+  if (status === 0) return "netral";
+  return "ungu";
 }
 
 export default async function PermohonanSuratPage({ searchParams }: { searchParams: SearchParams }) {
@@ -99,7 +99,7 @@ export default async function PermohonanSuratPage({ searchParams }: { searchPara
           <div className="beranda-kpi-body">
             <span className="beranda-kpi-label">Dalam Proses</span>
             <strong className="beranda-kpi-value">{menunggu.toLocaleString("id-ID")}</strong>
-            <span className="beranda-chip" data-tone="biru">Belum selesai</span>
+            <span className="beranda-chip" data-tone="ungu">Belum selesai</span>
           </div>
         </article>
         <article className="beranda-card beranda-kpi" data-tone="hijau">
@@ -107,7 +107,7 @@ export default async function PermohonanSuratPage({ searchParams }: { searchPara
           <div className="beranda-kpi-body">
             <span className="beranda-kpi-label">Selesai</span>
             <strong className="beranda-kpi-value">{selesai.toLocaleString("id-ID")}</strong>
-            <span className="beranda-chip" data-tone="berhasil">Siap / sudah diambil</span>
+            <span className="beranda-chip" data-tone="hijau">Siap / sudah diambil</span>
           </div>
         </article>
         <article className="beranda-card beranda-kpi" data-tone="jingga">
@@ -165,7 +165,7 @@ export default async function PermohonanSuratPage({ searchParams }: { searchPara
             <h2 className="beranda-card-title">Daftar Permohonan</h2>
             <p className="modul-muted">{total.toLocaleString("id-ID")} permohonan ditemukan</p>
           </div>
-          {canManage ? <span className="beranda-chip" data-tone="berhasil">Akses pengelolaan aktif</span> : <span className="beranda-chip" data-tone="netral">Akses baca saja</span>}
+          {canManage ? <span className="beranda-chip" data-tone="hijau">Akses pengelolaan aktif</span> : <span className="beranda-chip" data-tone="netral">Akses baca saja</span>}
         </div>
         {permohonan.length === 0 ? (
           <div style={{ display: "grid", justifyItems: "center", gap: 8, padding: "42px 20px", textAlign: "center", color: "var(--color-text-muted)" }}>
