@@ -190,6 +190,13 @@
       "when": 1795797600000,
       "tag": "0026_pengajuan_layanan_berkas",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "5",
+      "when": 1795884000000,
+      "tag": "0027_pengajuan_layanan_hasil",
+      "breakpoints": true
     }
   ]
 }
