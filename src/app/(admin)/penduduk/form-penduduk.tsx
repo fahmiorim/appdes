@@ -61,7 +61,7 @@ function OpsiLabel({ options }: { options: PendudukReferenceData["families"] }) 
  * Validasi tetap dijalankan ulang di Server Action; atribut HTML hanya membantu
  * pengguna, bukan pengganti pemeriksaan server.
  */
-export function FormPenduduk({ aksi, references, penduduk }: Props) {
+export function FormPenduduk({ aksi, references, penduduk, familyId }: Props) {
   const router = useRouter();
   const ubah = penduduk !== undefined;
   const kembali = ubah ? `/penduduk/${penduduk.id}` : "/penduduk";
@@ -292,7 +292,7 @@ export function FormPenduduk({ aksi, references, penduduk }: Props) {
               <select
                 aria-invalid={tidakValid("familyId")}
                 className="form-input"
-                defaultValue={penduduk?.familyId ?? ""}
+                defaultValue={penduduk?.familyId ?? familyId ?? ""}
                 name="familyId"
               >
                 <option value="">Tidak ditautkan</option>
