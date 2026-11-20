@@ -4,9 +4,8 @@ import { notFound } from "next/navigation";
 
 import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
 import { getKeluargaDetail } from "@/features/keluarga/application/use-cases";
-import { AKSI_LOG_LABELS } from "@/features/keluarga/domain/keluarga";
+import { AKSI_LOG_LABELS, KELUARGA_RESOURCE } from "@/features/keluarga/domain/keluarga";
 import { LIFE_STATUS_LABELS, PENDUDUK_RESOURCE } from "@/features/penduduk/domain/penduduk";
-import { KELUARGA_RESOURCE } from "@/features/keluarga/domain/keluarga";
 import { hasPermission } from "@/features/rbac/application/authorization";
 import { verifySession } from "@/lib/dal";
 
