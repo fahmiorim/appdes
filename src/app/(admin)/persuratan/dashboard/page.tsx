@@ -175,7 +175,9 @@ export default async function DashboardAdministrasiSuratPage() {
         <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
           <Link className="beranda-quick-tile" href="/permohonan-surat">Permohonan Surat</Link>
           <Link className="beranda-quick-tile" href="/persuratan/surat">Pembuatan & Pengelolaan Surat</Link>
-          <Link className="beranda-quick-tile" href="/persuratan/surat/arsip">Arsip & Riwayat Surat</Link>
+          <Link className="beranda-quick-tile" href="/persuratan/jenis-surat">Template & Jenis Surat</Link>
+          <Link className="beranda-quick-tile" href="/persuratan/master">Klasifikasi & Persyaratan</Link>
+          <Link className="beranda-quick-tile" href="/persuratan/arsip">Arsip & Riwayat Surat</Link>
         </div>
       </Panel>
     </div>
