@@ -140,7 +140,7 @@ describe("SuperAdminTenantPage", () => {
     expect(html).toContain("tenant-search-dengan-ikon");
     expect(html).toContain("Semua tenant");
     expect(html).toContain("Tambah tenant");
-    expect(html).toContain("Kembali ke dashboard");
+    expect(html).toContain("Kembali");
     expect(html).toContain("Kelola Desa Sukamaju");
   });
 

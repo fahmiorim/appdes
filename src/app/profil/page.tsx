@@ -2,29 +2,30 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
+import { getStatistikDesa } from "@/features/desa/application/statistik-desa";
 import {
+  daftarAlbumGaleri,
+  daftarFotoAlbum,
   daftarPerangkatPublik,
+  daftarSliderBeranda,
   profilDesaPublik,
 } from "@/features/publik/application/konten-publik";
 
+import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
 import styles from "./profil.module.css";
 
 export const dynamic = "force-dynamic";
 
 function mediaUrl(value: string | null | undefined, villageId: number): string | null {
   if (!value) return null;
-  const segments = value.split(/[\\/]/).filter(Boolean);
-  if (
-    segments.length === 0 ||
-    segments.some((segment) => segment === "." || segment === ".." || segment.includes(".."))
-  ) {
+  const parts = value.split(/[\\/]/).filter(Boolean);
+  if (!parts.length || parts.some((part) => part === "." || part === ".." || part.includes("..")))
     return null;
-  }
-  const path = segments[0] === String(villageId) ? segments : [String(villageId), ...segments];
+  const path = parts[0] === String(villageId) ? parts : [String(villageId), ...parts];
   return `/api/publik/media/${path.map(encodeURIComponent).join("/")}`;
 }
 
-function plainText(value: string | null | undefined): string {
+function plainText(value: string | null | undefined, max = 1800): string {
   return (value ?? "")
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
@@ -36,267 +37,341 @@ function plainText(value: string | null | undefined): string {
     .replace(/&quot;/gi, '"')
     .replace(/&#39;/gi, "'")
     .replace(/\s+/g, " ")
-    .trim();
+    .trim()
+    .slice(0, max);
+}
+
+function formatNumber(value: number) {
+  return new Intl.NumberFormat("id-ID").format(value);
 }
 
 function locationLabel(desa: {
   namaKecamatan: string | null;
   namaKabupaten: string | null;
   namaPropinsi: string | null;
-}): string {
+}) {
   return [desa.namaKecamatan, desa.namaKabupaten, desa.namaPropinsi].filter(Boolean).join(", ");
 }
 
 export default async function ProfilDesaPage() {
   const desa = await getIdentitasFromRequest();
-  const [profil, perangkat] = await Promise.all([
+  const [profil, perangkat, statistik, slider, albums] = await Promise.all([
     profilDesaPublik(desa.id),
     daftarPerangkatPublik(desa.id),
+    getStatistikDesa(desa.id),
+    daftarSliderBeranda(desa.id),
+    daftarAlbumGaleri(desa.id),
   ]);
-
-  const lokasi = locationLabel(desa);
+  const populatedAlbums = albums.filter((album) => album.jumlahFoto > 0);
+  const photoResults = await Promise.all(
+    populatedAlbums.slice(0, 3).map((album) => daftarFotoAlbum(desa.id, album.id)),
+  );
+  const galleryPhotos = photoResults.flat();
+  const location = locationLabel(desa);
+  const heroImage =
+    mediaUrl(slider[0]?.gambar, desa.id) ??
+    (galleryPhotos[0] ? mediaUrl(galleryPhotos[0].gambar, desa.id) : null);
+  const officeImage =
+    mediaUrl(slider[1]?.gambar, desa.id) ??
+    (galleryPhotos[1] ? mediaUrl(galleryPhotos[1].gambar, desa.id) : null);
+  const historyImage =
+    mediaUrl(slider[2]?.gambar, desa.id) ??
+    (galleryPhotos[2] ? mediaUrl(galleryPhotos[2].gambar, desa.id) : null);
+  const visi = plainText(profil?.visi);
   const sejarah = plainText(profil?.sejarah);
   const misi = (profil?.misi ?? "")
     .split(/\r?\n/)
-    .map((item) => plainText(item))
+    .map((item) => plainText(item, 300))
     .filter(Boolean);
-  const koordinat = profil?.koordinat?.match(/^(-?\d{1,3}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)$/);
-  const petaUrl = koordinat
-    ? `https://www.google.com/maps?q=${encodeURIComponent(profil?.koordinat ?? "")}`
+  const mapUrl = profil?.koordinat
+    ? `https://www.google.com/maps?q=${encodeURIComponent(profil.koordinat)}`
     : null;
+  const kepalaDesa = perangkat.find((item) =>
+    (item.jabatan ?? "").toLocaleLowerCase("id-ID").includes("kepala desa"),
+  );
+  const dusun = statistik.perDusun.filter((item) => item.label !== "Belum diisi");
+
+  const sidebar = [
+    { href: "#tentang", icon: "▣", label: "Tentang Desa" },
+    { href: "#sejarah", icon: "◈", label: "Sejarah Desa" },
+    { href: "#visi-misi", icon: "♡", label: "Visi & Misi" },
+    { href: "#wilayah", icon: "⌖", label: "Wilayah Desa" },
+    { href: "#potensi", icon: "♧", label: "Potensi Desa" },
+    { href: "#data-umum", icon: "▧", label: "Data Umum" },
+    { href: "#sarana-prasarana", icon: "♧", label: "Sarana & Prasarana" },
+  ];
 
   return (
     <main className={styles.site}>
-      <div className={styles.topline}>
-        <div className={styles.container + " " + styles.toplineInner}>
-          <span>Website Resmi Pemerintah Desa</span>
-          <span>{lokasi || "Informasi resmi dan layanan desa"}</span>
-        </div>
-      </div>
+      <PublicSiteHeader
+        desa={desa}
+        location={location}
+        logoUrl={mediaUrl(desa.logo, desa.id)}
+        activePath="/profil"
+      />
 
-      <header className={styles.header}>
-        <div className={styles.container + " " + styles.headerInner}>
-          <Link href="/" className={styles.brand}>
-            {desa.logo ? (
-              <Image
-                src={mediaUrl(desa.logo, desa.id) ?? "/images/logo.png"}
-                alt=""
-                width={46}
-                height={46}
-                className={styles.logo}
-                unoptimized
-              />
-            ) : (
-              <span className={styles.logoFallback} aria-hidden="true">
-                D
-              </span>
-            )}
-            <span>
-              <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>
-                {desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}
-              </small>
-            </span>
-          </Link>
-          <nav className={styles.nav} aria-label="Navigasi utama">
-            <Link href="/">Beranda</Link>
-            <Link href="/profil" aria-current="page">
-              Profil Desa
-            </Link>
-            <Link href="/#berita">Berita</Link>
-            <Link href="/#agenda">Agenda</Link>
-          </nav>
-          <Link href="/masuk" className={styles.login}>
-            Masuk <span aria-hidden="true">↗</span>
-          </Link>
-        </div>
-      </header>
-
-      <section className={styles.hero}>
-        <div className={styles.container}>
+      <section
+        className={styles.hero}
+        style={
+          heroImage
+            ? {
+                backgroundImage: `linear-gradient(90deg,#063b70f2 0%,#06477dc9 44%,#062b5c35 100%),url("${heroImage}")`,
+              }
+            : undefined
+        }
+      >
+        <div className={styles.heroInner}>
           <nav className={styles.breadcrumb} aria-label="Breadcrumb">
             <Link href="/">Beranda</Link>
-            <span>/</span>
-            <span aria-current="page">Profil Desa</span>
+            <span>›</span>
+            <span>Profil Desa</span>
           </nav>
-          <p className={styles.eyebrow}>MENGENAL LEBIH DEKAT</p>
-          <h1>Profil {desa.namaDesa ?? "Desa"}</h1>
-          <p className={styles.heroText}>
-            Kenali identitas, sejarah, visi, dan arah pembangunan {desa.namaDesa ?? "desa"}.
+          <h1>Profil Desa</h1>
+          <p>
+            Informasi lengkap tentang sejarah, visi misi, wilayah, potensi,
+            <br className={styles.desktopBreak} /> dan kondisi umum {desa.namaDesa ?? "desa"}.
           </p>
-          {lokasi ? <p className={styles.location}>⌖ {lokasi}</p> : null}
         </div>
       </section>
 
-      <section className={styles.introSection}>
-        <div className={styles.container + " " + styles.introGrid}>
-          <div className={styles.identityCard}>
-            <div className={styles.identityMark}>
-              {desa.logo ? (
-                <Image
-                  src={mediaUrl(desa.logo, desa.id) ?? "/images/logo.png"}
-                  alt={`Logo ${desa.namaDesa ?? "desa"}`}
-                  width={92}
-                  height={92}
-                  unoptimized
-                />
-              ) : (
-                <span aria-hidden="true">D</span>
-              )}
-            </div>
-            <p className={styles.cardLabel}>PEMERINTAH DESA</p>
-            <h2>{desa.namaDesa ?? "Nama Desa"}</h2>
-            <p>{lokasi || "Informasi wilayah belum dilengkapi."}</p>
-            {desa.kodeDesa ? <span className={styles.code}>Kode desa: {desa.kodeDesa}</span> : null}
-          </div>
-
-          <div className={styles.introCopy}>
-            <p className={styles.kicker}>SAMBUTAN & GAMBARAN UMUM</p>
-            <h2>Membangun desa dimulai dengan mengenal potensinya.</h2>
-            {plainText(profil?.sambutan) ? (
-              <p>{plainText(profil?.sambutan)}</p>
-            ) : sejarah ? (
-              <p>{sejarah.slice(0, 520)}</p>
-            ) : (
-              <p>
-                Informasi gambaran umum desa akan ditampilkan di sini setelah dilengkapi oleh
-                pemerintah desa.
-              </p>
-            )}
-            <div className={styles.quickFacts}>
-              <div>
-                <span>Desa</span>
-                <strong>{desa.namaDesa ?? "—"}</strong>
-              </div>
-              <div>
-                <span>Kecamatan</span>
-                <strong>{desa.namaKecamatan ?? "—"}</strong>
-              </div>
-              <div>
-                <span>Kabupaten</span>
-                <strong>{desa.namaKabupaten ?? "—"}</strong>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className={styles.contentSection}>
-        <div className={styles.container + " " + styles.contentGrid}>
-          <article className={styles.contentCard}>
-            <p className={styles.kicker}>SEJARAH DESA</p>
-            <h2>Perjalanan dan cerita desa</h2>
-            {sejarah ? (
-              <p className={styles.bodyCopy}>{sejarah}</p>
-            ) : (
-              <p className={styles.muted}>Sejarah desa belum dipublikasikan.</p>
-            )}
-          </article>
-          <aside className={styles.sideStack}>
-            <div className={styles.visionCard}>
-              <p className={styles.kicker}>VISI DESA</p>
-              <h2>Arah dan cita-cita bersama</h2>
-              <p>{plainText(profil?.visi) || "Visi desa belum dipublikasikan."}</p>
-            </div>
-            <div className={styles.missionCard}>
-              <p className={styles.kicker}>MISI DESA</p>
-              <h2>Langkah untuk mewujudkan visi</h2>
-              {misi.length ? (
-                <ol>
-                  {misi.map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ol>
-              ) : (
-                <p className={styles.muted}>Misi desa belum dipublikasikan.</p>
-              )}
-            </div>
+      <div className={styles.container}>
+        <div className={styles.profileLayout}>
+          <aside className={styles.sidebar}>
+            <h2>
+              <span>▤</span> Profil Desa
+            </h2>
+            <nav aria-label="Navigasi profil desa">
+              {sidebar.map((item, index) => (
+                <a href={item.href} key={item.href} className={index === 0 ? styles.active : ""}>
+                  <span>{item.icon}</span>
+                  {item.label}
+                </a>
+              ))}
+            </nav>
           </aside>
-        </div>
-      </section>
 
-      <section className={styles.officialSection}>
-        <div className={styles.container}>
-          <div className={styles.sectionHeading}>
-            <div>
-              <p className={styles.kicker}>PEMERINTAHAN DESA</p>
-              <h2>Perangkat desa</h2>
-              <p>Kenali perangkat yang menjalankan pelayanan dan pemerintahan desa.</p>
-            </div>
-            <span className={styles.count}>{perangkat.length} perangkat aktif</span>
-          </div>
-          {perangkat.length ? (
-            <div className={styles.officialGrid}>
-              {perangkat.map((item) => {
-                const foto = mediaUrl(item.foto, desa.id);
-                const nama = [item.gelarDepan, item.nama, item.gelarBelakang]
-                  .filter(Boolean)
-                  .join(" ");
-                return (
-                  <article className={styles.officialCard} key={item.id}>
-                    <div className={styles.officialPhoto}>
-                      {foto ? (
+          <div className={styles.mainContent}>
+            <section className={styles.aboutCard} id="tentang">
+              <h2>Tentang {desa.namaDesa ?? "Desa"}</h2>
+              <div className={styles.aboutGrid}>
+                <div className={styles.aboutPhoto}>
+                  {officeImage ? (
+                    <Image
+                      src={officeImage}
+                      alt={`Dokumentasi ${desa.namaDesa ?? "desa"}`}
+                      fill
+                      priority
+                      unoptimized
+                      sizes="(max-width: 700px) 100vw, 40vw"
+                    />
+                  ) : (
+                    <div className={styles.imageFallback}>Dokumentasi desa belum tersedia</div>
+                  )}
+                </div>
+                <div className={styles.aboutText}>
+                  <p>
+                    {plainText(profil?.sambutan) ||
+                      `${desa.namaDesa ?? "Desa ini"} berada di wilayah ${location || "yang data wilayahnya belum dilengkapi"}. Informasi gambaran umum desa akan diperbarui oleh pemerintah desa.`}
+                  </p>
+                  {kepalaDesa ? (
+                    <small>
+                      —{" "}
+                      {[kepalaDesa.gelarDepan, kepalaDesa.nama, kepalaDesa.gelarBelakang]
+                        .filter(Boolean)
+                        .join(" ")}
+                      , {kepalaDesa.jabatan}
+                    </small>
+                  ) : null}
+                </div>
+              </div>
+              <div className={styles.factGrid}>
+                <div>
+                  <span className={styles.factIcon}>▦</span>
+                  <span>
+                    <small>Tahun Berdiri</small>
+                    <strong>Belum tersedia</strong>
+                  </span>
+                </div>
+                <div>
+                  <span className={styles.factIcon}>♙</span>
+                  <span>
+                    <small>Jumlah Penduduk</small>
+                    <strong>{formatNumber(statistik.total)} Jiwa</strong>
+                  </span>
+                </div>
+                <div>
+                  <span className={styles.factIcon}>⌂</span>
+                  <span>
+                    <small>Jumlah KK</small>
+                    <strong>{formatNumber(statistik.keluarga)} KK</strong>
+                  </span>
+                </div>
+                <div>
+                  <span className={styles.factIcon}>◫</span>
+                  <span>
+                    <small>Luas Wilayah</small>
+                    <strong>Belum tersedia</strong>
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            <div className={styles.twoColumn}>
+              <div className={styles.leftStack}>
+                <section className={styles.historyCard} id="sejarah">
+                  <div className={styles.sectionTitle}>
+                    <span>▣</span>
+                    <h2>Sejarah Singkat Desa</h2>
+                  </div>
+                  <div className={styles.historyBody}>
+                    <div>
+                      <p>{sejarah || "Sejarah desa belum dipublikasikan oleh pemerintah desa."}</p>
+                      <Link href="/profil/sejarah">
+                        Selengkapnya <b>→</b>
+                      </Link>
+                    </div>
+                    {historyImage ? (
+                      <div className={styles.historyPhoto}>
                         <Image
-                          src={foto}
-                          alt={`Foto ${nama}`}
+                          src={historyImage}
+                          alt="Dokumentasi sejarah desa"
                           fill
-                          sizes="(max-width: 700px) 50vw, 220px"
                           unoptimized
+                          sizes="(max-width: 700px) 100vw, 22vw"
                         />
+                      </div>
+                    ) : null}
+                  </div>
+                </section>
+
+                <section className={styles.regionCard} id="wilayah">
+                  <div className={styles.sectionTitle}>
+                    <span>⌖</span>
+                    <h2>Letak & Wilayah Desa</h2>
+                  </div>
+                  <p>
+                    Secara administratif, {desa.namaDesa ?? "desa"} berada di{" "}
+                    {location || "wilayah administratif yang belum dilengkapi"}.
+                  </p>
+                  <div className={styles.regionBody}>
+                    <div className={styles.regionTable}>
+                      <strong>⌖　Wilayah Administratif</strong>
+                      <div>
+                        <b>Kecamatan</b>
+                        <span>{desa.namaKecamatan || "Belum diisi"}</span>
+                      </div>
+                      <div>
+                        <b>Kabupaten</b>
+                        <span>{desa.namaKabupaten || "Belum diisi"}</span>
+                      </div>
+                      <div>
+                        <b>Provinsi</b>
+                        <span>{desa.namaPropinsi || "Belum diisi"}</span>
+                      </div>
+                      {dusun.slice(0, 4).map((item) => (
+                        <div key={item.label}>
+                          <b>Dusun</b>
+                          <span>{item.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <a
+                      className={styles.mapPreview}
+                      href={mapUrl ?? "/profil#wilayah"}
+                      target={mapUrl ? "_blank" : undefined}
+                      rel={mapUrl ? "noreferrer" : undefined}
+                    >
+                      {mapUrl ? (
+                        <>
+                          <span>⌖</span>
+                          <strong>Lihat lokasi {desa.namaDesa ?? "desa"}</strong>
+                          <small>Buka peta lokasi ↗</small>
+                        </>
                       ) : (
-                        <span aria-hidden="true">{item.nama.slice(0, 1).toUpperCase()}</span>
+                        <>
+                          <span>⌖</span>
+                          <strong>Peta belum tersedia</strong>
+                          <small>Koordinat desa belum diatur</small>
+                        </>
                       )}
-                    </div>
-                    <div className={styles.officialInfo}>
-                      <h3>{nama}</h3>
-                      <p>{item.jabatan ?? "Perangkat Desa"}</p>
-                      {item.periode ? <small>Periode {item.periode}</small> : null}
-                    </div>
-                  </article>
-                );
-              })}
+                    </a>
+                  </div>
+                </section>
+              </div>
+
+              <section className={styles.visionCard} id="visi-misi">
+                <div className={styles.sectionTitle}>
+                  <span>◎</span>
+                  <h2>Visi & Misi Desa</h2>
+                </div>
+                <div className={styles.visionQuote}>
+                  <span>“</span>
+                  <div>
+                    <strong>Visi</strong>
+                    <p>{visi || "Visi desa belum dipublikasikan."}</p>
+                  </div>
+                </div>
+                <div className={styles.missionTitle}>
+                  <span>▣</span>
+                  <h3>Misi</h3>
+                </div>
+                {misi.length ? (
+                  <ul>
+                    {misi.map((item, index) => (
+                      <li key={index}>
+                        <span>✓</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className={styles.emptyText}>Misi desa belum dipublikasikan.</p>
+                )}
+              </section>
             </div>
-          ) : (
-            <div className={styles.emptyState}>Data perangkat desa belum tersedia.</div>
-          )}
-        </div>
-      </section>
 
-      <section className={styles.contactSection}>
-        <div className={styles.container + " " + styles.contactPanel}>
-          <div>
-            <p className={styles.kicker}>INFORMASI WILAYAH</p>
-            <h2>Kunjungi kantor desa</h2>
-            <p>{desa.alamatKantor || lokasi || "Alamat kantor desa belum dilengkapi."}</p>
-          </div>
-          <div className={styles.contactActions}>
-            {desa.telepon ? <a href={`tel:${desa.telepon}`}>Hubungi kantor desa</a> : null}
-            {petaUrl ? (
-              <a href={petaUrl} target="_blank" rel="noreferrer">
-                Lihat lokasi di peta ↗
-              </a>
-            ) : null}
-          </div>
-        </div>
-      </section>
+            <section className={styles.potentialCard} id="potensi">
+              <div className={styles.sectionTitle}>
+                <span>♧</span>
+                <div>
+                  <h2>Potensi Desa</h2>
+                  <p>
+                    Potensi unggulan yang menjadi kekuatan pembangunan {desa.namaDesa ?? "desa"}.
+                  </p>
+                </div>
+              </div>
+              <div className={styles.emptyInline}>Informasi potensi desa belum dipublikasikan.</div>
+            </section>
 
-      <footer className={styles.footer}>
-        <div className={styles.container + " " + styles.footerInner}>
-          <div>
-            <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-            <p>{lokasi || "Website resmi pemerintah desa"}</p>
+            <section className={styles.facilityCard} id="sarana-prasarana">
+              <div className={styles.sectionTitle}>
+                <span>▱</span>
+                <div>
+                  <h2>Sarana & Prasarana Desa</h2>
+                  <p>
+                    Fasilitas umum dan infrastruktur pendukung pelayanan serta kegiatan masyarakat.
+                  </p>
+                </div>
+              </div>
+              <div className={styles.emptyInline}>
+                Data sarana dan prasarana desa belum tersedia untuk ditampilkan.
+              </div>
+            </section>
+            <section className={styles.generalData} id="data-umum">
+              <h2>Data Umum Desa</h2>
+              <div>
+                <span>Jumlah Penduduk</span>
+                <strong>{formatNumber(statistik.total)} jiwa</strong>
+                <span>Jumlah Kepala Keluarga</span>
+                <strong>{formatNumber(statistik.keluarga)} KK</strong>
+                <span>Jumlah Dusun Terdata</span>
+                <strong>{formatNumber(dusun.length)} dusun</strong>
+              </div>
+            </section>
           </div>
-          <div className={styles.footerLinks}>
-            <Link href="/">Beranda</Link>
-            <Link href="/profil">Profil Desa</Link>
-            <Link href="/#berita">Berita</Link>
-            <Link href="/masuk">Layanan Warga</Link>
-          </div>
-          <small>
-            © {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. Didukung FlexiDesa.
-          </small>
         </div>
-      </footer>
+      </div>
+      <PublicSiteFooter desa={desa} location={location} logoUrl={mediaUrl(desa.logo, desa.id)} />
     </main>
   );
 }

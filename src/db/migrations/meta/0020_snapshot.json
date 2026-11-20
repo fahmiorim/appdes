@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "fc4dc7cd-b13c-4575-9b4f-1ad76e721de1",
-  "prevId": "a4f7e408-cc6c-40c1-948e-dde3f0ea6256",
+  "id": "0020_gallery_categories_videos",
+  "prevId": "0019_komentar_email",
   "tables": {
     "agenda_kegiatan": {
       "name": "agenda_kegiatan",
@@ -3670,6 +3670,20 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(now())"
+        },
+        "kategori": {
+          "name": "kategori",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -3688,6 +3702,15 @@
             "id"
           ],
           "isUnique": true
+        },
+        "galeri_album_village_category_published_idx": {
+          "name": "galeri_album_village_category_published_idx",
+          "columns": [
+            "village_id",
+            "kategori",
+            "published_at"
+          ],
+          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -4942,198 +4965,6 @@
         }
       },
       "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
-    "domain_dns_checks": {
-      "name": "domain_dns_checks",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "domain_id": {
-          "name": "domain_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "status": {
-          "name": "status",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "addresses": {
-          "name": "addresses",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "error": {
-          "name": "error",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "checked_at": {
-          "name": "checked_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(now())"
-        }
-      },
-      "indexes": {
-        "domain_dns_checks_status_idx": {
-          "name": "domain_dns_checks_status_idx",
-          "columns": [
-            "status"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "domain_dns_checks_domain_id_village_domains_id_fk": {
-          "name": "domain_dns_checks_domain_id_village_domains_id_fk",
-          "tableFrom": "domain_dns_checks",
-          "tableTo": "village_domains",
-          "columnsFrom": [
-            "domain_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "domain_dns_checks_id": {
-          "name": "domain_dns_checks_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
-        "domain_dns_checks_domain_id_unique": {
-          "name": "domain_dns_checks_domain_id_unique",
-          "columns": [
-            "domain_id"
-          ]
-        }
-      },
-      "checkConstraint": {}
-    },
-    "domain_ssl_checks": {
-      "name": "domain_ssl_checks",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "domain_id": {
-          "name": "domain_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "status": {
-          "name": "status",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "valid_from": {
-          "name": "valid_from",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "valid_to": {
-          "name": "valid_to",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "issuer": {
-          "name": "issuer",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "error": {
-          "name": "error",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "checked_at": {
-          "name": "checked_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(now())"
-        }
-      },
-      "indexes": {
-        "domain_ssl_checks_status_idx": {
-          "name": "domain_ssl_checks_status_idx",
-          "columns": [
-            "status"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {
-        "domain_ssl_checks_domain_id_village_domains_id_fk": {
-          "name": "domain_ssl_checks_domain_id_village_domains_id_fk",
-          "tableFrom": "domain_ssl_checks",
-          "tableTo": "village_domains",
-          "columnsFrom": [
-            "domain_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "domain_ssl_checks_id": {
-          "name": "domain_ssl_checks_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {
-        "domain_ssl_checks_domain_id_unique": {
-          "name": "domain_ssl_checks_domain_id_unique",
-          "columns": [
-            "domain_id"
-          ]
-        }
-      },
       "checkConstraint": {}
     },
     "dtks": {
@@ -17676,6 +17507,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "email": {
+          "name": "email",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "isi": {
           "name": "isi",
           "type": "text",
@@ -19204,6 +19042,127 @@
       "compositePrimaryKeys": {
         "umpan_balik_id": {
           "name": "umpan_balik_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "galeri_video": {
+      "name": "galeri_video",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "village_id": {
+          "name": "village_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "judul": {
+          "name": "judul",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "keterangan": {
+          "name": "keterangan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "url": {
+          "name": "url",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "provider": {
+          "name": "provider",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "thumbnail": {
+          "name": "thumbnail",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "aktif": {
+          "name": "aktif",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "galeri_video_village_published_idx": {
+          "name": "galeri_video_village_published_idx",
+          "columns": [
+            "village_id",
+            "aktif",
+            "published_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "galeri_video_village_fk": {
+          "name": "galeri_video_village_fk",
+          "tableFrom": "galeri_video",
+          "tableTo": "villages",
+          "columnsFrom": [
+            "village_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "galeri_video_id": {
+          "name": "galeri_video_id",
           "columns": [
             "id"
           ]

@@ -1,0 +1,806 @@
+.site {
+  min-height: 100vh;
+  overflow: hidden;
+  background: #f1f6ff;
+  color: #111a4a;
+}
+.container {
+  width: min(1180px, calc(100% - 40px));
+  margin-inline: auto;
+}
+.hero {
+  position: relative;
+  min-height: 166px;
+  overflow: hidden;
+  background-color: #064a82;
+  background-image:
+    linear-gradient(90deg, #06396ff2 0%, #07518fc9 48%, #073c6d42 100%),
+    linear-gradient(130deg, #07549a, #0b7da4);
+  background-size: cover;
+  background-position: center 48%;
+  color: #fff;
+}
+.hero:after {
+  position: absolute;
+  right: -3%;
+  bottom: -73px;
+  left: -3%;
+  height: 112px;
+  border-radius: 50% 50% 0 0;
+  background: linear-gradient(100deg, #0878e4b8, #7929efce);
+  content: "";
+  transform: rotate(-2deg);
+}
+.heroInner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: min(1200px, calc(100% - 80px));
+  min-height: 166px;
+  margin: auto;
+  padding: 15px 0 20px;
+}
+.hero nav {
+  display: flex;
+  gap: 9px;
+  color: #e7f3ff;
+  font-size: 11px;
+}
+.hero nav a {
+  color: inherit;
+  text-decoration: none;
+}
+.kicker {
+  margin: 8px 0 0;
+  color: #b9ddff;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+}
+.hero h1 {
+  margin: 4px 0 5px;
+  font-size: 32px;
+  line-height: 1.1;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+.heroInner > p:last-of-type {
+  max-width: 360px;
+  margin: 0;
+  color: #f1f7ff;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.heroArtwork {
+  position: absolute;
+  right: 28%;
+  top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 230px;
+  height: 118px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #fff, #e7edff);
+  box-shadow: 0 9px 24px #041f5366;
+  transform: rotate(-3deg);
+}
+.heroArtwork > span {
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  border: 13px solid #7a36f5;
+  border-radius: 50%;
+  color: #9b55ff;
+  font-size: 82px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 2px 3px #4c1ac7;
+}
+.heroArtwork > i {
+  position: absolute;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 24px;
+  border-radius: 6px;
+  background: #e9efff;
+  color: #08b96c;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 900;
+}
+.heroArtwork > i:nth-child(2) {
+  top: 15px;
+}
+.heroArtwork > i:nth-child(3) {
+  top: 47px;
+}
+.heroArtwork > i:nth-child(4) {
+  top: 79px;
+}
+.sectionNav {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 5px;
+  margin: -1px 0 12px;
+  padding: 10px 14px;
+  border: 1px solid #dce7f8;
+  border-radius: 15px;
+  background: #ffffffed;
+  box-shadow: 0 5px 16px #183e7914;
+}
+.sectionNav a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  min-height: 44px;
+  padding: 7px;
+  border-radius: 11px;
+  color: #111a4a;
+  font-size: 13px;
+  font-weight: 850;
+  text-decoration: none;
+}
+.sectionNav a span {
+  font-size: 28px;
+  line-height: 1;
+}
+.sectionNav a.selected {
+  background: linear-gradient(100deg, #912af5, #5414ed);
+  color: #fff;
+}
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(290px, 1fr);
+  gap: 10px;
+  align-items: stretch;
+}
+.primaryCard,
+.sideCard,
+.policyCard {
+  border: 1px solid #dce6f6;
+  border-radius: 15px;
+  background: linear-gradient(145deg, #fff, #f9fbff);
+  box-shadow: 0 5px 16px #1c40760e;
+}
+.primaryCard {
+  padding: 13px 15px;
+}
+.primaryCard h2,
+.sideCard h2,
+.policyContent h2 {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0 0 10px;
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+}
+.primaryCard h2 > span,
+.sideCard h2 > span,
+.policyContent h2 > span {
+  color: #7625ef;
+  font-size: 29px;
+  line-height: 1;
+}
+.visionBanner {
+  position: relative;
+  display: flex;
+  min-height: 178px;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+  border-radius: 12px;
+  background-color: #8fc8f0;
+  background-image:
+    linear-gradient(90deg, #ffffff08, #ffffff20),
+    linear-gradient(135deg, #7bc4f5, #e6f4ff 55%, #65a84e);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.visionQuote {
+  position: relative;
+  z-index: 1;
+  width: 73%;
+  padding: 16px 20px;
+  color: #111a4a;
+  font-size: 22px;
+  font-style: italic;
+  font-weight: 900;
+  line-height: 1.28;
+  text-align: center;
+  text-shadow: 0 1px 0 #fff;
+}
+.visionQuote > b {
+  color: #7823f5;
+  font-family: Georgia, serif;
+  font-size: 50px;
+  line-height: 0.4;
+  vertical-align: -12px;
+}
+.visionQuote > i {
+  display: block;
+  width: 65px;
+  height: 4px;
+  margin: 12px auto 0;
+  border-radius: 50%;
+  background: #7526f5;
+  transform: rotate(-8deg);
+}
+.muted {
+  color: #75819a;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 500;
+}
+.missionHeading {
+  margin: 15px 4px 10px;
+}
+.missionHeading h2 {
+  margin: 0 0 2px;
+}
+.missionHeading p {
+  margin: 0 0 0 42px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.missionList {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.missionList li {
+  display: grid;
+  grid-template-columns: 45px 66px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  min-height: 57px;
+  padding: 6px 9px;
+  border: 1px solid #dce5fb;
+  border-radius: 12px;
+  background: linear-gradient(100deg, #f3edff, #f3f7ff 58%, #edf3ff);
+  box-shadow: 0 2px 5px #253c7710;
+}
+.missionList li > b {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #a52cff, #5916ed);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  box-shadow: 0 3px 7px #7523e933;
+}
+.missionIcon {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 44px;
+  border-radius: 12px;
+  background: #e0f2ff;
+  color: #0783ed;
+  font-size: 35px;
+  font-weight: 900;
+  line-height: 1;
+}
+.missionList li:nth-child(2n) .missionIcon {
+  background: #ddf9e7;
+  color: #0aa83d;
+}
+.missionList li:nth-child(3n) .missionIcon {
+  background: #fff3d9;
+  color: #e99a08;
+}
+.missionList li:nth-child(4n) .missionIcon {
+  background: #ffe3f1;
+  color: #ed2581;
+}
+.missionList p {
+  margin: 0;
+  color: #101a43;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.emptyState,
+.emptySide,
+.valueEmpty {
+  padding: 15px;
+  border: 1px dashed #d8e1f2;
+  border-radius: 10px;
+  background: #fafcff;
+  color: #77839b;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.sideColumn {
+  display: grid;
+  grid-template-rows: 1.1fr 1fr 0.95fr;
+  gap: 10px;
+  min-width: 0;
+}
+.sideCard {
+  padding: 13px 14px;
+  overflow: hidden;
+}
+.sideCard h2 {
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+.sideCard p {
+  margin: 0;
+  color: #101a43;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.meaningCard {
+  position: relative;
+  background: linear-gradient(150deg, #fff 65%, #f0eaff);
+}
+.meaningCard:after {
+  position: absolute;
+  right: -20px;
+  bottom: -55px;
+  left: 30%;
+  height: 80px;
+  border-radius: 50%;
+  background: #c5a8ff55;
+  content: "";
+  transform: rotate(-10deg);
+}
+.sideIntro {
+  margin-bottom: 8px !important;
+  font-size: 10px !important;
+  line-height: 1.35 !important;
+}
+.emptySide {
+  margin-top: 10px;
+}
+.valueEmpty {
+  display: grid;
+  min-height: 70px;
+  place-items: center;
+  text-align: center;
+}
+.policyCard {
+  display: grid;
+  grid-template-columns: 44% minmax(0, 1fr);
+  min-height: 210px;
+  margin-top: 11px;
+  overflow: hidden;
+}
+.policyImage {
+  min-height: 210px;
+  background-color: #8bc7e7;
+  background-image:
+    linear-gradient(0deg, #073b5422, #073b5400), linear-gradient(135deg, #8fc8ef, #3f9d55);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  clip-path: polygon(0 0, 100% 0, 89% 100%, 0 100%);
+}
+.policyContent {
+  align-self: center;
+  padding: 18px 24px 18px 4px;
+}
+.policyContent h2 {
+  margin-bottom: 5px;
+}
+.policyContent > p {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.policyContent .emptySide {
+  margin: 0;
+}
+.callout {
+  display: grid;
+  grid-template-columns: 125px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 15px;
+  margin: 12px 0 26px;
+  padding: 13px 18px;
+  border: 1px solid #d8d0ff;
+  border-radius: 16px;
+  background: linear-gradient(105deg, #e3d9ff, #f4f1ff 54%, #e5e0ff);
+  box-shadow: 0 5px 14px #3e2a8510;
+}
+.target {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 95px;
+  height: 78px;
+  border: 10px solid #a653ff;
+  border-radius: 50%;
+  background: #6e27e9;
+  color: #fff;
+  font-size: 66px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 2px 2px #4c12b8;
+  box-shadow: inset 0 0 0 8px #fff;
+}
+.target b {
+  position: absolute;
+  right: -10px;
+  top: -13px;
+  color: #f52c53;
+  font-size: 32px;
+  transform: rotate(-30deg);
+}
+.callout h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+}
+.callout p {
+  margin: 0;
+  color: #222b52;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.callout > a {
+  padding: 12px 18px;
+  border-radius: 30px;
+  background: linear-gradient(100deg, #8d27f4, #5814ec);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  text-decoration: none;
+  white-space: nowrap;
+}
+@media (max-width: 900px) {
+  .heroArtwork {
+    right: 12%;
+    opacity: 0.9;
+  }
+  .columns {
+    grid-template-columns: minmax(0, 1.3fr) minmax(250px, 1fr);
+  }
+  .missionList li {
+    grid-template-columns: 35px 50px 1fr;
+    gap: 7px;
+  }
+  .missionIcon {
+    width: 48px;
+  }
+  .callout {
+    grid-template-columns: 80px 1fr;
+  }
+  .callout > a {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
+@media (max-width: 640px) {
+  .container {
+    width: calc(100% - 22px);
+  }
+  .hero {
+    min-height: 165px;
+  }
+  .heroInner {
+    width: calc(100% - 32px);
+    min-height: 165px;
+    padding: 12px 0 22px;
+  }
+  .hero h1 {
+    font-size: 26px;
+  }
+  .heroInner > p:last-of-type {
+    max-width: 250px;
+    font-size: 11px;
+  }
+  .heroArtwork {
+    right: 0;
+    top: 68px;
+    width: 110px;
+    height: 75px;
+    opacity: 0.45;
+  }
+  .heroArtwork > span {
+    width: 68px;
+    height: 68px;
+    border-width: 8px;
+    font-size: 50px;
+  }
+  .heroArtwork > i {
+    right: 4px;
+    width: 36px;
+    height: 15px;
+    font-size: 11px;
+  }
+  .heroArtwork > i:nth-child(2) {
+    top: 8px;
+  }
+  .heroArtwork > i:nth-child(3) {
+    top: 29px;
+  }
+  .heroArtwork > i:nth-child(4) {
+    top: 50px;
+  }
+  .sectionNav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+    margin-bottom: 9px;
+    padding: 7px;
+  }
+  .sectionNav a {
+    min-height: 37px;
+    gap: 6px;
+    font-size: 10px;
+  }
+  .sectionNav a span {
+    font-size: 21px;
+  }
+  .columns {
+    grid-template-columns: 1fr;
+    gap: 9px;
+  }
+  .primaryCard {
+    padding: 10px;
+  }
+  .primaryCard h2,
+  .sideCard h2,
+  .policyContent h2 {
+    font-size: 16px;
+  }
+  .visionBanner {
+    min-height: 135px;
+  }
+  .visionQuote {
+    width: 75%;
+    padding: 10px;
+    font-size: 16px;
+  }
+  .visionQuote > b {
+    font-size: 36px;
+  }
+  .missionHeading {
+    margin-top: 12px;
+  }
+  .missionHeading h2 {
+    font-size: 16px;
+  }
+  .missionHeading p {
+    margin-left: 36px;
+    font-size: 9px;
+  }
+  .missionList {
+    gap: 6px;
+  }
+  .missionList li {
+    grid-template-columns: 32px 43px 1fr;
+    min-height: 54px;
+    gap: 7px;
+    padding: 5px;
+  }
+  .missionList li > b {
+    width: 27px;
+    height: 27px;
+    font-size: 11px;
+  }
+  .missionIcon {
+    width: 41px;
+    height: 39px;
+    font-size: 27px;
+  }
+  .missionList p {
+    font-size: 10px;
+  }
+  .sideColumn {
+    grid-template-rows: auto;
+    gap: 8px;
+  }
+  .sideCard {
+    padding: 11px;
+  }
+  .sideCard p {
+    font-size: 11px;
+  }
+  .sideIntro {
+    font-size: 9px !important;
+  }
+  .policyCard {
+    grid-template-columns: 1fr;
+    margin-top: 9px;
+  }
+  .policyImage {
+    min-height: 135px;
+    clip-path: none;
+  }
+  .policyContent {
+    padding: 12px;
+  }
+  .policyContent > p {
+    font-size: 10px;
+  }
+  .callout {
+    grid-template-columns: 52px 1fr;
+    gap: 9px;
+    margin: 9px 0 18px;
+    padding: 10px;
+  }
+  .target {
+    width: 47px;
+    height: 47px;
+    border-width: 6px;
+    font-size: 37px;
+  }
+  .target b {
+    font-size: 20px;
+  }
+  .callout h2 {
+    font-size: 14px;
+  }
+  .callout p {
+    font-size: 9px;
+  }
+  .callout > a {
+    grid-column: 2;
+    padding: 9px 12px;
+    font-size: 9px;
+  }
+}
+
+/* Penyesuaian komposisi dan panel sesuai mockup Visi & Misi Desa. */
+.columns {
+  grid-template-columns: minmax(0, 1.62fr) minmax(300px, 1fr);
+  gap: 10px;
+}
+.primaryCard {
+  padding: 14px 15px;
+}
+.visionBanner {
+  min-height: 187px;
+  background-position: center 54%;
+}
+.visionQuote {
+  width: 72%;
+  font-size: 22px;
+  line-height: 1.27;
+}
+.sideColumn {
+  grid-template-rows: 1.08fr 1fr 0.92fr;
+  gap: 10px;
+}
+.meaningCard {
+  min-height: 190px;
+}
+.meaningCard p {
+  max-width: 100%;
+  font-size: 14px;
+  line-height: 1.48;
+}
+.sideCard {
+  padding: 14px;
+}
+.valueEmpty {
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(110deg, #f1f7ff, #f6f0ff);
+  text-align: left;
+}
+.valueEmpty > span {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #eee4ff;
+  color: #7b2bf1;
+  font-size: 29px;
+}
+.valueEmpty p {
+  margin: 0;
+  color: #77819a;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.policyCard {
+  grid-template-columns: 44% minmax(0, 1fr);
+  min-height: 218px;
+  margin-top: 11px;
+}
+.policyImage {
+  min-height: 218px;
+}
+.policyContent {
+  padding: 18px 22px 18px 5px;
+}
+.policyEmpty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 9px 12px;
+  border: 1px dashed #d8e3f5;
+  border-radius: 11px;
+  background: #f7faff;
+}
+.policyEmpty > span {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #e9e2ff;
+  color: #7828f0;
+  font-size: 22px;
+}
+.policyEmpty p {
+  margin: 0;
+  color: #73809a;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.callout {
+  grid-template-columns: 125px minmax(0, 1fr) auto;
+  min-height: 96px;
+}
+@media (max-width: 900px) {
+  .columns {
+    grid-template-columns: minmax(0, 1.3fr) minmax(250px, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+  .visionBanner {
+    min-height: 140px;
+  }
+  .visionQuote {
+    font-size: 16px;
+  }
+  .sideColumn {
+    grid-template-rows: auto;
+  }
+  .meaningCard {
+    min-height: 0;
+  }
+  .meaningCard p {
+    font-size: 11px;
+  }
+  .policyCard {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .policyImage {
+    min-height: 135px;
+  }
+  .policyContent {
+    padding: 12px;
+  }
+  .policyEmpty p {
+    font-size: 9px;
+  }
+  .valueEmpty {
+    min-height: 60px;
+  }
+  .callout {
+    grid-template-columns: 52px 1fr;
+    min-height: 0;
+  }
+}

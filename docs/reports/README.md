@@ -23,6 +23,7 @@ Gunakan laporan sesuai cakupannya; tidak ada satu laporan yang mewakili seluruh 
 |---|---|---|
 | [Audit mockup dan dokumen](./05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md) | Status terkini 39 layar Super Admin dan 46 layar Admin Desa terhadap 12 halaman Admin Desa, menu, grant, route, dan backend | **Acuan terkini** untuk "layar ini sudah bisa dipakai atau belum" dan koreksi klaim dokumen |
 | [Kesiapan backend mockup baru](./05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md) | Snapshot 39 layar Super Admin dan 46 layar Admin Desa pada base `0ffeda6`; saat itu 11 halaman Admin Desa | Acuan schema/use case per area; jumlah halaman dan status route di dalamnya sudah historis |
+| [Delta schema dari mockup](./05-ui-audit/MOCKUP-SCHEMA-DELTA-2026-11-20.md) | Pemetaan 46 layar Admin Desa dan 39 layar Super Admin terhadap schema `0017`: tabel baru, penyesuaian kolom, dan area tanpa perubahan | **Acuan terkini** untuk kebutuhan schema per area mockup; bukan rencana migration final |
 | [Audit UI Admin Desa vs dokumen](./05-ui-audit/ADMIN-DESA-UI-VS-DOKUMEN-2026-11-19.md) | Implementasi `origin/main` terhadap Design System, spesifikasi Admin, peta fitur, dan 10 mockup lama | Snapshot sebelum PR #159; jumlah halaman dan status route terbaru ada di audit mockup dan dokumen |
 | [Audit mockup Super Admin](./05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md) | 38 layar Super Admin per 19 November pagi; 9 area baru, status route/model data | Pemetaan rinci per layar; layar Laporan & Analitik ke-39 dan status terbaru ada di audit mockup dan dokumen |
 | [Review mockup Admin Desa](./05-ui-audit/REVIEW-MOCKUP-ADMIN-DESA-2026-11-19.md) | 10 layar Admin Desa lama | Snapshot sebelum ekspansi 46 layar; path lama tidak lagi aktif |
@@ -30,6 +31,9 @@ Gunakan laporan sesuai cakupannya; tidak ada satu laporan yang mewakili seluruh 
 | [Katalog mockup](../mockups/README.md) | 126 path dan pengelompokan aset | Sumber inventaris file |
 | [Sinkronisasi dokumen mockup](./05-ui-audit/DOCS-SYNC-MOCKUP-2026-11-19.md) | Penyelarasan Design System, peta fitur, dan roadmap | Catatan keputusan relevansi fase dan backlog platform |
 | [Perbaikan check CI PR #156](./05-ui-audit/CI-FIX-PR-156-2026-11-19.md) | Perbaikan format dan integration test template tenant | Bukti akar masalah dan validasi 1.979 unit + 290 integration test |
+| [Rebuild website publik dari mockup](./02-public-website/PUBLIC-MOCKUP-REBUILD-2026-11-20.md) | Rangkaian 21 halaman publik, perbaikan format/type/lint, dan renumber migration komentar | Catatan pekerjaan stack PR publik dan risiko merge berurutan |
+| [Perbaikan migration Galeri dan Potensi](./02-public-website/MIGRASI-GALERI-POTENSI-2026-11-20.md) | Migration `0022` idempotent untuk kolom/tabel yang dilewati akibat urutan timestamp journal | Bukti analisis dan batas validasi database |
+| [Merge rangkaian website publik](./02-public-website/PUBLIC-MOCKUP-MERGE-2026-11-20.md) | Penyelesaian #189–#194, penutupan PR duplikat, dan verifikasi Galeri pada database lokal | Bukti check CI per PR dan status merge |
 
 Dokumen di `archive/` dipertahankan untuk jejak audit. Jangan mengutipnya sebagai status terbaru tanpa memeriksa laporan penggantinya.
 
