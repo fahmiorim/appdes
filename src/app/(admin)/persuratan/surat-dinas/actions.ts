@@ -47,6 +47,8 @@ export async function simpanSuratDinasAction(formData: FormData) {
   const upload = await readPdfUpload(formData);
   const saved = await simpanSuratDinasData(id, readInput(formData), upload);
   revalidatePath("/persuratan/surat-dinas");
+  revalidatePath(`/persuratan/surat-dinas/${saved}/edit`);
+  revalidatePath(`/api/admin/persuratan/surat-dinas/${saved}/lampiran`);
   redirect(`/persuratan/surat-dinas/${saved}/edit?berhasil=disimpan`);
 }
 
