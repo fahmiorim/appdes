@@ -131,22 +131,36 @@
     {
       "idx": 18,
       "version": "5",
-      "when": 1795135260000,
-      "tag": "0018_komentar_email",
+      "when": 1795451763264,
+      "tag": "0018_survey_indicator_tenant_fk",
       "breakpoints": true
     },
     {
       "idx": 19,
       "version": "5",
-      "when": 1795210000000,
-      "tag": "0019_gallery_categories_videos",
+      "when": 1795452000000,
+      "tag": "0019_komentar_email",
       "breakpoints": true
     },
     {
       "idx": 20,
       "version": "5",
-      "when": 1795478400000,
-      "tag": "0020_potensi_desa",
+      "when": 1795210000000,
+      "tag": "0020_gallery_categories_videos",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "5",
+      "when": 1795250000000,
+      "tag": "0021_potensi_desa",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "5",
+      "when": 1795452000001,
+      "tag": "0022_perbaikan_migrasi_galeri_potensi",
       "breakpoints": true
     }
   ]
