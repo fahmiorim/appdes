@@ -73,7 +73,7 @@ export default async function PermohonanSuratPage({ searchParams }: { searchPara
           <h1>Permohonan Surat</h1>
           <p>Kelola permohonan layanan surat dari warga, periksa kelengkapan, dan teruskan proses penerbitan.</p>
         </div>
-        <div className="page-heading-actions">
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
           <Link className="button button-secondary" href="/persuratan/dashboard">Dashboard Surat</Link>
           <a className="button button-primary" href={exportHref}>Ekspor CSV</a>
         </div>
@@ -122,8 +122,8 @@ export default async function PermohonanSuratPage({ searchParams }: { searchPara
           </div>
           <Link href="/permohonan-surat" className="modul-muted">Reset filter</Link>
         </div>
-        <form method="get" action="/permohonan-surat" className="modul-filter-grid">
-          <label className="modul-field">
+        <form method="get" action="/permohonan-surat" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12, alignItems: "end" }}>
+          <label style={{ display: "grid", gap: 6, color: "var(--color-text-muted)", fontSize: 12, fontWeight: 600 }}>
             <span>Dari tanggal</span>
             <input type="date" name="dari" defaultValue={filter.dari} />
           </label>
@@ -147,7 +147,7 @@ export default async function PermohonanSuratPage({ searchParams }: { searchPara
               ))}
             </select>
           </label>
-          <div className="modul-filter-actions">
+          <div style={{ display: "flex", alignItems: "end" }}>
             <button type="submit" className="button button-primary">Terapkan Filter</button>
           </div>
         </form>
@@ -162,7 +162,7 @@ export default async function PermohonanSuratPage({ searchParams }: { searchPara
           {canManage ? <span className="beranda-chip" data-tone="berhasil">Akses pengelolaan aktif</span> : <span className="beranda-chip" data-tone="netral">Akses baca saja</span>}
         </div>
         {permohonan.length === 0 ? (
-          <div className="modul-empty-state">
+          <div style={{ display: "grid", justifyItems: "center", gap: 8, padding: "42px 20px", textAlign: "center", color: "var(--color-text-muted)" }}>
             <span aria-hidden="true">▤</span>
             <strong>Belum ada permohonan</strong>
             <p>Tidak ada data yang sesuai dengan filter saat ini.</p>
@@ -194,7 +194,7 @@ export default async function PermohonanSuratPage({ searchParams }: { searchPara
                     <td>{tanggal(row.createdAt)}</td>
                     <td><span className="beranda-chip" data-tone={toneStatus(row.status)}>{labelPermohonanStatus(row.status)}</span></td>
                     <td className="modul-mono">{row.letterNumber ?? "—"}</td>
-                    <td><Link href={`/permohonan-surat/${row.id}`} className="modul-link">Lihat detail →</Link></td>
+                    <td><Link href={`/permohonan-surat/${row.id}`} style={{ color: "var(--color-brand)", fontWeight: 700, whiteSpace: "nowrap" }}>Lihat detail →</Link></td>
                   </tr>
                 ))}
               </tbody>
