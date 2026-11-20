@@ -7,7 +7,7 @@ import { requirePermission } from "@/lib/dal";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { JENIS_SURAT_RESOURCE, KLASIFIKASI_SURAT_RESOURCE, SYARAT_SURAT_RESOURCE, klasifikasiSuratFormSchema, syaratSuratFormSchema, jenisSuratFormSchema } from "@/features/surat/domain/surat";
 import { parseIsianFields, parseSyaratIds, validateIsianFields } from "@/features/surat/domain/isian";
-import { listKlasifikasi, listJenisSurat, listSyaratSurat, getJenisSurat, jenisSuratExists, createJenisSurat, updateJenisSurat, deleteJenisSurat, countSuratByJenis, klasifikasiExists, getKlasifikasi, createKlasifikasi, updateKlasifikasi, deleteKlasifikasi, countJenisByKlasifikasi, getSyaratSurat, syaratSuratNameExists, createSyaratSurat, updateSyaratSurat, deleteSyaratSurat, countJenisBySyarat } from "@/features/surat/infrastructure/master-repository";
+import { listKlasifikasi, listJenisSurat, listSyaratSurat, getJenisSurat, jenisSuratExists, createJenisSurat, updateJenisSurat, deleteJenisSurat, countSuratByJenis, countPermohonanByJenis, klasifikasiExists, getKlasifikasi, createKlasifikasi, updateKlasifikasi, deleteKlasifikasi, countJenisByKlasifikasi, getSyaratSurat, syaratSuratNameExists, createSyaratSurat, updateSyaratSurat, deleteSyaratSurat, countJenisBySyarat } from "@/features/surat/infrastructure/master-repository";
 import { notFound, conflict, validationError, forbidden } from "@/lib/errors";
 
 export async function getMasterJenisSuratData() {
@@ -66,8 +66,13 @@ export async function hapusJenisSuratData(id: number): Promise<void> {
   const villageId = await resolveVillageId(user);
   const existing = await getJenisSurat(villageId, id);
   if (!existing) throw notFound("Jenis surat tidak ditemukan.");
-  const used = await countSuratByJenis(villageId, id);
-  if (used > 0) throw conflict("Jenis surat sudah pernah dipakai. Nonaktifkan saja agar riwayat surat tetap aman.");
+  const [usedLetters, usedRequests] = await Promise.all([
+    countSuratByJenis(villageId, id),
+    countPermohonanByJenis(villageId, id),
+  ]);
+  if (usedLetters > 0 || usedRequests > 0) {
+    throw conflict("Jenis surat sudah dipakai oleh surat atau permohonan warga. Nonaktifkan saja agar riwayat layanan tetap aman.");
+  }
   await deleteJenisSurat(villageId, id);
   await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.jenisSuratDelete, resource: JENIS_SURAT_RESOURCE, resourceId: String(id), details: { code: existing.code } });
 }
