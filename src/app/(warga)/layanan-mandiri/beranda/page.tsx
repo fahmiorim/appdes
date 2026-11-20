@@ -41,6 +41,7 @@ export default async function BerandaWargaPage() {
     listPermohonanWargaData(),
     daftarDokumenWargaData(),
     listJenisSuratWargaData(),
+    listPengajuanLayananWargaData(),
   ]);
 
   const permohonanAktif = permohonan.filter((row) => row.status !== 4 && row.status !== 5).length;
@@ -105,6 +106,11 @@ export default async function BerandaWargaPage() {
           </p>
         </section>
       ) : null}
+
+      <section className="dashboard-section">
+        <div className="page-heading"><div><h2>Pengajuan layanan publik</h2><p>Pengajuan layanan administrasi dan layanan publik desa.</p></div><Link className="button button-primary" href="/layanan-mandiri/pengajuan/baru">Ajukan Layanan</Link></div>
+        {pengajuanLayanan.length === 0 ? <p>Belum ada pengajuan layanan publik.</p> : <div className="tenant-table-scroll" style={{ marginTop: 14 }}><table className="tenant-table"><thead><tr><th>Tiket</th><th>Layanan</th><th>Status</th><th>Tanggal</th><th>Detail</th></tr></thead><tbody>{pengajuanLayanan.slice(0, 8).map((row) => <tr key={row.id}><td>{row.nomorTiket}</td><td>{row.namaLayanan ?? "Layanan"}</td><td>{row.status}</td><td>{formatTanggal(row.createdAt)}</td><td><Link href={`/layanan-mandiri/pengajuan/${row.id}`}>Lihat</Link></td></tr>)}</tbody></table></div>}
+      </section>
 
       <section className="dashboard-section">
         <h2>Permohonan surat</h2>
