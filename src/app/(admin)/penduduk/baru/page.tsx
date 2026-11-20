@@ -14,11 +14,11 @@ export const metadata: Metadata = {
   title: "Tambah Penduduk",
 };
 
-export default async function TambahPendudukPage() {
+export default async function TambahPendudukPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
   const user = await verifySession();
   if (!hasPermission(user.permissions, PENDUDUK_RESOURCE, "update")) notFound();
 
-  const { references } = await getPendudukFormData();
+  const params=await searchParams;\n  const familyRaw=typeof params.familyId==="string"?Number(params.familyId):null;\n  const familyId=familyRaw!==null&&Number.isInteger(familyRaw)&&familyRaw>0?familyRaw:null;\n  const { references } = await getPendudukFormData();\n  if(familyId!==null&&!references.families.some(item=>item.id===familyId)) notFound();
 
   return (
     <div className="modul-page penduduk-page">
@@ -34,7 +34,7 @@ export default async function TambahPendudukPage() {
         </div>
       </div>
 
-      <FormPenduduk aksi={buatPendudukAction} references={references} />
+      <FormPenduduk aksi={buatPendudukAction} familyId={familyId} references={references} />
     </div>
   );
 }
