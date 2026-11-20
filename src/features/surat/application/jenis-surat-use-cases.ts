@@ -1,5 +1,8 @@
 import "server-only";
 
+import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
+import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
+
 import { requirePermission } from "@/lib/dal";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { JENIS_SURAT_RESOURCE, jenisSuratFormSchema } from "@/features/surat/domain/surat";
@@ -50,9 +53,12 @@ export async function simpanJenisSuratData(id: number | null, raw: unknown): Pro
     const existing = await getJenisSurat(villageId, id);
     if (!existing) throw notFound("Jenis surat tidak ditemukan.");
     await updateJenisSurat(villageId, id, input);
+    await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.jenisSuratUpdate, resource: JENIS_SURAT_RESOURCE, resourceId: String(id), details: { code: input.code } });
     return id;
   }
-  return createJenisSurat(villageId, input);
+  const createdId = await createJenisSurat(villageId, input);
+  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.jenisSuratCreate, resource: JENIS_SURAT_RESOURCE, resourceId: String(createdId), details: { code: input.code } });
+  return createdId;
 }
 
 export async function hapusJenisSuratData(id: number): Promise<void> {
@@ -63,4 +69,5 @@ export async function hapusJenisSuratData(id: number): Promise<void> {
   const used = await countSuratByJenis(villageId, id);
   if (used > 0) throw conflict("Jenis surat sudah pernah dipakai. Nonaktifkan saja agar riwayat surat tetap aman.");
   await deleteJenisSurat(villageId, id);
+  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.jenisSuratDelete, resource: JENIS_SURAT_RESOURCE, resourceId: String(id), details: { code: existing.code } });
 }
