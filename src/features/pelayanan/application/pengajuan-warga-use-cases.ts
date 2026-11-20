@@ -25,5 +25,5 @@ export async function listBerkasPengajuanWargaDetailData(id:number) {
   const detail=await getPengajuanLayanan(villageId,id);
   if(!detail || detail.request.residentId!==user.residentId) throw notFound("Pengajuan tidak ditemukan.");
   const { listBerkasPengajuan } = await import("../infrastructure/pengajuan-repository");
-  return listBerkasPengajuan(villageId,id);
+  return listBerkasPengajuan(villageId,id,"persyaratan");
 }
