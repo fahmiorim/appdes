@@ -54,7 +54,7 @@ export const TENANT_TEMPLATE = {
       isGroup: true,
       isHidden: false,
       isActive: true,
-      sortOrder: 3,
+      sortOrder: 5,
       parentSlug: null,
     },
     {
