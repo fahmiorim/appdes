@@ -13,8 +13,8 @@ export default async function MutasiPendudukPage({searchParams}:{searchParams:Pr
   const params=await searchParams;
   const q=typeof params.q==="string"?params.q.trim().slice(0,100):"";
   const type=normalisasiMutationType(typeof params.type==="string"?params.type:null);
-  const from=typeof params.from==="string"&&/^\\d{4}-\\d{2}-\\d{2}$/.test(params.from)?params.from:"";
-  const to=typeof params.to==="string"&&/^\\d{4}-\\d{2}-\\d{2}$/.test(params.to)?params.to:"";
+  const from=typeof params.from==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(params.from)?params.from:"";
+  const to=typeof params.to==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(params.to)?params.to:"";
   const pageRaw=typeof params.page==="string"?Number(params.page):1;
   const page=Number.isInteger(pageRaw)&&pageRaw>0?pageRaw:1;
   const [result, totals] = await Promise.all([
