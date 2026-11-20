@@ -46,6 +46,15 @@ Mencatat pekerjaan rangkaian halaman website publik yang dibangun dari 21 mockup
 - Melengkapi ternary yang tidak selesai pada halaman Pemerintahan.
 - Melebarkan tipe class CSS opsional pada helper foto perangkat.
 - Renumber migration komentar dari `0018_komentar_email` menjadi `0019_komentar_email` karena `0018` sudah dipakai `0018_survey_indicator_tenant_fk` di `main`; journal dan snapshot `0019` ditambahkan tanpa mengubah migration yang sudah diterapkan.
+- Merapikan format halaman dan stylesheet Statistik, termasuk operator, JSX, dan tata letak CSS.
+- Menambahkan fallback `rings[index] ?? []` pada proyeksi area GIS agar area tanpa geometry tidak membuat halaman Statistik gagal.
+- Memindahkan query rincian Statistik ke `src/features/desa/infrastructure/statistik-rinci-repository.ts`; lapisan application tidak lagi mengimpor `@/db` dan guard batas lapisan kembali lulus.
+
+## Tindak lanjut setelah laporan awal
+
+- Statistik PR #187 di-retarget ke `main` dan dilengkapi perbaikan format serta fallback area GIS di atas.
+- Error Galeri dilacak ke urutan timestamp journal yang membuat `0020`/`0021` dilewati. Perbaikan aditif `0022` dan bukti validasinya dicatat di [MIGRASI-GALERI-POTENSI-2026-11-20.md](./MIGRASI-GALERI-POTENSI-2026-11-20.md).
+- `src/app/page.tsx` sudah memakai regex pembersih HTML dengan escape yang valid setelah sinkronisasi `main`; tidak ada perubahan tambahan pada file tersebut untuk Statistik.
 
 ## Dampak migration
 
@@ -62,6 +71,13 @@ Pada branch yang diperbaiki dijalankan:
 - `npm run lint` — PASS dengan 2 warning lama pada `scripts/wilayah/generate-wilayah.mjs`.
 - `npm run typecheck` — PASS.
 - Build, unit test, integration test, dan Visual QA — dijalankan oleh CI GitHub untuk setiap PR yang sudah menargetkan `main`.
+
+Pemeriksaan terakhir pada perubahan Statistik yang belum di-commit:
+
+- `npx prettier --check` pada tiga file Statistik — PASS.
+- `npx eslint` pada file TypeScript Statistik — PASS; stylesheet CSS diabaikan karena tidak ada konfigurasi ESLint untuk CSS.
+- `npm run typecheck` — PASS.
+- `npx vitest run src/db/migrasi-paritas.test.ts` pada branch perbaikan migration — PASS, 9 test.
 
 ## Risiko tersisa
 
