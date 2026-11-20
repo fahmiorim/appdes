@@ -48,6 +48,7 @@ Mencatat pekerjaan rangkaian halaman website publik yang dibangun dari 21 mockup
 - Renumber migration komentar dari `0018_komentar_email` menjadi `0019_komentar_email` karena `0018` sudah dipakai `0018_survey_indicator_tenant_fk` di `main`; journal dan snapshot `0019` ditambahkan tanpa mengubah migration yang sudah diterapkan.
 - Merapikan format halaman dan stylesheet Statistik, termasuk operator, JSX, dan tata letak CSS.
 - Menambahkan fallback `rings[index] ?? []` pada proyeksi area GIS agar area tanpa geometry tidak membuat halaman Statistik gagal.
+- Memindahkan query rincian Statistik ke `src/features/desa/infrastructure/statistik-rinci-repository.ts`; lapisan application tidak lagi mengimpor `@/db` dan guard batas lapisan kembali lulus.
 
 ## Tindak lanjut setelah laporan awal
 
