@@ -70,6 +70,8 @@ export default async function SuratPage({ searchParams }: { searchParams: Search
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
           <Link href="/persuratan/dashboard" className="button button-secondary">Dashboard Surat</Link>
+          <Link href="/persuratan/jenis-surat" className="button button-secondary">Template & Jenis Surat</Link>
+          <Link href="/persuratan/arsip" className="button button-secondary">Arsip & Riwayat</Link>
           <Link href="/persuratan/surat/baru" className="button button-primary">＋ Buat Surat Baru</Link>
         </div>
       </div>
