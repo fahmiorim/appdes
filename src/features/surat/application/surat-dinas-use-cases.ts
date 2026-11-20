@@ -4,6 +4,9 @@ import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
 import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { hasPermission } from "@/features/rbac/application/authorization";
+import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
+import { hapusMedia, bacaMedia } from "@/features/publik/infrastructure/media-storage";
+import type { BerkasUnggahan } from "@/features/publik/domain/media";
 import {
   SURAT_DINAS_RESOURCE,
   suratDinasFormSchema,
@@ -18,10 +21,13 @@ import {
 import { notFound, validationError } from "@/lib/errors";
 import { requirePermission } from "@/lib/dal";
 
+const KATEGORI_LAMPIRAN = "surat";
+const MAKS_PDF = 20 * 1024 * 1024;
+
 export async function getSuratDinasData(search = "") {
   const user = await requirePermission(SURAT_DINAS_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
-  const [rows] = await Promise.all([listSuratDinas(villageId, search)]);
+  const rows = await listSuratDinas(villageId, search);
   return {
     rows,
     canCreate: hasPermission(user.permissions, SURAT_DINAS_RESOURCE, "create"),
@@ -41,7 +47,11 @@ export async function getSuratDinasEditorData(id?: number) {
   return { row, klasifikasi };
 }
 
-export async function simpanSuratDinasData(id: number | null, raw: unknown) {
+export async function simpanSuratDinasData(
+  id: number | null,
+  raw: unknown,
+  unggahan?: BerkasUnggahan | null,
+) {
   const user = await requirePermission(SURAT_DINAS_RESOURCE, id ? "update" : "create");
   const villageId = await resolveVillageId(user);
   const parsed = suratDinasFormSchema.safeParse(raw);
@@ -50,25 +60,69 @@ export async function simpanSuratDinasData(id: number | null, raw: unknown) {
   if (input.classificationId !== null && !(await getKlasifikasi(villageId, input.classificationId))) {
     throw validationError("Klasifikasi tidak ditemukan pada desa aktif.");
   }
-  if (id !== null && !(await getSuratDinas(villageId, id))) {
-    throw notFound("Surat dinas tidak ditemukan.");
+  const existing = id === null ? null : await getSuratDinas(villageId, id);
+  if (id !== null && !existing) throw notFound("Surat dinas tidak ditemukan.");
+
+  if (unggahan) {
+    if (unggahan.mime !== "application/pdf") {
+      throw validationError("Lampiran surat dinas hanya menerima PDF.");
+    }
+    if (unggahan.ukuran > MAKS_PDF) {
+      throw validationError("Ukuran PDF maksimal 20 MB.");
+    }
   }
-  const savedId = await saveSuratDinas(villageId, id, input);
+
+  let newPath: string | null = null;
+  if (unggahan) {
+    newPath = await simpanBerkasMedia(villageId, unggahan, KATEGORI_LAMPIRAN, "archiveFile");
+  }
+
+  const archiveFile = input.hapusArsip ? null : newPath ?? existing?.archiveFile ?? input.archiveFile ?? null;
+  const savedId = await saveSuratDinas(villageId, id, { ...input, archiveFile, hapusArsip: false });
+
+  // Hapus berkas lama hanya setelah DB menunjuk berkas baru/NULL. Batasi
+  // penghapusan pada folder tenant kategori surat, jangan percaya jalur input.
+  const oldPath = existing?.archiveFile ?? null;
+  if (oldPath && oldPath !== archiveFile && oldPath.startsWith(`${villageId}/${KATEGORI_LAMPIRAN}/`)) {
+    await hapusMedia(oldPath);
+  }
+
   await recordAuditEvent({
     villageId,
     actorId: user.id,
     event: id ? AUDIT_EVENTS.suratDinasUpdate : AUDIT_EVENTS.suratDinasCreate,
     resource: SURAT_DINAS_RESOURCE,
     resourceId: String(savedId),
+    details: { lampiran: archiveFile !== null },
   });
   return savedId;
+}
+
+export async function getSuratDinasLampiranData(id: number) {
+  const user = await requirePermission(SURAT_DINAS_RESOURCE, "read");
+  const villageId = await resolveVillageId(user);
+  const row = await getSuratDinas(villageId, id);
+  if (!row?.archiveFile || !row.archiveFile.startsWith(`${villageId}/${KATEGORI_LAMPIRAN}/`)) {
+    throw notFound("Lampiran surat dinas tidak ditemukan.");
+  }
+  const bytes = await bacaMedia(row.archiveFile);
+  if (
+    bytes.length < 5 ||
+    bytes[0] !== 0x25 || bytes[1] !== 0x50 || bytes[2] !== 0x44 ||
+    bytes[3] !== 0x46 || bytes[4] !== 0x2d
+  ) throw notFound("Berkas lampiran tidak valid.");
+  return { bytes, fileName: `surat-dinas-${id}.pdf` };
 }
 
 export async function hapusSuratDinasData(id: number) {
   const user = await requirePermission(SURAT_DINAS_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
-  if (!(await getSuratDinas(villageId, id))) throw notFound("Surat dinas tidak ditemukan.");
+  const existing = await getSuratDinas(villageId, id);
+  if (!existing) throw notFound("Surat dinas tidak ditemukan.");
   await deleteSuratDinas(villageId, id);
+  if (existing.archiveFile?.startsWith(`${villageId}/${KATEGORI_LAMPIRAN}/`)) {
+    await hapusMedia(existing.archiveFile);
+  }
   await recordAuditEvent({
     villageId,
     actorId: user.id,
