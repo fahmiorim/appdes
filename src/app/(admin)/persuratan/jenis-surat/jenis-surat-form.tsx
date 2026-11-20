@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import type { JenisSuratDTO, KlasifikasiSuratDTO } from "@/features/surat/domain/surat";
 import type { SyaratSuratDTO } from "@/features/surat/domain/isian";
 import { SURAT_PLACEHOLDERS, DEFAULT_NUMBER_FORMAT } from "@/features/surat/domain/surat";
-import { simpanJenisSuratAction } from "./actions";
+import { hapusJenisSuratAction, simpanJenisSuratAction } from "./actions";
 
 type Props = { jenis: JenisSuratDTO | null; klasifikasi: KlasifikasiSuratDTO[]; syarat: SyaratSuratDTO[] };
 const CONTOH = [
@@ -83,7 +83,7 @@ export function JenisSuratForm({ jenis, klasifikasi, syarat }: Props) {
         <label>Konfigurasi layout JSON<textarea name="layoutConfig" rows={3} defaultValue={jenis?.layoutConfig ?? "{}"} spellCheck={false} /></label>
       </div>
       {error ? <p role="alert" className="modul-error">{error}</p> : null}
-      <div className="page-actions"><a href="/persuratan/jenis-surat" className="button button-secondary">Kembali</a><button className="button button-primary" type="submit">Simpan jenis surat</button></div>
+      <div className="page-actions"><a href="/persuratan/jenis-surat" className="button button-secondary">Kembali</a><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{jenis ? <button className="button button-danger-ghost" type="submit" formAction={hapusJenisSuratAction} formNoValidate onClick={(event) => { if (!window.confirm("Hapus jenis surat ini? Penghapusan hanya berhasil jika belum pernah dipakai surat.")) event.preventDefault(); }}>Hapus jenis surat</button> : null}<button className="button button-primary" type="submit">Simpan jenis surat</button></div></div>
     </form>
   );
 }
