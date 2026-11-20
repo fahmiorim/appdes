@@ -1,6 +1,7 @@
 import "server-only";
 
 import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
+import { listAuditLogs } from "@/features/audit/infrastructure/audit-repository";
 import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import {
@@ -247,6 +248,21 @@ export async function listSuratWithMeta(params: {
   ]);
 
   return { ...result, jenis: jenis.filter((item) => item.isActive), penduduk, recap, syarat };
+}
+
+/** Riwayat aktivitas satu surat, dibatasi tenant dan izin baca surat. */
+export async function getRiwayatSuratData(id: number) {
+  const user = await requirePermission(SURAT_RESOURCE, "read");
+  const villageId = await resolveVillageId(user);
+  const surat = await getSurat(villageId, id);
+  if (!surat) throw notFound("Surat tidak ditemukan.");
+  const history = await listAuditLogs(villageId, {
+    page: 1,
+    pageSize: 50,
+    resource: SURAT_RESOURCE,
+    resourceId: String(id),
+  });
+  return history.rows;
 }
 
 export interface ArsipNomorFilter {
