@@ -63,8 +63,11 @@ export async function simpanSuratDinasData(
   const existing = id === null ? null : await getSuratDinas(villageId, id);
   if (id !== null && !existing) throw notFound("Surat dinas tidak ditemukan.");
 
+  if (unggahan && input.hapusArsip) {
+    throw validationError("Pilih unggah lampiran baru atau hapus lampiran lama, bukan keduanya.");
+  }
   if (unggahan) {
-    if (unggahan.mime !== "application/pdf") {
+    if (unggahan.mime?.toLowerCase() !== "application/pdf") {
       throw validationError("Lampiran surat dinas hanya menerima PDF.");
     }
     if (unggahan.ukuran > MAKS_PDF) {
