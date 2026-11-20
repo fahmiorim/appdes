@@ -1,8 +1,9 @@
 import "server-only";
 import { and, count, desc, eq, like, or } from "drizzle-orm";
 import { db } from "@/db";
-import { layananPublik } from "@/db/schema";
+import { layananPublik, pengajuanLayanan } from "@/db/schema";
 import type { LayananInput } from "../domain/layanan";
+import { conflict } from "@/lib/errors";
 export async function listLayanan(villageId:number, cari="") {
   const where=[eq(layananPublik.villageId,villageId)];
   if(cari.trim()){const q=`%${cari.trim()}%`;const cond=or(like(layananPublik.nama,q),like(layananPublik.kategori,q));if(cond)where.push(cond);}
@@ -18,6 +19,9 @@ export async function saveLayanan(villageId:number,id:number|null,input:LayananI
   if(!r.affectedRows)throw new Error("Layanan tidak ditemukan.");return id;
 }
 export async function removeLayanan(villageId:number,id:number) {
+  const [used] = await db.select({ total: count() }).from(pengajuanLayanan)
+    .where(and(eq(pengajuanLayanan.villageId,villageId),eq(pengajuanLayanan.layananId,id)));
+  if (Number(used?.total ?? 0) > 0) throw conflict("Layanan sudah memiliki riwayat pengajuan. Nonaktifkan layanan, jangan hapus.");
   const [r]=await db.delete(layananPublik).where(and(eq(layananPublik.villageId,villageId),eq(layananPublik.id,id)));
   return r.affectedRows>0;
 }
