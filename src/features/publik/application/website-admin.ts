@@ -83,6 +83,7 @@ export async function getWebsiteContentData() {
     db.select({ id: galeriFoto.id, albumId: galeriFoto.albumId, gambar: galeriFoto.gambar, judul: galeriFoto.judul, keterangan: galeriFoto.keterangan, aktif: galeriFoto.aktif }).from(galeriFoto).where(eq(galeriFoto.villageId, villageId)).orderBy(desc(galeriFoto.updatedAt)),
     db.select({ id: slider.id, judul: slider.judul, keterangan: slider.keterangan, gambar: slider.gambar, tautan: slider.tautan, aktif: slider.aktif, urut: slider.urut }).from(slider).where(eq(slider.villageId, villageId)).orderBy(slider.urut),
     db.select({ id: agendaKegiatan.id, judul: agendaKegiatan.judul, mulai: agendaKegiatan.mulai, selesai: agendaKegiatan.selesai, jamMulai: agendaKegiatan.jamMulai, jamSelesai: agendaKegiatan.jamSelesai, kategori: agendaKegiatan.kategori, status: agendaKegiatan.status, lokasi: agendaKegiatan.lokasi, deskripsi: agendaKegiatan.deskripsi, tayang: agendaKegiatan.tayang }).from(agendaKegiatan).where(eq(agendaKegiatan.villageId, villageId)).orderBy(desc(agendaKegiatan.mulai)).limit(100),
+    db.select({ id: beritaKategori.id, nama: beritaKategori.nama, slug: beritaKategori.slug }).from(beritaKategori).where(eq(beritaKategori.villageId, villageId)).orderBy(beritaKategori.nama),
   ]);
   const albumWithCount = albums.map((album) => ({ ...album, jumlahFoto: photoCounts.find((row) => row.albumId === album.id)?.jumlah ?? 0 }));
   return { berita: articles, album: albumWithCount, photos, slider: slides, agenda, categories };
