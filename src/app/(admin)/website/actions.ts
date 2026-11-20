@@ -571,14 +571,20 @@ export async function ubahAlbumWebsiteAction(fd: FormData): Promise<void> {
   const id = num(fd, "id"), nama = text(fd, "namaAlbum");
   const slug = slugify(text(fd, "slugAlbum") || nama);
   if (!id || !nama || nama.length > 150 || !slug) throw new Error("Data album tidak valid.");
-  const [current] = await db.select({ id: galeriAlbum.id }).from(galeriAlbum)
+  const [current] = await db.select({ id: galeriAlbum.id, sampul: galeriAlbum.sampul }).from(galeriAlbum)
     .where(and(eq(galeriAlbum.villageId, villageId), eq(galeriAlbum.id, id))).limit(1);
   if (!current) throw new Error("Album tidak ditemukan.");
   const [duplicate] = await db.select({ id: galeriAlbum.id }).from(galeriAlbum)
     .where(and(eq(galeriAlbum.villageId, villageId), eq(galeriAlbum.slug, slug))).limit(1);
   if (duplicate && duplicate.id !== id) throw new Error("Slug album sudah digunakan.");
-  await db.update(galeriAlbum).set({ nama, slug, keterangan: text(fd, "keteranganAlbum") || null })
+  const file = fd.get("sampulAlbum");
+  let sampul = current.sampul;
+  if (file instanceof File && file.size > 0) sampul = await simpanBerkasMedia(villageId,
+    { nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()) }, "galeri", "sampul");
+  await db.update(galeriAlbum).set({ nama, slug, keterangan: text(fd, "keteranganAlbum") || null, sampul,
+    aktif: text(fd, "aktifAlbum") !== "false", urut: Math.max(0, Number(text(fd, "urutAlbum")) || 0) })
     .where(and(eq(galeriAlbum.villageId, villageId), eq(galeriAlbum.id, id)));
+  if (file instanceof File && file.size > 0 && current.sampul) await hapusMedia(current.sampul);
   revalidatePath("/website/konten"); revalidatePath("/website");
   redirect("/website/konten?saved=1#galeri");
 }
@@ -598,7 +604,8 @@ export async function ubahFotoGaleriWebsiteAction(fd: FormData): Promise<void> {
   if (file instanceof File && file.size > 0) gambar = await simpanBerkasMedia(villageId,
     { nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()) }, "galeri", "gambar");
   await db.update(galeriFoto).set({ albumId, gambar, judul: text(fd, "judulFoto") || null,
-    keterangan: text(fd, "keteranganFoto") || null })
+    keterangan: text(fd, "keteranganFoto") || null, aktif: text(fd, "aktifFoto") !== "false",
+    slider: text(fd, "sliderFoto") === "true", urut: Math.max(0, Number(text(fd, "urutFoto")) || 0) })
     .where(and(eq(galeriFoto.villageId, villageId), eq(galeriFoto.id, id)));
   if (file instanceof File && file.size > 0) await hapusMedia(photo.gambar);
   revalidatePath("/website/konten"); revalidatePath("/website");
