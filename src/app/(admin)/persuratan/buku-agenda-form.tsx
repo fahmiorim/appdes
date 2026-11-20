@@ -1,7 +1,7 @@
 import Link from "next/link";
-import type { SuratMasukDTO, SuratKeluarDTO, KlasifikasiSuratDTO } from "@/features/surat/domain/surat";
+import type { KlasifikasiSuratDTO } from "@/features/surat/domain/surat";
 
-type Row = Partial<SuratMasukDTO & SuratKeluarDTO>;
+type Row = { id?: number; agendaNumber?: number; receivedDate?: string; letterNumber?: string; letterDate?: string | null; sender?: string | null; recipient?: string | null; classificationId?: number | null; summary?: string | null; disposition?: string | null; sentDate?: string | null; archiveLocation?: string | null };
 export function BukuAgendaForm({ jenis, row, klasifikasi, action }: {
   jenis: "masuk" | "keluar"; row?: Row | null; klasifikasi: KlasifikasiSuratDTO[];
   action: (formData: FormData) => void | Promise<void>;
