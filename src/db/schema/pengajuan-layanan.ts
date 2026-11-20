@@ -2,7 +2,6 @@ import { boolean, index, int, mysqlTable, text, timestamp, varchar } from "drizz
 import { residents } from "./resident";
 import { users } from "./auth";
 import { villages } from "./village";
-import { layananPublik } from "./layanan-publik";
 
 /** Permohonan layanan warga; data pemohon disimpan sebagai snapshot. */
 export const pengajuanLayanan = mysqlTable("pengajuan_layanan", {
