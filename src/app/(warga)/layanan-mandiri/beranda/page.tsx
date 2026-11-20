@@ -12,6 +12,7 @@ import {
 import { labelJenisDokumen } from "@/features/layanan-mandiri/domain/dokumen-warga";
 import { labelPermohonanStatus } from "@/features/layanan-mandiri/domain/layanan-mandiri";
 import { verifyWargaPage } from "@/lib/dal";
+import { listPengajuanLayananWargaData } from "@/features/pelayanan/application/pengajuan-warga-use-cases";
 
 export const metadata: Metadata = {
   title: "Beranda Layanan Warga",
@@ -35,7 +36,7 @@ function formatTanggal(value: Date | null): string {
  */
 export default async function BerandaWargaPage() {
   const user = await verifyWargaPage();
-  const [{ profil, mustChangePin }, permohonan, dokumen, jenisSurat] = await Promise.all([
+  const [{ profil, mustChangePin }, permohonan, dokumen, jenisSurat, pengajuanLayanan] = await Promise.all([
     ambilProfilWargaData(),
     listPermohonanWargaData(),
     daftarDokumenWargaData(),
