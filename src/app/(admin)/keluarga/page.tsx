@@ -12,7 +12,10 @@ export default async function KeluargaPage({searchParams}:{searchParams:Promise<
   const q = typeof params.q === "string" ? params.q.trim().slice(0,100) : "";
   const pageRaw = typeof params.page === "string" ? Number(params.page) : 1;
   const page = Number.isInteger(pageRaw) && pageRaw > 0 ? pageRaw : 1;
-  const result = await listKeluarga({search:q,page,pageSize:10});
+  const initial = await listKeluarga({search:q,page,pageSize:10});
+  const result = page > initial.pageCount
+    ? await listKeluarga({search:q,page:initial.pageCount,pageSize:10})
+    : initial;
   return <div className="modul-page data-kependudukan-page">
     <DataKependudukanNav active="/keluarga"/>
     <header className="page-heading"><div><span className="eyebrow">Data Kependudukan</span><h1>Kartu Keluarga</h1><p>Kelola data Kartu Keluarga dan periksa susunan anggota setiap keluarga.</p></div>
