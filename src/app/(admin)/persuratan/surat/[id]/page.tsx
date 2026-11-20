@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { hasPermission } from "@/features/rbac/application/authorization";
 import { findRoleById } from "@/features/rbac/infrastructure/rbac-repository";
 import { getSuratPrintData } from "@/features/surat/application/surat-use-cases";
 import {
   LETTER_STATUS_LABELS,
+  SURAT_RESOURCE,
   VERIFICATION_STEP_LABELS,
   nextVerificationStep,
   roleCanVerifyStep,
@@ -32,6 +34,7 @@ const PESAN: Record<string, string> = {
   diverifikasi: "Tahap verifikasi berhasil disetujui.",
   ditolak: "Surat dikembalikan ke konsep dengan catatan penolakan.",
   dihapus: "Konsep surat berhasil dihapus.",
+  diperbarui: "Konsep surat berhasil diperbarui.",
 };
 
 function toneStatus(status: string): string {
@@ -63,6 +66,7 @@ export default async function DetailSuratPage({
   const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
   const step = nextVerificationStep(surat);
   const canVerify = step !== null && roleCanVerifyStep(step, role?.slug ?? null, user.permissions.isSuperadmin);
+  const canDelete = hasPermission(user.permissions, SURAT_RESOURCE, "delete");
   const syarat = parseSyaratIds(jenis.syaratSurat);
   const pesan = query.berhasil ? PESAN[query.berhasil] : undefined;
 
@@ -81,6 +85,7 @@ export default async function DetailSuratPage({
           <p>Periksa isi surat, pantau persetujuan berjenjang, dan kelola penerbitan dokumen.</p>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {surat.status === "draft" ? <Link href={"/persuratan/surat/" + id + "/edit"} className="button button-secondary">Ubah Konsep</Link> : null}
           <Link href="/persuratan/surat" className="button button-secondary">← Daftar Surat</Link>
           <a href={`/persuratan/surat/${id}/pdf`} target="_blank" rel="noreferrer" className="button button-secondary">Pratinjau / Cetak PDF</a>
         </div>
@@ -139,10 +144,12 @@ export default async function DetailSuratPage({
                 ) : null}
                 <button type="submit" className="button button-primary">Ajukan Verifikasi</button>
               </form>
-              <form action={hapusKonsepSuratAction}>
-                <input type="hidden" name="id" value={id} />
-                <button type="submit" className="button button-danger-ghost">Hapus Konsep</button>
-              </form>
+              {canDelete ? (
+                <form action={hapusKonsepSuratAction}>
+                  <input type="hidden" name="id" value={id} />
+                  <button type="submit" className="button button-danger-ghost">Hapus Konsep</button>
+                </form>
+              ) : null}
             </div>
           ) : surat.status === "verifikasi" ? (
             <div style={{ display: "grid", gap: 14 }}>
