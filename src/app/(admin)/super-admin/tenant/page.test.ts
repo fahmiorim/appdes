@@ -48,8 +48,11 @@ const desaDasar = {
   slug: "desa",
   code: "1207012001",
   domain: "desa.localhost",
+  district: "Cibadak",
   kuotaMediaMb: null,
-  tema: null,
+  tema: "tegar",
+  temaNama: "Tegar",
+  temaVersi: "1.0.0",
   pengguna: 1,
   penduduk: 10,
   jenisSurat: 0,
@@ -103,9 +106,12 @@ describe("SuperAdminTenantPage", () => {
         slug: "sukamaju",
         code: "1207012001",
         domain: "sukamaju.localhost",
+        district: "Cibadak",
         active: true,
         kuotaMediaMb: null,
-        tema: null,
+        tema: "tegar",
+        temaNama: "Tegar",
+        temaVersi: "1.0.0",
         pengguna: 1,
         penduduk: 10,
         jenisSurat: 0,
@@ -118,9 +124,14 @@ describe("SuperAdminTenantPage", () => {
     state.daftarSemuaDomain.mockResolvedValue([]);
     const { default: Page } = await import("./page");
 
-    await expect(Page({ searchParams: Promise.resolve({}) })).resolves.toBeDefined();
+    const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) }));
+
     expect(state.daftarDesaSuperAdmin).toHaveBeenCalledOnce();
     expect(state.daftarSemuaDomain).toHaveBeenCalledOnce();
+    expect(html).toContain("Kecamatan");
+    expect(html).toContain("Kuota media");
+    expect(html).toContain("Tegar");
+    expect(html).toContain("v1.0.0");
   });
 
   it("memfilter daftar sesuai status pada query param", async () => {
@@ -134,6 +145,28 @@ describe("SuperAdminTenantPage", () => {
     );
 
     expect(html).toContain("Menampilkan 1 dari 2 desa");
+  });
+
+  it("membagi daftar tenant menjadi sepuluh baris per halaman", async () => {
+    state.requireSuperAdmin.mockResolvedValue({ id: "platform-1", villageId: null });
+    state.daftarDesaSuperAdmin.mockResolvedValue(
+      Array.from({ length: 11 }, (_, index) => ({
+        ...desaAktif,
+        id: index + 1,
+        name: `Desa Ke-${index + 1}`,
+        slug: `desa-${index + 1}`,
+        domain: `desa-${index + 1}.localhost`,
+      })),
+    );
+    state.daftarSemuaDomain.mockResolvedValue([]);
+    const { default: Page } = await import("./page");
+
+    const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) }));
+
+    expect(html).toContain("Menampilkan 1–10 dari 11 desa");
+    expect(html).toContain("Halaman 1 dari 2");
+    expect(html).toContain("Desa Ke-10");
+    expect(html).not.toContain("Desa Ke-11");
   });
 
   it("menampilkan semua desa saat status tidak dikenal", async () => {

@@ -45,13 +45,18 @@ Tema bawaan tenant baru adalah `esensi` versi `1.0.0` dari template fondasi.
   - `website_template_versions`: snapshot token per versi, changelog, unique
     `(template_id, version)`, foreign key cascade ke template.
 - `src/db/schema/index.ts`: mengekspor schema baru.
-- `src/db/migrations/0019_colorful_dakota_north.sql`
+- `src/db/migrations/0023_template_website.sql`
   - Membuat dua tabel, index status/kategori, unique index, dan foreign key.
   - Seed `esensi` versi `1.0.0` berstatus `published` agar katalog tidak kosong dan
     penggunaan nyata dapat ditampilkan.
   - Versi awal disisipkan lewat subquery `slug = 'esensi'`, bukan
     `LAST_INSERT_ID()`, agar tidak bergantung pada state koneksi.
 - Snapshot dan journal Drizzle diperbarui.
+- Migration awalnya bernomor `0019_colorful_dakota_north`; saat branch disinkronkan
+  dengan `main`, nomor itu sudah dipakai `0019_komentar_email` dan timestamp-nya
+  lebih kecil dari migration terakhir sehingga akan dilewati Drizzle. Migration
+  diganti nama menjadi `0023_template_website` dengan timestamp terbesar, dan
+  snapshot `0023` disusun dari snapshot `0022` milik `main` plus dua tabel baru.
 
 ### Domain dan application layer
 
@@ -136,8 +141,8 @@ Empat event ditambahkan ke `src/features/audit/domain/audit.ts`:
 **Baru**
 
 - `src/db/schema/website-templates.ts`
-- `src/db/migrations/0019_colorful_dakota_north.sql`
-- `src/db/migrations/meta/0019_snapshot.json`
+- `src/db/migrations/0023_template_website.sql`
+- `src/db/migrations/meta/0023_snapshot.json`
 - `src/features/multi-desa/domain/template-website.ts`
 - `src/features/multi-desa/domain/template-website.test.ts`
 - `src/features/multi-desa/application/template-website-use-cases.ts`
