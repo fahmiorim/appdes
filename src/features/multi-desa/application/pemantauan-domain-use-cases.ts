@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { DataDns } from "@/features/multi-desa/domain/status-dns";
+import type { DataSsl } from "@/features/multi-desa/domain/status-ssl";
 import {
   listHasilDns,
   simpanHasilDns,
@@ -10,9 +12,13 @@ import {
   simpanHasilSsl,
   type HasilSslRow,
 } from "@/features/multi-desa/infrastructure/domain-ssl-repository";
-import { listSemuaDomain } from "@/features/multi-desa/infrastructure/kelola-desa-repository";
+import {
+  getDomainPlatform,
+  listSemuaDomain,
+} from "@/features/multi-desa/infrastructure/kelola-desa-repository";
 import { periksaDnsDomain } from "@/features/multi-desa/infrastructure/pemeriksa-dns";
 import { periksaSslDomain } from "@/features/multi-desa/infrastructure/pemeriksa-ssl";
+import { notFound } from "@/lib/errors";
 
 import { requireSuperAdmin } from "./provisioning-use-cases";
 
@@ -50,6 +56,39 @@ export async function daftarPemeriksaanDomain(): Promise<PemeriksaanDomain> {
   await requireSuperAdmin();
   const [ssl, dns] = await Promise.all([listHasilSsl(), listHasilDns()]);
   return { ssl, dns };
+}
+
+/**
+ * Ambil domain terdaftar untuk pemeriksaan satu domain.
+ *
+ * Hanya id yang dikirim klien; host selalu dibaca ulang dari database supaya
+ * Server Action tidak bisa dipakai memindai host sembarang.
+ */
+async function domainPlatformTerdaftar(domainId: number) {
+  await requireSuperAdmin();
+  if (!Number.isSafeInteger(domainId) || domainId <= 0) {
+    throw notFound("Domain tidak ditemukan.");
+  }
+
+  const domain = await getDomainPlatform(domainId);
+  if (!domain) throw notFound("Domain tidak ditemukan.");
+  return domain;
+}
+
+/** Periksa DNS satu domain terdaftar dan simpan hasilnya. */
+export async function periksaDnsSatuDomain(domainId: number): Promise<DataDns> {
+  const domain = await domainPlatformTerdaftar(domainId);
+  const hasil = await periksaDnsDomain(domain.domain);
+  await simpanHasilDns(domain.id, hasil);
+  return hasil;
+}
+
+/** Periksa sertifikat TLS satu domain terdaftar dan simpan hasilnya. */
+export async function periksaSslSatuDomain(domainId: number): Promise<DataSsl> {
+  const domain = await domainPlatformTerdaftar(domainId);
+  const hasil = await periksaSslDomain(domain.domain);
+  await simpanHasilSsl(domain.id, hasil);
+  return hasil;
 }
 
 /** Periksa seluruh domain dengan batas konkurensi agar resolver tidak dibanjiri. */

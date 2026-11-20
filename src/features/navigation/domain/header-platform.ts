@@ -44,6 +44,12 @@ export const HEADER_PLATFORM: Readonly<Record<string, HeaderPlatform>> = {
       "Kelola domain dan alamat website publik seluruh desa/tenant pada platform FlexiDesa.",
     remah: [{ label: "Desa & Domain" }],
   },
+  "/super-admin/domain/tambah": {
+    eyebrow: "Desa & Domain",
+    title: "Tambah Domain",
+    description: "Daftarkan subdomain atau custom domain baru untuk tenant desa.",
+    remah: [{ label: "Desa & Domain" }, { label: "Daftar Domain", href: "/super-admin/domain" }],
+  },
   "/super-admin/pengguna": {
     eyebrow: "Konsol platform",
     title: "Pengguna platform",

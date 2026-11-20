@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { daftarSemuaDomain } from "@/features/multi-desa/application/kelola-desa-use-cases";
 import { daftarPemeriksaanDomain } from "@/features/multi-desa/application/pemantauan-domain-use-cases";
@@ -6,7 +7,6 @@ import { daftarDesaSuperAdmin } from "@/features/multi-desa/application/provisio
 import { klasifikasiJenisDomain } from "@/features/multi-desa/domain/jenis-domain";
 import { DNS_BELUM_DIPERIKSA } from "@/features/multi-desa/domain/status-dns";
 import { SSL_BELUM_DIPERIKSA } from "@/features/multi-desa/domain/status-ssl";
-import { DialogTambahDomain } from "@/features/multi-desa/presentation/dialog-tambah-domain";
 import { DomainConsole } from "@/features/multi-desa/presentation/domain-console";
 import {
   PlatformCard,
@@ -16,7 +16,7 @@ import {
 import { TombolPemeriksaan } from "@/features/multi-desa/presentation/tombol-pemeriksaan";
 import { env } from "@/lib/env";
 
-import { periksaDnsMassalAction, periksaSslMassalAction, tambahDomainAction } from "../actions";
+import { periksaDnsMassalAction, periksaSslMassalAction } from "../actions";
 import { pastikanSuperAdmin } from "../guard";
 
 export const metadata: Metadata = {
@@ -101,10 +101,18 @@ export default async function SuperAdminDomainPage({ searchParams }: Props) {
               label="Cek DNS massal"
               labelPending="Memeriksa DNS..."
             />
-            <DialogTambahDomain
-              aksi={tambahDomainAction}
-              desa={desa.map((item) => ({ id: item.id, name: item.name }))}
-            />
+            <Link className="button button-primary" href="/super-admin/domain/tambah">
+              <svg
+                aria-hidden="true"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.8}
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Tambah Domain
+            </Link>
           </>
         }
         backHref="/super-admin"

@@ -185,7 +185,7 @@ Test fokus yang dijalankan mencakup guard non-super-admin, penolakan use case, p
 
 ## 9. Risiko dan batasan
 
-- **Migration baru diterapkan di database lokal.** Setiap environment lain, termasuk production, tetap harus menjalankan 0019/0020 sebelum kode ini dipakai. Tanpa itu halaman akan gagal membaca cache.
+- **Migration baru diterapkan di database lokal.** Setiap environment lain, termasuk production, tetap harus menjalankan `0024_domain_ssl_checks` dan `0025_domain_dns_checks` sebelum kode ini dipakai. Tanpa itu halaman akan gagal membaca cache.
 - **Belum ada visual QA ber-login.** Layout kartu dan toolbar sudah disesuaikan berdasarkan mockup dan markup yang dirender, tetapi halaman belum dibuka di browser dengan sesi Super Admin.
 - **Pemeriksaan jaringan belum diuji end-to-end.** Test memakai mock untuk pemeriksa; handshake TLS dan resolver nyata belum dijalankan pada domain publik dari lingkungan ini.
 - Domain pengembangan seperti `*.localhost` memang ditolak oleh guard host publik, sehingga akan tampil **Bermasalah** setelah pemeriksaan. Itu perilaku keamanan yang disengaja, bukan bug status.
@@ -199,4 +199,4 @@ Test fokus yang dijalankan mencakup guard non-super-admin, penolakan use case, p
 
 ## 10. Kesimpulan
 
-Halaman **Desa & Domain → Daftar domain** sekarang mengikuti struktur mockup, termasuk enam kartu KPI dan toolbar empat filter dengan tombol **Filter**, serta menampilkan status DNS/SSL dari pemeriksaan server-side nyata dengan cache database. Menu **Daftar tenant** sudah dihapus dari navigasi. Database pengembangan lokal sudah dimigrasikan dan error tabel cache sudah teratasi; production tetap memerlukan migration 0019/0020. Tampilan final belum diverifikasi lewat browser dengan sesi Super Admin.
+Halaman **Desa & Domain → Daftar domain** sekarang mengikuti struktur mockup, termasuk enam kartu KPI dan toolbar empat filter dengan tombol **Filter**, serta menampilkan status DNS/SSL dari pemeriksaan server-side nyata dengan cache database. Menu **Daftar tenant** sudah dihapus dari navigasi. Database pengembangan lokal sudah dimigrasikan dan error tabel cache sudah teratasi; production tetap memerlukan migration 0024/0025. Tampilan final belum diverifikasi lewat browser dengan sesi Super Admin.

@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const state = vi.hoisted(() => ({
   requireSuperAdmin: vi.fn(),
   listSemuaDomain: vi.fn(),
+  getDomainPlatform: vi.fn(),
   listHasilSsl: vi.fn(),
   simpanHasilSsl: vi.fn(),
   listHasilDns: vi.fn(),
@@ -17,6 +18,7 @@ vi.mock("./provisioning-use-cases", () => ({
 
 vi.mock("@/features/multi-desa/infrastructure/kelola-desa-repository", () => ({
   listSemuaDomain: state.listSemuaDomain,
+  getDomainPlatform: state.getDomainPlatform,
 }));
 
 vi.mock("@/features/multi-desa/infrastructure/domain-ssl-repository", () => ({
@@ -58,6 +60,74 @@ describe("pemantauan domain", () => {
     await expect(daftarPemeriksaanDomain()).rejects.toThrow("Akses ditolak.");
     expect(state.listHasilSsl).not.toHaveBeenCalled();
     expect(state.listHasilDns).not.toHaveBeenCalled();
+  });
+
+  it("menolak pemeriksaan satu domain sebelum membaca cache saat bukan platform", async () => {
+    state.requireSuperAdmin.mockRejectedValue(new Error("Akses ditolak."));
+    const { periksaDnsSatuDomain } = await import("./pemantauan-domain-use-cases");
+
+    await expect(periksaDnsSatuDomain(1)).rejects.toThrow("Akses ditolak.");
+    expect(state.getDomainPlatform).not.toHaveBeenCalled();
+    expect(state.periksaDnsDomain).not.toHaveBeenCalled();
+  });
+
+  it("menolak id domain yang tidak terdaftar tanpa memindai host dari klien", async () => {
+    state.getDomainPlatform.mockResolvedValue(null);
+    const { periksaSslSatuDomain } = await import("./pemantauan-domain-use-cases");
+
+    await expect(periksaSslSatuDomain(99)).rejects.toMatchObject({ code: "NOT_FOUND" });
+    expect(state.periksaSslDomain).not.toHaveBeenCalled();
+    expect(state.simpanHasilSsl).not.toHaveBeenCalled();
+  });
+
+  it("memeriksa DNS satu domain terdaftar dan menyimpan hasil dengan id database", async () => {
+    state.getDomainPlatform.mockResolvedValue({
+      id: 7,
+      villageId: 2,
+      domain: "sukamaju.example.id",
+      isPrimary: false,
+      createdAt: new Date("2026-11-20"),
+    });
+    state.periksaDnsDomain.mockResolvedValue({
+      status: "normal",
+      addresses: ["103.10.20.30"],
+      error: null,
+      checkedAt: new Date("2026-11-20"),
+    });
+    const { periksaDnsSatuDomain } = await import("./pemantauan-domain-use-cases");
+
+    await expect(periksaDnsSatuDomain(7)).resolves.toMatchObject({ status: "normal" });
+    expect(state.periksaDnsDomain).toHaveBeenCalledWith("sukamaju.example.id");
+    expect(state.simpanHasilDns).toHaveBeenCalledWith(
+      7,
+      expect.objectContaining({ addresses: ["103.10.20.30"] }),
+    );
+  });
+
+  it("memeriksa SSL satu domain terdaftar dan menyimpan hasilnya", async () => {
+    state.getDomainPlatform.mockResolvedValue({
+      id: 8,
+      villageId: 2,
+      domain: "sukamaju.example.id",
+      isPrimary: true,
+      createdAt: new Date("2026-11-20"),
+    });
+    state.periksaSslDomain.mockResolvedValue({
+      status: "aktif",
+      validFrom: new Date("2026-10-01"),
+      validTo: new Date("2027-01-01"),
+      issuer: "Contoh CA",
+      error: null,
+      checkedAt: new Date("2026-11-20"),
+    });
+    const { periksaSslSatuDomain } = await import("./pemantauan-domain-use-cases");
+
+    await expect(periksaSslSatuDomain(8)).resolves.toMatchObject({ status: "aktif" });
+    expect(state.periksaSslDomain).toHaveBeenCalledWith("sukamaju.example.id");
+    expect(state.simpanHasilSsl).toHaveBeenCalledWith(
+      8,
+      expect.objectContaining({ issuer: "Contoh CA" }),
+    );
   });
 
   it("memeriksa SSL seluruh domain yang terdaftar dan menyimpan hasilnya", async () => {
