@@ -122,20 +122,40 @@ export function AdminSidebar({
             ? grupMenuPlatform().map((kelompok) => (
                 <div className="platform-nav-group" key={kelompok.grup}>
                   <div className="admin-nav-label">{kelompok.grup}</div>
-                  {kelompok.item.map((item) => (
-                    <Link
-                      className="admin-nav-link"
-                      href={item.href}
-                      key={item.href}
-                      aria-current={menuPlatformAktif(item.href, pathname) ? "page" : undefined}
-                      onClick={() => setOpen(false)}
-                    >
-                      <span className="admin-nav-icon" aria-hidden="true">
-                        {item.icon}
-                      </span>
-                      <span>{item.label}</span>
-                    </Link>
-                  ))}
+                  {kelompok.item.map((item) => {
+                    const indukAktif = menuPlatformAktif(item.href, pathname);
+                    const subAktif = item.submenu?.some((sub) => pathname === sub.href) ?? false;
+                    return (
+                      <div className="platform-nav-item" key={item.href}>
+                        <Link
+                          className="admin-nav-link"
+                          href={item.href}
+                          aria-current={indukAktif && !subAktif ? "page" : undefined}
+                          onClick={() => setOpen(false)}
+                        >
+                          <span className="admin-nav-icon" aria-hidden="true">
+                            {item.icon}
+                          </span>
+                          <span>{item.label}</span>
+                        </Link>
+                        {item.submenu && indukAktif ? (
+                          <div className="platform-nav-submenu">
+                            {item.submenu.map((sub) => (
+                              <Link
+                                className="admin-nav-link"
+                                href={sub.href}
+                                key={sub.href}
+                                aria-current={pathname === sub.href ? "page" : undefined}
+                                onClick={() => setOpen(false)}
+                              >
+                                <span>{sub.label}</span>
+                              </Link>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
                 </div>
               ))
             : null}

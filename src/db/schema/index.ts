@@ -50,6 +50,7 @@ export * from "./suplemen";
 export * from "./survey";
 export * from "./theme";
 export * from "./village";
+export * from "./website-templates";
 export * from "./rentang-umur";
 export * from "./api-keys";
 export * from "./rate-limit";

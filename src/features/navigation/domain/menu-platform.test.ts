@@ -30,6 +30,15 @@ describe("MENU_PLATFORM", () => {
   it("memberi grup berlabel pada setiap item", () => {
     expect(MENU_PLATFORM.every((item) => item.grup.trim().length > 0)).toBe(true);
   });
+
+  it("menautkan katalog, penggunaan, dan fondasi template pada submenu", () => {
+    const template = MENU_PLATFORM.find((item) => item.href === "/super-admin/template");
+    expect(template?.submenu?.map((item) => item.href)).toEqual([
+      "/super-admin/template",
+      "/super-admin/template/penggunaan",
+      "/super-admin/template/fondasi",
+    ]);
+  });
 });
 
 describe("grupMenuPlatform", () => {

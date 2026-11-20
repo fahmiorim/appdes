@@ -162,6 +162,13 @@
       "when": 1795452000001,
       "tag": "0022_perbaikan_migrasi_galeri_potensi",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1795452000002,
+      "tag": "0023_template_website",
+      "breakpoints": true
     }
   ]
 }

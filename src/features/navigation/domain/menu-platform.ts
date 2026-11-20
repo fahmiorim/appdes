@@ -13,12 +13,19 @@
  * Fungsi di file ini murni (tanpa I/O) agar dapat diuji tanpa database.
  */
 
+export interface SubmenuPlatformItem {
+  readonly href: string;
+  readonly label: string;
+}
+
 export interface MenuPlatformItem {
   readonly href: string;
   readonly label: string;
   readonly icon: string;
   /** Label grup pada sidebar; item dengan grup sama tampil berurutan. */
   readonly grup: string;
+  /** Submenu hanya ditampilkan saat menu induk aktif. */
+  readonly submenu?: readonly SubmenuPlatformItem[];
 }
 
 export const MENU_PLATFORM: readonly MenuPlatformItem[] = [
@@ -32,7 +39,17 @@ export const MENU_PLATFORM: readonly MenuPlatformItem[] = [
     grup: "Platform",
   },
   { href: "/super-admin/audit", label: "Audit trail", icon: "≡", grup: "Platform" },
-  { href: "/super-admin/template", label: "Template tenant", icon: "◫", grup: "Platform" },
+  {
+    href: "/super-admin/template",
+    label: "Manajemen template",
+    icon: "◫",
+    grup: "Platform",
+    submenu: [
+      { href: "/super-admin/template", label: "Katalog template" },
+      { href: "/super-admin/template/penggunaan", label: "Penggunaan & pembaruan" },
+      { href: "/super-admin/template/fondasi", label: "Fondasi tenant" },
+    ],
+  },
   { href: "/super-admin/pengaturan", label: "Pengaturan", icon: "⚙", grup: "Platform" },
 ] as const;
 
