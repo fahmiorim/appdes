@@ -60,6 +60,22 @@ export async function getPermohonanAdminData(filter: FilterPermohonan = {}) {
   };
 }
 
+/** Detail permohonan satu tenant untuk panel pemeriksaan operator. */
+export async function getPermohonanAdminDetailData(id: number) {
+  const user = await requirePermission(RESOURCES.permohonanSurat, "read");
+  const villageId = await resolveVillageId(user);
+  const rows = await listPermohonan(villageId);
+  const permohonan = rows.find((row) => row.id === id);
+
+  if (!permohonan) throw notFound("Permohonan tidak ditemukan.");
+
+  return {
+    permohonan,
+    berkas: parseBerkasSyarat(permohonan.syarat),
+    canManage: hasPermission(user.permissions, RESOURCES.permohonanSurat, "update"),
+  };
+}
+
 /** Data ekspor CSV rekap permohonan (mengikuti filter yang aktif). */
 export async function eksporPermohonanData(filter: FilterPermohonan = {}) {
   const user = await requirePermission(RESOURCES.permohonanSurat, "read");
