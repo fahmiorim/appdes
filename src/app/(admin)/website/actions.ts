@@ -661,3 +661,16 @@ export async function hapusKategoriBeritaWebsiteAction(fd: FormData): Promise<vo
   await db.delete(beritaKategori).where(and(eq(beritaKategori.villageId, villageId), eq(beritaKategori.id, id)));
   revalidatePath("/website/konten"); redirect("/website/konten?deleted=1#berita");
 }
+
+export async function ubahWidgetWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-halaman", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id"), jenis = Number(text(fd, "jenisWidget"));
+  if (!id || !Number.isInteger(jenis) || jenis < 1 || jenis > 6) throw new Error("Data widget tidak valid.");
+  const [current] = await db.select({ id: widget.id }).from(widget).where(and(eq(widget.villageId, villageId), eq(widget.id, id))).limit(1);
+  if (!current) throw new Error("Widget tidak ditemukan.");
+  await db.update(widget).set({ judul: text(fd, "judulWidget") || null, isi: text(fd, "isiWidget") || null, jenis,
+    urut: Math.max(0, Number(text(fd, "urutWidget")) || 0) })
+    .where(and(eq(widget.villageId, villageId), eq(widget.id, id)));
+  revalidatePath("/website/halaman"); revalidatePath("/website"); redirect("/website/halaman?saved=1#widget");
+}
