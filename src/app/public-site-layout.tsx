@@ -52,6 +52,7 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
   {
     label: "Informasi",
     children: [
+      { href: "/informasi", label: "Informasi Desa" },
       { href: "/berita", label: "Berita" },
       { href: "/pengumuman", label: "Pengumuman" },
       { href: "/agenda", label: "Agenda Kegiatan" },
@@ -161,6 +162,7 @@ export function PublicSiteFooter({ desa, location, logoUrl }: Props) {
         </div>
         <div className={styles.footerColumn}>
           <strong>Informasi</strong>
+          <Link href="/informasi">Informasi Desa</Link>
           <Link href="/berita">Berita Desa</Link>
           <Link href="/pengumuman">Pengumuman</Link>
           <Link href="/agenda">Agenda Kegiatan</Link>
