@@ -14,6 +14,7 @@ type SearchParams = Promise<{
   sampai?: string;
   jenis?: string;
   status?: string;
+  page?: string;
 }>;
 
 const FORMAT_TANGGAL = new Intl.DateTimeFormat("id-ID", {
@@ -54,6 +55,11 @@ export default async function PermohonanSuratPage({ searchParams }: { searchPara
   const hasil = await getPermohonanAdminData(filter);
   const { permohonan, jenis, canManage } = hasil;
   const total = permohonan.length;
+  const pageSize = 20;
+  const requestedPage = angkaValid(params.page) ?? 1;
+  const pageCount = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(requestedPage, pageCount);
+  const pageRows = permohonan.slice((page - 1) * pageSize, page * pageSize);
   const menunggu = permohonan.filter((row) => row.status === 0 || row.status === 1 || row.status === 2).length;
   const selesai = permohonan.filter((row) => row.status === 3 || row.status === 4).length;
   const dibatalkan = permohonan.filter((row) => row.status === 5).length;
@@ -183,7 +189,7 @@ export default async function PermohonanSuratPage({ searchParams }: { searchPara
                 </tr>
               </thead>
               <tbody>
-                {permohonan.map((row) => (
+                {pageRows.map((row) => (
                   <tr key={row.id}>
                     <td className="modul-mono">{row.noAntrian ?? `#${row.id}`}</td>
                     <td>
@@ -201,6 +207,16 @@ export default async function PermohonanSuratPage({ searchParams }: { searchPara
             </table>
           </div>
         )}
+        {total > 0 ? (
+          <div className="modul-total" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <span>Menampilkan {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, total)} dari {total.toLocaleString("id-ID")} permohonan</span>
+            <div style={{ display: "flex", gap: 8 }}>
+              {page > 1 ? <Link className="button button-secondary" href={`/permohonan-surat?${query.toString()}${query.size ? "&" : ""}page=${page - 1}`}>Sebelumnya</Link> : null}
+              <span style={{ alignSelf: "center" }}>Halaman {page} / {pageCount}</span>
+              {page < pageCount ? <Link className="button button-secondary" href={`/permohonan-surat?${query.toString()}${query.size ? "&" : ""}page=${page + 1}`}>Berikutnya</Link> : null}
+            </div>
+          </div>
+        ) : null}
       </section>
     </div>
   );
