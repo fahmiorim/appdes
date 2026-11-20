@@ -9,7 +9,7 @@ import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
 import type { BerkasUnggahan } from "@/features/publik/domain/media";
 import { PENGAJUAN_RESOURCE, pengajuanInputSchema, statusPengajuanSchema } from "../domain/pengajuan";
-import { buatPengajuanLayanan, getPengajuanLayanan, listLayananAktif, listPengajuanLayanan, listRiwayatPengajuan, updateStatusPengajuan, listBerkasPengajuan, getBerkasPengajuan } from "../infrastructure/pengajuan-repository";
+import { buatPengajuanLayanan, getPengajuanLayanan, listLayananAktif, listPengajuanLayanan, listRiwayatPengajuan, updateStatusPengajuan, listBerkasPengajuan, getBerkasPengajuan, buatBerkasHasilPengajuan } from "../infrastructure/pengajuan-repository";
 
 export async function getLayananPublikWargaData() {
   const user = await requireWargaAktif();
@@ -148,5 +148,47 @@ export async function bacaBerkasPengajuanWargaData(id: number, berkasId: number)
   const { bacaMedia } = await import("@/features/publik/infrastructure/media-storage");
   const bytes = await bacaMedia(row.jalur);
   if (bytes.length < 5 || bytes[0] !== 0x25 || bytes[1] !== 0x50 || bytes[2] !== 0x44 || bytes[3] !== 0x46 || bytes[4] !== 0x2d) throw notFound("Berkas PDF tidak valid.");
+  return { bytes, namaAsli: row.namaAsli };
+}
+
+
+export async function unggahHasilPengajuanAdminData(id: number, unggahan: BerkasUnggahan[]) {
+  const user = await requirePermission(PENGAJUAN_RESOURCE, "update");
+  const villageId = await resolveVillageId(user);
+  if (!unggahan.length || unggahan.length > 10) throw validationError("Unggah 1 sampai 10 dokumen hasil.");
+  const saved: Array<{ namaPersyaratan: string; jalur: string; namaAsli: string; ukuran: number }> = [];
+  try {
+    for (const file of unggahan) {
+      if (file.mime?.toLowerCase() !== "application/pdf" || file.ukuran <= 0 || file.ukuran > 20 * 1024 * 1024 || file.isi[0] !== 0x25 || file.isi[1] !== 0x50 || file.isi[2] !== 0x44 || file.isi[3] !== 0x46 || file.isi[4] !== 0x2d) {
+        throw validationError("Dokumen hasil wajib PDF valid maksimal 20 MB per file.");
+      }
+      const jalur = await simpanBerkasMedia(villageId, { ...file, nama: "hasil-" + file.nama }, "permohonan", "hasil");
+      saved.push({ namaPersyaratan: "Hasil pelayanan", jalur, namaAsli: file.nama.slice(0, 255), ukuran: file.ukuran });
+    }
+    await buatBerkasHasilPengajuan(villageId, id, saved);
+  } catch (error) {
+    for (const file of saved) await hapusMedia(file.jalur);
+    throw error;
+  }
+}
+
+export async function listHasilPengajuanWargaData(id: number) {
+  const user = await requireWargaAktif();
+  const villageId = await resolveVillageId(user);
+  const detail = await getPengajuanLayanan(villageId, id);
+  if (!detail || detail.request.residentId !== user.residentId) throw notFound("Pengajuan tidak ditemukan.");
+  if (detail.request.status !== "selesai") return [];
+  return listBerkasPengajuan(villageId, id, "hasil");
+}
+
+export async function bacaHasilPengajuanWargaData(id: number, berkasId: number) {
+  const user = await requireWargaAktif();
+  const villageId = await resolveVillageId(user);
+  const detail = await getPengajuanLayanan(villageId, id);
+  const row = await getBerkasPengajuan(villageId, id, berkasId);
+  if (!detail || detail.request.residentId !== user.residentId || detail.request.status !== "selesai" || !row || row.jenis !== "hasil" || !row.jalur.startsWith(villageId + "/permohonan/")) throw notFound("Dokumen hasil belum tersedia.");
+  const { bacaMedia } = await import("@/features/publik/infrastructure/media-storage");
+  const bytes = await bacaMedia(row.jalur);
+  if (bytes.length < 5 || bytes[0] !== 0x25 || bytes[1] !== 0x50 || bytes[2] !== 0x44 || bytes[3] !== 0x46 || bytes[4] !== 0x2d) throw notFound("Dokumen PDF tidak valid.");
   return { bytes, namaAsli: row.namaAsli };
 }
