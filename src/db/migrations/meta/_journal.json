@@ -166,7 +166,7 @@
     {
       "idx": 23,
       "version": "5",
-      "when": 1795132800000,
+      "when": 1795538400000,
       "tag": "0023_layanan_publik_catalog",
       "breakpoints": true
     }
