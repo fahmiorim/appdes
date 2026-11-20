@@ -21,7 +21,7 @@ export default async function SuratDinasPage({ searchParams }: {
       <div className="modul-scroll"><table className="modul-table">
         <thead><tr><th>Tanggal</th><th>Nomor Surat</th><th>Perihal</th><th>Penerima</th><th>Klasifikasi</th><th>Arsip</th><th>Aksi</th></tr></thead>
         <tbody>{rows.map(row=><tr key={row.id}>
-          <td>{row.letterDate}</td><td className="modul-mono">{row.letterNumber}</td><td>{row.subject}</td><td>{row.recipient ?? "—"}</td><td>{row.classificationName ?? "—"}</td><td>{row.archiveFile ? "Ada lampiran" : row.archiveLocation ?? "—"}</td>
+          <td>{row.letterDate}</td><td className="modul-mono">{row.letterNumber}</td><td>{row.subject}</td><td>{row.recipient ?? "—"}</td><td>{row.classificationName ?? "—"}</td><td>{row.archiveFile ? <Link className="table-action-link" href={`/api/admin/persuratan/surat-dinas/${row.id}/lampiran`} target="_blank">Lihat PDF →</Link> : row.archiveLocation ?? "—"}</td>
           <td><div style={{display:"flex",gap:8}}>{canUpdate ? <Link className="button button-secondary" href={`/persuratan/surat-dinas/${row.id}/edit`}>Ubah</Link> : null}{canDelete ? <form action={hapusSuratDinasAction}><input type="hidden" name="id" value={row.id}/><button className="button button-danger-ghost" type="submit">Hapus</button></form> : null}</div></td>
         </tr>)}</tbody>
       </table></div>
