@@ -75,6 +75,7 @@ export const catatDatangSchema = z.object({
   birthDate: optionalIsoDate,
   birthPlace: optionalText(100),
   familyId: optionalSelectId,
+  familyRelationId: optionalSelectId,
   regionId: optionalSelectId,
   address: optionalText(255),
   fromAddress: optionalText(255),
