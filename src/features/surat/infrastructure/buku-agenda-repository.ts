@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, count, desc, eq, like, or } from "drizzle-orm";
+import { and, desc, eq, like, or } from "drizzle-orm";
 import { db } from "@/db";
 import { incomingLetters, outgoingLetters, letterClassifications } from "@/db/schema";
 import type { SuratMasukInput, SuratKeluarInput } from "@/features/surat/domain/surat";
