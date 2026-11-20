@@ -33,7 +33,10 @@ export async function getJenisSuratEditorData(id?: number) {
     id ? getJenisSurat(villageId, id) : Promise.resolve(null),
   ]);
   if (id && !jenis) throw notFound("Jenis surat tidak ditemukan.");
-  return { klasifikasi, syarat, jenis };
+  return {
+    klasifikasi, syarat, jenis,
+    canDelete: hasPermission(user.permissions, JENIS_SURAT_RESOURCE, "delete"),
+  };
 }
 
 export async function simpanJenisSuratData(id: number | null, raw: unknown): Promise<number> {
