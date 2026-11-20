@@ -91,3 +91,17 @@ export async function updateStatusPengajuan(
     return { statusLama: dari, statusBaru: input.status };
   });
 }
+
+export async function listPengajuanLayananWarga(villageId: number, residentId: number) {
+  return db.select({
+    id: pengajuanLayanan.id,
+    nomorTiket: pengajuanLayanan.nomorTiket,
+    status: pengajuanLayanan.status,
+    createdAt: pengajuanLayanan.createdAt,
+    namaLayanan: layananPublik.nama,
+  }).from(pengajuanLayanan)
+    .leftJoin(layananPublik, and(eq(pengajuanLayanan.layananId, layananPublik.id), eq(layananPublik.villageId, villageId)))
+    .where(and(eq(pengajuanLayanan.villageId, villageId), eq(pengajuanLayanan.residentId, residentId)))
+    .orderBy(desc(pengajuanLayanan.createdAt), desc(pengajuanLayanan.id))
+    .limit(50);
+}
