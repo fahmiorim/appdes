@@ -6,6 +6,7 @@ export const pengajuanLayananBerkas = mysqlTable("pengajuan_layanan_berkas", {
   villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
   pengajuanId: int("pengajuan_id").notNull(),
   namaPersyaratan: varchar("nama_persyaratan", { length: 180 }).notNull(),
+  jenis: varchar("jenis", { length: 20 }).notNull().default("persyaratan"),
   jalur: varchar("jalur", { length: 500 }).notNull(),
   namaAsli: varchar("nama_asli", { length: 255 }).notNull(),
   mime: varchar("mime", { length: 80 }).notNull().default("application/pdf"),
