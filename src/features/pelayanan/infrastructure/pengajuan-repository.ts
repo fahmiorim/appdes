@@ -47,11 +47,12 @@ export async function buatPengajuanLayanan(input: {
     const [service] = await tx.select({ id: layananPublik.id }).from(layananPublik)
       .where(and(eq(layananPublik.villageId, input.villageId), eq(layananPublik.id, input.layananId), eq(layananPublik.aktif, true))).limit(1);
     if (!service) throw notFound("Layanan tidak ditemukan atau sedang tidak aktif.");
+    const { berkas, ...pengajuanValues } = input;
     const [created] = await tx.insert(pengajuanLayanan).values({
-      ...input, status: "diajukan",
+      ...pengajuanValues, status: "diajukan",
     }).$returningId();
     if (!created) throw new Error("Pengajuan layanan gagal disimpan.");
-    if (input.berkas.length) await tx.insert(pengajuanLayananBerkas).values(input.berkas.map((file) => ({ villageId: input.villageId, pengajuanId: created.id, ...file, mime: "application/pdf" })));
+    if (berkas.length) await tx.insert(pengajuanLayananBerkas).values(berkas.map((file) => ({ villageId: input.villageId, pengajuanId: created.id, ...file, mime: "application/pdf" })));
     await tx.insert(riwayatPengajuanLayanan).values({
       villageId: input.villageId, pengajuanId: created.id, statusSebelumnya: null,
       statusBaru: "diajukan", catatan: "Pengajuan dikirim oleh warga.", actorId: null,
@@ -72,7 +73,6 @@ export async function updateStatusPengajuan(
       throw conflict("Status pengajuan saat ini tidak valid.");
     }
     const dari = current.status as StatusPengajuanLayanan;
-    const { bolehTransisiPengajuan } = await import("../domain/pengajuan");
     if (!bolehTransisiPengajuan(dari, input.status)) {
       throw conflict("Perubahan status tidak sesuai tahapan pelayanan atau pengajuan sudah ditutup.");
     }
