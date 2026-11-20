@@ -10,7 +10,11 @@ export async function getLayananPageData(q="") {
  const [rows,total]=await Promise.all([listLayanan(villageId,q),countLayanan(villageId)]);
  return {rows,total,canCreate:hasPermission(user.permissions,LAYANAN_RESOURCE,"create"),canUpdate:hasPermission(user.permissions,LAYANAN_RESOURCE,"update"),canDelete:hasPermission(user.permissions,LAYANAN_RESOURCE,"delete")};
 }
-export async function getLayananDetailData(id:number) {\n const user=await requirePermission(LAYANAN_RESOURCE,"read");const villageId=await resolveVillageId(user);\n const row=await getLayanan(villageId,id);if(!row)throw notFound("Layanan tidak ditemukan.");return row;\n}\nexport async function getLayananEditorData(id?:number) {
+export async function getLayananDetailData(id:number) {
+ const user=await requirePermission(LAYANAN_RESOURCE,"read");const villageId=await resolveVillageId(user);
+ const row=await getLayanan(villageId,id);if(!row)throw notFound("Layanan tidak ditemukan.");return row;
+}
+export async function getLayananEditorData(id?:number) {
  const user=await requirePermission(LAYANAN_RESOURCE,id?"update":"create");const villageId=await resolveVillageId(user);
  const row=id?await getLayanan(villageId,id):null;if(id&&!row)throw notFound("Layanan tidak ditemukan.");return row;
 }
