@@ -49,6 +49,7 @@ Mencatat pekerjaan rangkaian halaman website publik yang dibangun dari 21 mockup
 - Merapikan format halaman dan stylesheet Statistik, termasuk operator, JSX, dan tata letak CSS.
 - Menambahkan fallback `rings[index] ?? []` pada proyeksi area GIS agar area tanpa geometry tidak membuat halaman Statistik gagal.
 - Memindahkan query rincian Statistik ke `src/features/desa/infrastructure/statistik-rinci-repository.ts`; lapisan application tidak lagi mengimpor `@/db` dan guard batas lapisan kembali lulus.
+- Menghitung bobot segmen donut APBDes tanpa mutasi variabel saat render agar lolos aturan React Hooks, serta merapikan format halaman dan stylesheet APBDes.
 
 ## Tindak lanjut setelah laporan awal
 
