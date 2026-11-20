@@ -4,13 +4,17 @@ import Link from "next/link";
 import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
 import { listRiwayat } from "@/features/penduduk/application/riwayat-penduduk-use-cases";
 import { MUTATION_TYPE_LABELS, MUTATION_TYPES, normalisasiMutationType } from "@/features/penduduk/domain/riwayat-penduduk";
+import { PENDUDUK_RESOURCE } from "@/features/penduduk/domain/penduduk";
+import { hasPermission } from "@/features/rbac/application/authorization";
+import { verifySession } from "@/lib/dal";
 
 export const metadata: Metadata = { title: "Mutasi Penduduk" };
 const number = new Intl.NumberFormat("id-ID");
 const date = new Intl.DateTimeFormat("id-ID",{day:"2-digit",month:"short",year:"numeric"});
 
 export default async function MutasiPendudukPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
-  const params=await searchParams;
+  const [params,user]=await Promise.all([searchParams,verifySession()]);
+  const bolehTambah=hasPermission(user.permissions,PENDUDUK_RESOURCE,"update");
   const q=typeof params.q==="string"?params.q.trim().slice(0,100):"";
   const type=normalisasiMutationType(typeof params.type==="string"?params.type:null);
   const from=typeof params.from==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(params.from)?params.from:"";
@@ -25,7 +29,7 @@ export default async function MutasiPendudukPage({searchParams}:{searchParams:Pr
   const counts=Object.entries(MUTATION_TYPE_LABELS);
   return <div className="modul-page data-kependudukan-page">
     <DataKependudukanNav active="/mutasi-penduduk"/>
-    <header className="page-heading"><div><span className="eyebrow">Data Kependudukan</span><h1>Mutasi Penduduk</h1><p>Riwayat penduduk masuk, keluar, kelahiran, kematian, dan perubahan data.</p></div><Link className="button button-primary" href="/mutasi-penduduk/baru">+ Catat Mutasi</Link></header>
+    <header className="page-heading"><div><span className="eyebrow">Data Kependudukan</span><h1>Mutasi Penduduk</h1><p>Riwayat penduduk masuk, keluar, kelahiran, kematian, dan perubahan data.</p></div>{bolehTambah?<Link className="button button-primary" href="/mutasi-penduduk/baru">+ Catat Mutasi</Link>:null}</header>
     <section className="data-kependudukan-kpis"><article className="data-kpi data-kpi-primary"><span>Total Kejadian</span><strong>{number.format(totals.reduce((sum,item)=>sum+item.total,0))}</strong><small>Seluruh catatan mutasi tersimpan</small></article>
       {counts.slice(0,5).map(([key,label])=><article className="data-kpi" key={key}><span>{label}</span><strong>{number.format(countByType.get(key as (typeof MUTATION_TYPES)[number]) ?? 0)}</strong><small>Total catatan tersimpan</small></article>)}
     </section>
