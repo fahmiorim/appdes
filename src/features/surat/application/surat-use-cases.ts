@@ -839,8 +839,10 @@ async function loadSuratPrintData(
   const anggotaKeluarga = await loadAnggotaKeluarga(villageId, penduduk);
   const pengikutSurat = await loadPengikutSurat(villageId, surat.nilaiIsian);
 
-  // Varian dari URL mengalahkan pengaturan jenis surat, sama seperti pratinjau cetak.
-  const varianAktif = varian ?? jenis.templateVariant ?? "default";
+  // Surat terbit memakai isi dan identitas jenis yang sudah disalin saat penerbitan.
+  // Jangan biarkan perubahan template/varian/layout master mengubah cetak ulang arsip.
+  const varianAktif =
+    surat.status === "issued" ? "default" : (varian ?? jenis.templateVariant ?? "default");
   const templateBody =
     varianAktif !== "default" && jenis.templateBodyAlt ? jenis.templateBodyAlt : jenis.templateBody;
 
@@ -863,7 +865,7 @@ async function loadSuratPrintData(
     penduduk,
     content,
     varian: varianAktif,
-    layoutConfig: jenis.layoutConfig,
+    layoutConfig: surat.status === "issued" ? null : jenis.layoutConfig,
   };
 }
 
@@ -930,7 +932,7 @@ async function bangunPdfSurat(data: SuratPrintData): Promise<Uint8Array> {
   const origin = await getRequestOrigin();
   return buildSuratPdf({
     desa: data.desa,
-    jenisNama: data.jenis.name,
+    jenisNama: data.surat.typeName,
     nomor: data.surat.number,
     tanggal: data.surat.letterDate,
     content: data.content,
@@ -939,7 +941,6 @@ async function bangunPdfSurat(data: SuratPrintData): Promise<Uint8Array> {
       : null,
     layoutConfig: data.layoutConfig,
     templateVariant: data.varian,
-    templateBodyAlt: data.jenis.templateBodyAlt,
   });
 }
 
