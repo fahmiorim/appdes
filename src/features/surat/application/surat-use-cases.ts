@@ -433,6 +433,7 @@ export async function createSuratDraftData(input: SuratInput): Promise<{ id: num
     createdBy: user.id,
   });
 
+  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.suratCreate, resource: SURAT_RESOURCE, resourceId: String(id), details: { typeId: jenis.id } });
   return { id };
 }
 
@@ -459,6 +460,7 @@ export async function updateSuratDraftData(id: number, input: SuratInput): Promi
     typeName: jenis.name,
     nilaiIsian: serializeNilaiIsian(denganPengikut(values, input.pengikut ?? [], input.luar ?? [])),
   });
+  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.suratUpdate, resource: SURAT_RESOURCE, resourceId: String(id), details: { typeId: jenis.id } });
 }
 
 export async function deleteSuratData(id: number): Promise<void> {
@@ -470,6 +472,7 @@ export async function deleteSuratData(id: number): Promise<void> {
   if (surat.status !== "draft") throw conflict("Hanya konsep surat yang dapat dihapus.");
 
   await deleteSurat(villageId, id);
+  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.suratDelete, resource: SURAT_RESOURCE, resourceId: String(id) });
 }
 
 /** Ajukan konsep ke antrean verifikasi (operator → sekdes → kades). */
@@ -502,6 +505,7 @@ export async function ajukanVerifikasiSuratData(
     logVerifikasi: "diajukan",
     catatanVerifikasi: null,
   });
+  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.suratSubmit, resource: SURAT_RESOURCE, resourceId: String(id) });
 }
 
 async function nomorUrutBerikutnya(
@@ -668,6 +672,7 @@ async function terbitkanSurat(
     verificationToken: token,
     verificationTokenHash: hash,
   });
+  await recordAuditEvent({ villageId, event: AUDIT_EVENTS.suratVerify, resource: SURAT_RESOURCE, resourceId: String(surat.id), details: { tahap: "kades", nomor: number } });
 
   // TTE pasca-terbit: mode nonaktif (default) → keluar segera tanpa I/O.
   const origin = await getRequestOrigin();
@@ -730,6 +735,7 @@ export async function verifySuratData(
       logVerifikasi: "operator",
       status: "verifikasi",
     });
+    await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.suratVerify, resource: SURAT_RESOURCE, resourceId: String(id), details: { tahap: step } });
     return { number: null, verificationToken: null };
   }
 
@@ -788,6 +794,7 @@ export async function rejectSuratData(id: number, reason: string): Promise<void>
   }
 
   await rejectSurat(villageId, id, reason.trim());
+  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.suratReject, resource: SURAT_RESOURCE, resourceId: String(id), details: { tahap: nextStep } });
 
   // Surat yang ditolak membuat permohonan terkait ikut dibatalkan dengan alasan.
   await sinkronStatusSuratPermohonan(villageId, id, 5, reason.trim());
