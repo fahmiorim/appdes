@@ -76,6 +76,9 @@ export async function ubahPendudukAction(
     await updatePenduduk(id, input);
 
     revalidatePath(HALAMAN);
+    revalidatePath("/penduduk/dashboard");
+    revalidatePath("/keluarga");
+    revalidatePath("/statistik/penduduk");
     revalidatePath(`${HALAMAN}/${id}`);
 
     return successState("Perubahan data penduduk disimpan.", { id });
