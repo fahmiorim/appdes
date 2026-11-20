@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { getSuratFormOptions, getSuratPrintData } from "@/features/surat/application/surat-use-cases";
 import { parseIsianFields, parseNilaiIsian } from "@/features/surat/domain/isian";
+import { parsePendudukLuar, parsePengikutIds } from "@/features/surat/domain/pengikut";
 import { todayIsoDate } from "@/lib/forms";
 
 import { perbaruiKonsepSuratAction } from "../../actions";
@@ -62,6 +63,8 @@ export default async function UbahKonsepSuratPage({
           letterDate: data.surat.letterDate,
           purpose: data.surat.purpose,
           isiSurat,
+          pengikut: parsePengikutIds(isiSurat.__pengikut),
+          luar: parsePendudukLuar(isiSurat.__luar),
         }}
         action={perbaruiKonsepSuratAction}
       />
