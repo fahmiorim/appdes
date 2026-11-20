@@ -6189,3 +6189,45 @@ a.beranda-quick-tile:hover {
     grid-column: auto;
   }
 }
+
+/* --- Admin Desa: Template & Jenis Surat ---------------------------------- */
+.modul-form { display: grid; gap: 16px; }
+.modul-form-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.modul-form-grid > label, .modul-form > label, .modul-card > label, .template-editor-label { display: grid; min-width: 0; gap: 6px; color: #56617d; font-size: 11px; font-weight: 700; }
+.modul-form input:not([type="checkbox"]), .modul-form select, .modul-form textarea, .modul-filter-row input, .modul-filter-row select { width: 100%; min-width: 0; border: 1px solid #dfe4ef; border-radius: 9px; background: #fff; color: #263451; font: inherit; font-size: 12px; padding: 10px 11px; }
+.modul-form textarea { resize: vertical; line-height: 1.65; }
+.modul-form input:focus, .modul-form select:focus, .modul-form textarea:focus { border-color: #7a20f0; outline: 2px solid #efe3ff; outline-offset: 1px; }
+.modul-form-checks { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 14px; }
+.modul-form-checks label, .modul-inline-check { display: flex; align-items: center; gap: 8px; color: #596581; font-size: 11px; font-weight: 600; }
+.modul-form input[type="checkbox"] { width: 15px; height: 15px; accent-color: #7828df; }
+.template-token-groups { display: grid; gap: 8px; margin: 10px 0 14px; }
+.template-token-groups > strong { color: #68738e; font-size: 10px; }
+.template-token-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.template-token { border: 1px solid #e7dcfa; border-radius: 7px; background: #faf7ff; color: #6d27c9; padding: 6px 8px; font: 600 10px ui-monospace,monospace; cursor: pointer; }
+.template-token:hover { border-color: #b990ed; background: #f2eaff; }
+.template-editor-label textarea { min-height: 240px; font: 12px/1.75 ui-monospace,SFMono-Regular,Consolas,monospace !important; }
+.template-field-list { display: grid; gap: 7px; margin-top: 14px; }
+.template-field-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid #e8ebf3; border-radius: 10px; padding: 10px 12px; }
+.template-field-row > span { display: grid; gap: 3px; }
+.template-field-row strong { color: #293653; font-size: 11px; }
+.template-field-row small, .template-requirements small { color: #8791a8; font-size: 10px; }
+.template-requirements { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px 12px; margin-bottom: 16px; }
+.template-requirements label { display: flex; align-items: flex-start; gap: 9px; border: 1px solid #e8ebf3; border-radius: 10px; padding: 10px; }
+.template-requirements label span { display: grid; gap: 3px; }
+.template-requirements strong { color: #35415e; font-size: 11px; }
+.modul-filter-row { display: flex; align-items: end; flex-wrap: wrap; gap: 9px; margin-bottom: 16px; }
+.modul-filter-row label { display: grid; min-width: 190px; gap: 5px; color: #68738e; font-size: 10px; font-weight: 700; }
+.modul-empty { display: grid; justify-items: center; gap: 8px; padding: 40px 16px; text-align: center; }
+.modul-empty > strong { color: #263451; font-size: 14px; }
+.modul-empty p { margin: 0 0 6px; }
+.table-action-link { color: #7026d1; font-size: 11px; font-weight: 800; text-decoration: none; white-space: nowrap; }
+.table-action-link:hover { text-decoration: underline; }
+.page-heading-actions, .page-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.page-actions { justify-content: flex-end; }
+.modul-error { color: #b42318; font-size: 11px; font-weight: 700; }
+@media(max-width:700px) {
+ .modul-form-grid, .template-requirements { grid-template-columns: minmax(0,1fr); }
+ .page-heading-actions, .page-actions { align-items: stretch; flex-direction: column; }
+ .page-heading-actions .button, .page-actions .button { width: 100%; }
+ .template-field-row { align-items: flex-start; }
+}
