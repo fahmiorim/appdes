@@ -9,9 +9,9 @@ describe("menuPlatformAktif", () => {
   });
 
   it("menandai halaman menu aktif pada sub-rutenya", () => {
-    expect(menuPlatformAktif("/super-admin/tenant", "/super-admin/tenant")).toBe(true);
-    expect(menuPlatformAktif("/super-admin/tenant", "/super-admin/tenant/12")).toBe(true);
-    expect(menuPlatformAktif("/super-admin/domain", "/super-admin/tenant")).toBe(false);
+    expect(menuPlatformAktif("/super-admin/domain", "/super-admin/domain")).toBe(true);
+    expect(menuPlatformAktif("/super-admin/domain", "/super-admin/domain/12")).toBe(true);
+    expect(menuPlatformAktif("/super-admin/tenant", "/super-admin/domain")).toBe(false);
   });
 
   it("tidak salah mencocokkan prefiks yang mirip", () => {
@@ -20,15 +20,24 @@ describe("menuPlatformAktif", () => {
 });
 
 describe("MENU_PLATFORM", () => {
-  it("memuat ketujuh menu konsol dengan tautan unik", () => {
-    expect(MENU_PLATFORM).toHaveLength(7);
-    expect(new Set(MENU_PLATFORM.map((item) => item.href)).size).toBe(7);
+  it("memuat keenam menu konsol dengan tautan unik", () => {
+    expect(MENU_PLATFORM).toHaveLength(6);
+    expect(new Set(MENU_PLATFORM.map((item) => item.href)).size).toBe(6);
     expect(MENU_PLATFORM[0]?.href).toBe("/super-admin");
     expect(MENU_PLATFORM.every((item) => item.href.startsWith("/super-admin"))).toBe(true);
   });
 
   it("memberi grup berlabel pada setiap item", () => {
     expect(MENU_PLATFORM.every((item) => item.grup.trim().length > 0)).toBe(true);
+  });
+
+  it("menyediakan submenu Daftar domain di bawah Desa & Domain", () => {
+    const desaDomain = MENU_PLATFORM.find((item) => item.href === "/super-admin/domain");
+
+    expect(desaDomain?.label).toBe("Desa & Domain");
+    expect(desaDomain?.submenu).toEqual([{ href: "/super-admin/domain", label: "Daftar domain" }]);
+    expect(desaDomain?.submenu?.every((item) => item.href.startsWith("/super-admin"))).toBe(true);
+    expect(MENU_PLATFORM.some((item) => item.href === "/super-admin/tenant")).toBe(false);
   });
 
   it("menautkan katalog, penggunaan, dan fondasi template pada submenu", () => {
@@ -45,7 +54,11 @@ describe("grupMenuPlatform", () => {
   it("mengelompokkan menu sesuai urutan tanpa kehilangan item", () => {
     const grup = grupMenuPlatform();
 
-    expect(grup.map((kelompok) => kelompok.grup)).toEqual(["Menu utama", "Tenant", "Platform"]);
+    expect(grup.map((kelompok) => kelompok.grup)).toEqual([
+      "Menu utama",
+      "Desa & Domain",
+      "Platform",
+    ]);
     expect(grup.flatMap((kelompok) => kelompok.item)).toHaveLength(MENU_PLATFORM.length);
   });
 });

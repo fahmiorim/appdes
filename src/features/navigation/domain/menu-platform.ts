@@ -30,8 +30,13 @@ export interface MenuPlatformItem {
 
 export const MENU_PLATFORM: readonly MenuPlatformItem[] = [
   { href: "/super-admin", label: "Dashboard", icon: "▦", grup: "Menu utama" },
-  { href: "/super-admin/tenant", label: "Manajemen tenant", icon: "⌂", grup: "Tenant" },
-  { href: "/super-admin/domain", label: "Domain tenant", icon: "⇄", grup: "Tenant" },
+  {
+    href: "/super-admin/domain",
+    label: "Desa & Domain",
+    icon: "⇄",
+    grup: "Desa & Domain",
+    submenu: [{ href: "/super-admin/domain", label: "Daftar domain" }],
+  },
   {
     href: "/super-admin/pengguna",
     label: "Pengguna platform",

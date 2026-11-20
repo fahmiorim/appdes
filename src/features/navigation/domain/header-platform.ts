@@ -9,10 +9,17 @@
  * keduanya tidak melenceng saat menu ditambah.
  */
 
+export interface RemahPlatform {
+  readonly label: string;
+  readonly href?: string;
+}
+
 export interface HeaderPlatform {
   readonly eyebrow: string;
   readonly title: string;
   readonly description: string;
+  /** Induk navigasi yang ditampilkan sebelum judul halaman. */
+  readonly remah?: readonly RemahPlatform[];
   /** Aksi utama halaman, bila ada. */
   readonly aksi?: { readonly label: string; readonly href: string };
 }
@@ -24,17 +31,18 @@ export const HEADER_PLATFORM: Readonly<Record<string, HeaderPlatform>> = {
     description: "Pantau tenant desa, domain, akses platform, dan retensi data dalam satu tempat.",
   },
   "/super-admin/tenant": {
-    eyebrow: "Konsol platform",
-    title: "Tenant desa",
+    eyebrow: "Desa & Domain",
+    title: "Konsol tenant",
     description:
-      "Kelola status, kuota media, domain, akses administrator, ekspor, dan purge tenant desa.",
+      "Kelola status, kuota media, domain, akses administrator, ekspor, dan purge tiap desa.",
+    remah: [{ label: "Desa & Domain" }],
   },
   "/super-admin/domain": {
-    eyebrow: "Konsol platform",
-    title: "Domain tenant",
+    eyebrow: "Desa & Domain",
+    title: "Daftar domain",
     description:
-      "Semua hostname yang mengarah ke desa. Domain utama dipakai untuk mengenali tenant dari host; alias lain mengarah ke desa yang sama.",
-    aksi: { label: "Buka konsol tenant", href: "/super-admin/tenant" },
+      "Kelola domain dan alamat website publik seluruh desa/tenant pada platform FlexiDesa.",
+    remah: [{ label: "Desa & Domain" }],
   },
   "/super-admin/pengguna": {
     eyebrow: "Konsol platform",

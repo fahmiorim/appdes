@@ -50,6 +50,8 @@ export * from "./suplemen";
 export * from "./survey";
 export * from "./theme";
 export * from "./village";
+export * from "./domain-ssl";
+export * from "./domain-dns";
 export * from "./website-templates";
 export * from "./rentang-umur";
 export * from "./api-keys";

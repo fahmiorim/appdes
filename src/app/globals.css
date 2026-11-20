@@ -917,6 +917,31 @@ input:focus-visible {
   min-width: 180px;
 }
 
+.tenant-search-dengan-ikon {
+  position: relative;
+  display: block;
+}
+.tenant-search-dengan-ikon .form-input {
+  width: 100%;
+  padding-left: 34px;
+}
+.tenant-search-icon {
+  position: absolute;
+  top: 50%;
+  left: 11px;
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  color: #9a90ad;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+.tenant-search-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
 .tenant-filter {
   width: 180px;
 }
@@ -3020,6 +3045,66 @@ input:focus-visible {
   background: rgb(255 255 255 / 18%);
   color: #fff;
 }
+.platform-nav-item {
+  display: grid;
+  gap: 3px;
+}
+.admin-sidebar[data-platform="true"] .platform-nav-parent {
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+.admin-sidebar[data-platform="true"] .platform-nav-parent[data-aktif="true"] {
+  border-color: rgb(255 255 255 / 10%);
+  background: rgb(124 58 237 / 16%);
+  color: #fff;
+}
+.admin-sidebar[data-platform="true"] .platform-nav-parent[data-aktif="true"] .admin-nav-icon {
+  background: rgb(255 255 255 / 12%);
+  color: #fff;
+}
+.platform-nav-caret {
+  margin-left: auto;
+  color: #b8a6dc;
+  font-size: 12px;
+  line-height: 1;
+  transition: transform 140ms ease;
+}
+.platform-nav-parent[aria-expanded="true"] .platform-nav-caret {
+  transform: rotate(180deg);
+}
+.platform-nav-sub {
+  display: grid;
+  gap: 2px;
+  margin: 0 0 5px 41px;
+  padding-left: 9px;
+  border-left: 1px solid rgb(255 255 255 / 14%);
+}
+.platform-nav-sublink {
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: #cfc2e8;
+  font-size: 11.5px;
+  font-weight: 650;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease;
+}
+.platform-nav-sublink:hover {
+  background: rgb(255 255 255 / 8%);
+  color: #fff;
+}
+.platform-nav-sublink[aria-current="page"] {
+  background: linear-gradient(100deg, #7c3aed 0%, #9333ea 100%);
+  color: #fff;
+  box-shadow: 0 8px 18px rgb(76 22 120 / 34%);
+}
 .platform-sidebar-footer {
   display: grid;
   gap: 3px;
@@ -3289,7 +3374,31 @@ input:focus-visible {
   margin-bottom: 20px;
 }
 .platform-page-heading {
+  display: flex;
   min-width: 0;
+  align-items: flex-start;
+  gap: 12px;
+}
+.platform-page-heading > div {
+  min-width: 0;
+}
+.platform-page-back {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  place-items: center;
+  border: 1px solid #e8e2f4;
+  border-radius: 10px;
+  background: #fff;
+  color: #4b3f63;
+  font-size: 17px;
+  line-height: 1;
+}
+.platform-page-back:hover {
+  border-color: #d8ccef;
+  background: #faf7ff;
+  color: #5b21b6;
 }
 .platform-page-heading h1 {
   margin: 0;
@@ -3319,6 +3428,24 @@ input:focus-visible {
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 20px;
+}
+.admin-main[data-konsol="platform"] .platform-stat-grid.is-enam {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+@media (max-width: 1360px) {
+  .admin-main[data-konsol="platform"] .platform-stat-grid.is-enam {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 760px) {
+  .admin-main[data-konsol="platform"] .platform-stat-grid.is-enam {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 520px) {
+  .admin-main[data-konsol="platform"] .platform-stat-grid.is-enam {
+    grid-template-columns: 1fr;
+  }
 }
 .platform-stat {
   min-width: 0;
@@ -3825,6 +3952,101 @@ input:focus-visible {
 }
 .admin-main[data-konsol="platform"] .tenant-table .tenant-status {
   font-size: 9.5px;
+}
+.admin-main[data-konsol="platform"] .tenant-table-list td:first-child {
+  width: 42px;
+  min-width: 42px;
+  color: #a49bb8;
+  font-size: 10px;
+  text-align: center;
+}
+.admin-main[data-konsol="platform"] .tenant-table-list th,
+.admin-main[data-konsol="platform"] .tenant-table-list td {
+  padding: 11px 12px;
+}
+.admin-main[data-konsol="platform"] .tenant-table-list .tenant-cell-name {
+  min-width: 190px;
+  white-space: normal;
+}
+.admin-main[data-konsol="platform"] .tenant-table-list .tenant-status-note {
+  margin-top: 4px;
+}
+.admin-main[data-konsol="platform"] .tenant-table-list .tenant-status-note .tenant-status {
+  padding: 2px 6px;
+  font-size: 8.5px;
+}
+.admin-main[data-konsol="platform"] .tenant-row-action {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border-radius: 8px;
+  font-size: 10px;
+}
+.tenant-row-action svg {
+  width: 13px;
+  height: 13px;
+}
+.tenant-pagination-summary {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.domain-console .tenant-pagination {
+  padding: 14px 0 0;
+}
+.domain-table .tenant-cell-name {
+  min-width: 170px;
+}
+.domain-host {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.domain-host > a:first-child {
+  color: #5b21b6;
+  font-weight: 600;
+  text-decoration: none;
+}
+.domain-host > a:first-child:hover {
+  text-decoration: underline;
+}
+.domain-open {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  place-items: center;
+  border-radius: 6px;
+  color: #948aa9;
+}
+.domain-open:hover {
+  background: #f5f0ff;
+  color: #6d28d9;
+}
+.domain-open svg {
+  width: 12px;
+  height: 12px;
+}
+.domain-kind {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #f4f1fb;
+  color: #6b5f85;
+  font-size: 9px;
+  font-weight: 700;
+}
+.domain-kind.is-primary {
+  background: #efe7ff;
+  color: #6d28d9;
+}
+.tenant-page-slot {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 .admin-main[data-konsol="platform"] .platform-card-body .platform-stat-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -6123,6 +6345,303 @@ a.beranda-quick-tile:hover {
   color: #5b6785;
   font-size: 11.5px;
   line-height: 1.6;
+}
+
+/* Desa & Domain — Daftar domain */
+.domain-summary {
+  margin: 0;
+  padding: 11px 20px;
+  border-bottom: 1px solid #f1ecfa;
+  background: #fcfbff;
+  color: #7b7191;
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+
+.domain-toolbar {
+  flex-wrap: wrap;
+}
+
+.domain-toolbar .tenant-search {
+  flex: 1 1 300px;
+}
+
+.domain-toolbar .tenant-filter {
+  width: 145px;
+}
+
+.domain-filter-button {
+  min-height: 38px;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 14px;
+  white-space: nowrap;
+}
+
+.domain-filter-button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.domain-filter-button.is-dirty {
+  border-color: #cdbcf3;
+  background: #f8f3ff;
+  color: #6d28d9;
+}
+
+/* Kartu KPI domain mengikuti mockup: ikon di kiri, teks bertumpuk di kanan. */
+.platform-stat-grid.is-domain .platform-stat {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  column-gap: 14px;
+  min-height: 90px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  box-shadow: 0 6px 16px rgb(58 34 98 / 4%);
+}
+
+.platform-stat-grid.is-domain .platform-stat-top {
+  display: contents;
+}
+
+.platform-stat-grid.is-domain .stat-icon {
+  width: 48px;
+  height: 48px;
+  grid-column: 1;
+  grid-row: 1 / span 3;
+  align-self: center;
+  border-radius: 11px;
+}
+
+.platform-stat-grid.is-domain .stat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.platform-stat-grid.is-domain .stat-card-label {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.platform-stat-grid.is-domain .stat-card-value {
+  grid-column: 2;
+  grid-row: 2;
+  margin-top: 1px;
+  font-size: 26px;
+  line-height: 1.05;
+}
+
+.platform-stat-grid.is-domain .stat-card-note {
+  grid-column: 2;
+  grid-row: 3;
+  margin-top: 1px;
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.domain-action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+}
+
+.domain-action .button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.domain-action-note {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 0;
+  z-index: 6;
+  width: max-content;
+  max-width: 280px;
+  padding: 6px 9px;
+  border: 1px solid #d8f0e0;
+  border-radius: 8px;
+  background: #f0fbf4;
+  color: #157347;
+  box-shadow: 0 6px 18px rgb(24 39 72 / 8%);
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.domain-action-note.is-warning {
+  border-color: #f6dfb2;
+  background: #fff8e8;
+  color: #9a5b06;
+}
+
+.domain-action-note.is-error {
+  border-color: #f6cccc;
+  background: #fff1f1;
+  color: #b42318;
+}
+
+.domain-host {
+  white-space: nowrap;
+}
+
+.domain-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.domain-type.is-subdomain {
+  background: #f2e9ff;
+  color: #6d28d9;
+}
+
+.domain-type.is-custom {
+  background: #e9f1ff;
+  color: #1d4ed8;
+}
+
+.domain-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.domain-check > span {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.domain-check.is-ok {
+  background: #e7f8ee;
+  color: #15803d;
+}
+
+.domain-check.is-warn {
+  background: #fff3db;
+  color: #b45309;
+}
+
+.domain-check.is-bad {
+  background: #fdeaea;
+  color: #b91c1c;
+}
+
+.domain-check.is-unchecked {
+  background: #f2f4f7;
+  color: #667085;
+}
+
+.domain-table td:nth-child(7) {
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .domain-toolbar .tenant-search {
+    flex-basis: 100%;
+  }
+
+  .domain-toolbar .tenant-filter {
+    flex: 1 1 150px;
+    width: auto;
+  }
+}
+
+@media (max-width: 760px) {
+  .domain-toolbar .tenant-filter {
+    flex-basis: calc(50% - 6px);
+  }
+
+  .domain-filter-button {
+    flex: 1 1 100%;
+  }
+
+  .domain-action .button {
+    font-size: 10px;
+  }
+}
+
+/* Admin gallery metadata and video management */
+.galeri-admin-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 280px;
+}
+.galeri-admin-form input,
+.galeri-video-form input,
+.galeri-video-form textarea {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border, #dce4f0);
+  border-radius: 8px;
+  background: var(--surface, #fff);
+  font: inherit;
+  font-size: 12px;
+}
+.galeri-admin-form input {
+  max-width: 180px;
+}
+.galeri-admin-form button,
+.galeri-video-form button,
+.modul-table form button {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #6425e8;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.galeri-video-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 14px 0 20px;
+}
+.galeri-video-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.galeri-video-form label:nth-child(2),
+.galeri-video-form label:nth-child(3) {
+  grid-column: 1/-1;
+}
+.galeri-video-form textarea {
+  resize: vertical;
+}
+.galeri-video-form button {
+  justify-self: start;
+}
+@media (max-width: 640px) {
+  .galeri-video-form {
+    grid-template-columns: 1fr;
+  }
+  .galeri-video-form label:nth-child(2),
+  .galeri-video-form label:nth-child(3) {
+    grid-column: auto;
+  }
 }
 
 /* --- Manajemen template website ------------------------------------------ */

@@ -169,6 +169,20 @@
       "when": 1795452000002,
       "tag": "0023_template_website",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1795452000003,
+      "tag": "0024_domain_ssl_checks",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "5",
+      "when": 1795452000004,
+      "tag": "0025_domain_dns_checks",
+      "breakpoints": true
     }
   ]
 }
