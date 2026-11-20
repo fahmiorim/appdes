@@ -3,13 +3,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ubahKeluargaAction } from "@/app/(admin)/keluarga/actions";
 import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
-import { getKeluargaDetail, getKeluargaReference } from "@/features/keluarga/application/use-cases";
+import { getKeluargaDetail, getKeluargaFormReference } from "@/features/keluarga/application/use-cases";
 
 export const metadata: Metadata = { title: "Ubah Kartu Keluarga" };
 export default async function UbahKeluargaPage({params}:{params:Promise<{id:string}>}) {
   const {id:raw}=await params; const id=Number(raw);
   if(!Number.isInteger(id)||id<=0) notFound();
-  const [detail,reference]=await Promise.all([getKeluargaDetail(id),getKeluargaReference()]);
+  const [detail,reference]=await Promise.all([getKeluargaDetail(id),getKeluargaFormReference()]);
   return <div className="modul-page data-kependudukan-page"><DataKependudukanNav active="/keluarga"/>
     <header className="page-heading"><div><span className="eyebrow">Kartu Keluarga</span><h1>Ubah Data Kartu Keluarga</h1><p>Perbarui nomor KK, alamat, dan wilayah keluarga.</p></div></header>
     <section className="platform-card data-panel"><form action={ubahKeluargaAction.bind(null,id)} className="form-stack">
