@@ -13,7 +13,7 @@ import {
   listSuratMasuk, listSuratKeluar, saveSuratMasuk, saveSuratKeluar,
 } from "@/features/surat/infrastructure/buku-agenda-repository";
 import { requirePermission } from "@/lib/dal";
-import { conflict, notFound, validationError } from "@/lib/errors";
+import { notFound, validationError } from "@/lib/errors";
 
 export async function getBukuAgendaData(jenis: "masuk" | "keluar", search = "") {
   const resource = jenis === "masuk" ? SURAT_MASUK_RESOURCE : SURAT_KELUAR_RESOURCE;
