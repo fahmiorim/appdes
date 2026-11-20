@@ -410,6 +410,7 @@ describe("AUD-002 composite tenant foreign keys", () => {
       "permohonan_surat_letter_tenant_fk",
       "permohonan_surat_resident_tenant_fk",
       "permohonan_surat_type_tenant_fk",
+      "potensi_indikator_tenant_fk",
       "resident_mutations_from_region_tenant_fk",
       "resident_mutations_resident_tenant_fk",
       "resident_mutations_to_region_tenant_fk",

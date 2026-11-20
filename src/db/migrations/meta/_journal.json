@@ -138,15 +138,50 @@
     {
       "idx": 19,
       "version": "5",
-      "when": 1795451764000,
-      "tag": "0019_flashy_starhawk",
+      "when": 1795452000000,
+      "tag": "0019_komentar_email",
       "breakpoints": true
     },
     {
       "idx": 20,
       "version": "5",
-      "when": 1795451765000,
-      "tag": "0020_smooth_rachel_grey",
+      "when": 1795210000000,
+      "tag": "0020_gallery_categories_videos",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "5",
+      "when": 1795250000000,
+      "tag": "0021_potensi_desa",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "5",
+      "when": 1795452000001,
+      "tag": "0022_perbaikan_migrasi_galeri_potensi",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1795452000002,
+      "tag": "0023_template_website",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1795452000003,
+      "tag": "0024_domain_ssl_checks",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "5",
+      "when": 1795452000004,
+      "tag": "0025_domain_dns_checks",
       "breakpoints": true
     }
   ]

@@ -78,8 +78,8 @@
 | `src/db/schema/domain-ssl.ts` | Tabel `domain_ssl_checks`, unik per `domain_id`, cascade saat domain dihapus. |
 | `src/db/schema/domain-dns.ts` | Tabel `domain_dns_checks`, unik per `domain_id`, cascade saat domain dihapus. |
 | `src/db/schema/index.ts` | Ekspor schema baru. |
-| `src/db/migrations/0019_flashy_starhawk.sql` | Migration aditif tabel SSL. |
-| `src/db/migrations/0020_smooth_rachel_grey.sql` | Migration aditif tabel DNS. |
+| `src/db/migrations/0024_domain_ssl_checks.sql` | Migration aditif tabel SSL. |
+| `src/db/migrations/0025_domain_dns_checks.sql` | Migration aditif tabel DNS. |
 | `src/features/multi-desa/presentation/domain-console.tsx` | Tabel 10 kolom, filter kecamatan/jenis/status/SSL dengan tombol **Filter**, badge status, masa berlaku, domain utama, pagination. |
 | `src/features/multi-desa/presentation/tombol-pemeriksaan.tsx` | Tombol massal dengan status pending dan hasil Server Action. |
 | `src/features/multi-desa/presentation/dialog-tambah-domain.tsx` | Dialog tambah domain dengan pilihan desa dari server. |
@@ -143,12 +143,14 @@ Header memiliki tombol **Cek SSL massal**, **Cek DNS massal**, dan **Tambah Doma
 
 Migration yang dibuat:
 
-- `0019_flashy_starhawk.sql` — `domain_ssl_checks`.
-- `0020_smooth_rachel_grey.sql` — `domain_dns_checks`.
+- `0024_domain_ssl_checks.sql` — `domain_ssl_checks`.
+- `0025_domain_dns_checks.sql` — `domain_dns_checks`.
 
 Keduanya aditif: membuat tabel baru, unique index pada `domain_id`, index status, dan foreign key cascade. Tidak ada perubahan kolom lama, tidak ada backfill, dan tidak ada downtime yang direncanakan.
 
-Saat dijalankan pertama kali, Drizzle melaporkan sukses tetapi tidak membuat kedua tabel. Penyebabnya: nilai `when` pada `_journal.json` untuk 0019/0020 lebih kecil daripada 0018, sehingga Drizzle menganggap kedua migration sudah lewat. Nilai `when` dikoreksi menjadi `1795451764000` dan `1795451765000` (setelah 0018) sebelum migration dijalankan ulang. Jangan mengubah migration yang sudah diterapkan; koreksi ini hanya pada metadata migration baru yang belum pernah diterapkan.
+Saat dijalankan pertama kali, Drizzle melaporkan sukses tetapi tidak membuat kedua tabel. Penyebabnya: nilai `when` pada `_journal.json` untuk 0019/0020 lebih kecil daripada 0018, sehingga Drizzle menganggap kedua migration sudah lewat. Nilai `when` pernah dikoreksi menjadi `1795451764000` dan `1795451765000`.
+
+Ketika branch disinkronkan dengan `main`, nomor `0019` dan `0020` sudah dipakai migration komentar dan galeri. Migration diganti nama menjadi `0024_domain_ssl_checks` dan `0025_domain_dns_checks`, dengan `when` `1795452000003` dan `1795452000004` agar berada setelah migration terakhir `main`. Snapshot `0024`/`0025` disusun dari snapshot `0022` milik `main` plus masing-masing tabel baru. Jangan mengubah migration yang sudah diterapkan; penyesuaian ini hanya pada migration baru yang belum pernah diterapkan.
 
 Urutan deploy yang disarankan:
 
@@ -168,7 +170,7 @@ Perintah yang benar-benar dijalankan:
 
 | Perintah | Hasil |
 |---|---|
-| `npm run db:generate` | **PASS** — menghasilkan `0020_smooth_rachel_grey.sql` untuk `domain_dns_checks`. |
+| `npm run db:generate` | **PASS** — menghasilkan migration `domain_dns_checks` (kini `0025_domain_dns_checks.sql`). |
 | `npm run typecheck` | **PASS** — `next typegen && tsc --noEmit`. |
 | `npx vitest run "src/app/(admin)/super-admin/domain/page.test.ts" src/features/multi-desa/application/pemantauan-domain-use-cases.test.ts src/features/multi-desa/domain/status-ssl.test.ts src/features/multi-desa/domain/status-dns.test.ts src/features/multi-desa/domain/jenis-domain.test.ts src/features/navigation/domain/menu-platform.test.ts` | **PASS** — 6 file, 27 test, dijalankan ulang setelah revisi kartu dan filter. |
 | `npx vitest run "src/app/(admin)/super-admin/tenant/page.test.ts" src/features/navigation/domain/header-platform.test.ts src/features/navigation/domain/menu-platform.test.ts src/features/multi-desa/presentation/dialog-form-tenant.test.ts` | **PASS** — 4 file, 20 test. |
@@ -183,7 +185,7 @@ Test fokus yang dijalankan mencakup guard non-super-admin, penolakan use case, p
 
 ## 9. Risiko dan batasan
 
-- **Migration baru diterapkan di database lokal.** Setiap environment lain, termasuk production, tetap harus menjalankan 0019/0020 sebelum kode ini dipakai. Tanpa itu halaman akan gagal membaca cache.
+- **Migration baru diterapkan di database lokal.** Setiap environment lain, termasuk production, tetap harus menjalankan `0024_domain_ssl_checks` dan `0025_domain_dns_checks` sebelum kode ini dipakai. Tanpa itu halaman akan gagal membaca cache.
 - **Belum ada visual QA ber-login.** Layout kartu dan toolbar sudah disesuaikan berdasarkan mockup dan markup yang dirender, tetapi halaman belum dibuka di browser dengan sesi Super Admin.
 - **Pemeriksaan jaringan belum diuji end-to-end.** Test memakai mock untuk pemeriksa; handshake TLS dan resolver nyata belum dijalankan pada domain publik dari lingkungan ini.
 - Domain pengembangan seperti `*.localhost` memang ditolak oleh guard host publik, sehingga akan tampil **Bermasalah** setelah pemeriksaan. Itu perilaku keamanan yang disengaja, bukan bug status.
@@ -197,4 +199,4 @@ Test fokus yang dijalankan mencakup guard non-super-admin, penolakan use case, p
 
 ## 10. Kesimpulan
 
-Halaman **Desa & Domain → Daftar domain** sekarang mengikuti struktur mockup, termasuk enam kartu KPI dan toolbar empat filter dengan tombol **Filter**, serta menampilkan status DNS/SSL dari pemeriksaan server-side nyata dengan cache database. Menu **Daftar tenant** sudah dihapus dari navigasi. Database pengembangan lokal sudah dimigrasikan dan error tabel cache sudah teratasi; production tetap memerlukan migration 0019/0020. Tampilan final belum diverifikasi lewat browser dengan sesi Super Admin.
+Halaman **Desa & Domain → Daftar domain** sekarang mengikuti struktur mockup, termasuk enam kartu KPI dan toolbar empat filter dengan tombol **Filter**, serta menampilkan status DNS/SSL dari pemeriksaan server-side nyata dengan cache database. Menu **Daftar tenant** sudah dihapus dari navigasi. Database pengembangan lokal sudah dimigrasikan dan error tabel cache sudah teratasi; production tetap memerlukan migration 0024/0025. Tampilan final belum diverifikasi lewat browser dengan sesi Super Admin.

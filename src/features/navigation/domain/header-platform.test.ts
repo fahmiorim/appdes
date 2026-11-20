@@ -10,6 +10,14 @@ describe("HEADER_PLATFORM", () => {
     }
   });
 
+  it("menyediakan header untuk setiap submenu", () => {
+    for (const menu of MENU_PLATFORM) {
+      for (const sub of menu.submenu ?? []) {
+        expect(HEADER_PLATFORM[sub.href], `header untuk ${sub.href}`).toBeDefined();
+      }
+    }
+  });
+
   it("memakai eyebrow dan deskripsi yang terisi", () => {
     for (const header of Object.values(HEADER_PLATFORM)) {
       expect(header.eyebrow.length).toBeGreaterThan(0);
