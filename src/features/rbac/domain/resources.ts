@@ -21,6 +21,7 @@ export const RESOURCES = {
   tte: "tte",
   permohonanSurat: "permohonan-surat",
   pengaduan: "pengaduan",
+  layananPublik: "layanan-publik",
   agenda: "agenda",
   pembangunan: "pembangunan",
   bumindes: "bumindes",
