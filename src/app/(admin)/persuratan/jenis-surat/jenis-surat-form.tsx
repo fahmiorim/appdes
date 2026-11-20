@@ -6,13 +6,13 @@ import type { SyaratSuratDTO } from "@/features/surat/domain/isian";
 import { SURAT_PLACEHOLDERS, DEFAULT_NUMBER_FORMAT } from "@/features/surat/domain/surat";
 import { hapusJenisSuratAction, simpanJenisSuratAction } from "./actions";
 
-type Props = { jenis: JenisSuratDTO | null; klasifikasi: KlasifikasiSuratDTO[]; syarat: SyaratSuratDTO[] };
+type Props = { jenis: JenisSuratDTO | null; klasifikasi: KlasifikasiSuratDTO[]; syarat: SyaratSuratDTO[]; canDelete?: boolean };
 const CONTOH = [
   { key: "nomor", label: "Nomor surat" }, { key: "kode_surat", label: "Kode jenis" },
   { key: "kode_desa", label: "Kode desa" }, { key: "tahun", label: "Tahun" },
   { key: "bulan_romawi", label: "Bulan Romawi" },
 ];
-export function JenisSuratForm({ jenis, klasifikasi, syarat }: Props) {
+export function JenisSuratForm({ jenis, klasifikasi, syarat, canDelete = false }: Props) {
   const [template, setTemplate] = useState(jenis?.templateBody ?? "Yang bertanda tangan di bawah ini, Kepala Desa [nama_desa], menerangkan bahwa:\n\nNama: [nama]\nNIK: [nik]\nAlamat: [alamat]\n\nDemikian surat keterangan ini dibuat untuk [keperluan].");
   const [fields, setFields] = useState(jenis?.formIsian ?? "[]");
   const [selectedSyarat, setSelectedSyarat] = useState<number[]>(() => {
@@ -83,7 +83,7 @@ export function JenisSuratForm({ jenis, klasifikasi, syarat }: Props) {
         <label>Konfigurasi layout JSON<textarea name="layoutConfig" rows={3} defaultValue={jenis?.layoutConfig ?? "{}"} spellCheck={false} /></label>
       </div>
       {error ? <p role="alert" className="modul-error">{error}</p> : null}
-      <div className="page-actions"><a href="/persuratan/jenis-surat" className="button button-secondary">Kembali</a><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{jenis ? <button className="button button-danger-ghost" type="submit" formAction={hapusJenisSuratAction} formNoValidate onClick={(event) => { if (!window.confirm("Hapus jenis surat ini? Penghapusan hanya berhasil jika belum pernah dipakai surat.")) event.preventDefault(); }}>Hapus jenis surat</button> : null}<button className="button button-primary" type="submit">Simpan jenis surat</button></div></div>
+      <div className="page-actions"><a href="/persuratan/jenis-surat" className="button button-secondary">Kembali</a><div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{jenis && canDelete ? <button className="button button-danger-ghost" type="submit" formAction={hapusJenisSuratAction} formNoValidate onClick={(event) => { if (!window.confirm("Hapus jenis surat ini? Penghapusan hanya berhasil jika belum pernah dipakai surat.")) event.preventDefault(); }}>Hapus jenis surat</button> : null}<button className="button button-primary" type="submit">Simpan jenis surat</button></div></div>
     </form>
   );
 }
