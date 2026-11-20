@@ -16,7 +16,7 @@ export default async function KeluargaPage({searchParams}:{searchParams:Promise<
   return <div className="modul-page data-kependudukan-page">
     <DataKependudukanNav active="/keluarga"/>
     <header className="page-heading"><div><span className="eyebrow">Data Kependudukan</span><h1>Kartu Keluarga</h1><p>Kelola data Kartu Keluarga dan periksa susunan anggota setiap keluarga.</p></div>
-      <Link className="button button-primary" href="/keluarga/baru">+ Tambah KK</Link></header>
+      <div className="penduduk-heading-actions"><Link className="button button-secondary" href={`/keluarga/ekspor${q?`?q=${encodeURIComponent(q)}`:""}`}>Ekspor CSV</Link><Link className="button button-primary" href="/keluarga/baru">+ Tambah KK</Link></div></header>
     <section className="data-kependudukan-kpis">
       <article className="data-kpi data-kpi-primary"><span>Total Kartu Keluarga</span><strong>{number.format(result.total)} KK</strong><small>Terdaftar pada desa ini</small></article>
       <article className="data-kpi"><span>Anggota pada halaman ini</span><strong>{number.format(result.rows.reduce((sum,row)=>sum+row.memberCount,0))}</strong><small>Jumlah anggota dari daftar yang ditampilkan</small></article>
