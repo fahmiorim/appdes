@@ -5,6 +5,7 @@ import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 
 import { requirePermission } from "@/lib/dal";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
+import { hasPermission } from "@/features/rbac/application/authorization";
 import { JENIS_SURAT_RESOURCE, KLASIFIKASI_SURAT_RESOURCE, SYARAT_SURAT_RESOURCE, klasifikasiSuratFormSchema, syaratSuratFormSchema, jenisSuratFormSchema } from "@/features/surat/domain/surat";
 import { parseIsianFields, parseSyaratIds, validateIsianFields } from "@/features/surat/domain/isian";
 import { listKlasifikasi, listJenisSurat, listSyaratSurat, getJenisSurat, jenisSuratExists, createJenisSurat, updateJenisSurat, deleteJenisSurat, countSuratByJenis, countPermohonanByJenis, klasifikasiExists, getKlasifikasi, createKlasifikasi, updateKlasifikasi, deleteKlasifikasi, countJenisByKlasifikasi, getSyaratSurat, syaratSuratNameExists, createSyaratSurat, updateSyaratSurat, deleteSyaratSurat, countJenisBySyarat } from "@/features/surat/infrastructure/master-repository";
@@ -16,7 +17,12 @@ export async function getMasterJenisSuratData() {
   const [jenis, klasifikasi, syarat] = await Promise.all([
     listJenisSurat(villageId), listKlasifikasi(villageId), listSyaratSurat(villageId),
   ]);
-  return { jenis, klasifikasi, syarat };
+  return {
+    jenis, klasifikasi, syarat,
+    canCreate: hasPermission(user.permissions, JENIS_SURAT_RESOURCE, "create"),
+    canUpdate: hasPermission(user.permissions, JENIS_SURAT_RESOURCE, "update"),
+    canDelete: hasPermission(user.permissions, JENIS_SURAT_RESOURCE, "delete"),
+  };
 }
 
 export async function getJenisSuratEditorData(id?: number) {
@@ -146,5 +152,13 @@ export async function getMasterReferensiSuratData() {
   const villageId = await resolveVillageId(klasifikasiUser);
   if (await resolveVillageId(syaratUser) !== villageId) throw forbidden("Konteks desa tidak konsisten.");
   const [klasifikasi, syarat] = await Promise.all([listKlasifikasi(villageId), listSyaratSurat(villageId)]);
-  return { klasifikasi, syarat };
+  return {
+    klasifikasi, syarat,
+    canCreateKlasifikasi: hasPermission(klasifikasiUser.permissions, KLASIFIKASI_SURAT_RESOURCE, "create"),
+    canUpdateKlasifikasi: hasPermission(klasifikasiUser.permissions, KLASIFIKASI_SURAT_RESOURCE, "update"),
+    canDeleteKlasifikasi: hasPermission(klasifikasiUser.permissions, KLASIFIKASI_SURAT_RESOURCE, "delete"),
+    canCreateSyarat: hasPermission(syaratUser.permissions, SYARAT_SURAT_RESOURCE, "create"),
+    canUpdateSyarat: hasPermission(syaratUser.permissions, SYARAT_SURAT_RESOURCE, "update"),
+    canDeleteSyarat: hasPermission(syaratUser.permissions, SYARAT_SURAT_RESOURCE, "delete"),
+  };
 }
