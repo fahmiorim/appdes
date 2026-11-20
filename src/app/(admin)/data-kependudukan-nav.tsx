@@ -10,7 +10,7 @@ const links = [
   { href: "/penduduk/dashboard", label: "Dashboard", resource: PENDUDUK_RESOURCE },
   { href: "/penduduk", label: "Data Penduduk", resource: PENDUDUK_RESOURCE },
   { href: "/keluarga", label: "Kartu Keluarga", resource: KELUARGA_RESOURCE },
-  { href: "/mutasi-penduduk", label: "Mutasi Penduduk", resource: PENDUDUK_RESOURCE },
+  { href: "/mutasi-penduduk", label: "Mutasi Penduduk", resource: RESOURCES.mutasiPenduduk },
   { href: "/statistik/penduduk", label: "Statistik & Laporan", resource: RESOURCES.laporanPenduduk },
 ];
 
