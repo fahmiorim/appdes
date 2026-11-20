@@ -5,7 +5,11 @@ import { pengajuanLayanan, layananPublik, riwayatPengajuanLayanan } from "@/db/s
 import { bolehTransisiPengajuan, type StatusPengajuanLayanan } from "../domain/pengajuan";
 import { conflict, notFound } from "@/lib/errors";
 
-export async function listLayananAktif(villageId: number) {\n  return db.select({ id: layananPublik.id, nama: layananPublik.nama, kategori: layananPublik.kategori, deskripsi: layananPublik.deskripsi, persyaratan: layananPublik.persyaratan, estimasiHari: layananPublik.estimasiHari, biaya: layananPublik.biaya }).from(layananPublik).where(and(eq(layananPublik.villageId, villageId), eq(layananPublik.aktif, true))).orderBy(layananPublik.nama);\n}\n\nexport async function listPengajuanLayanan(villageId: number, status?: string) {
+export async function listLayananAktif(villageId: number) {
+  return db.select({ id: layananPublik.id, nama: layananPublik.nama, kategori: layananPublik.kategori, deskripsi: layananPublik.deskripsi, persyaratan: layananPublik.persyaratan, estimasiHari: layananPublik.estimasiHari, biaya: layananPublik.biaya }).from(layananPublik).where(and(eq(layananPublik.villageId, villageId), eq(layananPublik.aktif, true))).orderBy(layananPublik.nama);
+}
+
+export async function listPengajuanLayanan(villageId: number, status?: string) {
   const where = [eq(pengajuanLayanan.villageId, villageId)];
   if (status) where.push(eq(pengajuanLayanan.status, status));
   const [rows, totals] = await Promise.all([
