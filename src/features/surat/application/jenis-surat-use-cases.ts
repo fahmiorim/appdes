@@ -129,3 +129,14 @@ export async function hapusSyaratSuratData(id: number): Promise<void> {
   await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.syaratDelete, resource: SYARAT_SURAT_RESOURCE, resourceId: String(id), details: { name: existing.name } });
 }
 
+
+export async function getMasterReferensiSuratData() {
+  const [klasifikasiUser, syaratUser] = await Promise.all([
+    requirePermission(KLASIFIKASI_SURAT_RESOURCE, "read"),
+    requirePermission(SYARAT_SURAT_RESOURCE, "read"),
+  ]);
+  const villageId = await resolveVillageId(klasifikasiUser);
+  if (await resolveVillageId(syaratUser) !== villageId) throw forbidden("Konteks desa tidak konsisten.");
+  const [klasifikasi, syarat] = await Promise.all([listKlasifikasi(villageId), listSyaratSurat(villageId)]);
+  return { klasifikasi, syarat };
+}
