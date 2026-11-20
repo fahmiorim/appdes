@@ -215,7 +215,7 @@ export async function GET(request: Request, _context: { params: Promise<Record<s
   const textParam = (key: string) => (url.searchParams.get(key) ?? "").trim().slice(0, 100) || undefined;
   const ageParam = (key: string) => {
     const value = url.searchParams.get(key) ?? "";
-    if (!/^\\d{1,3}$/.test(value)) return undefined;
+    if (!/^\d{1,3}$/.test(value)) return undefined;
     const parsed = Number(value);
     return parsed >= 0 && parsed <= 120 ? parsed : undefined;
   };
