@@ -55,7 +55,7 @@ export default async function DetailPermohonanSuratPage({
   const id = Number(rawId);
   if (!Number.isSafeInteger(id) || id < 1) notFound();
 
-  const [{ permohonan, berkas, canManage }, query] = await Promise.all([
+  const [{ permohonan, berkas, canManage, canCreateLetter }, query] = await Promise.all([
     getPermohonanAdminDetailData(id),
     searchParams,
   ]);
@@ -171,7 +171,7 @@ export default async function DetailPermohonanSuratPage({
                 <button type="submit" className="button button-primary">Tandai Sudah Diambil</button>
               </form>
             ) : null}
-            {status === 1 && permohonan.letterId === null ? (
+            {status === 1 && permohonan.letterId === null && canCreateLetter ? (
               <form action={buatKonsepSuratPermohonanAction}>
                 <input type="hidden" name="id" value={id} />
                 <button type="submit" className="button button-primary">Buat Konsep & Ajukan Verifikasi</button>
