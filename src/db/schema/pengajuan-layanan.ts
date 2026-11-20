@@ -32,6 +32,6 @@ export const pengajuanLayanan = mysqlTable("pengajuan_layanan", {
   index("pengajuan_layanan_tenant_status_idx").on(t.villageId, t.status, t.createdAt),
   index("pengajuan_layanan_tenant_layanan_idx").on(t.villageId, t.layananId),
   foreignKey({ name: "pengajuan_layanan_service_tenant_fk", columns: [t.villageId, t.layananId], foreignColumns: [layananPublik.villageId, layananPublik.id] }).onDelete("restrict"),
-  foreignKey({ name: "pengajuan_layanan_resident_tenant_fk", columns: [t.villageId, t.residentId], foreignColumns: [residents.villageId, residents.id] }).onDelete("set null"),
+  foreignKey({ name: "pengajuan_layanan_resident_tenant_fk", columns: [t.villageId, t.residentId], foreignColumns: [residents.villageId, residents.id] }).onDelete("restrict"),
 ]);
 export type PengajuanLayanan = typeof pengajuanLayanan.$inferSelect;
