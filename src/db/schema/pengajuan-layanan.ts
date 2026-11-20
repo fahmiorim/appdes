@@ -1,4 +1,4 @@
-import { boolean, index, int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { index, int, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 import { users } from "./auth";
 import { villages } from "./village";
 
@@ -25,7 +25,7 @@ export const pengajuanLayanan = mysqlTable("pengajuan_layanan", {
  createdAt:timestamp("created_at").notNull().defaultNow(),
  updatedAt:timestamp("updated_at").notNull().defaultNow().$onUpdate(()=>new Date()),
 },(t)=>[
- index("pengajuan_layanan_tenant_status_idx").on(t.villageId,t.status,t.createdAt),
+ uniqueIndex("pengajuan_layanan_village_ticket_uq").on(t.villageId,t.nomorTiket),\n index("pengajuan_layanan_tenant_status_idx").on(t.villageId,t.status,t.createdAt),
  index("pengajuan_layanan_tenant_layanan_idx").on(t.villageId,t.layananId),
 ]);
 export type PengajuanLayanan=typeof pengajuanLayanan.$inferSelect;
