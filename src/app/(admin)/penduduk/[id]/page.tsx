@@ -48,6 +48,7 @@ export default async function PendudukDetailPage({ params }: { params: Promise<{
 
   const bolehUbah = hasPermission(user.permissions, PENDUDUK_RESOURCE, "update");
   const bolehHapus = hasPermission(user.permissions, PENDUDUK_RESOURCE, "delete");
+  const bolehHapus = hasPermission(user.permissions, PENDUDUK_RESOURCE, "delete");
 
   const penduduk = data.resident;
   const usia = calculateAge(penduduk.birthDate);
@@ -67,7 +68,6 @@ export default async function PendudukDetailPage({ params }: { params: Promise<{
       <Link className="penduduk-back" href="/penduduk">
         ← Kembali ke Data Penduduk
       </Link>
-      <div className="penduduk-heading-actions">{bolehUbah?<Link className="button button-secondary" href={`/penduduk/${nomor}/ubah`}>Ubah Data</Link>:null}{bolehHapus?<form action={hapusPendudukAction}><input type="hidden" name="id" value={nomor}/><button className="button button-danger" type="submit">Hapus Data Penduduk</button></form>:null}</div>
 
       <div className="page-heading penduduk-detail-heading">
         <div>
@@ -90,6 +90,7 @@ export default async function PendudukDetailPage({ params }: { params: Promise<{
               Ubah Data
             </Link>
           ) : null}
+          {bolehHapus ? <form action={hapusPendudukAction}><input type="hidden" name="id" value={penduduk.id}/><button className="button button-secondary" type="submit">Hapus Data</button></form> : null}
         </div>
       </div>
 
