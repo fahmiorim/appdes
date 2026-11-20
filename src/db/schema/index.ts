@@ -1,4 +1,5 @@
 export * from "./kesehatan";
+export * from "./layanan-publik";
 export * from "./pendapat";
 export * from "./kontak";
 /**
