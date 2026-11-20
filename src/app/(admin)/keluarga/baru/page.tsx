@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { buatKeluargaAction } from "@/app/(admin)/keluarga/actions";
 import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
-import { getKeluargaReference } from "@/features/keluarga/application/use-cases";
+import { getKeluargaFormReference } from "@/features/keluarga/application/use-cases";
 
 export const metadata: Metadata = { title: "Tambah Kartu Keluarga" };
 
 export default async function KeluargaBaruPage() {
-  const reference = await getKeluargaReference();
+  const reference = await getKeluargaFormReference();
   return <div className="modul-page data-kependudukan-page">
     <DataKependudukanNav active="/keluarga"/>
     <header className="page-heading"><div><span className="eyebrow">Kartu Keluarga</span><h1>Tambah Kartu Keluarga</h1><p>Daftarkan nomor KK dan wilayah tempat tinggal keluarga.</p></div></header>
