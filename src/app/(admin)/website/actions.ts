@@ -552,8 +552,8 @@ export async function ubahAgendaWebsiteAction(fd: FormData): Promise<void> {
   const villageId = await resolveVillageId(user);
   const id = num(fd, "id"), judul = text(fd, "judulAgenda");
   const mulai = text(fd, "mulaiAgenda"), selesai = text(fd, "selesaiAgenda");
-  if (!id || !judul || judul.length > 200 || !/^\\d{4}-\\d{2}-\\d{2}$/.test(mulai)) throw new Error("Data agenda tidak valid.");
-  if (selesai && (!/^\\d{4}-\\d{2}-\\d{2}$/.test(selesai) || selesai < mulai)) throw new Error("Tanggal selesai tidak valid.");
+  if (!id || !judul || judul.length > 200 || !/^\d{4}-\d{2}-\d{2}$/.test(mulai)) throw new Error("Data agenda tidak valid.");
+  if (selesai && (!/^\d{4}-\d{2}-\d{2}$/.test(selesai) || selesai < mulai)) throw new Error("Tanggal selesai tidak valid.");
   const [existing] = await db.select({ id: agendaKegiatan.id }).from(agendaKegiatan)
     .where(and(eq(agendaKegiatan.villageId, villageId), eq(agendaKegiatan.id, id))).limit(1);
   if (!existing) throw new Error("Agenda tidak ditemukan.");
