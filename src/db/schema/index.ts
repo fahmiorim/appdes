@@ -1,6 +1,7 @@
 export * from "./kesehatan";
 export * from "./layanan-publik";
 export * from "./pengajuan-layanan";
+export * from "./riwayat-pengajuan-layanan";
 export * from "./pendapat";
 export * from "./kontak";
 /**
