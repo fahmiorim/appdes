@@ -36,7 +36,7 @@ export async function ajukanLayananWargaData(raw: unknown, unggahan: BerkasUngga
     for (let i = 0; i < requiredDocs.length; i += 1) {
       const file = unggahan[i];
       if (!file || file.mime?.toLowerCase() !== "application/pdf" || file.ukuran > 20 * 1024 * 1024) throw validationError("Setiap persyaratan wajib berupa PDF maksimal 20 MB.");
-      const jalur = await simpanBerkasMedia(villageId, file, "permohonan", "berkas_" + i);
+      const jalur = await simpanBerkasMedia(villageId, { ...file, nama: `${i + 1}-${file.nama}` }, "permohonan", "berkas_" + i);
       savedFiles.push({ namaPersyaratan: requiredDocs[i].slice(0, 180), jalur, namaAsli: file.nama.slice(0, 255), ukuran: file.ukuran });
     }
   } catch (error) { for (const file of savedFiles) await hapusMedia(file.jalur); throw error; }
