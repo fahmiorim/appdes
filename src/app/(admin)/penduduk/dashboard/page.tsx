@@ -9,15 +9,15 @@ import { MUTATION_TYPE_LABELS } from "@/features/penduduk/domain/riwayat-pendudu
 
 export const metadata: Metadata = { title: "Dashboard Kependudukan" };
 const number = new Intl.NumberFormat("id-ID");
-const date = new Intl.DateTimeFormat("id-ID",{day:"2-digit",month:"short",year:"numeric"});
-const month = new Intl.DateTimeFormat("id-ID",{month:"short"});
+const date = new Intl.DateTimeFormat("id-ID",{day:"2-digit",month:"short",year:"numeric",timeZone:"UTC"});
+const month = new Intl.DateTimeFormat("id-ID",{month:"short",timeZone:"UTC"});
 
 function iso(value:Date) {
-  return [value.getFullYear(),String(value.getMonth()+1).padStart(2,"0"),String(value.getDate()).padStart(2,"0")].join("-");
+  return [value.getUTCFullYear(),String(value.getUTCMonth()+1).padStart(2,"0"),String(value.getUTCDate()).padStart(2,"0")].join("-");
 }
 function monthWindow(now:Date,offset:number) {
-  const start=new Date(now.getFullYear(),now.getMonth()-offset,1);
-  const end=new Date(now.getFullYear(),now.getMonth()-offset+1,0);
+  const start=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth()-offset,1));
+  const end=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth()-offset+1,0));
   return {label:month.format(start),from:iso(start),to:iso(end)};
 }
 function monthName(value:string) {
@@ -25,8 +25,10 @@ function monthName(value:string) {
 }
 
 export default async function DashboardKependudukanPage() {
-  const now=new Date();
-  const first=iso(new Date(now.getFullYear(),now.getMonth(),1));
+  const parts=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Jakarta",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
+  const part=(type:string)=>parts.find(item=>item.type===type)?.value??"1";
+  const now=new Date(Date.UTC(Number(part("year")),Number(part("month"))-1,Number(part("day"))));
+  const first=iso(new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),1)));
   const today=iso(now);
   const windows=Array.from({length:6},(_,index)=>monthWindow(now,5-index));
   const [summary,age,gender,area,latest,thisMonth,trend]=await Promise.all([
