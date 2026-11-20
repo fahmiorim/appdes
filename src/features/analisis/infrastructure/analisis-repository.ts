@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { analisisIndikator, analisisKategori } from "@/db/schema";
+import { analisisIndikator, analisisKategori, surveySoal } from "@/db/schema";
 
 export async function listAnalisisKategori(villageId: number) {
   return db
@@ -66,8 +66,18 @@ export async function updateAnalisisIndikator(
     .where(and(eq(analisisIndikator.id, id), eq(analisisIndikator.villageId, villageId)));
 }
 
+/**
+ * Composite RESTRICT pada `survey_soal.indikator_id` mencegah referensi
+ * lintas desa; lepaskan soal sewilayah secara atomik sebelum indikator dihapus.
+ */
 export async function deleteAnalisisIndikator(id: number, villageId: number) {
-  await db
-    .delete(analisisIndikator)
-    .where(and(eq(analisisIndikator.id, id), eq(analisisIndikator.villageId, villageId)));
+  await db.transaction(async (tx) => {
+    await tx
+      .update(surveySoal)
+      .set({ indikatorId: null })
+      .where(and(eq(surveySoal.villageId, villageId), eq(surveySoal.indikatorId, id)));
+    await tx
+      .delete(analisisIndikator)
+      .where(and(eq(analisisIndikator.id, id), eq(analisisIndikator.villageId, villageId)));
+  });
 }
