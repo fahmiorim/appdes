@@ -28,6 +28,8 @@ import {
   jabatanPerangkat,
   menuPublik,
   perangkatDesa,
+  potensiDesa,
+  potensiIndikator,
   profilDesa,
   slider,
   widget,
@@ -912,6 +914,74 @@ export async function listVideoGaleriPublik(
     .limit(limit);
 }
 
+/* ---------------------------------------------------------------- potensi desa */
+
+export interface PotensiDesaRingkas {
+  id: number;
+  kategori: string;
+  judul: string;
+  slug: string;
+  ringkasan: string | null;
+  deskripsi: string | null;
+  gambar: string | null;
+  lokasi: string | null;
+  kontak: string | null;
+  unggulan: boolean;
+  aktif: boolean;
+  indikator: { id: number; label: string; nilai: string }[];
+}
+
+export async function listPotensiDesa(
+  villageId: number,
+  includeInactive = false,
+): Promise<PotensiDesaRingkas[]> {
+  const conditions = [eq(potensiDesa.villageId, villageId)];
+  if (!includeInactive) conditions.push(eq(potensiDesa.aktif, true));
+  const rows = await db
+    .select({
+      id: potensiDesa.id,
+      kategori: potensiDesa.kategori,
+      judul: potensiDesa.judul,
+      slug: potensiDesa.slug,
+      ringkasan: potensiDesa.ringkasan,
+      deskripsi: potensiDesa.deskripsi,
+      gambar: potensiDesa.gambar,
+      lokasi: potensiDesa.lokasi,
+      kontak: potensiDesa.kontak,
+      unggulan: potensiDesa.unggulan,
+      aktif: potensiDesa.aktif,
+      urut: potensiDesa.urut,
+    })
+    .from(potensiDesa)
+    .where(and(...conditions))
+    .orderBy(asc(potensiDesa.urut), asc(potensiDesa.id));
+  const ids = rows.map((row) => row.id);
+  const indicators = ids.length
+    ? await db
+        .select({
+          id: potensiIndikator.id,
+          potensiId: potensiIndikator.potensiId,
+          label: potensiIndikator.label,
+          nilai: potensiIndikator.nilai,
+        })
+        .from(potensiIndikator)
+        .where(
+          and(eq(potensiIndikator.villageId, villageId), inArray(potensiIndikator.potensiId, ids)),
+        )
+        .orderBy(asc(potensiIndikator.urut), asc(potensiIndikator.id))
+    : [];
+  const byPotensi = new Map<number, { id: number; label: string; nilai: string }[]>();
+  for (const item of indicators)
+    byPotensi.set(item.potensiId, [
+      ...(byPotensi.get(item.potensiId) ?? []),
+      { id: item.id, label: item.label, nilai: item.nilai },
+    ]);
+  return rows.map(({ urut: _urut, ...row }) => ({
+    ...row,
+    indikator: byPotensi.get(row.id) ?? [],
+  }));
+}
+
 /* ------------------------------------------------------- kelola galeri admin */
 
 export interface VideoGaleriAdmin {
@@ -973,4 +1043,85 @@ export async function hapusVideoGaleriAdmin(villageId: number, videoId: number):
   await db
     .delete(galeriVideo)
     .where(and(eq(galeriVideo.id, videoId), eq(galeriVideo.villageId, villageId)));
+}
+
+/* ------------------------------------------------------ kelola potensi admin */
+
+export interface PotensiAdminInput {
+  id: number;
+  kategori: string;
+  judul: string;
+  slug: string;
+  ringkasan: string | null;
+  deskripsi: string | null;
+  gambar: string | null;
+  lokasi: string | null;
+  kontak: string | null;
+  unggulan: boolean;
+  aktif: boolean;
+  indikator: { label: string; nilai: string; urut: number }[];
+}
+
+export async function simpanPotensiAdmin(
+  villageId: number,
+  data: PotensiAdminInput,
+): Promise<void> {
+  await db.transaction(async (tx) => {
+    if (data.id > 0) {
+      await tx
+        .update(potensiDesa)
+        .set({
+          kategori: data.kategori,
+          judul: data.judul,
+          slug: data.slug,
+          ringkasan: data.ringkasan,
+          deskripsi: data.deskripsi,
+          gambar: data.gambar,
+          lokasi: data.lokasi,
+          kontak: data.kontak,
+          unggulan: data.unggulan,
+          aktif: data.aktif,
+        })
+        .where(and(eq(potensiDesa.id, data.id), eq(potensiDesa.villageId, villageId)));
+      await tx
+        .delete(potensiIndikator)
+        .where(
+          and(eq(potensiIndikator.villageId, villageId), eq(potensiIndikator.potensiId, data.id)),
+        );
+      if (data.indikator.length) {
+        await tx
+          .insert(potensiIndikator)
+          .values(data.indikator.map((item) => ({ ...item, villageId, potensiId: data.id })));
+      }
+      return;
+    }
+
+    const [created] = await tx
+      .insert(potensiDesa)
+      .values({
+        villageId,
+        kategori: data.kategori,
+        judul: data.judul,
+        slug: data.slug,
+        ringkasan: data.ringkasan,
+        deskripsi: data.deskripsi,
+        gambar: data.gambar,
+        lokasi: data.lokasi,
+        kontak: data.kontak,
+        unggulan: data.unggulan,
+        aktif: data.aktif,
+      })
+      .$returningId();
+    if (created?.id && data.indikator.length) {
+      await tx
+        .insert(potensiIndikator)
+        .values(data.indikator.map((item) => ({ ...item, villageId, potensiId: created.id })));
+    }
+  });
+}
+
+export async function hapusPotensiAdmin(villageId: number, id: number): Promise<void> {
+  await db
+    .delete(potensiDesa)
+    .where(and(eq(potensiDesa.id, id), eq(potensiDesa.villageId, villageId)));
 }

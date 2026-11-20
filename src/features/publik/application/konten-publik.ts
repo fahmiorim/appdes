@@ -12,6 +12,7 @@ import {
   listFotoAlbum,
   listKategoriBerita,
   listPerangkatDesa,
+  listPotensiDesa,
   listSliderBeranda,
   listSlugBerita,
   listSlugHalaman,
@@ -98,4 +99,8 @@ export async function daftarSlugHalaman(villageId: number) {
 
 export async function daftarVideoGaleriPublik(villageId: number, limit = 8) {
   return listVideoGaleriPublik(villageId, limit);
+}
+
+export async function daftarPotensiDesa(villageId: number, includeInactive = false) {
+  return listPotensiDesa(villageId, includeInactive);
 }

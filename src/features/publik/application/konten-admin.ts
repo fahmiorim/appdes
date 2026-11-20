@@ -2,14 +2,17 @@ import "server-only";
 
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import {
+  hapusPotensiAdmin as hapusPotensiRepo,
   hapusVideoGaleriAdmin as hapusVideoGaleriRepo,
   listAlbumGaleri,
   listBerita,
   listVideoGaleriAdmin as listVideoGaleriRepo,
   simpanMetadataAlbumAdmin as simpanMetadataAlbumRepo,
+  simpanPotensiAdmin as simpanPotensiRepo,
   tambahVideoGaleriAdmin as tambahVideoGaleriRepo,
   type AlbumRingkas,
   type BeritaRingkas,
+  type PotensiAdminInput,
 } from "@/features/publik/infrastructure/content-repository";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { requirePermission } from "@/lib/dal";
@@ -65,4 +68,16 @@ export async function hapusVideoGaleriAdmin(videoId: number) {
   const user = await requirePermission(RESOURCES.galeri, "delete");
   const villageId = await resolveVillageId(user);
   return hapusVideoGaleriRepo(villageId, videoId);
+}
+
+export async function simpanPotensiAdmin(data: PotensiAdminInput) {
+  const user = await requirePermission(RESOURCES.profilDesa, "update");
+  const villageId = await resolveVillageId(user);
+  return simpanPotensiRepo(villageId, data);
+}
+
+export async function hapusPotensiAdmin(id: number) {
+  const user = await requirePermission(RESOURCES.profilDesa, "update");
+  const villageId = await resolveVillageId(user);
+  return hapusPotensiRepo(villageId, id);
 }
