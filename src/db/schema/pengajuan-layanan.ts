@@ -1,5 +1,4 @@
 import { boolean, index, int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
-import { residents } from "./resident";
 import { users } from "./auth";
 import { villages } from "./village";
 
