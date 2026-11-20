@@ -33,6 +33,7 @@ export const catatKelahiranSchema = z.object({
   nationalId: optionalDigits(16),
   gender: z.enum(["male", "female"]).optional().or(z.literal("")),
   familyId: optionalSelectId,
+  familyRelationId: optionalSelectId,
   regionId: optionalSelectId,
   address: optionalText(255),
   fatherName: optionalText(100),
