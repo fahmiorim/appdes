@@ -2,10 +2,10 @@ import "server-only";
 import { and, count, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { pengajuanLayanan, layananPublik, riwayatPengajuanLayanan } from "@/db/schema";
-import type { StatusPengajuanLayanan } from "../domain/pengajuan";
+import { bolehTransisiPengajuan, type StatusPengajuanLayanan } from "../domain/pengajuan";
 import { conflict, notFound } from "@/lib/errors";
 
-export async function listPengajuanLayanan(villageId: number, status?: string) {
+export async function listLayananAktif(villageId: number) {\n  return db.select({ id: layananPublik.id, nama: layananPublik.nama, kategori: layananPublik.kategori, deskripsi: layananPublik.deskripsi, persyaratan: layananPublik.persyaratan, estimasiHari: layananPublik.estimasiHari, biaya: layananPublik.biaya }).from(layananPublik).where(and(eq(layananPublik.villageId, villageId), eq(layananPublik.aktif, true))).orderBy(layananPublik.nama);\n}\n\nexport async function listPengajuanLayanan(villageId: number, status?: string) {
   const where = [eq(pengajuanLayanan.villageId, villageId)];
   if (status) where.push(eq(pengajuanLayanan.status, status));
   const [rows, totals] = await Promise.all([
@@ -62,7 +62,7 @@ export async function updateStatusPengajuan(
     const [current] = await tx.select({ status: pengajuanLayanan.status }).from(pengajuanLayanan)
       .where(and(eq(pengajuanLayanan.villageId, villageId), eq(pengajuanLayanan.id, id))).limit(1);
     if (!current) throw notFound("Pengajuan tidak ditemukan.");
-    if (!(current.status in { diajukan: 1, diverifikasi: 1, diproses: 1, selesai: 1, ditolak: 1 })) {
+    if (!["diajukan", "diverifikasi", "diproses", "selesai", "ditolak"].includes(current.status)) {
       throw conflict("Status pengajuan saat ini tidak valid.");
     }
     const dari = current.status as StatusPengajuanLayanan;
