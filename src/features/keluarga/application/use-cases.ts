@@ -222,6 +222,8 @@ export async function updateKeluarga(id: number, input: KeluargaFormInput): Prom
 }
 
 export async function deleteKeluarga(id: number): Promise<void> {
+  const members = await listKeluargaMembers(id);
+  if (members.length > 0) throw conflict("Kartu Keluarga masih memiliki anggota. Pindahkan atau lepaskan seluruh anggota terlebih dahulu.");
   const user = await requirePermission(KELUARGA_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
 
