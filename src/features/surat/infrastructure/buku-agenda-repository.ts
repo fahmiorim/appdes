@@ -25,8 +25,21 @@ export async function listSuratMasuk(villageId: number, search = "") {
 }
 
 export async function getSuratMasuk(villageId: number, id: number) {
-  const rows = await listSuratMasuk(villageId);
-  return rows.find((row) => row.id === id) ?? null;
+  const [row] = await db.select({
+    id: incomingLetters.id, agendaNumber: incomingLetters.agendaNumber,
+    receivedDate: incomingLetters.receivedDate, letterNumber: incomingLetters.letterNumber,
+    letterDate: incomingLetters.letterDate, sender: incomingLetters.sender,
+    classificationId: incomingLetters.classificationId, classificationName: letterClassifications.name,
+    summary: incomingLetters.summary, disposition: incomingLetters.disposition,
+    archiveLocation: incomingLetters.archiveLocation,
+  }).from(incomingLetters)
+    .leftJoin(letterClassifications, and(
+      eq(incomingLetters.villageId, letterClassifications.villageId),
+      eq(incomingLetters.classificationId, letterClassifications.id),
+    ))
+    .where(and(eq(incomingLetters.villageId, villageId), eq(incomingLetters.id, id)))
+    .limit(1);
+  return row ?? null;
 }
 
 export async function saveSuratMasuk(villageId: number, id: number | null, input: SuratMasukInput) {
@@ -69,8 +82,20 @@ export async function listSuratKeluar(villageId: number, search = "") {
 }
 
 export async function getSuratKeluar(villageId: number, id: number) {
-  const rows = await listSuratKeluar(villageId);
-  return rows.find((row) => row.id === id) ?? null;
+  const [row] = await db.select({
+    id: outgoingLetters.id, agendaNumber: outgoingLetters.agendaNumber,
+    letterNumber: outgoingLetters.letterNumber, letterDate: outgoingLetters.letterDate,
+    recipient: outgoingLetters.recipient, classificationId: outgoingLetters.classificationId,
+    classificationName: letterClassifications.name, summary: outgoingLetters.summary,
+    sentDate: outgoingLetters.sentDate, archiveLocation: outgoingLetters.archiveLocation,
+  }).from(outgoingLetters)
+    .leftJoin(letterClassifications, and(
+      eq(outgoingLetters.villageId, letterClassifications.villageId),
+      eq(outgoingLetters.classificationId, letterClassifications.id),
+    ))
+    .where(and(eq(outgoingLetters.villageId, villageId), eq(outgoingLetters.id, id)))
+    .limit(1);
+  return row ?? null;
 }
 
 export async function saveSuratKeluar(villageId: number, id: number | null, input: SuratKeluarInput) {
