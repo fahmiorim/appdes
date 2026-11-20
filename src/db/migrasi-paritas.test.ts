@@ -244,6 +244,19 @@ describe("paritas skema vs migrasi", () => {
     expect(skema.size).toBeGreaterThan(0);
   });
 
+  it("entri journal terakhir memakai timestamp terbesar", () => {
+    const journal = JSON.parse(fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8")) as {
+      entries: Array<{ idx: number; tag: string; when: number }>;
+    };
+
+    // Drizzle MySQL hanya menjalankan migration dengan folderMillis di atas
+    // migration terakhir yang tercatat. Migration baru yang `when`-nya lebih
+    // kecil akan dilewati walau `db:migrate` melaporkan sukses.
+    const terakhir = journal.entries.at(-1);
+    expect(terakhir).toBeDefined();
+    expect(terakhir!.when).toBe(Math.max(...journal.entries.map((entri) => entri.when)));
+  });
+
   it("setiap entri journal memiliki berkas snapshot", () => {
     const journal = JSON.parse(fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8")) as {
       entries: Array<{ idx: number; tag: string }>;

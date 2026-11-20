@@ -29,8 +29,12 @@ export interface DesaKonsolRow {
   slug: string | null;
   code: string | null;
   domain: string | null;
+  district: string | null;
   active: boolean;
   kuotaMediaMb: number | null;
+  tema: string | null;
+  temaNama: string | null;
+  temaVersi: string | null;
   pengguna: number;
   penduduk: number;
   jenisSurat: number;
@@ -93,6 +97,24 @@ const LABEL_RETENSI: Record<StatusRetensi, string> = {
   "siap-purge": "Siap purge",
   "sudah-purge": "Sudah di-purge",
 };
+
+/** Nomor halaman ringkas: selalu tampilkan ujung dan sekitar halaman aktif. */
+function nomorHalaman(aktif: number, total: number): (number | "elipsis")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1);
+
+  const nomor = [...new Set([1, total, aktif - 1, aktif, aktif + 1])]
+    .filter((item) => item >= 1 && item <= total)
+    .sort((a, b) => a - b);
+  const hasil: (number | "elipsis")[] = [];
+
+  for (const item of nomor) {
+    const sebelumnya = hasil[hasil.length - 1];
+    if (typeof sebelumnya === "number" && item - sebelumnya > 1) hasil.push("elipsis");
+    hasil.push(item);
+  }
+
+  return hasil;
+}
 
 function Pesan({ state }: { state: ActionState<unknown> }) {
   if (state.status === "idle") return null;
@@ -488,10 +510,15 @@ export function TenantConsole({
   const pathname = usePathname();
   const [query, setQuery] = useState(queryAwal);
   const [status, setStatus] = useState<StatusTenantFilter>(statusAwal);
+  const [kecamatan, setKecamatan] = useState("semua");
+  const [tema, setTema] = useState("semua");
+  const [perHalaman, setPerHalaman] = useState(10);
+  const [halaman, setHalaman] = useState(1);
   const [terbuka, setTerbuka] = useState<number | null>(null);
 
   const pilihStatus = (nilai: StatusTenantFilter) => {
     setStatus(nilai);
+    setHalaman(1);
     // Simpan filter di URL agar bisa dibagikan dan tahan refresh. Kata kunci
     // dari top bar dipertahankan supaya tab tidak diam-diam menghapusnya.
     const params = new URLSearchParams();
@@ -510,21 +537,65 @@ export function TenantConsole({
     ) as Record<StatusTenantFilter, number>;
   }, [desa]);
 
+  const opsiKecamatan = useMemo(() => {
+    const unik = desa
+      .map((item) => item.district?.trim())
+      .filter((item): item is string => Boolean(item));
+    return [...new Set(unik)].sort((a, b) => a.localeCompare(b, "id-ID"));
+  }, [desa]);
+
+  const opsiTema = useMemo(() => {
+    const label = new Map<string, string>();
+    for (const item of desa) {
+      const slug = item.tema?.trim();
+      if (!slug) continue;
+      const nama = item.temaNama?.trim() || slug;
+      label.set(slug, item.temaVersi ? `${nama} v${item.temaVersi}` : nama);
+    }
+    return [...label.entries()].sort((a, b) => a[1].localeCompare(b[1], "id-ID"));
+  }, [desa]);
+
+  const adaTanpaKecamatan = desa.some((item) => !item.district?.trim());
+  const adaTanpaTema = desa.some((item) => !item.tema?.trim());
+
   const filtered = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase("id-ID");
 
     return desa.filter((item) => {
-      const searchable = [item.name, item.code, item.domain, item.slug]
+      const searchable = [
+        item.name,
+        item.code,
+        item.domain,
+        item.slug,
+        item.district,
+        item.temaNama,
+        item.tema,
+      ]
         .filter(Boolean)
         .join(" ")
         .toLocaleLowerCase("id-ID");
 
+      const cocokKecamatan =
+        kecamatan === "semua" ||
+        (kecamatan === "__tanpa__" ? !item.district?.trim() : item.district?.trim() === kecamatan);
+      const cocokTema =
+        tema === "semua" ||
+        (tema === "__tanpa__" ? !item.tema?.trim() : item.tema?.trim() === tema);
+
       return (
+        cocokKecamatan &&
+        cocokTema &&
         cocokStatusTenant(item, status) &&
         (!normalizedQuery || searchable.includes(normalizedQuery))
       );
     });
-  }, [desa, query, status]);
+  }, [desa, kecamatan, query, status, tema]);
+
+  const totalHalaman = Math.max(1, Math.ceil(filtered.length / perHalaman));
+  const halamanAktif = Math.min(halaman, totalHalaman);
+  const mulai = (halamanAktif - 1) * perHalaman;
+  const terlihat = filtered.slice(mulai, mulai + perHalaman);
+  const nomorAkhir = Math.min(mulai + perHalaman, filtered.length);
 
   return (
     <>
@@ -546,17 +617,56 @@ export function TenantConsole({
       </div>
       <div className="tenant-toolbar">
         <label className="tenant-search">
-          <span className="sr-only">Cari nama desa, kode, slug, atau domain</span>
+          <span className="sr-only">Cari nama desa, kode, slug, domain, atau kecamatan</span>
           <input
             className="form-input"
             type="search"
-            placeholder="Cari nama desa, kode, slug, atau domain..."
+            placeholder="Cari nama desa, kode, domain, atau kecamatan..."
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => {
+              setQuery(event.target.value);
+              setHalaman(1);
+            }}
           />
         </label>
+        <select
+          aria-label="Filter kecamatan"
+          className="form-input tenant-filter"
+          value={kecamatan}
+          onChange={(event) => {
+            setKecamatan(event.target.value);
+            setHalaman(1);
+          }}
+        >
+          <option value="semua">Semua kecamatan</option>
+          {opsiKecamatan.map((item) => (
+            <option key={item} value={item}>
+              {item}
+            </option>
+          ))}
+          {adaTanpaKecamatan ? <option value="__tanpa__">Belum diisi</option> : null}
+        </select>
+        <select
+          aria-label="Filter tema"
+          className="form-input tenant-filter"
+          value={tema}
+          onChange={(event) => {
+            setTema(event.target.value);
+            setHalaman(1);
+          }}
+        >
+          <option value="semua">Semua tema</option>
+          {opsiTema.map(([slug, label]) => (
+            <option key={slug} value={slug}>
+              {label}
+            </option>
+          ))}
+          {adaTanpaTema ? <option value="__tanpa__">Belum memilih tema</option> : null}
+        </select>
         <span className="tenant-result-count">
-          Menampilkan {angka.format(filtered.length)} dari {angka.format(desa.length)} desa
+          {totalHalaman > 1
+            ? `Menampilkan ${angka.format(mulai + 1)}–${angka.format(nomorAkhir)} dari ${angka.format(filtered.length)} desa`
+            : `Menampilkan ${angka.format(filtered.length)} dari ${angka.format(desa.length)} desa`}
         </span>
       </div>
 
@@ -566,9 +676,11 @@ export function TenantConsole({
             <tr>
               <th scope="col">Desa</th>
               <th scope="col">Domain</th>
+              <th scope="col">Kecamatan</th>
+              <th scope="col">Tema</th>
               <th scope="col">Pengguna</th>
               <th scope="col">Penduduk</th>
-              <th scope="col">Jenis surat</th>
+              <th scope="col">Kuota media</th>
               <th scope="col">Terdaftar</th>
               <th scope="col">Status</th>
               <th scope="col">Retensi</th>
@@ -576,8 +688,8 @@ export function TenantConsole({
             </tr>
           </thead>
           <tbody>
-            {filtered.length > 0 ? (
-              filtered.map((item) => (
+            {terlihat.length > 0 ? (
+              terlihat.map((item) => (
                 <TrTenant
                   key={item.id}
                   desa={item}
@@ -591,7 +703,7 @@ export function TenantConsole({
               ))
             ) : (
               <tr>
-                <td className="tenant-empty" colSpan={9}>
+                <td className="tenant-empty" colSpan={11}>
                   {desa.length === 0
                     ? "Belum ada tenant desa yang terdaftar."
                     : "Tidak ada desa yang sesuai dengan pencarian atau filter."}
@@ -601,6 +713,73 @@ export function TenantConsole({
           </tbody>
         </table>
       </div>
+
+      {filtered.length > 0 ? (
+        <div className="tenant-pagination">
+          <span className="form-help">
+            Halaman {angka.format(halamanAktif)} dari {angka.format(totalHalaman)}
+          </span>
+          <div
+            aria-label="Navigasi halaman tenant"
+            className="tenant-pagination-pages"
+            role="group"
+          >
+            <button
+              aria-label="Halaman sebelumnya"
+              className="tenant-page-button"
+              disabled={halamanAktif <= 1}
+              onClick={() => setHalaman(halamanAktif - 1)}
+              type="button"
+            >
+              ‹
+            </button>
+            {nomorHalaman(halamanAktif, totalHalaman).map((item, index) =>
+              item === "elipsis" ? (
+                <span className="tenant-page-ellipsis" key={`elipsis-${index}`}>
+                  …
+                </span>
+              ) : (
+                <button
+                  aria-current={item === halamanAktif ? "page" : undefined}
+                  aria-label={`Halaman ${item}`}
+                  className="tenant-page-button"
+                  key={item}
+                  onClick={() => setHalaman(item)}
+                  type="button"
+                >
+                  {item}
+                </button>
+              ),
+            )}
+            <button
+              aria-label="Halaman berikutnya"
+              className="tenant-page-button"
+              disabled={halamanAktif >= totalHalaman}
+              onClick={() => setHalaman(halamanAktif + 1)}
+              type="button"
+            >
+              ›
+            </button>
+          </div>
+          <label className="tenant-page-size">
+            <span className="sr-only">Baris per halaman</span>
+            <select
+              className="form-input"
+              value={perHalaman}
+              onChange={(event) => {
+                setPerHalaman(Number(event.target.value));
+                setHalaman(1);
+              }}
+            >
+              {[10, 25, 50].map((jumlah) => (
+                <option key={jumlah} value={jumlah}>
+                  {jumlah} / halaman
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      ) : null}
     </>
   );
 }
@@ -629,9 +808,29 @@ function TrTenant({
           </span>
         </td>
         <td>{desa.domain || <span className="tenant-secondary">Belum diatur</span>}</td>
+        <td>{desa.district || <span className="tenant-secondary">Belum diisi</span>}</td>
+        <td>
+          {desa.temaNama || desa.tema ? (
+            <>
+              <span>{desa.temaNama || desa.tema}</span>
+              <span className="tenant-secondary">
+                {desa.tema}
+                {desa.temaVersi ? ` · v${desa.temaVersi}` : ""}
+              </span>
+            </>
+          ) : (
+            <span className="tenant-secondary">Belum memilih</span>
+          )}
+        </td>
         <td>{angka.format(desa.pengguna)}</td>
         <td>{angka.format(desa.penduduk)}</td>
-        <td>{angka.format(desa.jenisSurat)}</td>
+        <td>
+          {desa.kuotaMediaMb === null ? (
+            <span className="tenant-secondary">Tanpa batas</span>
+          ) : (
+            `${angka.format(desa.kuotaMediaMb)} MB`
+          )}
+        </td>
         <td>{tanggal.format(new Date(desa.createdAt))}</td>
         <td>
           <span className={desa.active ? "tenant-status is-active" : "tenant-status is-inactive"}>
@@ -655,7 +854,7 @@ function TrTenant({
       </tr>
       {terbuka ? (
         <tr className="tenant-panel-row">
-          <td colSpan={9}>
+          <td colSpan={11}>
             <PanelKelola desa={desa} domain={domain} aksi={aksi} />
           </td>
         </tr>

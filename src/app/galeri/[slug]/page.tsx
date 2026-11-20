@@ -6,7 +6,7 @@ import { getIdentitasFromRequest } from "@/features/desa/application/resolve-vil
 import { daftarFotoAlbum, detailAlbumGaleri } from "@/features/publik/application/konten-publik";
 
 import styles from "../galeri.module.css";
-import { PublicSiteFooter, PublicSiteHeader } from "../../public-site-layout";
+import { GalleryShell } from "../gallery-shell";
 
 export const dynamic = "force-dynamic";
 type Props = { params: Promise<{ slug: string }> };
