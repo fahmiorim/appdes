@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { simpanJenisSuratData, hapusJenisSuratData } from "@/features/surat/application/jenis-surat-use-cases";
+import { simpanJenisSuratData, hapusJenisSuratData, simpanKlasifikasiSuratData, hapusKlasifikasiSuratData, simpanSyaratSuratData, hapusSyaratSuratData } from "@/features/surat/application/jenis-surat-use-cases";
 
 function ambilBoolean(formData: FormData, key: string) { return formData.get(key) === "on"; }
 function ambilAngka(formData: FormData, key: string, fallback = 0) {
@@ -45,4 +45,48 @@ export async function hapusJenisSuratAction(formData: FormData) {
   await hapusJenisSuratData(id);
   revalidatePath("/persuratan/jenis-surat");
   redirect("/persuratan/jenis-surat?berhasil=dihapus");
+}
+
+function idOpsional(formData: FormData): number | null {
+  const raw = String(formData.get("id") ?? "");
+  if (!raw) return null;
+  const id = Number(raw);
+  if (!Number.isSafeInteger(id) || id < 1) throw new Error("ID tidak valid.");
+  return id;
+}
+export async function simpanKlasifikasiSuratAction(formData: FormData) {
+  const id = await simpanKlasifikasiSuratData(idOpsional(formData), {
+    code: ambilString(formData, "code"),
+    name: ambilString(formData, "name"),
+  });
+  revalidatePath("/persuratan/master");
+  revalidatePath("/persuratan/jenis-surat");
+  redirect(`/persuratan/master?berhasil=klasifikasi-${id}`);
+}
+export async function hapusKlasifikasiSuratAction(formData: FormData) {
+  const id = Number(formData.get("id"));
+  if (!Number.isSafeInteger(id) || id < 1) throw new Error("ID klasifikasi tidak valid.");
+  await hapusKlasifikasiSuratData(id);
+  revalidatePath("/persuratan/master");
+  revalidatePath("/persuratan/jenis-surat");
+  redirect("/persuratan/master?berhasil=klasifikasi-dihapus");
+}
+export async function simpanSyaratSuratAction(formData: FormData) {
+  const id = await simpanSyaratSuratData(idOpsional(formData), {
+    name: ambilString(formData, "name"),
+    description: ambilString(formData, "description"),
+    sortOrder: ambilAngka(formData, "sortOrder", 0),
+    isActive: ambilBoolean(formData, "isActive"),
+  });
+  revalidatePath("/persuratan/master");
+  revalidatePath("/persuratan/jenis-surat");
+  redirect(`/persuratan/master?berhasil=syarat-${id}`);
+}
+export async function hapusSyaratSuratAction(formData: FormData) {
+  const id = Number(formData.get("id"));
+  if (!Number.isSafeInteger(id) || id < 1) throw new Error("ID persyaratan tidak valid.");
+  await hapusSyaratSuratData(id);
+  revalidatePath("/persuratan/master");
+  revalidatePath("/persuratan/jenis-surat");
+  redirect("/persuratan/master?berhasil=syarat-dihapus");
 }
