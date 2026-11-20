@@ -26,12 +26,22 @@ function ambilInputSurat(formData: FormData) {
       isiSurat[key.slice("isian.".length)] = value;
     }
   }
+  const pengikut = formData.getAll("pengikut").map((value) => Number(value));
+  const luar = formData.getAll("luar").map((value) => {
+    try {
+      return JSON.parse(String(value)) as unknown;
+    } catch {
+      return null;
+    }
+  });
   return suratFormSchema.safeParse({
     typeId: String(formData.get("typeId") ?? ""),
     residentId: String(formData.get("residentId") ?? "none"),
     letterDate: String(formData.get("letterDate") ?? ""),
     purpose: String(formData.get("purpose") ?? ""),
     isiSurat,
+    pengikut,
+    luar,
   });
 }
 
