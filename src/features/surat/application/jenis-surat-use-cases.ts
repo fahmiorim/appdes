@@ -8,7 +8,7 @@ import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { JENIS_SURAT_RESOURCE, KLASIFIKASI_SURAT_RESOURCE, SYARAT_SURAT_RESOURCE, klasifikasiSuratFormSchema, syaratSuratFormSchema, jenisSuratFormSchema } from "@/features/surat/domain/surat";
 import { parseIsianFields, parseSyaratIds, validateIsianFields } from "@/features/surat/domain/isian";
 import { listKlasifikasi, listJenisSurat, listSyaratSurat, getJenisSurat, jenisSuratExists, createJenisSurat, updateJenisSurat, deleteJenisSurat, countSuratByJenis, klasifikasiExists, getKlasifikasi, createKlasifikasi, updateKlasifikasi, deleteKlasifikasi, countJenisByKlasifikasi, getSyaratSurat, syaratSuratNameExists, createSyaratSurat, updateSyaratSurat, deleteSyaratSurat, countJenisBySyarat } from "@/features/surat/infrastructure/master-repository";
-import { notFound, conflict, validationError } from "@/lib/errors";
+import { notFound, conflict, validationError, forbidden } from "@/lib/errors";
 
 export async function getMasterJenisSuratData() {
   const user = await requirePermission(JENIS_SURAT_RESOURCE, "read");
