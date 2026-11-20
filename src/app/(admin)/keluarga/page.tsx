@@ -3,12 +3,16 @@ import Link from "next/link";
 
 import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
 import { listKeluarga } from "@/features/keluarga/application/use-cases";
+import { KELUARGA_RESOURCE } from "@/features/keluarga/domain/keluarga";
+import { hasPermission } from "@/features/rbac/application/authorization";
+import { verifySession } from "@/lib/dal";
 
 export const metadata: Metadata = { title: "Kartu Keluarga" };
 const number = new Intl.NumberFormat("id-ID");
 
 export default async function KeluargaPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
-  const params = await searchParams;
+  const [params,user] = await Promise.all([searchParams,verifySession()]);
+  const bolehTambah = hasPermission(user.permissions,KELUARGA_RESOURCE,"update");
   const q = typeof params.q === "string" ? params.q.trim().slice(0,100) : "";
   const pageRaw = typeof params.page === "string" ? Number(params.page) : 1;
   const page = Number.isInteger(pageRaw) && pageRaw > 0 ? pageRaw : 1;
@@ -19,7 +23,7 @@ export default async function KeluargaPage({searchParams}:{searchParams:Promise<
   return <div className="modul-page data-kependudukan-page">
     <DataKependudukanNav active="/keluarga"/>
     <header className="page-heading"><div><span className="eyebrow">Data Kependudukan</span><h1>Kartu Keluarga</h1><p>Kelola data Kartu Keluarga dan periksa susunan anggota setiap keluarga.</p></div>
-      <div className="penduduk-heading-actions"><Link className="button button-secondary" href={`/keluarga/ekspor${q?`?q=${encodeURIComponent(q)}`:""}`}>Ekspor CSV</Link><Link className="button button-primary" href="/keluarga/baru">+ Tambah KK</Link></div></header>
+      <div className="penduduk-heading-actions"><Link className="button button-secondary" href={`/keluarga/ekspor${q?`?q=${encodeURIComponent(q)}`:""}`}>Ekspor CSV</Link>{bolehTambah?<Link className="button button-primary" href="/keluarga/baru">+ Tambah KK</Link>:null}</div></header>
     <section className="data-kependudukan-kpis">
       <article className="data-kpi data-kpi-primary"><span>Total Kartu Keluarga</span><strong>{number.format(result.total)} KK</strong><small>Terdaftar pada desa ini</small></article>
       <article className="data-kpi"><span>Anggota pada halaman ini</span><strong>{number.format(result.rows.reduce((sum,row)=>sum+row.memberCount,0))}</strong><small>Jumlah anggota dari daftar yang ditampilkan</small></article>
