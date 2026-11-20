@@ -6,7 +6,7 @@ import {
   catatDatangAction, catatKelahiranAction, catatKematianAction,
   catatPindahKeluarAction, catatPerubahanAction,
 } from "@/app/(admin)/mutasi-penduduk/actions";
-import { getPendudukReference, listPendudukOptionsData } from "@/features/penduduk/application/use-cases";
+import { getPendudukFormData, listPendudukOptionsData } from "@/features/penduduk/application/use-cases";
 
 export const metadata: Metadata = { title: "Catat Mutasi Penduduk" };
 const inputClass="form-input";
@@ -27,7 +27,8 @@ function FamilyFields({families,relations,regions}:{families:LabelOption[];relat
   </>;
 }
 export default async function MutasiBaruPage() {
-  const [residents,reference]=await Promise.all([listPendudukOptionsData(),getPendudukReference()]);
+  const [residents,formData]=await Promise.all([listPendudukOptionsData(),getPendudukFormData()]);
+  const reference=formData.references;
   const familyFields={families:reference.families,relations:reference.familyRelations,regions:reference.regions};
   return <div className="modul-page data-kependudukan-page"><DataKependudukanNav active="/mutasi-penduduk"/>
     <header className="page-heading"><div><span className="eyebrow">Mutasi Penduduk</span><h1>Catat Mutasi Penduduk</h1><p>Pilih jenis peristiwa. Data penduduk dan riwayat mutasi disimpan melalui proses pencatatan yang sama.</p></div><Link className="button button-secondary" href="/mutasi-penduduk">Kembali</Link></header>
