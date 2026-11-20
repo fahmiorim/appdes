@@ -20,7 +20,7 @@ export default async function JenisSuratPage({ searchParams }: { searchParams: S
     <div className="modul-page">
       <div className="page-heading">
         <div><span className="eyebrow">Administrasi Surat</span><h1>Template & Jenis Surat</h1><p>Atur katalog surat, format dokumen, isian dinamis, persyaratan, dan penomoran untuk desa ini.</p></div>
-        <div className="page-heading-actions"><Link href="/persuratan/surat" className="button button-secondary">Kembali ke Pengelolaan Surat</Link><Link href="/persuratan/jenis-surat/baru" className="button button-primary">＋ Tambah Jenis Surat</Link></div>
+        <div className="page-heading-actions"><Link href="/persuratan/surat" className="button button-secondary">Kembali ke Pengelolaan Surat</Link><Link href="/persuratan/master" className="button button-secondary">Master Klasifikasi & Persyaratan</Link><Link href="/persuratan/jenis-surat/baru" className="button button-primary">＋ Tambah Jenis Surat</Link></div>
       </div>
       <div className="beranda-kpi-grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))"}}>
         <article className="beranda-card beranda-kpi" data-tone="ungu"><span className="beranda-kpi-icon">▤</span><div className="beranda-kpi-body"><span className="beranda-kpi-label">Total Jenis Surat</span><strong className="beranda-kpi-value">{jenis.length}</strong><span className="beranda-chip" data-tone="ungu">Katalog desa</span></div></article>
