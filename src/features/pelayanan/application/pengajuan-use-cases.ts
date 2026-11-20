@@ -4,7 +4,7 @@ import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { getWargaProfile } from "@/features/warga/infrastructure/warga-repository";
 import { hasPermission } from "@/features/rbac/application/authorization";
 import { requirePermission, requireWargaAktif } from "@/lib/dal";
-import { forbidden, notFound, validationError } from "@/lib/errors";
+import { notFound, validationError } from "@/lib/errors";
 import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
 import type { BerkasUnggahan } from "@/features/publik/domain/media";
