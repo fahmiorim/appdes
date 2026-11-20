@@ -19,6 +19,8 @@ export const komentar = mysqlTable(
 
     /** Nama penulis komentar. */
     namaPenulis: varchar("nama_penulis", { length: 100 }).notNull(),
+    /** Email opsional; tidak pernah diekspos pada endpoint publik. */
+    email: varchar("email", { length: 150 }),
 
     /** Isi komentar. */
     isi: text("isi").notNull(),

@@ -1,0 +1,687 @@
+.site {
+  min-height: 100vh;
+  background: #f1f6ff;
+  color: #101943;
+}
+.container {
+  width: min(1180px, calc(100% - 48px));
+  margin-inline: auto;
+}
+.hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(110deg, #0757a4, #0873d7 58%, #7134e9);
+  color: #fff;
+}
+.hero:after {
+  position: absolute;
+  right: -4%;
+  bottom: -80px;
+  left: -4%;
+  height: 115px;
+  border-radius: 50% 50% 0 0;
+  background: linear-gradient(100deg, #0878e4b8, #7929efc9);
+  content: "";
+  transform: rotate(-2deg);
+}
+.heroInner {
+  position: relative;
+  z-index: 1;
+  width: min(1180px, calc(100% - 84px));
+  margin: auto;
+  padding: 15px 0 27px;
+}
+.hero nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: #e4efff;
+  font-size: 11px;
+}
+.hero nav a {
+  color: inherit;
+  text-decoration: none;
+}
+.hero h1 {
+  margin: 10px 0 5px;
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+}
+.heroInner > p {
+  max-width: 520px;
+  margin: 0;
+  color: #e9f2ff;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.sectionNav {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 5px;
+  margin: 14px 0 12px;
+  padding: 8px;
+  border: 1px solid #dce6f6;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 4px 14px #24457910;
+}
+.sectionNav a {
+  display: flex;
+  min-height: 43px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border-radius: 10px;
+  color: #111b46;
+  font-size: 12px;
+  font-weight: 850;
+  text-decoration: none;
+}
+.sectionNav a:first-child,
+.sectionNav a:nth-child(2),
+.sectionNav a:nth-child(4),
+.sectionNav a:nth-child(5) {
+  background: #f1f5ff;
+}
+.sectionNav a.navActive {
+  background: linear-gradient(105deg, #7628ed, #4d17db);
+  color: #fff;
+}
+.sectionNav a:not(:last-child) {
+  border-right: 1px solid #e1e8f7;
+}
+.sectionNav a span {
+  white-space: nowrap;
+}
+.mainGrid {
+  display: grid;
+  grid-template-columns: 290px minmax(0, 1fr);
+  gap: 12px;
+}
+.directory,
+.profileCard,
+.infoCard,
+.otherSection,
+.callout {
+  border: 1px solid #dce6f6;
+  border-radius: 15px;
+  background: linear-gradient(145deg, #fff, #f9fbff);
+  box-shadow: 0 4px 14px #2445790c;
+}
+.directory {
+  align-self: start;
+  padding: 13px;
+}
+.directory h2 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 900;
+}
+.directory h2 span {
+  color: #7829f0;
+  font-size: 23px;
+}
+.searchHint {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 9px;
+  padding: 8px 10px;
+  border: 1px solid #d4e0f3;
+  border-radius: 9px;
+  color: #64718d;
+  font-size: 11px;
+}
+.peopleList {
+  display: grid;
+  gap: 5px;
+}
+.person,
+.personActive {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  padding: 7px;
+  border: 1px solid #e0e8f6;
+  border-radius: 10px;
+  background: #f9fbff;
+  color: #101943;
+  text-decoration: none;
+}
+.personActive {
+  border-color: #d3baff;
+  background: linear-gradient(105deg, #f0e7ff, #dfd3ff);
+  color: #4e18c9;
+}
+.avatar {
+  position: relative;
+  display: grid;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 9px;
+  background: #e4eafa;
+  color: #2465d6;
+  font-weight: 900;
+}
+.avatar img {
+  object-fit: cover;
+  object-position: top;
+}
+.personCopy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+  flex: 1;
+}
+.personCopy strong {
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.personCopy small {
+  overflow: hidden;
+  color: #465474;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.personActive .personCopy small {
+  color: #4e18c9;
+}
+.person > b {
+  font-size: 22px;
+}
+.detailColumn {
+  display: grid;
+  min-width: 0;
+  gap: 10px;
+}
+.profileCard {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 15px;
+  padding: 13px;
+}
+.portrait {
+  position: relative;
+  display: grid;
+  min-height: 210px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #e4eafa, #d6e3f8);
+  color: #2465d6;
+  font-size: 54px;
+  font-weight: 900;
+}
+.portrait img {
+  object-fit: cover;
+  object-position: top;
+}
+.profileInfo {
+  min-width: 0;
+  padding: 5px 4px;
+}
+.profileInfo h2 {
+  margin: 0 0 6px;
+  font-size: 25px;
+  font-weight: 950;
+  letter-spacing: -0.04em;
+}
+.role {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 9px;
+  background: linear-gradient(100deg, #7628ed, #4f18da);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 850;
+}
+.profileInfo blockquote {
+  display: flex;
+  gap: 7px;
+  margin: 12px 0 15px;
+  color: #20284d;
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 650;
+  line-height: 1.5;
+}
+.profileInfo blockquote > span {
+  color: #7b2df0;
+  font-size: 34px;
+  font-style: normal;
+  font-weight: 950;
+  line-height: 0.8;
+}
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.metaGrid > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 50px;
+  padding: 8px;
+  border: 1px solid #d9e4f5;
+  border-radius: 10px;
+  background: #f2f6ff;
+}
+.metaGrid > div > b {
+  color: #7628ed;
+  font-size: 23px;
+}
+.metaGrid > div span {
+  display: grid;
+  gap: 2px;
+}
+.metaGrid small {
+  color: #65718b;
+  font-size: 9px;
+}
+.metaGrid strong {
+  font-size: 11px;
+}
+.metaGrid .activeStatus {
+  color: #098a36;
+}
+.infoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+.infoCard {
+  min-width: 0;
+  padding: 12px;
+}
+.infoCard h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 9px;
+  font-size: 16px;
+  font-weight: 900;
+}
+.infoCard h2:first-letter {
+  color: #7628ed;
+}
+.infoCard dl {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+.infoCard dl > div {
+  display: grid;
+  grid-template-columns: minmax(112px, 0.9fr) minmax(0, 1fr);
+  gap: 8px;
+  padding: 5px 2px;
+  border-bottom: 1px solid #e3eaf6;
+  font-size: 10px;
+  line-height: 1.35;
+}
+.infoCard dl > div:last-child {
+  border-bottom: 0;
+}
+.infoCard dt {
+  font-weight: 850;
+}
+.infoCard dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.taskIntro {
+  margin: 0 0 7px;
+  color: #65718b;
+  font-size: 10px;
+}
+.taskList {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.taskList li {
+  position: relative;
+  padding: 7px 8px 7px 25px;
+  border-bottom: 1px solid #e3eaf6;
+  font-size: 10px;
+  line-height: 1.4;
+}
+.taskList li:before {
+  position: absolute;
+  top: 6px;
+  left: 2px;
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  border-radius: 50%;
+  background: #0db34b;
+  color: #fff;
+  content: "✓";
+  font-size: 10px;
+  font-weight: 900;
+}
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 3px;
+  border-bottom: 1px solid #e3eaf6;
+}
+.contactRow > b {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  place-items: center;
+  border-radius: 8px;
+  background: #e8f1ff;
+  color: #0870ed;
+  font-size: 17px;
+}
+.contactRow span {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.contactRow small {
+  color: #6b7891;
+  font-size: 9px;
+}
+.contactRow strong {
+  overflow-wrap: anywhere;
+  font-size: 10px;
+}
+.documentEmpty {
+  padding: 15px;
+  border: 1px dashed #d6e0f2;
+  border-radius: 9px;
+  background: #fafcff;
+  color: #76839a;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.otherSection {
+  margin-top: 12px;
+  padding: 14px;
+}
+.otherHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.otherHeading h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 900;
+}
+.otherHeading p {
+  margin: 3px 0 0;
+  color: #354261;
+  font-size: 10px;
+}
+.otherHeading > a {
+  color: #075bea;
+  font-size: 10px;
+  font-weight: 850;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.otherGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 9px;
+}
+.otherCard {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  padding: 7px;
+  border: 1px solid #d9e3f5;
+  border-radius: 11px;
+  background: linear-gradient(145deg, #f5f8ff, #fff);
+  color: #101943;
+  text-align: center;
+  text-decoration: none;
+}
+.otherPhoto {
+  position: relative;
+  display: grid;
+  width: 100%;
+  height: 105px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #e0e8f7;
+  color: #2865d7;
+  font-size: 24px;
+  font-weight: 900;
+}
+.otherPhoto img {
+  object-fit: cover;
+  object-position: top;
+}
+.otherCard > strong {
+  width: 100%;
+  overflow: hidden;
+  margin-top: 6px;
+  font-size: 10px;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.otherCard > small {
+  width: 100%;
+  overflow: hidden;
+  margin-top: 3px;
+  color: #5d6983;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.otherCard > b {
+  margin-top: 7px;
+  color: #5420d6;
+  font-size: 9px;
+}
+.callout {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 13px;
+  margin: 12px 0;
+  padding: 13px 18px;
+  background: linear-gradient(110deg, #f0e8ff, #fff, #e9eaff);
+}
+.callout > span {
+  color: #792ef0;
+  font-size: 50px;
+  text-align: center;
+}
+.callout h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 950;
+}
+.callout p {
+  margin: 3px 0 0;
+  font-size: 11px;
+}
+.callout > a {
+  padding: 11px 17px;
+  border-radius: 24px;
+  background: linear-gradient(100deg, #7929ef, #4b17d7);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  text-decoration: none;
+  white-space: nowrap;
+}
+@media (max-width: 1000px) {
+  .mainGrid {
+    grid-template-columns: 245px minmax(0, 1fr);
+  }
+  .profileCard {
+    grid-template-columns: 170px minmax(0, 1fr);
+  }
+  .portrait {
+    min-height: 190px;
+  }
+  .otherGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .container {
+    width: calc(100% - 24px);
+  }
+  .heroInner {
+    width: calc(100% - 32px);
+    padding: 13px 0 23px;
+  }
+  .hero h1 {
+    font-size: 26px;
+  }
+  .heroInner > p {
+    font-size: 11px;
+  }
+  .sectionNav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+  .sectionNav a {
+    min-height: 38px;
+    font-size: 10px;
+  }
+  .sectionNav a:last-child {
+    grid-column: 1/-1;
+  }
+  .mainGrid {
+    grid-template-columns: 1fr;
+  }
+  .directory {
+    padding: 10px;
+  }
+  .directory h2 {
+    font-size: 14px;
+  }
+  .peopleList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .person,
+  .personActive {
+    gap: 6px;
+    padding: 5px;
+  }
+  .avatar {
+    width: 38px;
+    height: 42px;
+  }
+  .personCopy strong {
+    font-size: 9px;
+  }
+  .personCopy small {
+    font-size: 8px;
+  }
+  .person > b {
+    font-size: 16px;
+  }
+  .profileCard {
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 10px;
+    padding: 9px;
+  }
+  .portrait {
+    min-height: 160px;
+  }
+  .profileInfo h2 {
+    font-size: 17px;
+  }
+  .profileInfo blockquote {
+    font-size: 10px;
+    margin: 8px 0;
+  }
+  .role {
+    font-size: 9px;
+    padding: 5px 8px;
+  }
+  .metaGrid {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+  .metaGrid > div {
+    min-height: 36px;
+    padding: 5px;
+  }
+  .metaGrid > div > b {
+    font-size: 17px;
+  }
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+  .infoCard {
+    padding: 10px;
+  }
+  .infoCard h2 {
+    font-size: 14px;
+  }
+  .otherGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .otherPhoto {
+    height: 85px;
+  }
+  .otherHeading {
+    align-items: flex-start;
+  }
+  .otherHeading h2 {
+    font-size: 15px;
+  }
+  .otherHeading p {
+    font-size: 9px;
+  }
+  .otherHeading > a {
+    font-size: 9px;
+  }
+  .callout {
+    grid-template-columns: 40px minmax(0, 1fr);
+    padding: 10px;
+    gap: 8px;
+  }
+  .callout > span {
+    font-size: 33px;
+  }
+  .callout h2 {
+    font-size: 13px;
+  }
+  .callout p {
+    font-size: 9px;
+  }
+  .callout > a {
+    grid-column: 2;
+    justify-self: start;
+    padding: 8px 12px;
+    font-size: 9px;
+  }
+}
