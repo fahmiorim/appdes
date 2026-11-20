@@ -155,6 +155,13 @@
       "when": 1795250000000,
       "tag": "0021_potensi_desa",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "5",
+      "when": 1795452000001,
+      "tag": "0022_perbaikan_migrasi_galeri_potensi",
+      "breakpoints": true
     }
   ]
 }
