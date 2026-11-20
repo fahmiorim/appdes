@@ -1,7 +1,8 @@
 import "server-only";
 
-import { and, desc, eq, like, or } from "drizzle-orm";
+import { and, desc, eq, like, max, or } from "drizzle-orm";
 import { db } from "@/db";
+import { denganKunciMysql } from "@/db/kunci-mysql";
 import { incomingLetters, outgoingLetters, letterClassifications } from "@/db/schema";
 import type { SuratMasukInput, SuratKeluarInput } from "@/features/surat/domain/surat";
 
@@ -51,9 +52,17 @@ export async function saveSuratMasuk(villageId: number, id: number | null, input
     archiveLocation: input.archiveLocation || null,
   };
   if (id === null) {
-    const [row] = await db.insert(incomingLetters).values({ villageId, ...values }).$returningId();
-    if (!row) throw new Error("Gagal menambahkan surat masuk.");
-    return row.id;
+    return denganKunciMysql(`agenda:masuk:${villageId}`, async () => {
+      let agendaNumber = values.agendaNumber;
+      if (agendaNumber <= 0) {
+        const [last] = await db.select({ value: max(incomingLetters.agendaNumber) })
+          .from(incomingLetters).where(eq(incomingLetters.villageId, villageId));
+        agendaNumber = Number(last?.value ?? 0) + 1;
+      }
+      const [row] = await db.insert(incomingLetters).values({ villageId, ...values, agendaNumber }).$returningId();
+      if (!row) throw new Error("Gagal menambahkan surat masuk.");
+      return row.id;
+    });
   }
   await db.update(incomingLetters).set(values).where(and(eq(incomingLetters.villageId, villageId), eq(incomingLetters.id, id)));
   return id;
@@ -106,9 +115,17 @@ export async function saveSuratKeluar(villageId: number, id: number | null, inpu
     sentDate: input.sentDate || null, archiveLocation: input.archiveLocation || null,
   };
   if (id === null) {
-    const [row] = await db.insert(outgoingLetters).values({ villageId, ...values }).$returningId();
-    if (!row) throw new Error("Gagal menambahkan surat keluar.");
-    return row.id;
+    return denganKunciMysql(`agenda:keluar:${villageId}`, async () => {
+      let agendaNumber = values.agendaNumber;
+      if (agendaNumber <= 0) {
+        const [last] = await db.select({ value: max(outgoingLetters.agendaNumber) })
+          .from(outgoingLetters).where(eq(outgoingLetters.villageId, villageId));
+        agendaNumber = Number(last?.value ?? 0) + 1;
+      }
+      const [row] = await db.insert(outgoingLetters).values({ villageId, ...values, agendaNumber }).$returningId();
+      if (!row) throw new Error("Gagal menambahkan surat keluar.");
+      return row.id;
+    });
   }
   await db.update(outgoingLetters).set(values).where(and(eq(outgoingLetters.villageId, villageId), eq(outgoingLetters.id, id)));
   return id;
