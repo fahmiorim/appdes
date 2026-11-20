@@ -2,10 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLayananPublikWargaData } from "@/features/pelayanan/application/pengajuan-use-cases";
 import { ajukanLayananWargaAction } from "./actions";
+import { verifyWargaPage } from "@/lib/dal";
 
 export const metadata = { title: "Ajukan Layanan Publik", robots: { index: false, follow: false } };
 
 export default async function AjukanLayananPage() {
+  await verifyWargaPage();
   const { profil, layanan, kontakEmail } = await getLayananPublikWargaData();
   if (layanan.length === 0) redirect("/layanan-mandiri/beranda?layanan=kosong");
   return <main className="page-container warga-page">
