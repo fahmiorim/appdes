@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPengajuanWargaDetailData } from "@/features/pelayanan/application/pengajuan-warga-use-cases";
+import { verifyWargaPage } from "@/lib/dal";
 
 const labels: Record<string,string> = { diajukan:"Diajukan", diverifikasi:"Diverifikasi", diproses:"Diproses", selesai:"Selesai", ditolak:"Ditolak" };
 export default async function DetailPengajuanWargaPage({params,searchParams}:{params:Promise<{id:string}>;searchParams:Promise<{dikirim?:string}>}) {
+  await verifyWargaPage();
   const {id:raw}=await params; const id=Number(raw); if(!Number.isSafeInteger(id)||id<1) notFound();
   const d=await getPengajuanWargaDetailData(id); const r=d.request; const s=await searchParams;
   return <main className="page-container warga-page"><div className="page-heading"><div><span className="eyebrow">Layanan Mandiri / Pengajuan</span><h1>{r.nomorTiket}</h1><p>Pantau tahapan pelayanan pengajuan Anda.</p></div><Link className="button button-secondary" href="/layanan-mandiri/beranda">Beranda</Link></div>
