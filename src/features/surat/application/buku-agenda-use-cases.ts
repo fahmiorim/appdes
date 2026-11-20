@@ -20,10 +20,13 @@ export async function getBukuAgendaData(jenis: "masuk" | "keluar", search = "") 
   const resource = jenis === "masuk" ? SURAT_MASUK_RESOURCE : SURAT_KELUAR_RESOURCE;
   const user = await requirePermission(resource, "read");
   const villageId = await resolveVillageId(user);
-  const [rows, klasifikasi] = await Promise.all([
+  const [agendaRows, klasifikasi] = await Promise.all([
     jenis === "masuk" ? listSuratMasuk(villageId, search) : listSuratKeluar(villageId, search),
     listKlasifikasi(villageId),
   ]);
+  const rows = jenis === "masuk"
+    ? agendaRows.map((row) => ({ ...row, recipient: null, sentDate: null }))
+    : agendaRows.map((row) => ({ ...row, sender: null, disposition: null, receivedDate: null }));
   return {
     rows, klasifikasi,
     canCreate: hasPermission(user.permissions, resource, "create"),
