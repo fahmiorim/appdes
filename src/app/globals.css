@@ -6284,3 +6284,41 @@ a.beranda-quick-tile:hover {
 @media(max-width:1050px) { .data-kependudukan-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:760px) { .data-kependudukan-grid { grid-template-columns:minmax(0,1fr); } .data-kependudukan-nav { overflow-x:auto; flex-wrap:nowrap; } .data-kependudukan-nav a { white-space:nowrap; } .data-report-tabs { overflow-x:auto; flex-wrap:nowrap; } .data-report-tabs a { white-space:nowrap; } }
 @media(max-width:520px) { .data-kependudukan-kpis { grid-template-columns:minmax(0,1fr); } .data-quick-links { grid-template-columns:minmax(0,1fr); } .data-panel { padding:13px; } .data-filter input,.data-filter select { min-width:100%; } }
+
+/* Dashboard demografi dan visualisasi Data Kependudukan */
+.data-dashboard-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.data-composition { display:flex; align-items:center; justify-content:center; gap:clamp(18px,4vw,42px); min-height:220px; }
+.data-donut { display:grid; place-items:center; width:190px; max-width:48%; aspect-ratio:1; border-radius:50%; }
+.data-donut > div { display:grid; place-content:center; width:65%; aspect-ratio:1; border-radius:50%; background:#fff; text-align:center; }
+.data-donut strong { color:#10183b; font-size:24px; font-weight:850; }
+.data-donut span { color:#68738d; font-size:12px; }
+.data-legend { display:grid; gap:22px; min-width:150px; }
+.data-legend > div { display:grid; grid-template-columns:12px 1fr auto; align-items:center; gap:8px; font-size:12px; }
+.data-legend i,.data-chart-legend i { width:10px; height:10px; border-radius:3px; background:#1683f7; }
+.data-legend i[data-tone="pink"],.data-chart-legend i[data-tone="pink"] { background:#ef4aa9; }
+.data-legend span { color:#59627a; }
+.data-legend strong { color:#111936; font-weight:800; }
+.data-legend small { grid-column:2/4; color:#68738d; }
+.data-age-row { display:grid; grid-template-columns:105px minmax(80px,1fr) 38px; align-items:center; gap:8px; margin:9px 0; font-size:11px; }
+.data-age-row > span { color:#3e4866; font-weight:650; }
+.data-age-row > strong { color:#18213e; text-align:right; font-variant-numeric:tabular-nums; }
+.data-age-bars { display:flex; justify-content:flex-end; align-items:center; gap:3px; height:12px; }
+.data-age-bars i { display:block; height:100%; min-width:2px; border-radius:3px; background:#1683f7; }
+.data-age-bars i[data-tone="pink"] { background:#ef4aa9; }
+.data-chart-legend { display:flex; justify-content:center; gap:18px; margin-top:15px; }
+.data-chart-legend span { display:flex; align-items:center; gap:6px; color:#59627a; font-size:11px; }
+.data-month-chart { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); align-items:end; gap:12px; min-height:190px; padding:14px 6px 0; border-bottom:1px solid #e6e8f3; }
+.data-month-column { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:7px; height:175px; }
+.data-month-column strong { color:#384362; font-size:11px; }
+.data-month-column i { display:block; width:min(34px,75%); min-height:4px; border-radius:7px 7px 2px 2px; background:linear-gradient(180deg,#a45aff,#5c19e9); }
+.data-month-column span { color:#68738d; font-size:11px; }
+.data-activity-list { display:grid; }
+.data-activity-item { display:grid; grid-template-columns:34px minmax(0,1fr) auto; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #eef0f7; }
+.data-activity-mark { display:grid; place-items:center; width:32px; height:32px; border-radius:10px; background:#f0e9ff; color:#6723e8; font-weight:800; }
+.data-activity-item > div { display:grid; gap:3px; min-width:0; }
+.data-activity-item strong { color:#222b49; font-size:12px; }
+.data-activity-item span:not(.data-activity-mark) { overflow:hidden; color:#68738d; font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
+.data-activity-item time { color:#68738d; font-size:10px; white-space:nowrap; }
+.data-activity-panel { grid-column:1/-1; }
+@media(max-width:760px) { .data-dashboard-grid { grid-template-columns:minmax(0,1fr); } .data-activity-panel { grid-column:auto; } .data-composition { justify-content:space-around; } }
+@media(max-width:480px) { .data-donut { width:145px; } .data-legend { min-width:125px; } .data-age-row { grid-template-columns:82px minmax(60px,1fr) 32px; gap:5px; } .data-month-chart { gap:5px; } .data-activity-item { grid-template-columns:30px minmax(0,1fr); } .data-activity-item time { grid-column:2; } }
