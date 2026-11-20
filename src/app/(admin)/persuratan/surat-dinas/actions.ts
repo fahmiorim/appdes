@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type { BerkasUnggahan } from "@/features/publik/domain/media";
 import {
   hapusSuratDinasData,
   simpanSuratDinasData,
@@ -22,16 +23,29 @@ function readInput(formData: FormData) {
     subject: formData.get("subject"),
     content: formData.get("content"),
     classificationId: formData.get("classificationId") || "none",
-    archiveFile: formData.get("archiveFile"),
+    archiveFile: "",
     hapusArsip: formData.get("hapusArsip") === "on",
     archiveLocation: formData.get("archiveLocation"),
+  };
+}
+
+async function readPdfUpload(formData: FormData): Promise<BerkasUnggahan | null> {
+  const value = formData.get("archiveUpload");
+  if (!(value instanceof File) || value.size === 0) return null;
+  if (value.size > 20 * 1024 * 1024) throw new Error("Ukuran PDF maksimal 20 MB.");
+  return {
+    nama: value.name,
+    mime: value.type || null,
+    ukuran: value.size,
+    isi: new Uint8Array(await value.arrayBuffer()),
   };
 }
 
 export async function simpanSuratDinasAction(formData: FormData) {
   const rawId = String(formData.get("id") ?? "");
   const id = rawId ? readId(formData) : null;
-  const saved = await simpanSuratDinasData(id, readInput(formData));
+  const upload = await readPdfUpload(formData);
+  const saved = await simpanSuratDinasData(id, readInput(formData), upload);
   revalidatePath("/persuratan/surat-dinas");
   redirect(`/persuratan/surat-dinas/${saved}/edit?berhasil=disimpan`);
 }
