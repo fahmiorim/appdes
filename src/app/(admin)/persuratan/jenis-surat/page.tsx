@@ -8,7 +8,7 @@ type SearchParams = Promise<{ q?: string; status?: string }>;
 
 export default async function JenisSuratPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
-  const { jenis, klasifikasi, syarat } = await getMasterJenisSuratData();
+  const { jenis, klasifikasi, syarat, canCreate, canUpdate } = await getMasterJenisSuratData();
   const q = (params.q ?? "").trim().toLocaleLowerCase("id");
   const filtered = jenis.filter((item) => {
     const match = !q || item.name.toLocaleLowerCase("id").includes(q) || item.code.toLocaleLowerCase("id").includes(q);
@@ -20,7 +20,7 @@ export default async function JenisSuratPage({ searchParams }: { searchParams: S
     <div className="modul-page">
       <div className="page-heading">
         <div><span className="eyebrow">Administrasi Surat</span><h1>Template & Jenis Surat</h1><p>Atur katalog surat, format dokumen, isian dinamis, persyaratan, dan penomoran untuk desa ini.</p></div>
-        <div className="page-heading-actions"><Link href="/persuratan/surat" className="button button-secondary">Kembali ke Pengelolaan Surat</Link><Link href="/persuratan/master" className="button button-secondary">Master Klasifikasi & Persyaratan</Link><Link href="/persuratan/jenis-surat/baru" className="button button-primary">＋ Tambah Jenis Surat</Link></div>
+        <div className="page-heading-actions"><Link href="/persuratan/surat" className="button button-secondary">Kembali ke Pengelolaan Surat</Link><Link href="/persuratan/master" className="button button-secondary">Master Klasifikasi & Persyaratan</Link>{canCreate ? <Link href="/persuratan/jenis-surat/baru" className="button button-primary">＋ Tambah Jenis Surat</Link> : null}</div>
       </div>
       <div className="beranda-kpi-grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))"}}>
         <article className="beranda-card beranda-kpi" data-tone="ungu"><span className="beranda-kpi-icon">▤</span><div className="beranda-kpi-body"><span className="beranda-kpi-label">Total Jenis Surat</span><strong className="beranda-kpi-value">{jenis.length}</strong><span className="beranda-chip" data-tone="ungu">Katalog desa</span></div></article>
@@ -35,12 +35,12 @@ export default async function JenisSuratPage({ searchParams }: { searchParams: S
           <label>Status<select name="status" defaultValue={params.status ?? ""}><option value="">Semua</option><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option></select></label>
           <button className="button button-primary" type="submit">Cari</button><Link href="/persuratan/jenis-surat" className="button button-secondary">Reset</Link>
         </form>
-        {filtered.length === 0 ? <div className="modul-empty"><strong>Jenis surat belum tersedia</strong><p className="modul-muted">Tambahkan jenis surat pertama atau ubah filter pencarian.</p><Link href="/persuratan/jenis-surat/baru" className="button button-primary">Tambah Jenis Surat</Link></div> :
+        {filtered.length === 0 ? <div className="modul-empty"><strong>Jenis surat belum tersedia</strong><p className="modul-muted">Tambahkan jenis surat pertama atau ubah filter pencarian.</p>{canCreate ? <Link href="/persuratan/jenis-surat/baru" className="button button-primary">Tambah Jenis Surat</Link> : null}</div> :
         <div className="modul-scroll"><table className="modul-table"><thead><tr><th>Kode</th><th>Nama jenis surat</th><th>Klasifikasi</th><th>Konfigurasi</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
           {filtered.map((item) => {
             const fields = parseIsianFields(item.formIsian).length;
             const requirements = parseSyaratIds(item.syaratSurat).length;
-            return <tr key={item.id}><td className="modul-mono">{item.code}</td><td><strong>{item.name}</strong><span className="modul-muted">Masa berlaku: {item.validityMonths ? item.validityMonths + " bulan" : "Tidak dibatasi"}</span></td><td>{item.classificationName ?? "—"}</td><td><span className="beranda-chip" data-tone="ungu">{fields} isian dinamis</span><span className="beranda-chip" data-tone="netral">{requirements} persyaratan</span></td><td><span className="beranda-chip" data-tone={item.isActive ? "hijau" : "netral"}>{item.isActive ? "Aktif" : "Nonaktif"}</span></td><td><Link href={`/persuratan/jenis-surat/${item.id}/edit`} className="table-action-link">Kelola →</Link></td></tr>;
+            return <tr key={item.id}><td className="modul-mono">{item.code}</td><td><strong>{item.name}</strong><span className="modul-muted">Masa berlaku: {item.validityMonths ? item.validityMonths + " bulan" : "Tidak dibatasi"}</span></td><td>{item.classificationName ?? "—"}</td><td><span className="beranda-chip" data-tone="ungu">{fields} isian dinamis</span><span className="beranda-chip" data-tone="netral">{requirements} persyaratan</span></td><td><span className="beranda-chip" data-tone={item.isActive ? "hijau" : "netral"}>{item.isActive ? "Aktif" : "Nonaktif"}</span></td><td>{canUpdate ? <Link href={`/persuratan/jenis-surat/${item.id}/edit`} className="table-action-link">Kelola →</Link> : <span className="modul-muted">Tidak ada izin ubah</span>}</td></tr>;
           })}
         </tbody></table></div>}
       </section>
