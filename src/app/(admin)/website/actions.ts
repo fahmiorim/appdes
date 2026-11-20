@@ -509,3 +509,155 @@ export async function hapusAlbumGaleriWebsiteAction(fd: FormData): Promise<void>
   if (album.sampul) await hapusMedia(album.sampul);
   revalidatePath("/website/konten"); revalidatePath("/website"); redirect("/website/konten?deleted=1#galeri");
 }
+
+
+export async function ubahBeritaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  const judul = text(fd, "judulBerita");
+  const slug = slugify(text(fd, "slugBerita") || judul);
+  const isi = text(fd, "isiBerita");
+  if (!id || !judul || judul.length > 200 || !slug || !isi) throw new Error("Data berita tidak valid.");
+  const [current] = await db.select({ gambar: berita.gambar }).from(berita)
+    .where(and(eq(berita.villageId, villageId), eq(berita.id, id))).limit(1);
+  if (!current) throw new Error("Berita tidak ditemukan.");
+  const [duplicate] = await db.select({ id: berita.id }).from(berita)
+    .where(and(eq(berita.villageId, villageId), eq(berita.slug, slug))).limit(1);
+  if (duplicate && duplicate.id !== id) throw new Error("Slug berita sudah digunakan.");
+  const kategoriText = text(fd, "kategoriId");
+  const kategoriId = kategoriText ? Number(kategoriText) : null;
+  if (kategoriId !== null) {
+    const [category] = await db.select({ id: beritaKategori.id }).from(beritaKategori)
+      .where(and(eq(beritaKategori.villageId, villageId), eq(beritaKategori.id, kategoriId))).limit(1);
+    if (!category) throw new Error("Kategori berita tidak ditemukan pada desa ini.");
+  }
+  const file = fd.get("gambarBerita");
+  let gambar = current.gambar;
+  if (file instanceof File && file.size > 0) gambar = await simpanBerkasMedia(villageId,
+    { nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()) }, "berita", "gambar");
+  const status = text(fd, "statusBerita") === "published" ? "published" : "draft";
+  const tanggal = text(fd, "terbitPada");
+  const terbitPada = tanggal ? new Date(tanggal) : status === "published" ? new Date() : null;
+  await db.update(berita).set({ judul, slug, isi: sanitasiHtml(isi), ringkasan: text(fd, "ringkasanBerita") || null,
+    kategoriId, gambar, status, terbitPada, headline: fd.get("headline") === "on", slider: fd.get("tampilSlider") === "on" })
+    .where(and(eq(berita.villageId, villageId), eq(berita.id, id)));
+  if (file instanceof File && file.size > 0 && current.gambar) await hapusMedia(current.gambar);
+  revalidatePath("/website/konten"); revalidatePath("/website");
+  redirect("/website/konten?saved=1#berita");
+}
+
+export async function ubahAgendaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id"), judul = text(fd, "judulAgenda");
+  const mulai = text(fd, "mulaiAgenda"), selesai = text(fd, "selesaiAgenda");
+  if (!id || !judul || judul.length > 200 || !/^\\d{4}-\\d{2}-\\d{2}$/.test(mulai)) throw new Error("Data agenda tidak valid.");
+  if (selesai && (!/^\\d{4}-\\d{2}-\\d{2}$/.test(selesai) || selesai < mulai)) throw new Error("Tanggal selesai tidak valid.");
+  const [existing] = await db.select({ id: agendaKegiatan.id }).from(agendaKegiatan)
+    .where(and(eq(agendaKegiatan.villageId, villageId), eq(agendaKegiatan.id, id))).limit(1);
+  if (!existing) throw new Error("Agenda tidak ditemukan.");
+  await db.update(agendaKegiatan).set({ judul, mulai, selesai: selesai || null, jamMulai: text(fd, "jamMulai") || null,
+    jamSelesai: text(fd, "jamSelesai") || null, kategori: text(fd, "kategoriAgenda") || "umum",
+    lokasi: text(fd, "lokasiAgenda") || null, deskripsi: text(fd, "deskripsiAgenda") || null })
+    .where(and(eq(agendaKegiatan.villageId, villageId), eq(agendaKegiatan.id, id)));
+  revalidatePath("/website/konten"); revalidatePath("/website");
+  redirect("/website/konten?saved=1#agenda");
+}
+
+export async function ubahAlbumWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id"), nama = text(fd, "namaAlbum");
+  const slug = slugify(text(fd, "slugAlbum") || nama);
+  if (!id || !nama || nama.length > 150 || !slug) throw new Error("Data album tidak valid.");
+  const [current] = await db.select({ id: galeriAlbum.id }).from(galeriAlbum)
+    .where(and(eq(galeriAlbum.villageId, villageId), eq(galeriAlbum.id, id))).limit(1);
+  if (!current) throw new Error("Album tidak ditemukan.");
+  const [duplicate] = await db.select({ id: galeriAlbum.id }).from(galeriAlbum)
+    .where(and(eq(galeriAlbum.villageId, villageId), eq(galeriAlbum.slug, slug))).limit(1);
+  if (duplicate && duplicate.id !== id) throw new Error("Slug album sudah digunakan.");
+  await db.update(galeriAlbum).set({ nama, slug, keterangan: text(fd, "keteranganAlbum") || null })
+    .where(and(eq(galeriAlbum.villageId, villageId), eq(galeriAlbum.id, id)));
+  revalidatePath("/website/konten"); revalidatePath("/website");
+  redirect("/website/konten?saved=1#galeri");
+}
+
+export async function ubahFotoGaleriWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id"), albumId = num(fd, "albumId");
+  if (!id || !albumId) throw new Error("Data foto tidak valid.");
+  const [photo] = await db.select({ gambar: galeriFoto.gambar }).from(galeriFoto)
+    .where(and(eq(galeriFoto.villageId, villageId), eq(galeriFoto.id, id))).limit(1);
+  const [album] = await db.select({ id: galeriAlbum.id }).from(galeriAlbum)
+    .where(and(eq(galeriAlbum.villageId, villageId), eq(galeriAlbum.id, albumId))).limit(1);
+  if (!photo || !album) throw new Error("Foto atau album tidak ditemukan pada desa ini.");
+  const file = fd.get("gambar");
+  let gambar = photo.gambar;
+  if (file instanceof File && file.size > 0) gambar = await simpanBerkasMedia(villageId,
+    { nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()) }, "galeri", "gambar");
+  await db.update(galeriFoto).set({ albumId, gambar, judul: text(fd, "judulFoto") || null,
+    keterangan: text(fd, "keteranganFoto") || null })
+    .where(and(eq(galeriFoto.villageId, villageId), eq(galeriFoto.id, id)));
+  if (file instanceof File && file.size > 0) await hapusMedia(photo.gambar);
+  revalidatePath("/website/konten"); revalidatePath("/website");
+  redirect("/website/konten?saved=1#galeri");
+}
+
+export async function ubahSliderWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  if (!id) throw new Error("Slider tidak valid.");
+  const [current] = await db.select({ gambar: slider.gambar }).from(slider)
+    .where(and(eq(slider.villageId, villageId), eq(slider.id, id))).limit(1);
+  if (!current) throw new Error("Slider tidak ditemukan.");
+  const file = fd.get("gambarSlider");
+  let gambar = current.gambar;
+  if (file instanceof File && file.size > 0) gambar = await simpanBerkasMedia(villageId,
+    { nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()) }, "slider", "gambar");
+  const tautan = text(fd, "tautanSlider");
+  if (tautan) { let url: URL; try { url = new URL(tautan); } catch { throw new Error("Tautan slider tidak valid."); }
+    if (!["http:", "https:"].includes(url.protocol)) throw new Error("Tautan slider harus HTTP atau HTTPS."); }
+  await db.update(slider).set({ gambar, judul: text(fd, "judulSlider") || null,
+    keterangan: text(fd, "keteranganSlider") || null, tautan: tautan || null,
+    urut: Math.max(0, Number(text(fd, "urutSlider")) || 0) })
+    .where(and(eq(slider.villageId, villageId), eq(slider.id, id)));
+  if (file instanceof File && file.size > 0) await hapusMedia(current.gambar);
+  revalidatePath("/website/konten"); revalidatePath("/website");
+  redirect("/website/konten?saved=1#slider");
+}
+
+export async function ubahKategoriBeritaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id"), nama = text(fd, "namaKategori");
+  const slug = slugify(text(fd, "slugKategori") || nama).slice(0, 100);
+  if (!id || !nama || nama.length > 100 || !slug) throw new Error("Data kategori tidak valid.");
+  const [current] = await db.select({ id: beritaKategori.id }).from(beritaKategori)
+    .where(and(eq(beritaKategori.villageId, villageId), eq(beritaKategori.id, id))).limit(1);
+  if (!current) throw new Error("Kategori tidak ditemukan.");
+  const [duplicate] = await db.select({ id: beritaKategori.id }).from(beritaKategori)
+    .where(and(eq(beritaKategori.villageId, villageId), eq(beritaKategori.slug, slug))).limit(1);
+  if (duplicate && duplicate.id !== id) throw new Error("Slug kategori sudah digunakan.");
+  await db.update(beritaKategori).set({ nama, slug })
+    .where(and(eq(beritaKategori.villageId, villageId), eq(beritaKategori.id, id)));
+  revalidatePath("/website/konten"); revalidatePath("/website");
+  redirect("/website/konten?saved=1#berita");
+}
+
+export async function hapusKategoriBeritaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "delete");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  if (!id) throw new Error("Kategori tidak valid.");
+  const [current] = await db.select({ id: beritaKategori.id }).from(beritaKategori)
+    .where(and(eq(beritaKategori.villageId, villageId), eq(beritaKategori.id, id))).limit(1);
+  if (!current) throw new Error("Kategori tidak ditemukan.");
+  const [used] = await db.select({ id: berita.id }).from(berita)
+    .where(and(eq(berita.villageId, villageId), eq(berita.kategoriId, id))).limit(1);
+  if (used) throw new Error("Kategori masih digunakan berita. Pindahkan berita ke kategori lain terlebih dahulu.");
+  await db.delete(beritaKategori).where(and(eq(beritaKategori.villageId, villageId), eq(beritaKategori.id, id)));
+  revalidatePath("/website/konten"); redirect("/website/konten?deleted=1#berita");
+}
