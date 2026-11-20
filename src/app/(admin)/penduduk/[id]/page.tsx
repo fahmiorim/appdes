@@ -48,7 +48,6 @@ export default async function PendudukDetailPage({ params }: { params: Promise<{
 
   const bolehUbah = hasPermission(user.permissions, PENDUDUK_RESOURCE, "update");
   const bolehHapus = hasPermission(user.permissions, PENDUDUK_RESOURCE, "delete");
-  const bolehHapus = hasPermission(user.permissions, PENDUDUK_RESOURCE, "delete");
 
   const penduduk = data.resident;
   const usia = calculateAge(penduduk.birthDate);
