@@ -38,7 +38,7 @@ export default async function DashboardKependudukanPage() {
     listRiwayat({from:first,to:today,page:1,perPage:1}),
     Promise.all(windows.map(async item=>({label:item.label,total:(await listRiwayat({from:item.from,to:item.to,page:1,perPage:1})).total}))),
   ]);
-  const total=summary.total;
+  const total=gender.statistik.total.jumlah;
   const maxAge=Math.max(1,...age.statistik.baris.map(row=>row.jumlah));
   const maxArea=Math.max(1,...area.statistik.baris.map(row=>row.jumlah));
   const maxTrend=Math.max(1,...trend.map(item=>item.total));
