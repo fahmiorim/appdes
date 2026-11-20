@@ -29,6 +29,7 @@ import {
   createSuratDraftData,
 } from "@/features/surat/application/surat-use-cases";
 import { parseNilaiIsian } from "@/features/surat/domain/isian";
+import { SURAT_RESOURCE } from "@/features/surat/domain/surat";
 import { requirePermission } from "@/lib/dal";
 import { conflict, notFound, validationError } from "@/lib/errors";
 
@@ -73,6 +74,9 @@ export async function getPermohonanAdminDetailData(id: number) {
     permohonan,
     berkas: parseBerkasSyarat(permohonan.syarat),
     canManage: hasPermission(user.permissions, RESOURCES.permohonanSurat, "update"),
+    canCreateLetter:
+      hasPermission(user.permissions, RESOURCES.permohonanSurat, "update") &&
+      hasPermission(user.permissions, SURAT_RESOURCE, "create"),
   };
 }
 
