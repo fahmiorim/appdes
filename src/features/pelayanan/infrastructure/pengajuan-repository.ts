@@ -1,7 +1,7 @@
 import "server-only";
 import { and, count, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { pengajuanLayanan, layananPublik, riwayatPengajuanLayanan } from "@/db/schema";
+import { pengajuanLayanan, layananPublik, riwayatPengajuanLayanan, pengajuanLayananBerkas } from "@/db/schema";
 import { bolehTransisiPengajuan, type StatusPengajuanLayanan } from "../domain/pengajuan";
 import { conflict, notFound } from "@/lib/errors";
 
@@ -41,6 +41,7 @@ export async function buatPengajuanLayanan(input: {
   villageId: number; layananId: number; residentId: number; nomorTiket: string;
   namaPemohon: string; nik: string | null; telepon: string; email: string | null;
   alamat: string | null; keperluan: string; lampiran: string | null;
+  berkas: Array<{ namaPersyaratan: string; jalur: string; namaAsli: string; ukuran: number }>;
 }) {
   return db.transaction(async (tx) => {
     const [service] = await tx.select({ id: layananPublik.id }).from(layananPublik)
@@ -50,6 +51,7 @@ export async function buatPengajuanLayanan(input: {
       ...input, status: "diajukan",
     }).$returningId();
     if (!created) throw new Error("Pengajuan layanan gagal disimpan.");
+    if (input.berkas.length) await tx.insert(pengajuanLayananBerkas).values(input.berkas.map((file) => ({ villageId: input.villageId, pengajuanId: created.id, ...file, mime: "application/pdf" })));
     await tx.insert(riwayatPengajuanLayanan).values({
       villageId: input.villageId, pengajuanId: created.id, statusSebelumnya: null,
       statusBaru: "diajukan", catatan: "Pengajuan dikirim oleh warga.", actorId: null,
@@ -104,4 +106,12 @@ export async function listPengajuanLayananWarga(villageId: number, residentId: n
     .where(and(eq(pengajuanLayanan.villageId, villageId), eq(pengajuanLayanan.residentId, residentId)))
     .orderBy(desc(pengajuanLayanan.createdAt), desc(pengajuanLayanan.id))
     .limit(50);
+}
+
+export async function listBerkasPengajuan(villageId: number, pengajuanId: number) {
+  return db.select().from(pengajuanLayananBerkas).where(and(eq(pengajuanLayananBerkas.villageId, villageId), eq(pengajuanLayananBerkas.pengajuanId, pengajuanId))).orderBy(pengajuanLayananBerkas.id);
+}
+export async function getBerkasPengajuan(villageId: number, pengajuanId: number, berkasId: number) {
+  const [row] = await db.select().from(pengajuanLayananBerkas).where(and(eq(pengajuanLayananBerkas.villageId, villageId), eq(pengajuanLayananBerkas.pengajuanId, pengajuanId), eq(pengajuanLayananBerkas.id, berkasId))).limit(1);
+  return row ?? null;
 }
