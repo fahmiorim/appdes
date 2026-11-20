@@ -18,7 +18,11 @@ export default async function TambahPendudukPage({searchParams}:{searchParams:Pr
   const user = await verifySession();
   if (!hasPermission(user.permissions, PENDUDUK_RESOURCE, "update")) notFound();
 
-  const params=await searchParams;\n  const familyRaw=typeof params.familyId==="string"?Number(params.familyId):null;\n  const familyId=familyRaw!==null&&Number.isInteger(familyRaw)&&familyRaw>0?familyRaw:null;\n  const { references } = await getPendudukFormData();\n  if(familyId!==null&&!references.families.some(item=>item.id===familyId)) notFound();
+  const params = await searchParams;
+  const familyRaw = typeof params.familyId === "string" ? Number(params.familyId) : null;
+  const familyId = familyRaw !== null && Number.isInteger(familyRaw) && familyRaw > 0 ? familyRaw : null;
+  const { references } = await getPendudukFormData();
+  if (familyId !== null && !references.families.some((item) => item.id === familyId)) notFound();
 
   return (
     <div className="modul-page penduduk-page">
