@@ -612,6 +612,7 @@ async function terbitkanSurat(
   villageId: number,
   surat: SuratDetail,
   desa: IdentitasDesa,
+  actorId: string,
 ): Promise<{ number: string; verificationToken: string }> {
   const jenis = await loadJenis(villageId, surat.typeId);
   const penduduk = surat.residentId
@@ -672,7 +673,7 @@ async function terbitkanSurat(
     verificationToken: token,
     verificationTokenHash: hash,
   });
-  await recordAuditEvent({ villageId, event: AUDIT_EVENTS.suratVerify, resource: SURAT_RESOURCE, resourceId: String(surat.id), details: { tahap: "kades", nomor: number } });
+  await recordAuditEvent({ villageId, actorId, event: AUDIT_EVENTS.suratVerify, resource: SURAT_RESOURCE, resourceId: String(surat.id), details: { tahap: "kades", nomor: number } });
 
   // TTE pasca-terbit: mode nonaktif (default) → keluar segera tanpa I/O.
   const origin = await getRequestOrigin();
@@ -745,12 +746,13 @@ export async function verifySuratData(
       logVerifikasi: "sekdes",
       status: "verifikasi",
     });
+    await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.suratVerify, resource: SURAT_RESOURCE, resourceId: String(id), details: { tahap: step } });
     return { number: null, verificationToken: null };
   }
 
   const desa = await getIdentitasDesa(villageId);
   if (!desa) throw notFound("Identitas desa belum dikonfigurasi.");
-  const { number, verificationToken } = await terbitkanSurat(villageId, surat, desa);
+  const { number, verificationToken } = await terbitkanSurat(villageId, surat, desa, user.id);
 
   // Permohonan warga yang terhubung menjadi "Siap Diambil" begitu surat terbit.
   const permohonan = await findPermohonanByLetterId(villageId, id);
