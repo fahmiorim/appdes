@@ -42,6 +42,14 @@ export async function batalkanPermohonanAction(formData: FormData) {
   redirect(`/permohonan-surat/${id}?berhasil=dibatalkan`);
 }
 
+export async function tandaiPermohonanDiambilAction(formData: FormData) {
+  const id = idDariForm(formData);
+  await ubahStatusPermohonanData(id, 4);
+  revalidatePath("/permohonan-surat");
+  revalidatePath(`/permohonan-surat/${id}`);
+  redirect(`/permohonan-surat/${id}?berhasil=diambil`);
+}
+
 export async function buatKonsepSuratPermohonanAction(formData: FormData) {
   const id = idDariForm(formData);
   await buatKonsepSuratPermohonanData(id);
