@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import {
   dashboardAktivitasTerbaru,
@@ -16,8 +17,6 @@ import { requirePermission } from "@/lib/dal";
 
 export const metadata: Metadata = { title: "Dashboard Administrasi Surat" };
 
-const BULAN = new Intl.DateTimeFormat("id-ID", { month: "short" });
-
 function formatAngka(value: number) {
   return value.toLocaleString("id-ID");
 }
@@ -28,7 +27,7 @@ function Panel({
   action,
 }: {
   title: string;
-  children: React.ReactNode;
+  children: ReactNode;
   action?: { label: string; href: string };
 }) {
   return (
