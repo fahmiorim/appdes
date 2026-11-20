@@ -88,6 +88,8 @@ export async function verifikasiSuratAction(formData: FormData) {
   }
   await verifySuratData(id, step as VerificationStep);
   revalidatePath("/persuratan/surat");
+  revalidatePath("/persuratan/arsip");
+  revalidatePath("/persuratan/dashboard");
   revalidatePath(`/persuratan/surat/${id}`);
   redirect(`/persuratan/surat/${id}?berhasil=diverifikasi`);
 }
