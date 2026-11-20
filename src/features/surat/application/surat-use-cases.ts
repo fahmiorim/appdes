@@ -411,7 +411,7 @@ async function loadPengikutSurat(
 }
 
 export async function createSuratDraftData(input: SuratInput): Promise<{ id: number }> {
-  const user = await requirePermission(SURAT_RESOURCE, "update");
+  const user = await requirePermission(SURAT_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const jenis = await loadJenis(villageId, input.typeId);
