@@ -176,7 +176,7 @@ export async function getKeluargaDetail(familyId: number): Promise<KeluargaDetai
 }
 
 export async function createKeluarga(input: KeluargaFormInput): Promise<{ id: number }> {
-  const user = await requirePermission(KELUARGA_RESOURCE, "update");
+  const user = await requirePermission(KELUARGA_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   await validateKeluargaRegion(villageId, input.regionId);
