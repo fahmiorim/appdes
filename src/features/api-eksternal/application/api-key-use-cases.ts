@@ -38,7 +38,7 @@ export interface KunciApiBaru {
 }
 
 export async function buatKunciApi(input: unknown): Promise<KunciApiBaru> {
-  const user = await requirePermission(RESOURCES.pengaturan, "update");
+  const user = await requirePermission(RESOURCES.pengaturan, "create");
   const villageId = await resolveVillageId(user);
   const parsed = buatKunciSchema.parse(input);
 
@@ -79,7 +79,7 @@ export async function buatKunciApi(input: unknown): Promise<KunciApiBaru> {
 export async function cabutKunciApi(
   id: number,
 ): Promise<{ id: number; name: string; active: false }> {
-  const user = await requirePermission(RESOURCES.pengaturan, "update");
+  const user = await requirePermission(RESOURCES.pengaturan, "delete");
   const villageId = await resolveVillageId(user);
 
   if (!Number.isInteger(id) || id < 1) throw validationError("ID kunci tidak valid.");
