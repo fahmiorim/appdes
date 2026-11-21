@@ -5,6 +5,7 @@ import { and, asc, count, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { areas, lembagaAnggota, lembagaDesa, perangkatDesa, jabatanPerangkat, regions, perangkatRiwayatJabatan, polygons, pemerintahanDokumen } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
+import { getIdentitasDesa } from "@/features/desa/infrastructure/desa-repository";
 import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import { requirePermission } from "@/lib/dal";
 
@@ -24,13 +25,14 @@ export async function getPemerintahanDashboard() {
     db.select({ total: count() }).from(regions).where(and(eq(regions.villageId, villageId), eq(regions.rw, ""))),
     db.select({ total: count() }).from(areas).where(and(eq(areas.villageId, villageId), eq(areas.enabled, 1))),
   ]);
-  const [officials, institutions, wilayah] = await Promise.all([
+  const [officials, institutions, wilayah, identitas] = await Promise.all([
     db.select({ id: perangkatDesa.id, nama: perangkatDesa.nama, jabatan: jabatanPerangkat.nama, atasanId: perangkatDesa.atasanId, urut: perangkatDesa.urut })
       .from(perangkatDesa).leftJoin(jabatanPerangkat, and(eq(perangkatDesa.jabatanId, jabatanPerangkat.id), eq(jabatanPerangkat.villageId, villageId)))
       .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.status, "aktif"))).orderBy(asc(perangkatDesa.urut)),
     db.select({ id: lembagaDesa.id, nama: lembagaDesa.nama, jenis: lembagaDesa.jenis, status: lembagaDesa.status })
       .from(lembagaDesa).where(eq(lembagaDesa.villageId, villageId)).orderBy(asc(lembagaDesa.urut)),
     db.select({ dusun: regions.dusun, rt: regions.rt, rw: regions.rw }).from(regions).where(eq(regions.villageId, villageId)),
+    getIdentitasDesa(villageId),
   ]);
   const dusunNames = new Set(wilayah.map((x) => x.dusun).filter(Boolean));
   const rtNames = new Set(wilayah.map((x) => x.rt).filter(Boolean));
@@ -45,7 +47,7 @@ export async function getPemerintahanDashboard() {
     totalArea: area?.total ?? 0,
     perangkat: officials,
     lembaga: institutions,
-    wilayah: { dusun: dusunNames.size, rt: rtNames.size, rw: rwNames.size },
+    wilayah: { dusun: dusunNames.size, rt: rtNames.size, rw: rwNames.size },\n    identitas,
   };
 }
 
