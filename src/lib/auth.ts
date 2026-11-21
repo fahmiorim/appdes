@@ -10,6 +10,7 @@ import { sessions, users } from "@/db/schema/auth";
 import { villageBlockedIps, villageSecuritySettings } from "@/db/schema/village-security";
 import { AUDIT_EVENTS, type AuditEventInput } from "@/features/audit/domain/audit";
 import { appendAuditLog } from "@/features/audit/infrastructure/audit-repository";
+import { validasiKataSandi } from "@/features/pengguna/domain/keamanan";
 import { APP_NAME } from "@/lib/app-config";
 import { alamatIp, alamatIpDariHeader } from "@/lib/client-ip";
 import { env } from "@/lib/env";
@@ -122,6 +123,21 @@ export const auth = betterAuth({
 
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === "/change-password") {
+        const userId = ctx.context.session?.user?.id;
+        const newPassword = typeof ctx.body?.newPassword === "string" ? ctx.body.newPassword : "";
+        if (userId && newPassword) {
+          const [account] = await db.select({ villageId: users.villageId }).from(users).where(eq(users.id, userId)).limit(1);
+          if (account?.villageId) {
+            const [policy] = await db.select().from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
+            if (policy) {
+              const passwordError = validasiKataSandi(newPassword, policy);
+              if (passwordError) throw new APIError("BAD_REQUEST", { message: passwordError });
+            }
+          }
+        }
+        return;
+      }
       if (ctx.path !== "/sign-in/username") return;
       const username = typeof ctx.body?.username === "string" ? ctx.body.username.trim().toLowerCase() : "";
       if (!username) return;
