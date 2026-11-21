@@ -44,6 +44,11 @@ export const potensiDesa = mysqlTable(
     uniqueIndex("potensi_desa_village_slug_uq").on(t.villageId, t.slug),
     uniqueIndex("potensi_desa_village_id_uq").on(t.villageId, t.id),
     index("potensi_desa_village_category_active_idx").on(t.villageId, t.kategori, t.aktif, t.urut),
+    foreignKey({
+      name: "potensi_desa_village_fk",
+      columns: [t.villageId],
+      foreignColumns: [villages.id],
+    }).onDelete("cascade"),
   ],
 );
 

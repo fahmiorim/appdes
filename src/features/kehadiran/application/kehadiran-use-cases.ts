@@ -33,7 +33,7 @@ export async function daftarKehadiran(
     const perangkat = perangkatMap.get(item.perangkatId ?? 0);
     return {
       ...item,
-      tanggal: item.tanggal.toISOString().slice(0, 10),
+      tanggal: item.tanggal,
       perangkatNama: perangkat?.nama ?? "-",
       perangkatJabatan: perangkat?.jabatanNama ?? "-",
       status: kehadiranStatusSchema.catch("hadir").parse(item.status),
@@ -67,7 +67,7 @@ export async function tambahKehadiran(villageId: number, input: unknown) {
   return createKehadiran({
     villageId,
     perangkatId: parsed.perangkatId,
-    tanggal: new Date(parsed.tanggal),
+    tanggal: parsed.tanggal,
     jamMasuk: parsed.jamMasuk ?? null,
     jamKeluar: parsed.jamKeluar ?? null,
     status: parsed.status,
@@ -79,7 +79,7 @@ export async function ubahKehadiran(villageId: number, id: number, input: unknow
   const parsed = kehadiranFormSchema.parse(input);
   await updateKehadiran(id, villageId, {
     perangkatId: parsed.perangkatId,
-    tanggal: new Date(parsed.tanggal),
+    tanggal: parsed.tanggal,
     jamMasuk: parsed.jamMasuk ?? null,
     jamKeluar: parsed.jamKeluar ?? null,
     status: parsed.status,

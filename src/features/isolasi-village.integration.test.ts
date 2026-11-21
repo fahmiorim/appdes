@@ -104,7 +104,7 @@ beforeAll(async () => {
     });
     await db.insert(kehadiranPerangkat).values({
       villageId,
-      tanggal: new Date(2026, 0, 5),
+      tanggal: "2026-01-05",
       status: "hadir",
     });
     await db.insert(anjungan).values({

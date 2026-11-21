@@ -1,0 +1,515 @@
+import type { Metadata } from "next";
+
+import {
+  daftarAbsensi,
+  daftarKehadiranBulanan,
+  getPengaturanKehadiran,
+  getStatusAbsensiMandiri,
+} from "@/features/kepegawaian/application/use-cases";
+import { hasPermission } from "@/features/rbac/application/authorization";
+import { verifySession } from "@/lib/dal";
+
+import styles from "../absensi-kepegawaian.module.css";
+import { absensiManualAction, simpanPengaturanKehadiranAction } from "../actions";
+import { AbsensiKepegawaianNav } from "../nav";
+import { AbsensiMandiri } from "./absensi-mandiri";
+
+export const metadata: Metadata = { title: "Absensi Pegawai" };
+
+export default async function AbsensiPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = await searchParams;
+  const raw = Array.isArray(params.tanggal) ? params.tanggal[0] : params.tanggal;
+  const query = Array.isArray(params.q) ? (params.q[0] ?? "") : (params.q ?? "");
+  const statusFilter = Array.isArray(params.status)
+    ? (params.status[0] ?? "")
+    : (params.status ?? "");
+  const jabatanFilter = Array.isArray(params.jabatan)
+    ? (params.jabatan[0] ?? "")
+    : (params.jabatan ?? "");
+  const tanggal =
+    raw && /^\d{4}-\d{2}-\d{2}$/.test(raw)
+      ? raw
+      : new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" }).format(new Date());
+  const tahun = Number(tanggal.slice(0, 4));
+  const bulan = Number(tanggal.slice(5, 7));
+  const [rows, setting, calendarRows, user, statusMandiri] = await Promise.all([
+    daftarAbsensi(tanggal),
+    getPengaturanKehadiran(),
+    daftarKehadiranBulanan(tahun, bulan),
+    verifySession(),
+    getStatusAbsensiMandiri(),
+  ]);
+  const canManage = hasPermission(user.permissions, "kehadiran", "update");
+  let hariLibur: number[] = [0, 6];
+  try {
+    const parsed = JSON.parse(setting.hariLibur);
+    if (Array.isArray(parsed)) hariLibur = parsed;
+  } catch {
+    /* fallback akhir pekan */
+  }
+  const statusLabel: Record<string, string> = {
+    hadir: "Hadir",
+    izin: "Izin",
+    cuti: "Cuti",
+    tidak_hadir: "Tidak Hadir",
+  };
+  const monthStart = new Date(Date.UTC(tahun, bulan - 1, 1)).getUTCDay();
+  const daysInMonth = new Date(Date.UTC(tahun, bulan, 0)).getUTCDate();
+  const calendarMap = new Map<string, string[]>();
+  for (const row of calendarRows) {
+    const key = row.tanggal;
+    const list = calendarMap.get(key) ?? [];
+    list.push(row.status ?? "hadir");
+    calendarMap.set(key, list);
+  }
+  const monthLabel = new Intl.DateTimeFormat("id-ID", {
+    month: "long",
+    year: "numeric",
+    timeZone: "Asia/Jakarta",
+  }).format(new Date(Date.UTC(tahun, bulan - 1, 1)));
+
+  const counts = {
+    hadir: rows.filter((x) => x.status === "hadir").length,
+    izin: rows.filter((x) => x.status === "izin").length,
+    cuti: rows.filter((x) => x.status === "cuti").length,
+    tidak: rows.filter((x) => !x.status || x.status === "tidak_hadir").length,
+  };
+  const tingkatKehadiran = rows.length ? Math.round((counts.hadir / rows.length) * 1000) / 10 : 0;
+  const filteredRows = rows.filter(
+    (row) =>
+      (!query || row.nama.toLocaleLowerCase("id-ID").includes(query.toLocaleLowerCase("id-ID"))) &&
+      (!statusFilter || (row.status ?? "tidak_hadir") === statusFilter) &&
+      (!jabatanFilter || (row.jabatan ?? "") === jabatanFilter),
+  );
+  const jabatanOptions = [
+    ...new Set(rows.map((row) => row.jabatan).filter((value): value is string => Boolean(value))),
+  ].sort();
+  return (
+    <div className="modul-page">
+      <div className="page-heading">
+        <div>
+          <span className="eyebrow">ABSENSI & KEPEGAWAIAN</span>
+          <h1>Absensi Pegawai</h1>
+          <p>Kelola dan pantau kehadiran perangkat desa serta staf secara terpusat.</p>
+        </div>
+      </div>
+      <AbsensiKepegawaianNav active="/absensi-kepegawaian/absensi" />
+      <nav className={styles["ak-subnav"]} aria-label="Navigasi absensi">
+        <a className={styles["selected"]} href="#rekap">
+          ▦ Rekap Kehadiran
+        </a>
+        <a href="#kalender">◷ Riwayat Absensi</a>
+        <a href="#rekap">♙ Absensi Manual</a>
+        <a href="#pengaturan">⚙ Pengaturan Absensi</a>
+      </nav>
+      {statusMandiri ? (
+        <AbsensiMandiri attendance={statusMandiri} wajibGps={setting.wajibGps !== false} />
+      ) : null}
+      <section className={styles["ak-kpi-grid"]}>
+        <article className={`${styles["ak-kpi"]} ${styles.primary}`}>
+          <span>Kehadiran Hari Ini</span>
+          <strong>{counts.hadir} orang</strong>
+          <span>{tingkatKehadiran.toLocaleString("id-ID")}% tingkat kehadiran</span>
+        </article>
+        <article className={styles["ak-kpi"]}>
+          <span>Hadir</span>
+          <strong>{counts.hadir} orang</strong>
+        </article>
+        <article className={styles["ak-kpi"]}>
+          <span>Izin</span>
+          <strong>{counts.izin} orang</strong>
+        </article>
+        <article className={styles["ak-kpi"]}>
+          <span>Cuti</span>
+          <strong>{counts.cuti} orang</strong>
+        </article>
+        <article className={styles["ak-kpi"]}>
+          <span>Tidak Hadir</span>
+          <strong>{counts.tidak} orang</strong>
+        </article>
+      </section>
+      <div className={styles["ak-grid"]}>
+        <section id="rekap" className={styles["ak-card"]}>
+          <div className={styles["ak-card-heading-row"]}>
+            <div>
+              <h2>Rekap Absensi Pegawai</h2>
+              <p>Daftar kehadiran pegawai untuk tanggal yang dipilih.</p>
+            </div>
+            <a
+              className={styles["ak-button"]}
+              href={"/absensi-kepegawaian/absensi/ekspor?tanggal=" + tanggal}
+            >
+              ↓ CSV Harian
+            </a>
+            <a
+              className={styles["ak-button"]}
+              href={
+                "/absensi-kepegawaian/absensi/ekspor-bulanan?tahun=" + tahun + "&bulan=" + bulan
+              }
+            >
+              ↓ CSV Bulanan
+            </a>
+            <a
+              className={styles["ak-button"]}
+              href={"/absensi-kepegawaian/absensi/ekspor-xlsx?tahun=" + tahun + "&bulan=" + bulan}
+            >
+              ↓ Excel
+            </a>
+            <a
+              className={styles["ak-button"]}
+              href={"/absensi-kepegawaian/absensi/ekspor-pdf?tahun=" + tahun + "&bulan=" + bulan}
+            >
+              ↓ PDF
+            </a>
+          </div>
+          <form className={styles["ak-filter"]} method="get">
+            <label>
+              Cari pegawai
+              <input type="search" name="q" placeholder="Nama pegawai..." defaultValue={query} />
+            </label>
+            <label>
+              Tanggal
+              <input type="date" name="tanggal" defaultValue={tanggal} />
+            </label>
+            <label>
+              Jabatan
+              <select name="jabatan" defaultValue={jabatanFilter}>
+                <option value="">Semua Jabatan</option>
+                {jabatanOptions.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Status
+              <select name="status" defaultValue={statusFilter}>
+                <option value="">Semua Status</option>
+                <option value="hadir">Hadir</option>
+                <option value="izin">Izin</option>
+                <option value="cuti">Cuti</option>
+                <option value="tidak_hadir">Tidak Hadir</option>
+              </select>
+            </label>
+            <button className={styles["ak-button"]} type="submit">
+              ⌕ Filter
+            </button>
+          </form>
+          <div className={styles["ak-table-wrap"]}>
+            <table className={styles["ak-table"]}>
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Nama Pegawai</th>
+                  <th>Jabatan</th>
+                  <th>Jam Masuk</th>
+                  <th>Jam Pulang</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRows.map((row, i) => (
+                  <tr key={row.pegawaiId}>
+                    <td>{i + 1}</td>
+                    <td>
+                      <span className={styles["ak-person"]}>
+                        <span>
+                          {row.nama
+                            .split(" ")
+                            .slice(0, 2)
+                            .map((part) => part[0])
+                            .join("")
+                            .toUpperCase()}
+                        </span>
+                        <b>{row.nama}</b>
+                      </span>
+                    </td>
+                    <td>{row.jabatan ?? "—"}</td>
+                    <td>{row.jamMasuk ?? "—"}</td>
+                    <td>{row.jamKeluar ?? "—"}</td>
+                    <td>
+                      <span
+                        className={`${styles["ak-badge"]} ${styles[row.status ?? "tidak_hadir"] ?? ""}`}
+                      >
+                        {statusLabel[row.status ?? "tidak_hadir"] ?? "Tidak Hadir"}
+                      </span>
+                      {row.status === "hadir" &&
+                      row.jamMasuk &&
+                      Number(row.jamMasuk.slice(0, 2)) * 60 + Number(row.jamMasuk.slice(3, 5)) >
+                        Number(setting.jamMasuk.slice(0, 2)) * 60 +
+                          Number(setting.jamMasuk.slice(3, 5)) +
+                          (setting.toleransiTerlambatMenit ?? 0) ? (
+                        <small style={{ display: "block", color: "#b45309" }}>Terlambat</small>
+                      ) : null}
+                      {row.fotoMasuk ? (
+                        <a
+                          href={"/api/kehadiran/foto/" + row.id}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={styles["ak-button"]}
+                        >
+                          {" "}
+                          · Bukti selfie
+                        </a>
+                      ) : null}
+                    </td>
+                    <td>
+                      {canManage ? (
+                        <details>
+                          <summary>Ubah</summary>
+                          <form action={absensiManualAction} className={styles["ak-form"]}>
+                            <input type="hidden" name="pegawaiId" value={row.pegawaiId} />
+                            <input type="hidden" name="tanggal" value={tanggal} />
+                            <label>
+                              Jam Masuk
+                              <input
+                                type="time"
+                                name="jamMasuk"
+                                defaultValue={row.jamMasuk ?? ""}
+                              />
+                            </label>
+                            <label>
+                              Jam Pulang
+                              <input
+                                type="time"
+                                name="jamKeluar"
+                                defaultValue={row.jamKeluar ?? ""}
+                              />
+                            </label>
+                            <label>
+                              Status
+                              <select name="status" defaultValue={row.status ?? "tidak_hadir"}>
+                                <option value="hadir">Hadir</option>
+                                <option value="izin">Izin</option>
+                                <option value="cuti">Cuti</option>
+                                <option value="tidak_hadir">Tidak Hadir</option>
+                              </select>
+                            </label>
+                            <label>
+                              Catatan
+                              <input name="catatan" defaultValue={row.catatan ?? ""} />
+                            </label>
+                            <button className={styles["ak-button"]} type="submit">
+                              Simpan Absensi
+                            </button>
+                          </form>
+                        </details>
+                      ) : (
+                        <span>—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {!filteredRows.length ? (
+            <div className={styles["ak-empty"]}>
+              {rows.length
+                ? "Tidak ada data yang sesuai dengan filter."
+                : "Belum ada pegawai aktif. Tambahkan pegawai terlebih dahulu."}
+            </div>
+          ) : null}
+        </section>
+        <div className={styles["ak-side-stack"]}>
+          <section id="kalender" className={styles["ak-card"]}>
+            <h2>Kalender Kehadiran</h2>
+            <p>{monthLabel}</p>
+            <div className={styles["ak-calendar"]}>
+              {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((day) => (
+                <span className={styles["ak-calendar-head"]} key={day}>
+                  {day}
+                </span>
+              ))}
+              {Array.from({ length: monthStart }, (_, i) => (
+                <span key={"blank-" + i} />
+              ))}
+              {Array.from({ length: daysInMonth }, (_, i) => {
+                const day = i + 1;
+                const key =
+                  tahun + "-" + String(bulan).padStart(2, "0") + "-" + String(day).padStart(2, "0");
+                const statuses = calendarMap.get(key) ?? [];
+                const selectedDay = key === tanggal;
+                return (
+                  <div
+                    key={key}
+                    className={
+                      styles["ak-calendar-day"] +
+                      " " +
+                      (statuses.length ? styles["has-data"] : "") +
+                      " " +
+                      (hariLibur.includes(new Date(Date.UTC(tahun, bulan - 1, day)).getUTCDay())
+                        ? styles.weekend
+                        : "") +
+                      " " +
+                      (selectedDay ? styles["selected-day"] : "")
+                    }
+                  >
+                    <strong>{day}</strong>
+                    {statuses.length ? <small>{statuses.length} catatan</small> : null}
+                  </div>
+                );
+              })}
+            </div>
+            <div className={styles["ak-calendar-legend"]}>
+              <span>
+                <i className={styles.green} />
+                Hadir
+              </span>
+              <span>
+                <i className={styles.amber} />
+                Izin
+              </span>
+              <span>
+                <i className={styles.purple} />
+                Cuti
+              </span>
+              <span>
+                <i className={styles.red} />
+                Tidak Hadir
+              </span>
+            </div>
+          </section>
+          <section className={styles["ak-card"]}>
+            <h2>Ringkasan Periode</h2>
+            <p>{tanggal}</p>
+            <dl>
+              <div>
+                <dt>Total Pegawai Aktif</dt>
+                <dd>{rows.length}</dd>
+              </div>
+              <div>
+                <dt>Hadir</dt>
+                <dd>{counts.hadir}</dd>
+              </div>
+              <div>
+                <dt>Izin</dt>
+                <dd>{counts.izin}</dd>
+              </div>
+              <div>
+                <dt>Cuti</dt>
+                <dd>{counts.cuti}</dd>
+              </div>
+              <div>
+                <dt>Tidak Hadir</dt>
+                <dd>{counts.tidak}</dd>
+              </div>
+            </dl>
+          </section>
+        </div>
+      </div>
+      <section id="pengaturan" className={styles["ak-card"]} style={{ marginTop: 16 }}>
+        <h2>Pengaturan Absensi</h2>
+        <p>Atur jam kerja, hari libur, lokasi kantor, radius GPS, dan verifikasi absensi.</p>
+        {canManage ? (
+          <form action={simpanPengaturanKehadiranAction} className={styles["ak-form"]}>
+            <label>
+              Jam Masuk
+              <input type="time" name="jamMasuk" defaultValue={setting.jamMasuk} />
+            </label>
+            <label>
+              Jam Pulang
+              <input type="time" name="jamKeluar" defaultValue={setting.jamKeluar} />
+            </label>
+            <label>
+              Latitude Kantor
+              <input
+                name="latitudeKantor"
+                type="number"
+                step="any"
+                min="-90"
+                max="90"
+                defaultValue={setting.latitudeKantor ?? ""}
+                placeholder="-3.123456"
+              />
+            </label>
+            <label>
+              Longitude Kantor
+              <input
+                name="longitudeKantor"
+                type="number"
+                step="any"
+                min="-180"
+                max="180"
+                defaultValue={setting.longitudeKantor ?? ""}
+                placeholder="99.123456"
+              />
+            </label>
+            <label>
+              Radius Geofence (meter)
+              <input
+                name="radiusMeter"
+                type="number"
+                min="20"
+                max="5000"
+                defaultValue={setting.radiusMeter ?? 100}
+              />
+            </label>
+            <label>
+              Toleransi Terlambat (menit)
+              <input
+                name="toleransiTerlambatMenit"
+                type="number"
+                min="0"
+                max="180"
+                defaultValue={setting.toleransiTerlambatMenit ?? 0}
+              />
+            </label>
+            <div className={styles.wide}>
+              <strong>Validasi Absensi Mandiri</strong>
+              <div className={styles["ak-filter"]}>
+                <label>
+                  <input
+                    type="checkbox"
+                    name="wajibGps"
+                    value="1"
+                    defaultChecked={setting.wajibGps !== false}
+                  />{" "}
+                  Wajib GPS dan radius lokasi kantor
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    name="wajibFoto"
+                    value="1"
+                    defaultChecked={setting.wajibFoto !== false}
+                  />{" "}
+                  Wajib foto selfie saat check-in
+                </label>
+              </div>
+            </div>
+            <div className={styles.wide}>
+              <strong>Hari Libur</strong>
+              <div className={styles["ak-filter"]}>
+                {["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"].map(
+                  (day, index) => (
+                    <label key={day}>
+                      <input
+                        type="checkbox"
+                        name="hariLibur"
+                        value={index}
+                        defaultChecked={hariLibur.includes(index)}
+                      />{" "}
+                      {day}
+                    </label>
+                  ),
+                )}
+              </div>
+            </div>
+            <button className={styles["ak-button"]} type="submit">
+              Simpan Pengaturan
+            </button>
+          </form>
+        ) : (
+          <p>Akun ini hanya memiliki akses baca pengaturan absensi.</p>
+        )}
+      </section>
+    </div>
+  );
+}

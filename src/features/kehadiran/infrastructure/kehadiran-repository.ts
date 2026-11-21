@@ -12,8 +12,10 @@ import {
 import { kehadiranIzin } from "@/db/schema/kehadiran-izin";
 import { residents } from "@/db/schema/resident";
 
-function tanggalUtc(tahun: number, bulan: number, hari: number): Date {
-  return new Date(Date.UTC(tahun, bulan, hari));
+/** Batas tanggal `YYYY-MM-DD`; kolom `date` Drizzle di repo ini bermode string. */
+function tanggalIso(tahun: number, bulan: number, hari: number): string {
+  const date = new Date(Date.UTC(tahun, bulan, hari));
+  return date.toISOString().slice(0, 10);
 }
 
 export async function listKehadiran(
@@ -24,13 +26,13 @@ export async function listKehadiran(
 
   if (opts?.tahun && opts.bulan) {
     conditions.push(
-      gte(kehadiranPerangkat.tanggal, tanggalUtc(opts.tahun, opts.bulan - 1, 1)),
-      lte(kehadiranPerangkat.tanggal, tanggalUtc(opts.tahun, opts.bulan, 0)),
+      gte(kehadiranPerangkat.tanggal, tanggalIso(opts.tahun, opts.bulan - 1, 1)),
+      lte(kehadiranPerangkat.tanggal, tanggalIso(opts.tahun, opts.bulan, 0)),
     );
   } else if (opts?.tahun) {
     conditions.push(
-      gte(kehadiranPerangkat.tanggal, tanggalUtc(opts.tahun, 0, 1)),
-      lte(kehadiranPerangkat.tanggal, tanggalUtc(opts.tahun, 11, 31)),
+      gte(kehadiranPerangkat.tanggal, tanggalIso(opts.tahun, 0, 1)),
+      lte(kehadiranPerangkat.tanggal, tanggalIso(opts.tahun, 11, 31)),
     );
   }
 
@@ -109,7 +111,7 @@ async function tambahkanIzinDisetujui(
   bulan: number | undefined,
   daftarPerangkat: { id: number; nama: string; jabatanNama: string | null; nik: string | null }[],
   hasil: Map<number, RekapBaris>,
-  catatan: { perangkatId: number | null; tanggal: Date }[],
+  catatan: { perangkatId: number | null; tanggal: string }[],
 ): Promise<void> {
   const izinRows = await db
     .select({
@@ -136,7 +138,7 @@ async function tambahkanIzinDisetujui(
   const sudahDicatat = new Set(
     catatan
       .filter((item) => item.perangkatId !== null)
-      .map((item) => `${item.perangkatId}:${item.tanggal.toISOString().slice(0, 10)}`),
+      .map((item) => `${item.perangkatId}:${item.tanggal}`),
   );
 
   const awal = bulan ? new Date(Date.UTC(tahun, bulan - 1, 1)) : new Date(Date.UTC(tahun, 0, 1));
@@ -186,11 +188,11 @@ export async function getRekapKehadiran(
     conditions.push(
       gte(
         kehadiranPerangkat.tanggal,
-        bulan ? tanggalUtc(tahun, bulan - 1, 1) : tanggalUtc(tahun, 0, 1),
+        bulan ? tanggalIso(tahun, bulan - 1, 1) : tanggalIso(tahun, 0, 1),
       ),
       lte(
         kehadiranPerangkat.tanggal,
-        bulan ? tanggalUtc(tahun, bulan, 0) : tanggalUtc(tahun, 11, 31),
+        bulan ? tanggalIso(tahun, bulan, 0) : tanggalIso(tahun, 11, 31),
       ),
     );
   }
