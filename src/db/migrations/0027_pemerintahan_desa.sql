@@ -1,4 +1,16 @@
 -- Modul Pemerintahan Desa: perluasan profil perangkat dan kelembagaan tenant.
+ALTER TABLE `profil_desa`
+  ADD COLUMN `luas_wilayah` decimal(12,2) NULL,
+  ADD COLUMN `batas_utara` varchar(150) NULL,
+  ADD COLUMN `batas_selatan` varchar(150) NULL,
+  ADD COLUMN `batas_timur` varchar(150) NULL,
+  ADD COLUMN `batas_barat` varchar(150) NULL,
+  ADD COLUMN `ketinggian` varchar(100) NULL,
+  ADD COLUMN `suhu_rata_rata` varchar(100) NULL,
+  ADD COLUMN `curah_hujan` varchar(100) NULL,
+  ADD COLUMN `topografi` varchar(150) NULL;
+--> statement-breakpoint
+
 ALTER TABLE `perangkat_desa`
   ADD COLUMN `pendidikan` varchar(100) NULL,
   ADD COLUMN `telepon` varchar(30) NULL,
