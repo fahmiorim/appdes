@@ -215,7 +215,7 @@ export async function sinkronisasiBumindesDariPenduduk(): Promise<{
   pesan: string;
   detail: Record<string, number>;
 }> {
-  const user = await requirePermission(RESOURCES.bumindes, id === null ? "create" : "update");
+  const user = await requirePermission(RESOURCES.bumindes, "create");
   const villageId = await resolveVillageId(user);
 
   const [data, daftarBuku] = await Promise.all([
