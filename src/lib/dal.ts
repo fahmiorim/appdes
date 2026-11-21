@@ -215,7 +215,6 @@ export async function requireWargaAktif(): Promise<WargaUser> {
  */
 export async function requirePermission(resource: string, action: Action): Promise<CurrentUser> {
   const user = await requireUser();
-  if (user.passwordExpired) redirect("/profil/keamanan?passwordExpired=1");
 
   if (!hasPermission(user.permissions, resource, action)) {
     throw forbidden();
