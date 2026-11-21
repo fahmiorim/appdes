@@ -12,13 +12,16 @@ export default async function Page({ params, searchParams }: { params: Promise<{
   const id = Number(p.id);
   if (!Number.isSafeInteger(id) || id < 1) notFound();
   const d = await getPengajuanDetailData(id);
-  const semuaBerkas = await listBerkasPengajuanAdminData(id);\n  const berkas = semuaBerkas.filter((file) => file.jenis === "persyaratan");\n  const hasil = semuaBerkas.filter((file) => file.jenis === "hasil");
+  const semuaBerkas = await listBerkasPengajuanAdminData(id);
+  const berkas = semuaBerkas.filter((file) => file.jenis === "persyaratan");
+  const hasil = semuaBerkas.filter((file) => file.jenis === "hasil");
   const r = d.request;
   const s = await searchParams;
   const next = transitions[r.status] ?? [];
   return <div className="modul-page">
     <div className="page-heading"><div><span className="eyebrow">Pelayanan Publik / Pengajuan</span><h1>{r.nomorTiket}</h1><p>Rincian permohonan dan tindak lanjut petugas.</p></div><Link className="button button-secondary" href="/pelayanan-publik/pengajuan">Kembali</Link></div>
-    {s.tersimpan ? <div className="alert alert-info">Status pengajuan berhasil diperbarui.</div> : null}\n    {s.hasil ? <div className="alert alert-info">Dokumen hasil pelayanan berhasil diunggah.</div> : null}
+    {s.tersimpan ? <div className="alert alert-info">Status pengajuan berhasil diperbarui.</div> : null}
+    {s.hasil ? <div className="alert alert-info">Dokumen hasil pelayanan berhasil diunggah.</div> : null}
     <section className="modul-card"><h2>Informasi Pemohon</h2><dl>
       <dt>Nama</dt><dd>{r.namaPemohon}</dd><dt>NIK</dt><dd>{r.nik ?? "—"}</dd><dt>Telepon</dt><dd>{r.telepon ?? "—"}</dd><dt>Email</dt><dd>{r.email ?? "—"}</dd><dt>Alamat</dt><dd>{r.alamat ?? "—"}</dd><dt>Layanan</dt><dd>{d.namaLayanan ?? "—"}</dd><dt>Biaya</dt><dd>{d.biaya === 0 ? "Gratis" : (d.biaya ?? 0).toLocaleString("id-ID") + " rupiah"}</dd><dt>Keperluan</dt><dd>{r.keperluan}</dd><dt>Status</dt><dd>{labels[r.status] ?? r.status}</dd><dt>Diajukan</dt><dd>{r.createdAt.toLocaleString("id-ID")}</dd>
       <dt>Dokumen persyaratan</dt><dd>{berkas.length ? <ul>{berkas.map((file) => <li key={file.id}>{file.namaPersyaratan} — <a href={`/api/admin/pelayanan-publik/pengajuan/${id}/berkas/${file.id}`}>Unduh {file.namaAsli}</a></li>)}</ul> : "Tidak ada dokumen"}</dd><dt>Catatan petugas</dt><dd>{r.catatanPetugas ?? "—"}</dd><dt>Alasan penolakan</dt><dd>{r.alasanPenolakan ?? "—"}</dd>
