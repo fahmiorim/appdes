@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import {
-  hapusAnggotaLembaga, hapusLembagaDesa, hapusPerangkatDesa,
-  simpanAnggotaLembaga, simpanLembagaDesa, simpanPerangkatDesa,
+  hapusAnggotaLembaga, hapusAreaPeta, hapusLembagaDesa, hapusPerangkatDesa,
+  simpanAnggotaLembaga, simpanAreaPeta, simpanLembagaDesa, simpanPerangkatDesa,
 } from "@/features/pemerintahan/application/use-cases";
 import { hapusWilayah, simpanWilayah } from "@/features/wilayah/application/use-cases";
 
@@ -100,5 +100,23 @@ export async function hapusWilayahAction(fd: FormData) {
   const id = numberOrNull(value(fd, "id"));
   if (!id) throw new Error("ID wilayah tidak valid.");
   await hapusWilayah(id);
+  refresh();
+}
+
+export async function simpanAreaPetaAction(fd: FormData) {
+  const id = numberOrNull(value(fd, "id"));
+  const nama = value(fd, "nama");
+  if (!nama) throw new Error("Nama area wajib diisi.");
+  await simpanAreaPeta(id, {
+    nama, path: value(fd, "path") || null, enabled: value(fd, "enabled") === "on" ? 1 : 0,
+    sortOrder: Number(value(fd, "sortOrder") || 0),
+  });
+  refresh();
+}
+
+export async function hapusAreaPetaAction(fd: FormData) {
+  const id = numberOrNull(value(fd, "id"));
+  if (!id) throw new Error("ID area tidak valid.");
+  await hapusAreaPeta(id);
   refresh();
 }
