@@ -47,7 +47,8 @@ export async function getPemerintahanDashboard() {
     totalArea: area?.total ?? 0,
     perangkat: officials,
     lembaga: institutions,
-    wilayah: { dusun: dusunNames.size, rt: rtNames.size, rw: rwNames.size },\n    identitas,
+    wilayah: { dusun: dusunNames.size, rt: rtNames.size, rw: rwNames.size },
+    identitas,
   };
 }
 
@@ -160,7 +161,11 @@ export async function getWilayahPemerintahanData() {
 
 export async function simpanAreaPeta(id: number | null, input: { nama: string; path: string | null; enabled: number; sortOrder: number; refPolygon: number | null }) {
   const villageId = await tenant("wilayah", id ? "update" : "create");
-  if (input.refPolygon) {\n    const [layer] = await db.select({ id: polygons.id }).from(polygons).where(and(eq(polygons.villageId, villageId), eq(polygons.id, input.refPolygon))).limit(1);\n    if (!layer) throw new Error("Layer polygon tidak ditemukan pada desa aktif.");\n  }\n  if (input.path) {
+  if (input.refPolygon) {
+    const [layer] = await db.select({ id: polygons.id }).from(polygons).where(and(eq(polygons.villageId, villageId), eq(polygons.id, input.refPolygon))).limit(1);
+    if (!layer) throw new Error("Layer polygon tidak ditemukan pada desa aktif.");
+  }
+  if (input.path) {
     const geo = JSON.parse(input.path) as { type?: string; coordinates?: unknown };
     if (!geo || geo.type !== "Polygon" || !Array.isArray(geo.coordinates)) throw new Error("Geometri harus berupa GeoJSON Polygon yang valid.");
   }
@@ -226,7 +231,10 @@ export async function unggahDokumenPemerintahan(input: {
 export async function hapusDokumenPemerintahan(id: number) {
   const user = await requirePermission("perangkat-desa", "delete");
   const villageId = await resolveVillageId(user);
-  const [document] = await db.select({ berkas: pemerintahanDokumen.berkas }).from(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id))).limit(1);\n  if (!document) return;\n  await db.delete(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id)));\n  await hapusMedia(document.berkas);
+  const [document] = await db.select({ berkas: pemerintahanDokumen.berkas }).from(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id))).limit(1);
+  if (!document) return;
+  await db.delete(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id)));
+  await hapusMedia(document.berkas);
 }
 
 export async function simpanLayerPeta(id: number | null, input: { nama: string; color: string; enabled: number; sortOrder: number }) {
