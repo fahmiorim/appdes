@@ -2,12 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 
+import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
+import { resolveVillageId } from "@/features/desa/application/resolve-village";
+import { requirePermission } from "@/lib/dal";
+
 import {
   ajukanCuti,
   catatAbsensiManual,
   putuskanCuti,
   simpanKuotaCuti,
   simpanPegawai,
+  tambahRiwayatPegawai,
+  simpanDokumenPegawai,
 } from "@/features/kepegawaian/application/use-cases";
 
 function text(fd: FormData, key: string): string {
@@ -71,5 +77,28 @@ export async function simpanKuotaCutiAction(fd: FormData) {
   const tahun = Number(text(fd, "tahun"));
   if (!Number.isInteger(tahun) || tahun < 2000 || tahun > 2200) throw new Error("Tahun tidak valid.");
   await simpanKuotaCuti(number(fd, "pegawaiId"), tahun, total);
+  refresh();
+}
+
+
+export async function tambahRiwayatPegawaiAction(fd: FormData) {
+  await tambahRiwayatPegawai({
+    pegawaiId:number(fd,"pegawaiId"), jabatan:text(fd,"jabatan"), unitKerja:nullable(fd,"unitKerja"),
+    nomorSk:nullable(fd,"nomorSk"), mulai:text(fd,"mulai"), selesai:nullable(fd,"selesai"),
+    keterangan:nullable(fd,"keterangan"),
+  });
+  refresh();
+}
+
+export async function unggahDokumenPegawaiAction(fd: FormData) {
+  const pegawaiId=number(fd,"pegawaiId");
+  const judul=text(fd,"judul");
+  const file=fd.get("berkas");
+  if(!(file instanceof File)||file.size===0) throw new Error("Pilih berkas dokumen terlebih dahulu.");
+  if(!["application/pdf","image/jpeg","image/png","image/webp"].includes(file.type)) throw new Error("Dokumen harus berupa PDF, JPG, PNG, atau WEBP.");
+  const user=await requirePermission("kepegawaian","update");
+  const villageId=await resolveVillageId(user);
+  const berkas=await simpanBerkasMedia(villageId,{nama:file.name,mime:file.type,ukuran:file.size,isi:new Uint8Array(await file.arrayBuffer())},"umum","berkas");
+  await simpanDokumenPegawai({pegawaiId,judul,kategori:text(fd,"kategori")||"lainnya",nomor:nullable(fd,"nomor"),tanggal:nullable(fd,"tanggal"),berkas});
   refresh();
 }
