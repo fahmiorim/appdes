@@ -1,24 +1,23 @@
 import Link from "next/link";
-import { getInventarisPageData } from "@/features/inventaris/application/inventaris-use-cases";
+import { getInventarisPageData, getInventarisTablePageData } from "@/features/inventaris/application/inventaris-use-cases";
 import { formatRupiah } from "@/features/keuangan/domain/keuangan";
 import { INVENTARIS_KATEGORI_LABELS, INVENTARIS_KONDISI_LABELS } from "@/features/inventaris/domain/inventaris";
 import styles from "./inventaris.module.css";
-import { hapusInventarisAction, hapusKategoriInventarisAction, simpanInventarisAction, simpanKategoriInventarisAction } from "./actions";
+import { simpanInventarisAction, simpanKategoriInventarisAction } from "./actions";
 
 export const metadata = { title: "Daftar Inventaris" };
 type Props={searchParams:Promise<{q?:string;kategori?:string;lokasi?:string;kondisi?:string;page?:string}>};
 
 export default async function DaftarInventarisPage({searchParams}:Props){
   const p=await searchParams; const q=(p.q??"").trim().slice(0,100);
-  const data=await getInventarisPageData(q);
-  const lokasi=[...new Set(data.rows.map(x=>x.lokasi).filter((x):x is string=>Boolean(x)))].sort();
-  const filtered=data.rows.filter(x=>(!p.kategori||String(x.kategoriId??"")===p.kategori)&&(!p.lokasi||x.lokasi===p.lokasi)&&(!p.kondisi||x.kondisi===p.kondisi));
   const pageRaw=Number(p.page); const page=Number.isInteger(pageRaw)&&pageRaw>0?pageRaw:1; const pageSize=10;
-  const pageCount=Math.max(1,Math.ceil(filtered.length/pageSize)); const current=Math.min(page,pageCount);
-  const rows=filtered.slice((current-1)*pageSize,current*pageSize);
-  const totalUnit=data.rows.reduce((s,x)=>s+Number(x.jumlah),0);
-  const totalValue=data.rows.reduce((s,x)=>s+Number(x.nilaiAkhir??0),0);
-  const count=(k:string)=>data.rows.filter(x=>x.kondisi===k).reduce((s,x)=>s+Number(x.jumlah),0);
+  const kategoriId=p.kategori&&/^\\d+$/.test(p.kategori)?Number(p.kategori):undefined;
+  const data=await getInventarisTablePageData({search:q,kategoriId,lokasi:p.lokasi,kondisi:p.kondisi,page,pageSize});
+  const pageCount=Math.max(1,Math.ceil(data.total/pageSize)); const current=Math.min(page,pageCount);
+  const rows=data.rows;
+  const totalUnit=data.summaryRows.reduce((s,x)=>s+Number(x.jumlah),0);
+  const totalValue=data.summaryRows.reduce((s,x)=>s+Number(x.nilaiAkhir??0),0);
+  const count=(k:string)=>data.summaryRows.filter(x=>x.kondisi===k).reduce((s,x)=>s+Number(x.jumlah),0);
   const params=(n:number)=>new URLSearchParams({q,kategori:p.kategori??"",lokasi:p.lokasi??"",kondisi:p.kondisi??"",page:String(n)}).toString();
   return <main className={styles.page}>
     <header className={styles.heading}><div className={styles.headingIcon}>▤</div><div><span className={styles.eyebrow}>INVENTARIS &amp; ASET DESA</span><h1>Daftar Inventaris</h1><p>Data seluruh barang inventaris dan aset milik desa, lengkap dengan kategori, lokasi, kondisi, dan nilai aset.</p></div></header>
@@ -32,11 +31,11 @@ export default async function DaftarInventarisPage({searchParams}:Props){
     <nav className={styles.tabs}><Link href="/inventaris/dashboard">Dashboard</Link><Link className={styles.active} href="/inventaris">Daftar Inventaris</Link><Link href="/inventaris/pengelolaan">Pengelolaan Aset</Link><Link href="/inventaris/laporan">Rekap Nilai Aset</Link><Link href="/inventaris/mutasi">Mutasi &amp; Pemeliharaan</Link></nav>
     <section className={styles.panel}>
       <div className={styles.panelHead}><div><h2>Data Inventaris</h2><p>Gunakan filter untuk menemukan aset. Klik kode atau nama barang untuk melihat detail.</p></div><div className={styles.actions}><a className={styles.secondary} href="/inventaris/laporan/ekspor">Export CSV ↓</a>{data.canWrite?<a className={styles.primary} href="#tambah">＋ Tambah Inventaris</a>:null}</div></div>
-      <form method="get" className={styles.filters}><input name="q" placeholder="Cari kode, nama barang, atau merek..." defaultValue={q}/><select name="kategori" defaultValue={p.kategori??""}><option value="">Semua Kategori</option>{data.kategori.map(k=><option key={k.id} value={k.id}>{k.nama}</option>)}</select><select name="lokasi" defaultValue={p.lokasi??""}><option value="">Semua Lokasi</option>{lokasi.map(x=><option key={x}>{x}</option>)}</select><select name="kondisi" defaultValue={p.kondisi??""}><option value="">Semua Kondisi</option>{Object.entries(INVENTARIS_KONDISI_LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select><button className={styles.primary}>Filter</button><Link className={styles.secondary} href="/inventaris">Reset</Link></form>
+      <form method="get" className={styles.filters}><input name="q" placeholder="Cari kode, nama barang, atau merek..." defaultValue={q}/><select name="kategori" defaultValue={p.kategori??""}><option value="">Semua Kategori</option>{data.kategori.map(k=><option key={k.id} value={k.id}>{k.nama}</option>)}</select><select name="lokasi" defaultValue={p.lokasi??""}><option value="">Semua Lokasi</option>{data.locations.map(x=><option key={x} value={x}>{x}</option>)}</select><select name="kondisi" defaultValue={p.kondisi??""}><option value="">Semua Kondisi</option>{Object.entries(INVENTARIS_KONDISI_LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}</select><button className={styles.primary}>Filter</button><Link className={styles.secondary} href="/inventaris">Reset</Link></form>
       <div className={styles.tableWrap}><table className={styles.table}><thead><tr><th>No.</th><th>Kode Inventaris</th><th>Nama Barang</th><th>Kategori</th><th>Lokasi</th><th>Kondisi</th><th>Jumlah</th><th>Nilai Satuan</th><th>Total Nilai</th><th>Aksi</th></tr></thead><tbody>
-      {rows.map((x,i)=><tr key={x.id}><td>{(current-1)*pageSize+i+1}</td><td><Link href={"/inventaris/"+x.id}>{x.nomorInventaris??x.kodeBarang??"—"}</Link></td><td><Link href={"/inventaris/"+x.id}>{x.namaBarang}</Link><small className={styles.muted} style={{display:"block"}}>{[x.merk,x.tipe].filter(Boolean).join(" ")}</small></td><td>{x.kategoriNama??"Tanpa kategori"}</td><td>{x.lokasi??"—"}</td><td><span className={`${styles.tag} ${x.kondisi==="baik"?styles.good:x.kondisi==="rusak_ringan"?styles.warn:styles.bad}`}>{INVENTARIS_KONDISI_LABELS[x.kondisi]}</span></td><td>{Number(x.jumlah).toLocaleString("id-ID")} {x.satuan}</td><td>{formatRupiah(x.hargaSatuan??"0")}</td><td>{formatRupiah(x.nilaiAkhir??"0")}</td><td><div className={styles.actions}><Link href={"/inventaris/"+x.id}>Detail</Link>{data.canWrite?<Link href={"/inventaris/"+x.id+"?edit=1"}>Edit</Link>:null}{data.canManage?<form action={hapusInventarisAction}><input type="hidden" name="id" value={x.id}/><button className={styles.secondary}>Hapus</button></form>:null}</div></td></tr>)}
+      {rows.map((x,i)=><tr key={x.id}><td>{(current-1)*pageSize+i+1}</td><td><Link href={"/inventaris/"+x.id}>{x.nomorInventaris??x.kodeBarang??"—"}</Link></td><td><Link href={"/inventaris/"+x.id}>{x.namaBarang}</Link><small className={styles.muted} style={{display:"block"}}>{[x.merk,x.tipe].filter(Boolean).join(" ")}</small></td><td>{x.kategoriNama??"Tanpa kategori"}</td><td>{x.lokasi??"—"}</td><td><span className={`${styles.tag} ${x.kondisi==="baik"?styles.good:x.kondisi==="rusak_ringan"?styles.warn:styles.bad}`}>{INVENTARIS_KONDISI_LABELS[x.kondisi]}</span></td><td>{Number(x.jumlah).toLocaleString("id-ID")} {x.satuan}</td><td>{formatRupiah(x.hargaSatuan??"0")}</td><td>{formatRupiah(x.nilaiAkhir??"0")}</td><td><div className={styles.actions}><Link href={"/inventaris/"+x.id}>Detail</Link>{data.canWrite?<Link href={"/inventaris/"+x.id+"?edit=1"}>Edit</Link>:null}{data.canWrite?<Link href={"/inventaris/mutasi?inventarisId="+x.id}>Ajukan Penghapusan</Link>:null}</div></td></tr>)}
       </tbody></table>{rows.length===0?<p className={styles.empty}>Tidak ada inventaris yang sesuai filter.</p>:null}</div>
-      <div className={styles.pagination}><span>Menampilkan {filtered.length?((current-1)*pageSize+1):0}–{Math.min(current*pageSize,filtered.length)} dari {filtered.length} data</span><div className={styles.actions}>{current>1?<Link className={styles.secondary} href={"/inventaris?"+params(current-1)}>←</Link>:null}<strong>{current} / {pageCount}</strong>{current<pageCount?<Link className={styles.secondary} href={"/inventaris?"+params(current+1)}>→</Link>:null}</div></div>
+      <div className={styles.pagination}><span>Menampilkan {data.total?((current-1)*pageSize+1):0}–{Math.min(current*pageSize,data.total)} dari {data.total} data</span><div className={styles.actions}>{current>1?<Link className={styles.secondary} href={"/inventaris?"+params(current-1)}>←</Link>:null}<strong>{current} / {pageCount}</strong>{current<pageCount?<Link className={styles.secondary} href={"/inventaris?"+params(current+1)}>→</Link>:null}</div></div>
     </section>
     {data.canWrite?<section className={styles.panel} id="tambah"><div className={styles.panelHead}><div><h2>Tambah Inventaris</h2><p>Isi data barang, perolehan, kondisi, dan nilai aset.</p></div></div><form action={simpanInventarisAction} className={styles.form}>
       <label>Nama Barang *<input name="namaBarang" required maxLength={200}/></label><label>Nomor Inventaris<input name="nomorInventaris" maxLength={50}/></label><label>Kategori<select name="kategoriId"><option value="">Tanpa kategori</option>{data.kategori.map(k=><option key={k.id} value={k.id}>{k.nama}</option>)}</select></label>
