@@ -197,6 +197,13 @@
       "when": 1795624563264,
       "tag": "0021_data_kependudukan_menu",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "5",
+      "when": 1795700000000,
+      "tag": "0027_absensi_kepegawaian",
+      "breakpoints": true
     }
   ]
 }
