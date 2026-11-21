@@ -100,8 +100,11 @@ export async function simpanPerangkatDesa(id: number | null, input: {
     }
   }
   const data = { ...input, foto: input.foto || null };
-  if (id) await db.update(perangkatDesa).set(data).where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, id)));
-  else await db.insert(perangkatDesa).values({ ...data, villageId });
+  if (id) {
+    const [before] = await db.select({ foto: perangkatDesa.foto }).from(perangkatDesa).where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, id))).limit(1);
+    await db.update(perangkatDesa).set(data).where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, id)));
+    if (before?.foto && before.foto !== data.foto) await hapusMedia(before.foto);
+  } else await db.insert(perangkatDesa).values({ ...data, villageId });
 }
 
 export async function hapusPerangkatDesa(id: number) {
@@ -150,8 +153,11 @@ export async function simpanAnggotaLembaga(id: number | null, input: {
   const [parent] = await db.select({ id: lembagaDesa.id }).from(lembagaDesa)
     .where(and(eq(lembagaDesa.villageId, villageId), eq(lembagaDesa.id, input.lembagaId))).limit(1);
   if (!parent) throw new Error("Lembaga tidak ditemukan pada desa aktif.");
-  if (id) await db.update(lembagaAnggota).set(input).where(and(eq(lembagaAnggota.villageId, villageId), eq(lembagaAnggota.id, id)));
-  else await db.insert(lembagaAnggota).values({ ...input, villageId });
+  if (id) {
+    const [before] = await db.select({ foto: lembagaAnggota.foto }).from(lembagaAnggota).where(and(eq(lembagaAnggota.villageId, villageId), eq(lembagaAnggota.id, id))).limit(1);
+    await db.update(lembagaAnggota).set(input).where(and(eq(lembagaAnggota.villageId, villageId), eq(lembagaAnggota.id, id)));
+    if (before?.foto && before.foto !== input.foto) await hapusMedia(before.foto);
+  } else await db.insert(lembagaAnggota).values({ ...input, villageId });
 }
 
 export async function hapusAnggotaLembaga(id: number) {
