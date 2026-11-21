@@ -19,6 +19,8 @@ export interface PenggunaAdminData {
   currentUserId: string;
   canUpdate: boolean;
   canDelete: boolean;
+  moduleCount: number;
+  totalHakAkses: number;
 }
 
 /**
@@ -31,8 +33,10 @@ export async function getPenggunaAdminData(): Promise<PenggunaAdminData> {
   const user = await requirePermission(PENGGUNA_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
 
-  const [rows, roleRows] = await Promise.all([listPengguna(villageId), listRoles(villageId)]);
+  const [rows, roleRows, modules] = await Promise.all([listPengguna(villageId), listRoles(villageId), listModules(villageId)]);
   const roles = roleRows.filter((role) => role.villageId === villageId && !isPlatformRole(role));
+  const permissionMaps = await Promise.all(roles.map((role) => listLevelsByRole(role.id, villageId)));
+  const totalHakAkses = permissionMaps.reduce((total, permissions) => total + permissions.size, 0);
 
   return {
     rows,
@@ -41,6 +45,8 @@ export async function getPenggunaAdminData(): Promise<PenggunaAdminData> {
     currentUserId: user.id,
     canUpdate: hasPermission(user.permissions, PENGGUNA_RESOURCE, "update"),
     canDelete: hasPermission(user.permissions, PENGGUNA_RESOURCE, "delete"),
+    moduleCount: modules.filter((module) => module.isActive && !module.isHidden && !module.isGroup).length,
+    totalHakAkses,
   };
 }
 
