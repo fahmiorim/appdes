@@ -79,7 +79,7 @@ export async function getRoleDetail(id: number) {
 }
 
 export async function createRoleData(input: RoleFormInput): Promise<{ id: number }> {
-  const user = await requirePermission(GRUP_AKSES_RESOURCE, "update");
+  const user = await requirePermission(GRUP_AKSES_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const existing = await listRoles(villageId);
