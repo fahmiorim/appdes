@@ -63,6 +63,7 @@ export * from "./sinergi";
 export * from "./registrasi-warga";
 export * from "./lapak";
 export * from "./kehadiran";
+export * from "./kepegawaian";
 export * from "./analisis";
 export * from "./analisis-indikator";
 export * from "./tte";
