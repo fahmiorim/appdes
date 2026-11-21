@@ -118,6 +118,9 @@ export const inventarisKategoriFormSchema = z.object({
   nama: z.string().trim().min(1, "Nama wajib diisi").max(150),
   golongan: z.enum(INVENTARIS_KATEGORI),
   keterangan: z.string().trim().max(500).optional().or(z.literal("")),
+  penanggungJawab: z.string().trim().max(150).optional().or(z.literal("")),
+  jabatanPenanggungJawab: z.string().trim().max(100).optional().or(z.literal("")),
+  teleponPenanggungJawab: z.string().trim().max(30).optional().or(z.literal("")),
 });
 
 export type InventarisKategoriInput = z.infer<typeof inventarisKategoriFormSchema>;
@@ -178,6 +181,9 @@ export interface InventarisRow {
   kondisi: InventarisKondisi;
   lokasi: string | null;
   keterangan: string | null;
+  penanggungJawab: string | null;
+  jabatanPenanggungJawab: string | null;
+  teleponPenanggungJawab: string | null;
 }
 
 /** Kategori inventaris untuk pilihan formulir dan halaman kategori. */
