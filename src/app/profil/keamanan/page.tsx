@@ -14,7 +14,7 @@ export default async function KeamananAkunPage() {
   const [policy] = user.villageId ? await db.select().from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId,user.villageId)).limit(1) : [undefined];
   return <main style={{maxWidth:760,margin:"32px auto",padding:20,display:"grid",gap:16}}>
     <header><small>Profil Saya</small><h1 style={{fontSize:26,fontWeight:800}}>Keamanan Akun</h1><p>Atur autentikasi dua faktor untuk melindungi akun Anda.</p></header>
-    <PasswordChangeForm expired={user.passwordExpired} minLength={policy?.passwordMinLength ?? 8} requireUppercase={policy?.requireUppercase ?? true} requireLowercase={policy?.requireLowercase ?? true} requireNumber={policy?.requireNumber ?? true} requireSymbol={policy?.requireSymbol ?? false} reuseCount={policy?.passwordReuseCount ?? 3}/>
+    {user.residentId === null ? <PasswordChangeForm expired={user.passwordExpired} minLength={policy?.passwordMinLength ?? 8} requireUppercase={policy?.requireUppercase ?? true} requireLowercase={policy?.requireLowercase ?? true} requireNumber={policy?.requireNumber ?? true} requireSymbol={policy?.requireSymbol ?? false} reuseCount={policy?.passwordReuseCount ?? 3}/> : null}
     <TwoFactorSetup required={Boolean(policy?.requireTwoFactorForAllUsers && user.residentId === null)} enabled={account?.twoFactorEnabled ?? false} hasEmail={Boolean(account?.email)} hasVerifiedEmail={account?.emailVerified ?? false} canEmailOtp={Boolean(env.RESEND_API_KEY && env.RESEND_FROM)}/>
   </main>;
 }
