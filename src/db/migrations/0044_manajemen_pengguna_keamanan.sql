@@ -7,7 +7,6 @@ CREATE TABLE IF NOT EXISTS `village_security_settings` (
   `require_symbol` boolean NOT NULL DEFAULT false,
   `session_timeout_minutes` int NOT NULL DEFAULT 30,
   `auto_logout_inactive` boolean NOT NULL DEFAULT true,
-  `warn_before_session_end` boolean NOT NULL DEFAULT true,
   `concurrent_login` boolean NOT NULL DEFAULT false,
   `ip_restriction_enabled` boolean NOT NULL DEFAULT false,
   `allowed_ips` text,
