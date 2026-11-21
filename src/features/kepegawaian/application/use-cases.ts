@@ -35,7 +35,7 @@ function hitungHariKerja(mulai: string, selesai: string, hariLibur: number[] = [
     const weekday = new Date(day).getUTCDay();
     if (!hariLibur.includes(weekday)) total += 1;
   }
-  return Math.max(1, total);
+  return total;
 }
 
 async function village(resource: string, action: "read" | "update" = "read") {
@@ -291,6 +291,7 @@ export async function ajukanCuti(input: { pegawaiId: number; jenis: string; mula
     if (Array.isArray(parsed) && parsed.every((day) => Number.isInteger(day) && day >= 0 && day <= 6)) hariLibur = [...new Set(parsed)];
   } catch { /* gunakan akhir pekan sebagai fallback */ }
   const durasi = hitungHariKerja(input.mulai, input.selesai, hariLibur);
+  if (durasi < 1) throw new Error("Rentang pengajuan tidak mencakup hari kerja sesuai pengaturan desa.");
   const [overlap] = await db.select({ id: cutiPegawai.id }).from(cutiPegawai)
     .where(and(eq(cutiPegawai.villageId, villageId), eq(cutiPegawai.pegawaiId, input.pegawaiId),
       lte(cutiPegawai.mulai, input.selesai), gte(cutiPegawai.selesai, input.mulai), ne(cutiPegawai.status, "ditolak"))).limit(1);
