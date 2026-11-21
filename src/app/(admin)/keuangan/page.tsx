@@ -20,7 +20,7 @@ export default async function KeuanganPage() {
   const tahun = new Date().getFullYear();
   const [keuangan, pembangunan] = await Promise.all([
     listKeuangan(tahun),
-    listPembangunan({ search: "", tahun, status: "", page: 1, pageSize: 5 }).catch(() => ({
+    listPembangunan({ search: "", tahun, status: "", page: 1, pageSize: 1000 }).catch(() => ({
       rows: [], total: 0, page: 1, pageSize: 5, pageCount: 1,
     })),
   ]);
