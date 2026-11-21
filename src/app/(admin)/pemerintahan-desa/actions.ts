@@ -31,7 +31,7 @@ export async function simpanPerangkatAction(fd: FormData) {
   if (fotoFile instanceof File && fotoFile.size > 0) {
     const user = await requirePermission("perangkat-desa", id ? "update" : "create");
     const villageId = await resolveVillageId(user);
-    foto = await simpanBerkasMedia(villageId, { nama: fotoFile.name, mime: fotoFile.type, ukuran: fotoFile.size, isi: new Uint8Array(await fotoFile.arrayBuffer()) }, "perangkat", "fotoFile");
+    foto = await simpanBerkasMedia(villageId, { nama: "foto-area", mime: fotoFile.type, ukuran: fotoFile.size, isi: new Uint8Array(await fotoFile.arrayBuffer()) }, "perangkat", "fotoFile");
   }
   await simpanPerangkatDesa(id, {
     nama, gelarDepan: value(fd, "gelarDepan") || null, gelarBelakang: value(fd, "gelarBelakang") || null,
