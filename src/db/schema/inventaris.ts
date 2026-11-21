@@ -33,7 +33,12 @@ export const INVENTARIS_ASAL = [
 ] as const;
 export type InventarisAsal = (typeof INVENTARIS_ASAL)[number];
 
-export const INVENTARIS_KONDISI = ["baik", "rusak_ringan", "rusak_berat", "dalam_perbaikan"] as const;
+export const INVENTARIS_KONDISI = [
+  "baik",
+  "rusak_ringan",
+  "rusak_berat",
+  "dalam_perbaikan",
+] as const;
 export type InventarisKondisi = (typeof INVENTARIS_KONDISI)[number];
 
 export const MUTASI_JENIS = ["pindah", "rusak", "hapus", "perbaikan"] as const;
@@ -83,7 +88,9 @@ export const inventaris = mysqlTable(
     satuan: varchar("satuan", { length: 20 }).default("buah"),
     hargaSatuan: decimal("harga_satuan", { precision: 15, scale: 2 }),
     nilaiAkhir: decimal("nilai_akhir", { precision: 15, scale: 2 }),
-    akumulasiPenyusutan: decimal("akumulasi_penyusutan", { precision: 15, scale: 2 }).notNull().default("0"),
+    akumulasiPenyusutan: decimal("akumulasi_penyusutan", { precision: 15, scale: 2 })
+      .notNull()
+      .default("0"),
     umurManfaatBulan: int("umur_manfaat_bulan"),
     nilaiResidu: decimal("nilai_residu", { precision: 15, scale: 2 }).notNull().default("0"),
     tanggalMulaiPenyusutan: date("tanggal_mulai_penyusutan", { mode: "string" }),
@@ -172,14 +179,21 @@ export type NewInventaris = typeof inventaris.$inferInsert;
 export type InventarisMutasi = typeof inventarisMutasi.$inferSelect;
 export type NewInventarisMutasi = typeof inventarisMutasi.$inferInsert;
 
-export const INVENTARIS_PEMELIHARAAN_STATUS = ["terjadwal", "dalam_proses", "selesai", "dibatalkan"] as const;
+export const INVENTARIS_PEMELIHARAAN_STATUS = [
+  "terjadwal",
+  "dalam_proses",
+  "selesai",
+  "dibatalkan",
+] as const;
 export type InventarisPemeliharaanStatus = (typeof INVENTARIS_PEMELIHARAAN_STATUS)[number];
 
 export const inventarisPemeliharaan = mysqlTable(
   "inventaris_pemeliharaan",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
     inventarisId: int("inventaris_id").notNull(),
     jenis: varchar("jenis", { length: 100 }).notNull(),
     tanggalRencana: date("tanggal_rencana", { mode: "string" }).notNull(),
@@ -193,7 +207,10 @@ export const inventarisPemeliharaan = mysqlTable(
     isDeleted: boolean("is_deleted").notNull().default(false),
     deletedAt: timestamp("deleted_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   (table) => [
     uniqueIndex("inventaris_pemeliharaan_village_id_uq").on(table.villageId, table.id),
@@ -212,7 +229,9 @@ export const inventarisDokumen = mysqlTable(
   "inventaris_dokumen",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
     inventarisId: int("inventaris_id").notNull(),
     nama: varchar("nama", { length: 200 }).notNull(),
     namaFile: varchar("nama_file", { length: 255 }).notNull(),
@@ -235,7 +254,9 @@ export const inventarisPenanggungJawabRiwayat = mysqlTable(
   "inventaris_penanggung_jawab_riwayat",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
     inventarisId: int("inventaris_id").notNull(),
     namaSebelum: varchar("nama_sebelum", { length: 150 }),
     jabatanSebelum: varchar("jabatan_sebelum", { length: 100 }),
@@ -257,12 +278,14 @@ export const inventarisPenanggungJawabRiwayat = mysqlTable(
 );
 export type InventarisPenanggungJawabRiwayat = typeof inventarisPenanggungJawabRiwayat.$inferSelect;
 
-export const INVENTARIS_PEMELIHARAAN_AKSI = ["dibuat","diperbarui","dihapus"] as const;
+export const INVENTARIS_PEMELIHARAAN_AKSI = ["dibuat", "diperbarui", "dihapus"] as const;
 export const inventarisPemeliharaanRiwayat = mysqlTable(
   "inventaris_pemeliharaan_riwayat",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
     pemeliharaanId: int("pemeliharaan_id").notNull(),
     inventarisId: int("inventaris_id").notNull(),
     aksi: mysqlEnum("aksi", INVENTARIS_PEMELIHARAAN_AKSI).notNull(),

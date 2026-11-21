@@ -79,23 +79,25 @@ function kolomMigrasi(): Map<string, Set<string>> {
 
   for (const isi of sqlMigrasi()) {
     for (const tabel of isi.matchAll(
-      /CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)` \(\n([\s\S]*?)\n\);/g,
+      /CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)` \(\n([\s\S]*?)\n\)(?: ENGINE=[^;]+)?;/g,
     )) {
       const nama = tabel[1];
       const badan = tabel[2];
       if (!nama || badan === undefined) continue;
       for (const baris of badan.split("\n")) {
-        const cocok = /^\t`([a-z0-9_]+)`/.exec(baris);
+        const cocok = /^\s*`([a-z0-9_]+)`/.exec(baris);
         if (cocok?.[1]) tambah(nama, cocok[1]);
       }
     }
 
-    for (const tambahan of isi.matchAll(
-      /ALTER TABLE `([a-z0-9_]+)` ADD (?:COLUMN )?`([a-z0-9_]+)`/g,
-    )) {
-      const nama = tambahan[1];
-      const kolom = tambahan[2];
-      if (nama && kolom) tambah(nama, kolom);
+    for (const alter of isi.matchAll(/ALTER TABLE `([a-z0-9_]+)`([\s\S]*?);/g)) {
+      const nama = alter[1];
+      const perubahan = alter[2];
+      if (!nama || perubahan === undefined) continue;
+      for (const tambahan of perubahan.matchAll(/ADD (?:COLUMN )?`([a-z0-9_]+)`/g)) {
+        const kolom = tambahan[1];
+        if (kolom) tambah(nama, kolom);
+      }
     }
   }
   return hasil;
@@ -114,6 +116,8 @@ function namaIndexMigrasi(): Set<string> {
   for (const isi of sqlMigrasi()) {
     for (const cocok of isi.matchAll(/CREATE (?:UNIQUE )?INDEX `([^`]+)`/g)) hasil.add(cocok[1]!);
     for (const cocok of isi.matchAll(/^\tKEY `([^`]+)`/gm)) hasil.add(cocok[1]!);
+    for (const cocok of isi.matchAll(/(?:ADD )?(?:UNIQUE )?(?:KEY|INDEX) `([^`]+)`/g))
+      hasil.add(cocok[1]!);
     for (const cocok of isi.matchAll(/CONSTRAINT `([^`]+)` UNIQUE/g)) hasil.add(cocok[1]!);
   }
   return hasil;

@@ -113,8 +113,8 @@ describe("hitungPerubahanAset", () => {
     ).toEqual({ kondisi: "dalam_perbaikan" });
   });
   it("tidak mengizinkan kondisi akhir ditetapkan sebelum perbaikan selesai", () => {
-    expect(()=>
-      hitungPerubahanAset(asetDasar,mutasi({jenis:"perbaikan",kondisiBaru:"baik"})),
+    expect(() =>
+      hitungPerubahanAset(asetDasar, mutasi({ jenis: "perbaikan", kondisiBaru: "baik" })),
     ).toThrow(/Kondisi akhir perbaikan ditetapkan setelah jadwal pemeliharaan selesai/);
   });
   it("menandai aset dalam perbaikan bila pengajuan belum menentukan kondisi akhir", () => {
@@ -128,11 +128,21 @@ describe("hitungPerubahanAset", () => {
       hitungPerubahanAset(asetDasar, mutasi({ jenis: "hapus", jumlahMutasi: "4.00" })),
     ).toEqual({ jumlah: "6.00", nilaiAkhir: "9000.00" });
   });
-  it("membagi akumulasi penyusutan dan nilai residu secara proporsional saat aset dihapus sebagian",()=>{
-    expect(hitungPerubahanAset({
-      ...asetDasar,akumulasiPenyusutan:"3000.00",nilaiResidu:"1000.00",
-    },mutasi({jenis:"hapus",jumlahMutasi:"4.00"}))).toEqual({
-      jumlah:"6.00",nilaiAkhir:"9000.00",akumulasiPenyusutan:"1800.00",nilaiResidu:"600.00",
+  it("membagi akumulasi penyusutan dan nilai residu secara proporsional saat aset dihapus sebagian", () => {
+    expect(
+      hitungPerubahanAset(
+        {
+          ...asetDasar,
+          akumulasiPenyusutan: "3000.00",
+          nilaiResidu: "1000.00",
+        },
+        mutasi({ jenis: "hapus", jumlahMutasi: "4.00" }),
+      ),
+    ).toEqual({
+      jumlah: "6.00",
+      nilaiAkhir: "9000.00",
+      akumulasiPenyusutan: "1800.00",
+      nilaiResidu: "600.00",
     });
   });
 

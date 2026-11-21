@@ -10,15 +10,48 @@ import {
 } from "@/features/publik/domain/inventaris-publik";
 import { rekapInventaris, type RekapInventaris } from "@/features/publik/domain/ringkasan-publik";
 
-export type InventarisPublikRow = Pick<InventarisRow,"id"|"kategoriId"|"nomorInventaris"|"namaBarang"|"kodeBarang"|"merk"|"tipe"|"jumlah"|"satuan"|"nilaiAkhir"|"tahunPembelian"|"tanggalPembelian"|"kondisi"|"lokasi"> & {
-  kategoriNama:string|null;kategoriKode:string|null;
+export type InventarisPublikRow = Pick<
+  InventarisRow,
+  | "id"
+  | "kategoriId"
+  | "nomorInventaris"
+  | "namaBarang"
+  | "kodeBarang"
+  | "merk"
+  | "tipe"
+  | "jumlah"
+  | "satuan"
+  | "nilaiAkhir"
+  | "tahunPembelian"
+  | "tanggalPembelian"
+  | "kondisi"
+  | "lokasi"
+> & {
+  kategoriNama: string | null;
+  kategoriKode: string | null;
 };
 
-function barisAmanUntukPublik(row:InventarisRow & {kategoriNama:string|null;kategoriKode:string|null}):InventarisPublikRow {
-  return {id:row.id,kategoriId:row.kategoriId,nomorInventaris:row.nomorInventaris,namaBarang:row.namaBarang,
-    kodeBarang:row.kodeBarang,merk:row.merk,tipe:row.tipe,jumlah:row.jumlah,satuan:row.satuan,
-    nilaiAkhir:row.nilaiAkhir,tahunPembelian:row.tahunPembelian,tanggalPembelian:row.tanggalPembelian,
-    kondisi:row.kondisi,lokasi:row.lokasi,kategoriNama:row.kategoriNama,kategoriKode:row.kategoriKode};
+function barisAmanUntukPublik(
+  row: InventarisRow & { kategoriNama: string | null; kategoriKode: string | null },
+): InventarisPublikRow {
+  return {
+    id: row.id,
+    kategoriId: row.kategoriId,
+    nomorInventaris: row.nomorInventaris,
+    namaBarang: row.namaBarang,
+    kodeBarang: row.kodeBarang,
+    merk: row.merk,
+    tipe: row.tipe,
+    jumlah: row.jumlah,
+    satuan: row.satuan,
+    nilaiAkhir: row.nilaiAkhir,
+    tahunPembelian: row.tahunPembelian,
+    tanggalPembelian: row.tanggalPembelian,
+    kondisi: row.kondisi,
+    lokasi: row.lokasi,
+    kategoriNama: row.kategoriNama,
+    kategoriKode: row.kategoriKode,
+  };
 }
 
 export interface InventarisPublik {
@@ -39,16 +72,16 @@ export interface InventarisPublik {
  */
 /** Daftar inventaris mentah untuk API publik; tenant dari host. */
 export async function cariInventarisPublik(villageId: number, search = "") {
-  const data=await listInventaris(villageId,search);
-  return {rows:data.rows.map(barisAmanUntukPublik),total:data.total};
+  const data = await listInventaris(villageId, search);
+  return { rows: data.rows.map(barisAmanUntukPublik), total: data.total };
 }
 
 export async function getInventarisPublik(
   villageId: number,
   filter: FilterInventarisPublik = FILTER_INVENTARIS_KOSONG,
 ): Promise<InventarisPublik> {
-  const { rows:rawRows } = await listInventaris(villageId);
-  const rows=rawRows.map(barisAmanUntukPublik);
+  const { rows: rawRows } = await listInventaris(villageId);
+  const rows = rawRows.map(barisAmanUntukPublik);
   const tersaring = saringInventaris(rows, filter);
 
   return {

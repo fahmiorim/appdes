@@ -3,7 +3,15 @@ import "server-only";
 import { and, asc, count, desc, eq, isNull, like, ne, or } from "drizzle-orm";
 
 import { db } from "@/db";
-import { inventaris, inventarisKategori, inventarisMutasi, inventarisPemeliharaan, inventarisDokumen, inventarisPenanggungJawabRiwayat, inventarisPemeliharaanRiwayat } from "@/db/schema";
+import {
+  inventaris,
+  inventarisDokumen,
+  inventarisKategori,
+  inventarisMutasi,
+  inventarisPemeliharaan,
+  inventarisPemeliharaanRiwayat,
+  inventarisPenanggungJawabRiwayat,
+} from "@/db/schema";
 import {
   hitungPerubahanAset,
   mutasiLogBeforeStep,
@@ -184,56 +192,112 @@ export async function listInventaris(
   return { rows, total: total[0]?.value ?? 0 };
 }
 
-
-
-export async function listInventarisLocations(villageId:number):Promise<string[]> {
-  const rows=await db.selectDistinct({lokasi:inventaris.lokasi}).from(inventaris)
-    .where(and(eq(inventaris.villageId,villageId),eq(inventaris.isDeleted,false)));
-  return rows.map(x=>x.lokasi).filter((x):x is string=>Boolean(x)).sort((a,b)=>a.localeCompare(b,"id"));
+export async function listInventarisLocations(villageId: number): Promise<string[]> {
+  const rows = await db
+    .selectDistinct({ lokasi: inventaris.lokasi })
+    .from(inventaris)
+    .where(and(eq(inventaris.villageId, villageId), eq(inventaris.isDeleted, false)));
+  return rows
+    .map((x) => x.lokasi)
+    .filter((x): x is string => Boolean(x))
+    .sort((a, b) => a.localeCompare(b, "id"));
 }
 
-export async function listInventarisPage(villageId:number,input:{
-  search?:string;kategoriId?:number;lokasi?:string;kondisi?:string;page:number;pageSize:number;
-}) {
-  const where=and(
-    eq(inventaris.villageId,villageId),eq(inventaris.isDeleted,false),
-    input.search?or(
-      like(inventaris.namaBarang,`%${input.search}%`),
-      like(inventaris.nomorInventaris,`%${input.search}%`),
-      like(inventaris.kodeBarang,`%${input.search}%`),
-      like(inventaris.merk,`%${input.search}%`),
-      like(inventaris.tipe,`%${input.search}%`),
-    ):undefined,
-    input.kategoriId?eq(inventaris.kategoriId,input.kategoriId):undefined,
-    input.lokasi?eq(inventaris.lokasi,input.lokasi):undefined,
-    input.kondisi?eq(inventaris.kondisi,input.kondisi as typeof inventaris.kondisi.enumValues[number]):undefined,
+export async function listInventarisPage(
+  villageId: number,
+  input: {
+    search?: string;
+    kategoriId?: number;
+    lokasi?: string;
+    kondisi?: string;
+    page: number;
+    pageSize: number;
+  },
+) {
+  const where = and(
+    eq(inventaris.villageId, villageId),
+    eq(inventaris.isDeleted, false),
+    input.search
+      ? or(
+          like(inventaris.namaBarang, `%${input.search}%`),
+          like(inventaris.nomorInventaris, `%${input.search}%`),
+          like(inventaris.kodeBarang, `%${input.search}%`),
+          like(inventaris.merk, `%${input.search}%`),
+          like(inventaris.tipe, `%${input.search}%`),
+        )
+      : undefined,
+    input.kategoriId ? eq(inventaris.kategoriId, input.kategoriId) : undefined,
+    input.lokasi ? eq(inventaris.lokasi, input.lokasi) : undefined,
+    input.kondisi
+      ? eq(inventaris.kondisi, input.kondisi as (typeof inventaris.kondisi.enumValues)[number])
+      : undefined,
   );
-  const [rows,total]=await Promise.all([
-    db.select({
-      id:inventaris.id,kategoriId:inventaris.kategoriId,nomorInventaris:inventaris.nomorInventaris,
-      namaBarang:inventaris.namaBarang,kodeBarang:inventaris.kodeBarang,merk:inventaris.merk,tipe:inventaris.tipe,
-      spesifikasi:inventaris.spesifikasi,jumlah:inventaris.jumlah,satuan:inventaris.satuan,
-      hargaSatuan:inventaris.hargaSatuan,nilaiAkhir:inventaris.nilaiAkhir,
-      akumulasiPenyusutan:inventaris.akumulasiPenyusutan,umurManfaatBulan:inventaris.umurManfaatBulan,
-      nilaiResidu:inventaris.nilaiResidu,tanggalMulaiPenyusutan:inventaris.tanggalMulaiPenyusutan,
-      tahunPembelian:inventaris.tahunPembelian,tanggalPembelian:inventaris.tanggalPembelian,
-      asal:inventaris.asal,donatur:inventaris.donatur,kondisi:inventaris.kondisi,lokasi:inventaris.lokasi,
-      keterangan:inventaris.keterangan,penanggungJawab:inventaris.penanggungJawab,
-      jabatanPenanggungJawab:inventaris.jabatanPenanggungJawab,teleponPenanggungJawab:inventaris.teleponPenanggungJawab,
-      kategoriNama:inventarisKategori.nama,kategoriKode:inventarisKategori.kode,
-    }).from(inventaris).leftJoin(inventarisKategori,and(
-      eq(inventaris.kategoriId,inventarisKategori.id),eq(inventaris.villageId,inventarisKategori.villageId),
-    )).where(where).orderBy(desc(inventaris.createdAt)).limit(input.pageSize).offset((input.page-1)*input.pageSize),
-    db.select({value:count()}).from(inventaris).where(where),
+  const [rows, total] = await Promise.all([
+    db
+      .select({
+        id: inventaris.id,
+        kategoriId: inventaris.kategoriId,
+        nomorInventaris: inventaris.nomorInventaris,
+        namaBarang: inventaris.namaBarang,
+        kodeBarang: inventaris.kodeBarang,
+        merk: inventaris.merk,
+        tipe: inventaris.tipe,
+        spesifikasi: inventaris.spesifikasi,
+        jumlah: inventaris.jumlah,
+        satuan: inventaris.satuan,
+        hargaSatuan: inventaris.hargaSatuan,
+        nilaiAkhir: inventaris.nilaiAkhir,
+        akumulasiPenyusutan: inventaris.akumulasiPenyusutan,
+        umurManfaatBulan: inventaris.umurManfaatBulan,
+        nilaiResidu: inventaris.nilaiResidu,
+        tanggalMulaiPenyusutan: inventaris.tanggalMulaiPenyusutan,
+        tahunPembelian: inventaris.tahunPembelian,
+        tanggalPembelian: inventaris.tanggalPembelian,
+        asal: inventaris.asal,
+        donatur: inventaris.donatur,
+        kondisi: inventaris.kondisi,
+        lokasi: inventaris.lokasi,
+        keterangan: inventaris.keterangan,
+        penanggungJawab: inventaris.penanggungJawab,
+        jabatanPenanggungJawab: inventaris.jabatanPenanggungJawab,
+        teleponPenanggungJawab: inventaris.teleponPenanggungJawab,
+        kategoriNama: inventarisKategori.nama,
+        kategoriKode: inventarisKategori.kode,
+      })
+      .from(inventaris)
+      .leftJoin(
+        inventarisKategori,
+        and(
+          eq(inventaris.kategoriId, inventarisKategori.id),
+          eq(inventaris.villageId, inventarisKategori.villageId),
+        ),
+      )
+      .where(where)
+      .orderBy(desc(inventaris.createdAt))
+      .limit(input.pageSize)
+      .offset((input.page - 1) * input.pageSize),
+    db.select({ value: count() }).from(inventaris).where(where),
   ]);
-  return {rows,total:total[0]?.value??0};
+  return { rows, total: total[0]?.value ?? 0 };
 }
 
-export async function inventarisNomorExists(villageId:number,nomor:string,exceptId?:number):Promise<boolean> {
-  const [row]=await db.select({id:inventaris.id}).from(inventaris).where(and(
-    eq(inventaris.villageId,villageId),eq(inventaris.nomorInventaris,nomor),
-    eq(inventaris.isDeleted,false),exceptId===undefined?undefined:ne(inventaris.id,exceptId),
-  )).limit(1);
+export async function inventarisNomorExists(
+  villageId: number,
+  nomor: string,
+  exceptId?: number,
+): Promise<boolean> {
+  const [row] = await db
+    .select({ id: inventaris.id })
+    .from(inventaris)
+    .where(
+      and(
+        eq(inventaris.villageId, villageId),
+        eq(inventaris.nomorInventaris, nomor),
+        eq(inventaris.isDeleted, false),
+        exceptId === undefined ? undefined : ne(inventaris.id, exceptId),
+      ),
+    )
+    .limit(1);
   return Boolean(row);
 }
 
@@ -291,53 +355,105 @@ function nilaiInventaris(input: InventarisInput) {
   };
 }
 
-export async function createInventaris(villageId:number,input:InventarisInput,actorName:string) {
-  return db.transaction(async(tx)=>{
-    const values=nilaiInventaris(input);
-    const [row]=await tx.insert(inventaris).values({villageId,...values}).$returningId();
-    if(row?.id&&!values.nomorInventaris){
-      const nomor=`INV-${String(row.id).padStart(5,"0")}`;
-      await tx.update(inventaris).set({nomorInventaris:nomor}).where(and(eq(inventaris.villageId,villageId),eq(inventaris.id,row.id)));
+export async function createInventaris(
+  villageId: number,
+  input: InventarisInput,
+  actorName: string,
+) {
+  return db.transaction(async (tx) => {
+    const values = nilaiInventaris(input);
+    const [row] = await tx
+      .insert(inventaris)
+      .values({ villageId, ...values })
+      .$returningId();
+    if (row?.id && !values.nomorInventaris) {
+      const nomor = `INV-${String(row.id).padStart(5, "0")}`;
+      await tx
+        .update(inventaris)
+        .set({ nomorInventaris: nomor })
+        .where(and(eq(inventaris.villageId, villageId), eq(inventaris.id, row.id)));
     }
-    if(row?.id && (input.penanggungJawab||input.jabatanPenanggungJawab||input.teleponPenanggungJawab)){
+    if (
+      row?.id &&
+      (input.penanggungJawab || input.jabatanPenanggungJawab || input.teleponPenanggungJawab)
+    ) {
       await tx.insert(inventarisPenanggungJawabRiwayat).values({
-        villageId,inventarisId:row.id,namaSebelum:null,jabatanSebelum:null,teleponSebelum:null,
-        namaSesudah:input.penanggungJawab||null,jabatanSesudah:input.jabatanPenanggungJawab||null,
-        teleponSesudah:input.teleponPenanggungJawab||null,diubahOleh:actorName,
+        villageId,
+        inventarisId: row.id,
+        namaSebelum: null,
+        jabatanSebelum: null,
+        teleponSebelum: null,
+        namaSesudah: input.penanggungJawab || null,
+        jabatanSesudah: input.jabatanPenanggungJawab || null,
+        teleponSesudah: input.teleponPenanggungJawab || null,
+        diubahOleh: actorName,
       });
     }
     return row?.id;
   });
 }
 
-export async function updateInventaris(villageId:number,id:number,input:InventarisInput,actorName:string) {
-  await db.transaction(async(tx)=>{
-    const [before]=await tx.select().from(inventaris).where(and(
-      eq(inventaris.villageId,villageId),eq(inventaris.id,id),eq(inventaris.isDeleted,false),
-    )).limit(1);
-    if(!before) throw notFound("Data inventaris tidak ditemukan.");
-    const values=nilaiInventaris(input);
-    if(!values.nomorInventaris) values.nomorInventaris=before.nomorInventaris;
-    const changed=before.penanggungJawab!==(input.penanggungJawab||null)
-      ||before.jabatanPenanggungJawab!==(input.jabatanPenanggungJawab||null)
-      ||before.teleponPenanggungJawab!==(input.teleponPenanggungJawab||null);
-    await tx.update(inventaris).set(values).where(and(
-      eq(inventaris.villageId,villageId),eq(inventaris.id,id),eq(inventaris.isDeleted,false),
-    ));
-    if(changed){
+export async function updateInventaris(
+  villageId: number,
+  id: number,
+  input: InventarisInput,
+  actorName: string,
+) {
+  await db.transaction(async (tx) => {
+    const [before] = await tx
+      .select()
+      .from(inventaris)
+      .where(
+        and(
+          eq(inventaris.villageId, villageId),
+          eq(inventaris.id, id),
+          eq(inventaris.isDeleted, false),
+        ),
+      )
+      .limit(1);
+    if (!before) throw notFound("Data inventaris tidak ditemukan.");
+    const values = nilaiInventaris(input);
+    if (!values.nomorInventaris) values.nomorInventaris = before.nomorInventaris;
+    const changed =
+      before.penanggungJawab !== (input.penanggungJawab || null) ||
+      before.jabatanPenanggungJawab !== (input.jabatanPenanggungJawab || null) ||
+      before.teleponPenanggungJawab !== (input.teleponPenanggungJawab || null);
+    await tx
+      .update(inventaris)
+      .set(values)
+      .where(
+        and(
+          eq(inventaris.villageId, villageId),
+          eq(inventaris.id, id),
+          eq(inventaris.isDeleted, false),
+        ),
+      );
+    if (changed) {
       await tx.insert(inventarisPenanggungJawabRiwayat).values({
-        villageId,inventarisId:id,
-        namaSebelum:before.penanggungJawab,jabatanSebelum:before.jabatanPenanggungJawab,teleponSebelum:before.teleponPenanggungJawab,
-        namaSesudah:input.penanggungJawab||null,jabatanSesudah:input.jabatanPenanggungJawab||null,
-        teleponSesudah:input.teleponPenanggungJawab||null,diubahOleh:actorName,
+        villageId,
+        inventarisId: id,
+        namaSebelum: before.penanggungJawab,
+        jabatanSebelum: before.jabatanPenanggungJawab,
+        teleponSebelum: before.teleponPenanggungJawab,
+        namaSesudah: input.penanggungJawab || null,
+        jabatanSesudah: input.jabatanPenanggungJawab || null,
+        teleponSesudah: input.teleponPenanggungJawab || null,
+        diubahOleh: actorName,
       });
     }
   });
 }
 
-export async function listRiwayatPenanggungJawab(villageId:number,inventarisId:number) {
-  return db.select().from(inventarisPenanggungJawabRiwayat)
-    .where(and(eq(inventarisPenanggungJawabRiwayat.villageId,villageId),eq(inventarisPenanggungJawabRiwayat.inventarisId,inventarisId)))
+export async function listRiwayatPenanggungJawab(villageId: number, inventarisId: number) {
+  return db
+    .select()
+    .from(inventarisPenanggungJawabRiwayat)
+    .where(
+      and(
+        eq(inventarisPenanggungJawabRiwayat.villageId, villageId),
+        eq(inventarisPenanggungJawabRiwayat.inventarisId, inventarisId),
+      ),
+    )
     .orderBy(desc(inventarisPenanggungJawabRiwayat.createdAt));
 }
 
@@ -560,127 +676,259 @@ export async function tolakMutasi(
 }
 
 export async function listPemeliharaan(villageId: number) {
-  return db.select({
-    id: inventarisPemeliharaan.id,
-    inventarisId: inventarisPemeliharaan.inventarisId,
-    namaBarang: inventaris.namaBarang,
-    nomorInventaris: inventaris.nomorInventaris,
-    jenis: inventarisPemeliharaan.jenis,
-    tanggalRencana: inventarisPemeliharaan.tanggalRencana,
-    tanggalSelesai: inventarisPemeliharaan.tanggalSelesai,
-    status: inventarisPemeliharaan.status,
-    kondisiSetelah: inventarisPemeliharaan.kondisiSetelah,
-    biaya: inventarisPemeliharaan.biaya,
-    pelaksana: inventarisPemeliharaan.pelaksana,
-    deskripsi: inventarisPemeliharaan.deskripsi,
-    hasil: inventarisPemeliharaan.hasil,
-  }).from(inventarisPemeliharaan)
-    .leftJoin(inventaris,and(
-      eq(inventaris.id,inventarisPemeliharaan.inventarisId),
-      eq(inventaris.villageId,inventarisPemeliharaan.villageId),
-    ))
-    .where(and(eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.isDeleted,false)))
+  return db
+    .select({
+      id: inventarisPemeliharaan.id,
+      inventarisId: inventarisPemeliharaan.inventarisId,
+      namaBarang: inventaris.namaBarang,
+      nomorInventaris: inventaris.nomorInventaris,
+      jenis: inventarisPemeliharaan.jenis,
+      tanggalRencana: inventarisPemeliharaan.tanggalRencana,
+      tanggalSelesai: inventarisPemeliharaan.tanggalSelesai,
+      status: inventarisPemeliharaan.status,
+      kondisiSetelah: inventarisPemeliharaan.kondisiSetelah,
+      biaya: inventarisPemeliharaan.biaya,
+      pelaksana: inventarisPemeliharaan.pelaksana,
+      deskripsi: inventarisPemeliharaan.deskripsi,
+      hasil: inventarisPemeliharaan.hasil,
+    })
+    .from(inventarisPemeliharaan)
+    .leftJoin(
+      inventaris,
+      and(
+        eq(inventaris.id, inventarisPemeliharaan.inventarisId),
+        eq(inventaris.villageId, inventarisPemeliharaan.villageId),
+      ),
+    )
+    .where(
+      and(
+        eq(inventarisPemeliharaan.villageId, villageId),
+        eq(inventarisPemeliharaan.isDeleted, false),
+      ),
+    )
     .orderBy(desc(inventarisPemeliharaan.tanggalRencana));
 }
 
-export async function createPemeliharaan(villageId:number,input:{
-  inventarisId:number;jenis:string;tanggalRencana:string;biaya:string;pelaksana:string|null;deskripsi:string|null;
-},actorName:string) {
-  return db.transaction(async(tx)=>{
-    const [row]=await tx.insert(inventarisPemeliharaan).values({villageId,...input,status:"terjadwal"}).$returningId();
-    if(row?.id) await tx.insert(inventarisPemeliharaanRiwayat).values({
-      villageId,pemeliharaanId:row.id,inventarisId:input.inventarisId,aksi:"dibuat",
-      statusSebelum:null,statusSesudah:"terjadwal",ringkasan:input.jenis,dilakukanOleh:actorName,
-    });
+export async function createPemeliharaan(
+  villageId: number,
+  input: {
+    inventarisId: number;
+    jenis: string;
+    tanggalRencana: string;
+    biaya: string;
+    pelaksana: string | null;
+    deskripsi: string | null;
+  },
+  actorName: string,
+) {
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .insert(inventarisPemeliharaan)
+      .values({ villageId, ...input, status: "terjadwal" })
+      .$returningId();
+    if (row?.id)
+      await tx.insert(inventarisPemeliharaanRiwayat).values({
+        villageId,
+        pemeliharaanId: row.id,
+        inventarisId: input.inventarisId,
+        aksi: "dibuat",
+        statusSebelum: null,
+        statusSesudah: "terjadwal",
+        ringkasan: input.jenis,
+        dilakukanOleh: actorName,
+      });
     return row?.id;
   });
 }
 
-export async function updateStatusPemeliharaan(villageId:number,id:number,input:{
-  status:"terjadwal"|"dalam_proses"|"selesai"|"dibatalkan";
-  kondisiSetelah?:"baik"|"rusak_ringan"|"rusak_berat"|"dalam_perbaikan"|null;
-  jenis?:string;tanggalRencana?:string;biaya?:string;pelaksana?:string|null;deskripsi?:string|null;
-  tanggalSelesai:string|null;hasil:string|null;
-},actorName:string) {
-  await db.transaction(async(tx)=>{
-    const [before]=await tx.select().from(inventarisPemeliharaan).where(and(
-      eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id),eq(inventarisPemeliharaan.isDeleted,false),
-    )).limit(1);
-    if(!before) throw notFound("Jadwal pemeliharaan tidak ditemukan.");
-    if(before.status==="selesai"||before.status==="dibatalkan") throw conflict("Jadwal yang sudah selesai atau dibatalkan tidak dapat diubah lagi.");
-    await tx.update(inventarisPemeliharaan).set(input).where(and(
-      eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id),
-    ));
-    if(input.status==="selesai"&&input.kondisiSetelah){
-      await tx.update(inventaris).set({kondisi:input.kondisiSetelah}).where(and(
-        eq(inventaris.villageId,villageId),eq(inventaris.id,before.inventarisId),eq(inventaris.isDeleted,false),
-      ));
+export async function updateStatusPemeliharaan(
+  villageId: number,
+  id: number,
+  input: {
+    status: "terjadwal" | "dalam_proses" | "selesai" | "dibatalkan";
+    kondisiSetelah?: "baik" | "rusak_ringan" | "rusak_berat" | "dalam_perbaikan" | null;
+    jenis?: string;
+    tanggalRencana?: string;
+    biaya?: string;
+    pelaksana?: string | null;
+    deskripsi?: string | null;
+    tanggalSelesai: string | null;
+    hasil: string | null;
+  },
+  actorName: string,
+) {
+  await db.transaction(async (tx) => {
+    const [before] = await tx
+      .select()
+      .from(inventarisPemeliharaan)
+      .where(
+        and(
+          eq(inventarisPemeliharaan.villageId, villageId),
+          eq(inventarisPemeliharaan.id, id),
+          eq(inventarisPemeliharaan.isDeleted, false),
+        ),
+      )
+      .limit(1);
+    if (!before) throw notFound("Jadwal pemeliharaan tidak ditemukan.");
+    if (before.status === "selesai" || before.status === "dibatalkan")
+      throw conflict("Jadwal yang sudah selesai atau dibatalkan tidak dapat diubah lagi.");
+    await tx
+      .update(inventarisPemeliharaan)
+      .set(input)
+      .where(
+        and(eq(inventarisPemeliharaan.villageId, villageId), eq(inventarisPemeliharaan.id, id)),
+      );
+    if (input.status === "selesai" && input.kondisiSetelah) {
+      await tx
+        .update(inventaris)
+        .set({ kondisi: input.kondisiSetelah })
+        .where(
+          and(
+            eq(inventaris.villageId, villageId),
+            eq(inventaris.id, before.inventarisId),
+            eq(inventaris.isDeleted, false),
+          ),
+        );
     }
     await tx.insert(inventarisPemeliharaanRiwayat).values({
-      villageId,pemeliharaanId:id,inventarisId:before.inventarisId,aksi:"diperbarui",
-      statusSebelum:before.status,statusSesudah:input.status,
-      ringkasan:[input.hasil??input.deskripsi??input.jenis??"Data pemeliharaan diperbarui",input.kondisiSetelah?"Kondisi aset: "+input.kondisiSetelah:""].filter(Boolean).join(" · "),
-      dilakukanOleh:actorName,
+      villageId,
+      pemeliharaanId: id,
+      inventarisId: before.inventarisId,
+      aksi: "diperbarui",
+      statusSebelum: before.status,
+      statusSesudah: input.status,
+      ringkasan: [
+        input.hasil ?? input.deskripsi ?? input.jenis ?? "Data pemeliharaan diperbarui",
+        input.kondisiSetelah ? "Kondisi aset: " + input.kondisiSetelah : "",
+      ]
+        .filter(Boolean)
+        .join(" · "),
+      dilakukanOleh: actorName,
     });
   });
 }
 
-export async function deletePemeliharaan(villageId:number,id:number,actorName:string) {
-  await db.transaction(async(tx)=>{
-    const [before]=await tx.select().from(inventarisPemeliharaan).where(and(
-      eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id),eq(inventarisPemeliharaan.isDeleted,false),
-    )).limit(1);
-    if(!before) throw notFound("Jadwal pemeliharaan tidak ditemukan.");
-    await tx.update(inventarisPemeliharaan).set({isDeleted:true,deletedAt:new Date()}).where(and(
-      eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id),
-    ));
+export async function deletePemeliharaan(villageId: number, id: number, actorName: string) {
+  await db.transaction(async (tx) => {
+    const [before] = await tx
+      .select()
+      .from(inventarisPemeliharaan)
+      .where(
+        and(
+          eq(inventarisPemeliharaan.villageId, villageId),
+          eq(inventarisPemeliharaan.id, id),
+          eq(inventarisPemeliharaan.isDeleted, false),
+        ),
+      )
+      .limit(1);
+    if (!before) throw notFound("Jadwal pemeliharaan tidak ditemukan.");
+    await tx
+      .update(inventarisPemeliharaan)
+      .set({ isDeleted: true, deletedAt: new Date() })
+      .where(
+        and(eq(inventarisPemeliharaan.villageId, villageId), eq(inventarisPemeliharaan.id, id)),
+      );
     await tx.insert(inventarisPemeliharaanRiwayat).values({
-      villageId,pemeliharaanId:id,inventarisId:before.inventarisId,aksi:"dihapus",
-      statusSebelum:before.status,statusSesudah:before.status,ringkasan:before.jenis,dilakukanOleh:actorName,
+      villageId,
+      pemeliharaanId: id,
+      inventarisId: before.inventarisId,
+      aksi: "dihapus",
+      statusSebelum: before.status,
+      statusSesudah: before.status,
+      ringkasan: before.jenis,
+      dilakukanOleh: actorName,
     });
   });
 }
 
-export async function listRiwayatPemeliharaan(villageId:number) {
-  return db.select({
-    id:inventarisPemeliharaanRiwayat.id,aksi:inventarisPemeliharaanRiwayat.aksi,
-    statusSebelum:inventarisPemeliharaanRiwayat.statusSebelum,statusSesudah:inventarisPemeliharaanRiwayat.statusSesudah,
-    ringkasan:inventarisPemeliharaanRiwayat.ringkasan,dilakukanOleh:inventarisPemeliharaanRiwayat.dilakukanOleh,
-    createdAt:inventarisPemeliharaanRiwayat.createdAt,namaBarang:inventaris.namaBarang,
-    jenis:inventarisPemeliharaan.jenis,
-  }).from(inventarisPemeliharaanRiwayat)
-    .leftJoin(inventaris,and(eq(inventaris.id,inventarisPemeliharaanRiwayat.inventarisId),eq(inventaris.villageId,inventarisPemeliharaanRiwayat.villageId)))
-    .leftJoin(inventarisPemeliharaan,and(eq(inventarisPemeliharaan.id,inventarisPemeliharaanRiwayat.pemeliharaanId),eq(inventarisPemeliharaan.villageId,inventarisPemeliharaanRiwayat.villageId)))
-    .where(eq(inventarisPemeliharaanRiwayat.villageId,villageId))
+export async function listRiwayatPemeliharaan(villageId: number) {
+  return db
+    .select({
+      id: inventarisPemeliharaanRiwayat.id,
+      aksi: inventarisPemeliharaanRiwayat.aksi,
+      statusSebelum: inventarisPemeliharaanRiwayat.statusSebelum,
+      statusSesudah: inventarisPemeliharaanRiwayat.statusSesudah,
+      ringkasan: inventarisPemeliharaanRiwayat.ringkasan,
+      dilakukanOleh: inventarisPemeliharaanRiwayat.dilakukanOleh,
+      createdAt: inventarisPemeliharaanRiwayat.createdAt,
+      namaBarang: inventaris.namaBarang,
+      jenis: inventarisPemeliharaan.jenis,
+    })
+    .from(inventarisPemeliharaanRiwayat)
+    .leftJoin(
+      inventaris,
+      and(
+        eq(inventaris.id, inventarisPemeliharaanRiwayat.inventarisId),
+        eq(inventaris.villageId, inventarisPemeliharaanRiwayat.villageId),
+      ),
+    )
+    .leftJoin(
+      inventarisPemeliharaan,
+      and(
+        eq(inventarisPemeliharaan.id, inventarisPemeliharaanRiwayat.pemeliharaanId),
+        eq(inventarisPemeliharaan.villageId, inventarisPemeliharaanRiwayat.villageId),
+      ),
+    )
+    .where(eq(inventarisPemeliharaanRiwayat.villageId, villageId))
     .orderBy(desc(inventarisPemeliharaanRiwayat.createdAt));
 }
 
-export async function listDokumenInventaris(villageId:number,inventarisId:number) {
-  return db.select({
-    id:inventarisDokumen.id,nama:inventarisDokumen.nama,namaFile:inventarisDokumen.namaFile,
-    mime:inventarisDokumen.mime,ukuran:inventarisDokumen.ukuran,createdAt:inventarisDokumen.createdAt,
-  }).from(inventarisDokumen)
-    .where(and(eq(inventarisDokumen.villageId,villageId),eq(inventarisDokumen.inventarisId,inventarisId)))
+export async function listDokumenInventaris(villageId: number, inventarisId: number) {
+  return db
+    .select({
+      id: inventarisDokumen.id,
+      nama: inventarisDokumen.nama,
+      namaFile: inventarisDokumen.namaFile,
+      mime: inventarisDokumen.mime,
+      ukuran: inventarisDokumen.ukuran,
+      createdAt: inventarisDokumen.createdAt,
+    })
+    .from(inventarisDokumen)
+    .where(
+      and(
+        eq(inventarisDokumen.villageId, villageId),
+        eq(inventarisDokumen.inventarisId, inventarisId),
+      ),
+    )
     .orderBy(desc(inventarisDokumen.createdAt));
 }
 
-export async function getDokumenInventaris(villageId:number,id:number) {
-  const [row]=await db.select().from(inventarisDokumen)
-    .where(and(eq(inventarisDokumen.villageId,villageId),eq(inventarisDokumen.id,id))).limit(1);
+export async function getDokumenInventaris(villageId: number, id: number) {
+  const [row] = await db
+    .select()
+    .from(inventarisDokumen)
+    .where(and(eq(inventarisDokumen.villageId, villageId), eq(inventarisDokumen.id, id)))
+    .limit(1);
   return row;
 }
 
-export async function createDokumenInventaris(villageId:number,inventarisId:number,input:{
-  nama:string;namaFile:string;mime:string;ukuran:number;jalurMedia:string;
-}) {
-  const [row]=await db.insert(inventarisDokumen).values({villageId,inventarisId,...input}).$returningId();
+export async function createDokumenInventaris(
+  villageId: number,
+  inventarisId: number,
+  input: {
+    nama: string;
+    namaFile: string;
+    mime: string;
+    ukuran: number;
+    jalurMedia: string;
+  },
+) {
+  const [row] = await db
+    .insert(inventarisDokumen)
+    .values({ villageId, inventarisId, ...input })
+    .$returningId();
   return row?.id;
 }
 
-export async function deleteDokumenInventaris(villageId:number,id:number) {
-  const [row]=await db.select().from(inventarisDokumen)
-    .where(and(eq(inventarisDokumen.villageId,villageId),eq(inventarisDokumen.id,id))).limit(1);
-  if(!row) throw notFound("Dokumen inventaris tidak ditemukan.");
-  await db.delete(inventarisDokumen).where(and(eq(inventarisDokumen.villageId,villageId),eq(inventarisDokumen.id,id)));
+export async function deleteDokumenInventaris(villageId: number, id: number) {
+  const [row] = await db
+    .select()
+    .from(inventarisDokumen)
+    .where(and(eq(inventarisDokumen.villageId, villageId), eq(inventarisDokumen.id, id)))
+    .limit(1);
+  if (!row) throw notFound("Dokumen inventaris tidak ditemukan.");
+  await db
+    .delete(inventarisDokumen)
+    .where(and(eq(inventarisDokumen.villageId, villageId), eq(inventarisDokumen.id, id)));
   return row.jalurMedia;
 }
