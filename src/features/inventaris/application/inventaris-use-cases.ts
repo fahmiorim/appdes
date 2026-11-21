@@ -398,10 +398,19 @@ export async function buatJadwalPemeliharaan(input:{
   });
 }
 
-export async function ubahStatusPemeliharaan(input:{id:number;status:"dalam_proses"|"selesai"|"dibatalkan";tanggalSelesai?:string;hasil?:string}) {
+export async function ubahStatusPemeliharaan(input:{
+  id:number;status:"terjadwal"|"dalam_proses"|"selesai"|"dibatalkan";
+  jenis?:string;tanggalRencana?:string;biaya?:number;pelaksana?:string;deskripsi?:string;
+  tanggalSelesai?:string;hasil?:string;
+}) {
   const user=await requirePermission(INVENTARIS_RESOURCE,"update");
   const villageId=await resolveVillageId(user);
-  await updateStatusPemeliharaan(villageId,input.id,input.status,input.tanggalSelesai||null,input.hasil?.trim()||null);
+  if(input.biaya!==undefined&&(!Number.isFinite(input.biaya)||input.biaya<0)) throw validationError("Biaya pemeliharaan tidak valid.");
+  await updateStatusPemeliharaan(villageId,input.id,{
+    status:input.status,jenis:input.jenis?.trim(),tanggalRencana:input.tanggalRencana,
+    biaya:input.biaya?.toFixed(2),pelaksana:input.pelaksana?.trim()||null,
+    deskripsi:input.deskripsi?.trim()||null,tanggalSelesai:input.tanggalSelesai||null,hasil:input.hasil?.trim()||null,
+  });
 }
 
 export async function hapusJadwalPemeliharaan(id:number) {
