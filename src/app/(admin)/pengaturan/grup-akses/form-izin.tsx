@@ -10,9 +10,10 @@ interface Props {
   permissions: ModulePermissionRow[];
   readOnly: boolean;
   aksi: (state: ActionState<null>, formData: FormData) => Promise<ActionState<null>>;
+  resetAction: (state: ActionState<null>, formData: FormData) => Promise<ActionState<null>>;
 }
 
-export function FormIzin({ roleId, permissions, readOnly, aksi }: Props) {
+export function FormIzin({ roleId, permissions, readOnly, aksi, resetAction }: Props) {
   const [state, formAction, pending] = useActionState(aksi, createIdleActionState<null>());
 
   return (
@@ -24,9 +25,9 @@ export function FormIzin({ roleId, permissions, readOnly, aksi }: Props) {
           <thead>
             <tr>
               <th scope="col">Modul</th>
-              <th scope="col">Baca</th>
-              <th scope="col">Tulis</th>
-              <th scope="col">Kelola</th>
+              <th scope="col">Lihat</th>
+              <th scope="col">Tambah / Ubah</th>
+              <th scope="col">Hapus</th>
             </tr>
           </thead>
           <tbody>
@@ -56,14 +57,12 @@ export function FormIzin({ roleId, permissions, readOnly, aksi }: Props) {
 
       <div className="pengguna-izin-footer">
         <p>
-          Tulis mencakup baca; kelola mencakup tulis. Perubahan berlaku pada permintaan berikutnya.
+          Tambah/Ubah mencakup Lihat; Hapus mencakup seluruh izin sebelumnya. Reset menghapus semua izin (default-deny).
         </p>
         {readOnly ? (
           <span className="pengguna-rail-note">Grup sistem tidak dapat diubah.</span>
         ) : (
-          <button className="button button-primary" disabled={pending} type="submit">
-            {pending ? "Menyimpan..." : "Simpan izin"}
-          </button>
+          <div className="pengguna-izin-actions"><button className="button button-primary" disabled={pending} type="submit">{pending ? "Menyimpan..." : "Simpan izin"}</button><button className="button button-secondary" disabled={pending} formAction={resetAction} type="submit">Reset ke Default</button></div>
         )}
       </div>
 
