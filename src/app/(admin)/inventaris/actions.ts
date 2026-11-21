@@ -117,10 +117,12 @@ export async function buatJadwalPemeliharaanAction(fd:FormData) {
 
 export async function ubahStatusPemeliharaanAction(fd:FormData) {
   const status=text(fd,"status");
-  if(status!=="dalam_proses"&&status!=="selesai"&&status!=="dibatalkan") throw new Error("Status pemeliharaan tidak valid.");
+  if(status!=="terjadwal"&&status!=="dalam_proses"&&status!=="selesai"&&status!=="dibatalkan") throw new Error("Status pemeliharaan tidak valid.");
   await ubahStatusPemeliharaan({
     id:positiveId(text(fd,"id")),
     status,
+    jenis:text(fd,"jenis"),tanggalRencana:text(fd,"tanggalRencana"),biaya:Number(text(fd,"biaya")||0),
+    pelaksana:text(fd,"pelaksana"),deskripsi:text(fd,"deskripsi"),
     tanggalSelesai:text(fd,"tanggalSelesai"),
     hasil:text(fd,"hasil"),
   });
