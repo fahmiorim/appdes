@@ -4,7 +4,7 @@ import Link from "next/link";
 import { DialogHapus } from "@/components/ui/dialog-hapus";
 import { getGrupAksesAdminData } from "@/features/pengguna/application/pengguna-admin";
 
-import { buatRoleAction, hapusRoleAction, simpanIzinAction, ubahRoleAction } from "./actions";
+import { buatRoleAction, hapusRoleAction, resetIzinRoleAction, simpanIzinAction, ubahRoleAction } from "./actions";
 import { DialogRole } from "./dialog-role";
 import { DialogSalinRole } from "./dialog-salin-role";
 import { salinRoleAction } from "./salin-role-action";
@@ -147,6 +147,7 @@ export default async function GrupAksesPage({
             <div className="pengguna-card-body">
               <FormIzin
                 aksi={simpanIzinAction}
+                resetAction={resetIzinRoleAction}
                 permissions={data.selected.permissions}
                 readOnly={data.selected.role.isSystem || !data.canUpdate}
                 roleId={data.selected.role.id}
