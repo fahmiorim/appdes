@@ -7,6 +7,7 @@ export async function GET(request:Request,{params}:RouteContext<"/inventaris/dok
   try {
     const doc=await getDokumenInventarisDownload(id);
     const bytes=await bacaMedia(doc.jalurMedia);
+    const namaAman=doc.namaFile.replace(/[^a-zA-Z0-9._-]/g,"_");
     return new Response(bytes,{
       headers:{
         "Content-Type":doc.mime,
