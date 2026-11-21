@@ -5,7 +5,7 @@ import { villageBlockedIps, villageSecuritySettings } from "@/db/schema";
 import type { BlockedIpDTO, KeamananInput } from "../domain/keamanan";
 
 export const DEFAULT_SECURITY_SETTINGS: KeamananInput = {
-  passwordMinLength: 8, requireUppercase: true, requireLowercase: true, requireNumber: true,
+  passwordMinLength: 8, passwordExpiryDays: 90, passwordReuseCount: 3, requireUppercase: true, requireLowercase: true, requireNumber: true,
   requireSymbol: false, sessionTimeoutMinutes: 30, autoLogoutInactive: true,
   concurrentLogin: false, requireTwoFactorForAllUsers: false, ipRestrictionEnabled: false, allowedIps: [],
 };
