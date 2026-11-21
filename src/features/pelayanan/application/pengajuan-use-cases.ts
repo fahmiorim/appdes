@@ -56,10 +56,10 @@ export async function ajukanLayananWargaData(raw: unknown, unggahan: BerkasUngga
   }
 }
 
-export async function getPengajuanPageData(status?: string) {
+export async function getPengajuanPageData(status?: string, cari = "", page = 1) {
   const user = await requirePermission(PENGAJUAN_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
-  const data = await listPengajuanLayanan(villageId, status);
+  const data = await listPengajuanLayanan(villageId, status, cari, page, 10);
   return { ...data, canUpdate: hasPermission(user.permissions, PENGAJUAN_RESOURCE, "update") };
 }
 
