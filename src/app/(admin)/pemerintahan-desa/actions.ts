@@ -29,7 +29,7 @@ export async function simpanPerangkatAction(fd: FormData) {
   let foto = value(fd, "foto") || null;
   const fotoFile = fd.get("fotoFile");
   if (fotoFile instanceof File && fotoFile.size > 0) {
-    const user = await requirePermission("perangkat-desa", id ? "update" : "create");
+    const user = await requirePermission("perangkat-desa", id ? "update" : "update");
     const villageId = await resolveVillageId(user);
     foto = await simpanBerkasMedia(villageId, { nama: fotoFile.name, mime: fotoFile.type, ukuran: fotoFile.size, isi: new Uint8Array(await fotoFile.arrayBuffer()) }, "perangkat", "fotoFile");
   }
@@ -86,7 +86,7 @@ export async function simpanAnggotaLembagaAction(fd: FormData) {
   let foto = value(fd, "foto") || null;
   const fotoFile = fd.get("fotoFile");
   if (fotoFile instanceof File && fotoFile.size > 0) {
-    const user = await requirePermission("lembaga-desa", id ? "update" : "create");
+    const user = await requirePermission("lembaga-desa", id ? "update" : "update");
     const villageId = await resolveVillageId(user);
     foto = await simpanBerkasMedia(villageId, { nama: fotoFile.name, mime: fotoFile.type, ukuran: fotoFile.size, isi: new Uint8Array(await fotoFile.arrayBuffer()) }, "perangkat", "fotoFile");
   }
@@ -182,7 +182,7 @@ export async function unggahDokumenPemerintahanAction(fd: FormData) {
   const file = fd.get("berkas");
   if (!(file instanceof File) || file.size === 0) throw new Error("Pilih dokumen PDF atau gambar terlebih dahulu.");
   if (!(["application/pdf", "image/jpeg", "image/png", "image/webp"] as string[]).includes(file.type)) throw new Error("Dokumen hanya boleh berupa PDF, JPG, PNG, atau WEBP.");
-  const user = await requirePermission(perangkatId ? "perangkat-desa" : "lembaga-desa", "create");
+  const user = await requirePermission(perangkatId ? "perangkat-desa" : "lembaga-desa", "update");
   const villageId = await resolveVillageId(user);
   const berkas = await simpanBerkasMedia(villageId, {
     nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()),
