@@ -133,7 +133,7 @@ export async function getLaporanInventarisCsv(kategoriId?: number) {
 }
 
 export async function saveInventarisKategori(input: InventarisKategoriInput, id?: number) {
-  const user = await requirePermission(INVENTARIS_RESOURCE, "update");
+  const user = await requirePermission(INVENTARIS_RESOURCE, id === undefined ? "create" : "update");
   const villageId = await resolveVillageId(user);
 
   if (await inventarisKategoriKodeExists(villageId, input.kode, id)) {
@@ -167,7 +167,7 @@ export async function hapusInventarisKategori(id: number) {
 }
 
 export async function saveInventaris(input: InventarisInput, id?: number) {
-  const user = await requirePermission(INVENTARIS_RESOURCE, "update");
+  const user = await requirePermission(INVENTARIS_RESOURCE, id === undefined ? "create" : "update");
   const villageId = await resolveVillageId(user);
 
   // `kategoriId` berasal dari formulir. Composite FK juga menegakkan tenant
@@ -225,7 +225,7 @@ export async function hapusInventaris(id: number) {
 }
 
 export async function ajukanMutasi(input: InventarisMutasiInput) {
-  const user = await requirePermission(MUTASI_RESOURCE, "update");
+  const user = await requirePermission(MUTASI_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const item = await getInventaris(villageId, input.inventarisId);
