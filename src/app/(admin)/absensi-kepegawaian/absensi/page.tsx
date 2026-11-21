@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { daftarAbsensi, getPengaturanKehadiran } from "@/features/kepegawaian/application/use-cases";
+import { daftarAbsensi, daftarKehadiranBulanan, getPengaturanKehadiran } from "@/features/kepegawaian/application/use-cases";
 
 import { absensiManualAction, simpanPengaturanKehadiranAction } from "../actions";
 import { AbsensiKepegawaianNav } from "../nav";
@@ -12,10 +12,18 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
   const params=await searchParams;
   const raw=Array.isArray(params.tanggal)?params.tanggal[0]:params.tanggal;
   const tanggal=raw && /^\d{4}-\d{2}-\d{2}$/.test(raw)?raw:new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Jakarta"}).format(new Date());
-  const [rows,setting]=await Promise.all([daftarAbsensi(tanggal),getPengaturanKehadiran()]);
+  const tahun=Number(tanggal.slice(0,4));
+  const bulan=Number(tanggal.slice(5,7));
+  const [rows,setting,calendarRows]=await Promise.all([daftarAbsensi(tanggal),getPengaturanKehadiran(),daftarKehadiranBulanan(tahun,bulan)]);
   let hariLibur:number[]=[0,6];
   try { const parsed=JSON.parse(setting.hariLibur); if(Array.isArray(parsed)) hariLibur=parsed; } catch { /* fallback akhir pekan */ }
   const statusLabel:Record<string,string>={hadir:"Hadir",izin:"Izin",cuti:"Cuti",tidak_hadir:"Tidak Hadir"};
+  const monthStart=new Date(Date.UTC(tahun,bulan-1,1)).getUTCDay();
+  const daysInMonth=new Date(Date.UTC(tahun,bulan,0)).getUTCDate();
+  const calendarMap=new Map<string,string[]>();
+  for(const row of calendarRows){const key=row.tanggal;const list=calendarMap.get(key)??[];list.push(row.status??"hadir");calendarMap.set(key,list);}
+  const monthLabel=new Intl.DateTimeFormat("id-ID",{month:"long",year:"numeric",timeZone:"Asia/Jakarta"}).format(new Date(Date.UTC(tahun,bulan-1,1)));
+
   const counts={hadir:rows.filter(x=>x.status==="hadir").length,izin:rows.filter(x=>x.status==="izin").length,cuti:rows.filter(x=>x.status==="cuti").length,tidak:rows.filter(x=>!x.status||x.status==="tidak_hadir").length};
   return <div className="modul-page">
     <div className="page-heading"><div><span className="eyebrow">ABSENSI & KEPEGAWAIAN</span><h1>Absensi Pegawai</h1><p>Kelola dan pantau kehadiran perangkat desa serta staf secara terpusat.</p></div></div>
@@ -43,6 +51,16 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
       </tbody></table></div>
       {!rows.length?<div className={styles["ak-empty"]}>Belum ada pegawai aktif. Tambahkan pegawai terlebih dahulu.</div>:null}
     </section>
+    <div className={styles["ak-grid"]} style={{marginTop:16}}>
+      <section className={styles["ak-card"]}><h2>Kalender Kehadiran</h2><p>{monthLabel}</p>
+        <div className={styles["ak-calendar"]}>
+          {["Min","Sen","Sel","Rab","Kam","Jum","Sab"].map(day=><span className={styles["ak-calendar-head"]} key={day}>{day}</span>)}
+          {Array.from({length:monthStart},(_,i)=><span key={"blank-"+i}/>)}
+          {Array.from({length:daysInMonth},(_,i)=>{const day=i+1;const key=tahun+"-"+String(bulan).padStart(2,"0")+"-"+String(day).padStart(2,"0");const statuses=calendarMap.get(key)??[];return <div key={key} className={styles["ak-calendar-day"]+" "+(statuses.length?styles["ak-calendar-day"].replace("ak-calendar-day","ak-calendar-day"):"")}><strong>{day}</strong>{statuses.length?<small>{statuses.length} catatan</small>:null}</div>;})}
+        </div>
+      </section>
+      <section className={styles["ak-card"]}><h2>Ringkasan Periode</h2><p>{tanggal}</p><dl><div><dt>Total Pegawai Aktif</dt><dd>{rows.length}</dd></div><div><dt>Hadir</dt><dd>{counts.hadir}</dd></div><div><dt>Izin</dt><dd>{counts.izin}</dd></div><div><dt>Cuti</dt><dd>{counts.cuti}</dd></div><div><dt>Tidak Hadir</dt><dd>{counts.tidak}</dd></div></dl></section>
+    </div>
     <section className={styles["ak-card"]} style={{marginTop:16}}><h2>Pengaturan Absensi</h2><p>Atur jam kerja dan hari libur mingguan desa.</p>
       <form action={simpanPengaturanKehadiranAction} className={styles["ak-form"]}>
         <label>Jam Masuk<input type="time" name="jamMasuk" defaultValue={setting.jamMasuk}/></label>
