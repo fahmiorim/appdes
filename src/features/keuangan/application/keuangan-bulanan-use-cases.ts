@@ -1,7 +1,7 @@
 import "server-only";
 
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
-import { formatMoney, toMinor, type } from "@/features/keuangan/domain/keuangan";
+import { formatMoney, sumMoney, toMinor } from "@/features/keuangan/domain/keuangan";
 import { KEUANGAN_RESOURCE } from "@/features/keuangan/domain/keuangan";
 import { listKeuanganBulanan, saveKeuanganBulanan } from "@/features/keuangan/infrastructure/keuangan-bulanan-repository";
 import { requirePermission } from "@/lib/dal";
@@ -15,12 +15,12 @@ function money(value:unknown):string{
 }
 export async function getKeuanganBulanan(tahunParam?:number){
  const user=await requirePermission(KEUANGAN_RESOURCE,"read");const villageId=await resolveVillageId(user);
- const tahun=Number.isInteger(tahunParam)&&tahunParam!>=2000&&tahunParam!<=2100?tahunParam!:new Date().getFullYear();
+ const tahun=Number.isInteger(tahunParam)&&(tahunParam??0)>=2000&&(tahunParam??0)<=2100?(tahunParam as number):new Date().getFullYear();
  const stored=await listKeuanganBulanan(villageId,tahun);const byMonth=new Map(stored.map(x=>[x.bulan,x]));
  const rows=NAMA_BULAN.map((label,index)=>{const row=byMonth.get(index+1);return {bulan:index+1,label,target:row?.target??"0.00",realisasi:row?.realisasi??"0.00"};});
- const totalTarget=rows.reduce((sum,x)=>sum+toMinor(x.target),0n).toString();
- const totalRealisasi=rows.reduce((sum,x)=>sum+toMinor(x.realisasi),0n).toString();
- return {tahun,rows,totalTarget:formatMoney(BigInt(totalTarget)),totalRealisasi:formatMoney(BigInt(totalRealisasi))};
+ const totalTarget=sumMoney(rows.map(x=>x.target));
+ const totalRealisasi=sumMoney(rows.map(x=>x.realisasi));
+ return {tahun,rows,totalTarget,totalRealisasi};
 }
 export async function simpanKeuanganBulanan(tahun:number,inputs:unknown[]){
  const user=await requirePermission(KEUANGAN_RESOURCE,"update");const villageId=await resolveVillageId(user);
