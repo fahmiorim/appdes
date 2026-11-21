@@ -9,7 +9,7 @@ import { getIdentitasDesa } from "@/features/desa/infrastructure/desa-repository
 import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import { requirePermission, requireUser } from "@/lib/dal";
 
-async function tenant(resource: string, action: "read" | "create" | "update" | "delete" = "read") {
+async function tenant(resource: string, action: "read" | "update" | "update" | "delete" = "read") {
   const user = await requirePermission(resource, action);
   return resolveVillageId(user);
 }
@@ -79,7 +79,7 @@ export async function simpanPerangkatDesa(id: number | null, input: {
   pendidikan: string | null; telepon: string | null; email: string | null; alamat: string | null;
   nomorSkPengangkatan: string | null; tanggalPengangkatan: string | null; nomorSkPemberhentian: string | null; tanggalPemberhentian: string | null; atasanId: number | null; urut: number;
 }) {
-  const villageId = await tenant("perangkat-desa", id ? "update" : "create");
+  const villageId = await tenant("perangkat-desa", id ? "update" : "update");
   if (input.jabatanId) {
     const [jabatan] = await db.select({ id: jabatanPerangkat.id }).from(jabatanPerangkat)
       .where(and(eq(jabatanPerangkat.villageId, villageId), eq(jabatanPerangkat.id, input.jabatanId))).limit(1);
@@ -132,7 +132,7 @@ export async function simpanLembagaDesa(id: number | null, input: {
   dasarHukum: string | null; masaBaktiMulai: string | null; masaBaktiSelesai: string | null;
   status: string; tampilPublik: boolean; urut: number;
 }) {
-  const villageId = await tenant("lembaga-desa", id ? "update" : "create");
+  const villageId = await tenant("lembaga-desa", id ? "update" : "update");
   if (id) await db.update(lembagaDesa).set(input).where(and(eq(lembagaDesa.villageId, villageId), eq(lembagaDesa.id, id)));
   else await db.insert(lembagaDesa).values({ ...input, villageId });
 }
@@ -149,7 +149,7 @@ export async function simpanAnggotaLembaga(id: number | null, input: {
   lembagaId: number; nama: string; jabatan: string | null; foto: string | null;
   periodeMulai: string | null; periodeSelesai: string | null; aktif: boolean; tampilPublik: boolean; urut: number;
 }) {
-  const villageId = await tenant("lembaga-desa", id ? "update" : "create");
+  const villageId = await tenant("lembaga-desa", id ? "update" : "update");
   const [parent] = await db.select({ id: lembagaDesa.id }).from(lembagaDesa)
     .where(and(eq(lembagaDesa.villageId, villageId), eq(lembagaDesa.id, input.lembagaId))).limit(1);
   if (!parent) throw new Error("Lembaga tidak ditemukan pada desa aktif.");
@@ -185,7 +185,7 @@ export async function getWilayahPemerintahanData() {
 
 
 export async function simpanAreaPeta(id: number | null, input: { nama: string; path: string | null; enabled: number; sortOrder: number; refPolygon: number | null }) {
-  const villageId = await tenant("wilayah", id ? "update" : "create");
+  const villageId = await tenant("wilayah", id ? "update" : "update");
   if (input.refPolygon) {
     const [layer] = await db.select({ id: polygons.id }).from(polygons).where(and(eq(polygons.villageId, villageId), eq(polygons.id, input.refPolygon))).limit(1);
     if (!layer) throw new Error("Layer polygon tidak ditemukan pada desa aktif.");
@@ -204,7 +204,7 @@ export async function hapusAreaPeta(id: number) {
 }
 
 export async function simpanJabatanPerangkat(id: number | null, nama: string, urut: number) {
-  const villageId = await tenant("perangkat-desa", id ? "update" : "create");
+  const villageId = await tenant("perangkat-desa", id ? "update" : "update");
   const slug = nama.normalize("NFKD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   if (!slug) throw new Error("Nama jabatan tidak valid.");
   const [duplicate] = await db.select({ id: jabatanPerangkat.id }).from(jabatanPerangkat)
@@ -223,7 +223,7 @@ export async function hapusJabatanPerangkat(id: number) {
 }
 
 export async function simpanRiwayatJabatan(id: number | null, input: { perangkatId: number; jabatan: string; nomorSk: string | null; mulai: string | null; selesai: string | null; keterangan: string | null; tampilPublik: boolean }) {
-  const villageId = await tenant("perangkat-desa", id ? "update" : "create");
+  const villageId = await tenant("perangkat-desa", id ? "update" : "update");
   const [owner] = await db.select({ id: perangkatDesa.id }).from(perangkatDesa)
     .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, input.perangkatId))).limit(1);
   if (!owner) throw new Error("Perangkat tidak ditemukan pada desa aktif.");
@@ -240,7 +240,7 @@ export async function unggahDokumenPemerintahan(input: {
   perangkatId: number | null; lembagaId: number | null; judul: string; nomor: string | null;
   tanggal: string | null; berkas: string; tampilPublik: boolean;
 }) {
-  const villageId = await tenant(input.perangkatId ? "perangkat-desa" : "lembaga-desa", "create");
+  const villageId = await tenant(input.perangkatId ? "perangkat-desa" : "lembaga-desa", "update");
   if (!input.perangkatId && !input.lembagaId) throw new Error("Dokumen harus terhubung ke perangkat atau lembaga.");
   if (input.perangkatId) {
     const [owner] = await db.select({ id: perangkatDesa.id }).from(perangkatDesa).where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, input.perangkatId))).limit(1);
@@ -264,7 +264,7 @@ export async function hapusDokumenPemerintahan(id: number) {
 }
 
 export async function simpanLayerPeta(id: number | null, input: { nama: string; color: string; enabled: number; sortOrder: number }) {
-  const villageId = await tenant("wilayah", id ? "update" : "create");
+  const villageId = await tenant("wilayah", id ? "update" : "update");
   if (!/^#[0-9a-fA-F]{6}$/.test(input.color)) throw new Error("Warna layer harus berupa kode HEX.");
   if (id) await db.update(polygons).set({ nama: input.nama, color: input.color, enabled: input.enabled, sortOrder: input.sortOrder })
     .where(and(eq(polygons.villageId, villageId), eq(polygons.id, id)));
