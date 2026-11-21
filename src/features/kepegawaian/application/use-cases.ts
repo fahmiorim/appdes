@@ -25,7 +25,7 @@ function tanggalLokal(): string {
 }
 function tahunLokal(): number { return Number(tanggalLokal().slice(0, 4)); }
 function tanggalValid(value:string):boolean {
-  if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const parsed=new Date(value+"T00:00:00Z");
   return !Number.isNaN(parsed.getTime())&&parsed.toISOString().slice(0,10)===value;
 }
@@ -206,8 +206,7 @@ export async function daftarAbsensi(tanggal = tanggalLokal()) {
 
 export async function daftarAbsensiRentang(mulai: string, selesai: string) {
   const { villageId } = await village("kehadiran");
-  const validDate = (value: string) => /^\d{4}-\d{2}-\d{2}$/.test(value)
-    && new Date(value + "T00:00:00Z").toISOString().slice(0, 10) === value;
+  const validDate = tanggalValid;
   if (!validDate(mulai) || !validDate(selesai) || selesai < mulai) throw new Error("Rentang laporan absensi tidak valid.");
   const start = Date.parse(mulai + "T00:00:00Z");
   const end = Date.parse(selesai + "T00:00:00Z");
@@ -256,9 +255,8 @@ export async function catatAbsensiManual(input: { pegawaiId: number; tanggal: st
   const [pegawai] = await db.select({ id: kepegawaianPegawai.id }).from(kepegawaianPegawai)
     .where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.id, input.pegawaiId), eq(kepegawaianPegawai.status, "aktif"))).limit(1);
   if (!pegawai) throw new Error("Pegawai aktif tidak ditemukan.");
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.tanggal)) throw new Error("Tanggal absensi tidak valid.");
+  if (!tanggalValid(input.tanggal)) throw new Error("Tanggal absensi tidak valid.");
   if (!["hadir", "izin", "cuti", "tidak_hadir"].includes(input.status)) throw new Error("Status absensi tidak valid.");
-  if (new Date(input.tanggal + "T00:00:00Z").toISOString().slice(0,10) !== input.tanggal) throw new Error("Tanggal absensi tidak valid.");
   if (input.jamMasuk && !/^([01]\d|2[0-3]):[0-5]\d$/.test(input.jamMasuk)) throw new Error("Jam masuk tidak valid.");
   if (input.jamKeluar && !/^([01]\d|2[0-3]):[0-5]\d$/.test(input.jamKeluar)) throw new Error("Jam pulang tidak valid.");
   if (input.jamMasuk && input.jamKeluar && input.jamKeluar < input.jamMasuk) throw new Error("Jam pulang tidak boleh sebelum jam masuk.");
@@ -292,8 +290,7 @@ export async function ajukanCuti(input: { pegawaiId: number; jenis: string; mula
     if(!pegawaiAkun||pegawaiAkun.id!==input.pegawaiId) throw new Error("Anda hanya dapat mengajukan cuti/izin untuk akun pegawai yang terhubung.");
   }
   if (!input.alasan.trim()) throw new Error("Alasan cuti/izin wajib diisi.");
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.mulai) || !/^\d{4}-\d{2}-\d{2}$/.test(input.selesai)) throw new Error("Tanggal cuti/izin tidak valid.");
-  if (new Date(input.mulai + "T00:00:00Z").toISOString().slice(0,10) !== input.mulai || new Date(input.selesai + "T00:00:00Z").toISOString().slice(0,10) !== input.selesai) throw new Error("Tanggal cuti/izin tidak valid.");
+  if (!tanggalValid(input.mulai) || !tanggalValid(input.selesai)) throw new Error("Tanggal cuti/izin tidak valid.");
   if (input.mulai < tanggalLokal()) throw new Error("Tanggal mulai tidak boleh di masa lalu.");
   if (input.jenis === "cuti_tahunan" && input.mulai.slice(0,4) !== input.selesai.slice(0,4)) throw new Error("Cuti tahunan harus berada dalam satu tahun kalender.");
   const [pengaturan] = await db.select({ hariLibur: kehadiranPengaturan.hariLibur }).from(kehadiranPengaturan)
