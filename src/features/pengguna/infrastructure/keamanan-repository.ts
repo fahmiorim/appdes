@@ -1,7 +1,9 @@
 import "server-only";
-import { and, asc, eq, isNull, or, gt } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, or, gt } from "drizzle-orm";
 import { db } from "@/db";
-import { villageBlockedIps, villageSecuritySettings } from "@/db/schema";
+import { accounts, passwordHistory, villageBlockedIps, villageSecuritySettings } from "@/db/schema";
+import { auth } from "@/lib/auth";
+import { conflict } from "@/lib/errors";
 import type { BlockedIpDTO, KeamananInput } from "../domain/keamanan";
 
 export const DEFAULT_SECURITY_SETTINGS: KeamananInput = {
@@ -56,4 +58,20 @@ export async function isTenantIpBlocked(villageId: number, ipAddress: string): P
     or(isNull(villageBlockedIps.expiresAt), gt(villageBlockedIps.expiresAt, new Date())),
   )).limit(1);
   return Boolean(row);
+}
+
+export async function assertPasswordNotReused(userId: string, password: string, reuseCount: number): Promise<void> {
+  if (reuseCount <= 0) return;
+  const [context, [credential], history] = await Promise.all([
+    auth.$context,
+    db.select({ password: accounts.password }).from(accounts).where(and(eq(accounts.userId, userId), eq(accounts.providerId, "credential"))).limit(1),
+    db.select({ passwordHash: passwordHistory.passwordHash }).from(passwordHistory)
+      .where(eq(passwordHistory.userId, userId)).orderBy(desc(passwordHistory.createdAt)).limit(reuseCount),
+  ]);
+  const hashes = [...new Set([credential?.password, ...history.map((item) => item.passwordHash)].filter((value): value is string => Boolean(value)))];
+  for (const hash of hashes) {
+    if (await context.password.verify({ password, hash })) {
+      throw conflict(`Password tidak boleh sama dengan ${reuseCount} password terakhir.`);
+    }
+  }
 }
