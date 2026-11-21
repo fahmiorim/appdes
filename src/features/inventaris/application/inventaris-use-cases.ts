@@ -35,6 +35,7 @@ import {
   listInventaris,
   listInventarisKategori,
   listMutasi,
+  inventarisNomorExists,
   listPemeliharaan,
   createPemeliharaan,
   updateStatusPemeliharaan,
@@ -184,6 +185,9 @@ export async function saveInventaris(input: InventarisInput, id?: number) {
   // pada database; validasi di sini menjaga pesan domain konsisten. Pesan untuk
   // kategori yang tidak ada dan milik desa lain sama agar keberadaan baris
   // tenant lain tidak dapat disimpulkan.
+  if (input.nomorInventaris && await inventarisNomorExists(villageId,input.nomorInventaris,id)) {
+    throw conflict(`Nomor inventaris "${input.nomorInventaris}" sudah digunakan.`);
+  }
   const kategoriId = typeof input.kategoriId === "number" ? input.kategoriId : null;
   if (kategoriId !== null && !(await getInventarisKategori(villageId, kategoriId))) {
     throw validationError("Kategori inventaris tidak ditemukan.");
