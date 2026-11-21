@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { daftarPerangkatPublik } from "@/features/publik/application/konten-publik";
+import { detailPerangkatPemerintahanPublik } from "@/features/pemerintahan/application/publik";
 
 import { PublicSiteFooter, PublicSiteHeader } from "../../public-site-layout";
 import styles from "./detail-perangkat.module.css";
@@ -75,6 +76,7 @@ export default async function DetailPerangkatPage({ params }: Props) {
   const perangkat = await daftarPerangkatPublik(desa.id);
   const item = perangkat.find((entry) => entry.id === numericId);
   if (!item) notFound();
+  const detailPemerintahan = await detailPerangkatPemerintahanPublik(desa.id, item.id);
 
   const location = [desa.namaKecamatan, desa.namaKabupaten, desa.namaPropinsi]
     .filter(Boolean)
@@ -231,6 +233,10 @@ export default async function DetailPerangkatPage({ params }: Props) {
                     </dd>
                   </div>
                   <div>
+                    <dt>Pendidikan</dt>
+                    <dd>{item.pendidikan || "Belum dicantumkan"}</dd>
+                  </div>
+                  <div>
                     <dt>NIP</dt>
                     <dd>{item.nip || "Belum dicantumkan"}</dd>
                   </div>
@@ -277,9 +283,12 @@ export default async function DetailPerangkatPage({ params }: Props) {
               </section>
               <section className={styles.infoCard}>
                 <h2>▣ Dokumen Terkait</h2>
-                <div className={styles.documentEmpty}>
-                  Belum ada dokumen jabatan yang dipublikasikan.
-                </div>
+                {detailPemerintahan.dokumen.length ? <ul>{detailPemerintahan.dokumen.map((doc) => <li key={doc.id}><a href={`/api/pemerintahan/dokumen/${doc.id}`}>{doc.judul}{doc.nomor ? ` · ${doc.nomor}` : ""}</a></li>)}</ul> : <div className={styles.documentEmpty}>Belum ada dokumen jabatan yang dipublikasikan.</div>}
+              </section>
+              <section className={styles.infoCard}>
+                <h2>▦ Riwayat Jabatan</h2>
+                {detailPemerintahan.riwayat.length ? <ul>{detailPemerintahan.riwayat.map((history) => <li key={history.id}><strong>{history.jabatan}</strong><br/>{history.mulai ?? "—"} – {history.selesai ?? "Sekarang"}{history.nomorSk ? ` · SK ${history.nomorSk}` : ""}</li>)}</ul> : <div className={styles.documentEmpty}>Riwayat jabatan belum dipublikasikan.</div>}
+              </section>
               </section>
             </div>
           </div>
