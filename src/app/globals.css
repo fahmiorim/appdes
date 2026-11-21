@@ -6290,3 +6290,57 @@ a.beranda-quick-tile:hover {
 .service-status-row > div { height:9px; overflow:hidden; border-radius:20px; background:#edf0f7; }
 .service-status-row i { display:block; height:100%; border-radius:20px; background:linear-gradient(90deg,#6324d5,#a274ed); }
 .service-status-row strong { text-align:right; color:#273451; }
+
+
+/* Pelayanan Publik: antrean dua panel dan alur tindak lanjut */
+.request-workspace { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(280px,.8fr); align-items:start; gap:14px; }
+.request-workspace > .modul-card, .request-detail-panel { min-width:0; }
+.request-detail-panel { position:sticky; top:18px; }
+.request-detail-panel .page-heading { align-items:flex-start; gap:8px; }
+.request-detail-panel .page-heading h2 { margin:0; font-size:16px; }
+.request-detail-list { display:grid; gap:12px; margin:18px 0; }
+.request-detail-list > div { display:grid; gap:4px; padding-bottom:10px; border-bottom:1px solid #edf0f6; }
+.request-detail-list small, .request-info-grid small, .request-purpose small { color:#8791a8; font-size:10px; font-weight:700; }
+.request-detail-list strong, .request-info-grid strong { color:#293653; font-size:12px; overflow-wrap:anywhere; }
+.request-detail-list p, .request-purpose p { margin:2px 0 0; color:#4d5873; font-size:12px; white-space:pre-wrap; }
+.request-status { display:inline-flex; align-items:center; padding:6px 10px; border-radius:20px; background:#f0eaff; color:#6e2bc6; font-size:10px; font-weight:800; white-space:nowrap; }
+.request-status-selesai { background:#e8f7ef; color:#16845b; }
+.request-status-ditolak { background:#fff0f0; color:#b42332; }
+.request-status-diajukan { background:#fff5df; color:#96610b; }
+.request-progress { margin-bottom:14px; }
+.request-progress-track { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:16px; }
+.request-progress-step { display:grid; justify-items:center; gap:7px; padding:10px 4px; border-radius:10px; background:#f5f6fa; color:#929bb0; font-size:10px; text-align:center; }
+.request-progress-step span { display:grid; place-items:center; width:26px; height:26px; border:1px solid #d8deea; border-radius:50%; background:white; font-weight:800; }
+.request-progress-step.is-done { background:#f2eaff; color:#6d27c9; }
+.request-progress-step.is-done span { border-color:#7a20f0; background:#7a20f0; color:white; }
+.request-progress-step.is-rejected { background:#fff0f0; color:#b42332; }
+.request-progress-step.is-rejected span { border-color:#c23b48; background:#c23b48; color:white; }
+.request-rejected-note { margin:12px 0 0; color:#b42332; font-size:12px; }
+.request-detail-layout { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(270px,.8fr); align-items:start; gap:14px; }
+.request-detail-main, .request-detail-aside { display:grid; min-width:0; gap:14px; }
+.request-info-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:14px; }
+.request-info-grid > div { display:grid; gap:5px; min-width:0; }
+.request-purpose { margin-top:16px; padding:13px; border-radius:10px; background:#f7f8fc; }
+.request-file-list { display:grid; gap:8px; padding:0; margin:12px 0 0; list-style:none; }
+.request-file-list li { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px; border:1px solid #edf0f6; border-radius:10px; }
+.request-file-list li > span { display:grid; min-width:0; gap:4px; }
+.request-file-list strong { color:#303c59; font-size:11px; overflow-wrap:anywhere; }
+.request-file-list small { color:#8791a8; font-size:10px; }
+.request-timeline { display:grid; gap:0; padding:0; margin:14px 0 0; list-style:none; }
+.request-timeline li { position:relative; display:grid; grid-template-columns:14px minmax(0,1fr); gap:10px; padding-bottom:18px; }
+.request-timeline li:not(:last-child)::before { position:absolute; top:12px; bottom:-1px; left:5px; width:2px; background:#e6ddf5; content:""; }
+.request-timeline-dot { z-index:1; width:12px; height:12px; border:3px solid #8a58f5; border-radius:50%; background:white; }
+.request-timeline strong { color:#303c59; font-size:11px; }
+.request-timeline p { margin:4px 0; color:#66718d; font-size:11px; }
+.request-timeline small { color:#929bb0; font-size:10px; }
+.request-action-form { display:grid; gap:13px; margin-top:12px; }
+.request-action-form .modul-field { display:grid; gap:6px; color:#68738e; font-size:11px; font-weight:700; }
+.request-action-form input, .request-action-form select, .request-action-form textarea { width:100%; min-width:0; border:1px solid #dfe4ef; border-radius:9px; background:white; color:#263451; font:inherit; font-size:12px; padding:10px 11px; }
+.request-detail-aside h3 { margin:16px 0 6px; color:#303c59; font-size:12px; }
+.service-preview-grid { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(240px,.8fr); gap:16px; }
+.service-preview-facts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.service-preview-facts > div { display:grid; gap:4px; padding:12px; border-radius:10px; background:#f7f8fc; }
+.service-preview-facts span { color:#8791a8; font-size:10px; }
+.service-preview-facts strong { color:#293653; font-size:13px; }
+@media(max-width:1000px) { .request-workspace, .request-detail-layout { grid-template-columns:1fr; } .request-detail-panel { position:static; } }
+@media(max-width:600px) { .request-progress-track { grid-template-columns:repeat(2,minmax(0,1fr)); } .request-info-grid, .service-preview-grid, .service-preview-facts { grid-template-columns:1fr; } .request-file-list li { align-items:flex-start; flex-direction:column; } }
