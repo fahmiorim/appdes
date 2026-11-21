@@ -137,6 +137,7 @@ export const inventarisFormSchema = z.object({
   jumlah: z.coerce.number().min(0.01).max(999999).default(1),
   satuan: z.string().trim().max(20).default("buah"),
   hargaSatuan: z.coerce.number().min(0).max(999999999999).optional(),
+  akumulasiPenyusutan: z.coerce.number().min(0).max(999999999999).default(0),
   tahunPembelian: z.coerce.number().int().min(1900).max(2100).optional(),
   tanggalPembelian: z.iso.date().optional().or(z.literal("")),
   asal: z.enum(INVENTARIS_ASAL).optional(),
@@ -175,6 +176,7 @@ export interface InventarisRow {
   satuan: string | null;
   hargaSatuan: string | null;
   nilaiAkhir: string | null;
+  akumulasiPenyusutan: string;
   tahunPembelian: number | null;
   tanggalPembelian: string | null;
   asal: InventarisAsal | null;
@@ -233,6 +235,7 @@ export interface MutasiAssetSnapshot {
   jumlah: string;
   hargaSatuan: string | null;
   nilaiAkhir: string | null;
+  akumulasiPenyusutan: string | null;
   kondisi: InventarisKondisi;
   lokasi: string | null;
   isDeleted: boolean;
@@ -295,6 +298,7 @@ export function hitungPerubahanAset(
       return {
         jumlah: "0.00",
         nilaiAkhir: "0.00",
+        akumulasiPenyusutan: "0.00",
         isDeleted: true,
         deletedAt: new Date(),
       };
@@ -303,6 +307,7 @@ export function hitungPerubahanAset(
     return {
       jumlah: sisa.toFixed(2),
       nilaiAkhir: nilaiAkhirBaru(aset.hargaSatuan, sisa),
+      akumulasiPenyusutan: jumlahAset > 0 ? (Number(aset.akumulasiPenyusutan ?? 0) * sisa / jumlahAset).toFixed(2) : "0.00",
     };
   }
 
