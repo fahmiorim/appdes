@@ -56,7 +56,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
         <div className={styles["ak-calendar"]}>
           {["Min","Sen","Sel","Rab","Kam","Jum","Sab"].map(day=><span className={styles["ak-calendar-head"]} key={day}>{day}</span>)}
           {Array.from({length:monthStart},(_,i)=><span key={"blank-"+i}/>)}
-          {Array.from({length:daysInMonth},(_,i)=>{const day=i+1;const key=tahun+"-"+String(bulan).padStart(2,"0")+"-"+String(day).padStart(2,"0");const statuses=calendarMap.get(key)??[];return <div key={key} className={styles["ak-calendar-day"]+" "+(statuses.length?styles["ak-calendar-day"].replace("ak-calendar-day","ak-calendar-day"):"")}><strong>{day}</strong>{statuses.length?<small>{statuses.length} catatan</small>:null}</div>;})}
+          {Array.from({length:daysInMonth},(_,i)=>{const day=i+1;const key=tahun+"-"+String(bulan).padStart(2,"0")+"-"+String(day).padStart(2,"0");const statuses=calendarMap.get(key)??[];return <div key={key} className={styles["ak-calendar-day"]+" "+(statuses.length?styles["has-data"]:"")}><strong>{day}</strong>{statuses.length?<small>{statuses.length} catatan</small>:null}</div>;})}
         </div>
       </section>
       <section className={styles["ak-card"]}><h2>Ringkasan Periode</h2><p>{tanggal}</p><dl><div><dt>Total Pegawai Aktif</dt><dd>{rows.length}</dd></div><div><dt>Hadir</dt><dd>{counts.hadir}</dd></div><div><dt>Izin</dt><dd>{counts.izin}</dd></div><div><dt>Cuti</dt><dd>{counts.cuti}</dd></div><div><dt>Tidak Hadir</dt><dd>{counts.tidak}</dd></div></dl></section>
