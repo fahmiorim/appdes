@@ -142,7 +142,16 @@ export const auth = betterAuth({
     after: createAuthMiddleware(async (ctx) => {
       if (ctx.path !== "/sign-in/username") return;
       const current = ctx.context.newSession;
-      if (!current) return;
+      if (!current) {
+        const attemptedUsername = typeof ctx.body?.username === "string" ? ctx.body.username.trim().toLowerCase() : "";
+        if (attemptedUsername) {
+          const [failedAccount] = await db.select({ id: users.id, villageId: users.villageId }).from(users).where(eq(users.username, attemptedUsername)).limit(1);
+          if (failedAccount?.villageId) {
+            try { await appendAuditLog({ villageId: failedAccount.villageId, actorId: failedAccount.id, event: AUDIT_EVENTS.loginFailure, resource: "auth", resourceId: failedAccount.id, ipAddress: alamatIpDariHeader(ctx.headers, env.TRUST_PROXY), userAgent: ctx.headers.get("user-agent") }); } catch (error) { console.error("[auth] gagal mencatat login gagal:", error); }
+          }
+        }
+        return;
+      }
       const userId = current.user.id;
       const [account] = await db.select({ villageId: users.villageId }).from(users).where(eq(users.id, userId)).limit(1);
       if (!account?.villageId) return;
