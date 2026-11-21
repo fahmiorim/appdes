@@ -1,4 +1,5 @@
 import Image from "next/image";
+import type { ReactNode } from "react";
 import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
@@ -123,7 +124,7 @@ export default async function PemerintahanPage() {
   const akarStruktur = kepalaDesa
     ? [kepalaDesa]
     : perangkat.filter((item) => !item.atasanId || !perangkat.some((parent) => parent.id === item.atasanId));
-  const renderNode = (item: (typeof perangkat)[number], depth = 0): React.ReactNode => {
+  const renderNode = (item: (typeof perangkat)[number], depth = 0): ReactNode => {
     const children = anakPerangkat(item.id);
     return (
       <article className={styles.orgChild} key={item.id} data-depth={depth}>
