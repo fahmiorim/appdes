@@ -52,15 +52,19 @@ export default async function CutiIzinPage() {
         {!rows.length?<div className={styles["ak-empty"]}>Belum ada pengajuan cuti atau izin.</div>:null}
       </section>
       <section className={styles["ak-card"]}>
-        <h2>Ajukan Cuti / Izin</h2><p>Pengajuan dicatat dengan status menunggu persetujuan.</p>
-        {canManage?<form action={ajukanCutiAction} className={styles["ak-form"]}>
+        <details className={styles["ak-add-panel"]}>
+          <summary>＋ Ajukan Cuti / Izin</summary>
+          <p>Pengajuan baru akan tercatat dengan status menunggu persetujuan.</p>
+          {canManage?<form action={ajukanCutiAction} className={styles["ak-form"]}>
           <label className={styles.wide}>Nama Pegawai<select name="pegawaiId" required>{pegawai.filter(x=>x.status==="aktif").map(x=><option key={x.id} value={x.id}>{x.nama}</option>)}</select></label>
           <label>Jenis<select name="jenis"><option value="cuti_tahunan">Cuti Tahunan</option><option value="cuti_sakit">Cuti Sakit</option><option value="izin">Izin</option><option value="cuti_penting">Cuti Penting</option></select></label>
           <label>Tanggal Mulai<input type="date" name="mulai" required/></label><label>Tanggal Selesai<input type="date" name="selesai" required/></label>
           <label className={styles.wide}>Alasan<textarea name="alasan" rows={3} required/></label><label className={styles.wide}>Lampiran Pendukung<input type="file" name="lampiran" accept=".pdf,image/jpeg,image/png,image/webp"/></label>
           <button className={styles["ak-button"]}>Ajukan Cuti / Izin</button>
         </form>:<p>Akun ini hanya memiliki akses baca untuk pengajuan cuti/izin.</p>}
+        </details>
       </section>
+
     </div>
     <div className={styles["ak-grid"]} style={{marginTop:16}}>
       <section className={styles["ak-card"]}><h2>Kalender Cuti & Izin</h2><p>{monthLabel}</p><div className={styles["ak-calendar"]}>
