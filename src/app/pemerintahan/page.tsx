@@ -115,15 +115,12 @@ export default async function PemerintahanPage() {
   const kepalaDesa = perangkat.find((item) =>
     item.jabatan?.toLocaleLowerCase("id-ID").includes("kepala desa"),
   );
-  const sekretaris = perangkat.find((item) =>
-    item.jabatan?.toLocaleLowerCase("id-ID").includes("sekretaris"),
-  );
   const struktur = perangkat;
   const anakPerangkat = (atasanId: number) =>
     perangkat.filter((item) => item.atasanId === atasanId).sort((a, b) => a.urut - b.urut || a.nama.localeCompare(b.nama, "id"));
-  const akarStruktur = kepalaDesa
-    ? [kepalaDesa]
-    : perangkat.filter((item) => !item.atasanId || !perangkat.some((parent) => parent.id === item.atasanId));
+  const akarStruktur = perangkat
+    .filter((item) => item.id === kepalaDesa?.id || !item.atasanId || !perangkat.some((parent) => parent.id === item.atasanId))
+    .sort((a, b) => a.id === kepalaDesa?.id ? -1 : b.id === kepalaDesa?.id ? 1 : a.urut - b.urut);
   const renderNode = (item: (typeof perangkat)[number], depth = 0): ReactNode => {
     const children = anakPerangkat(item.id);
     return (
@@ -243,7 +240,7 @@ export default async function PemerintahanPage() {
                 <div className={styles.orgChildren}>
                   {(kepalaDesa ? anakPerangkat(kepalaDesa.id) : akarStruktur).map((item) => renderNode(item))}
                 </div>
-                {kepalaDesa ? perangkat.filter((item) => item.id !== kepalaDesa.id && !item.atasanId).map((item) => renderNode(item)) : null}
+                {kepalaDesa ? akarStruktur.filter((item) => item.id !== kepalaDesa.id).map((item) => renderNode(item)) : null}
               </div>
             ) : (
               <div className={styles.emptyState}>
