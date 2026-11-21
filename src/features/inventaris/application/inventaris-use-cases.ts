@@ -39,6 +39,10 @@ import {
   createPemeliharaan,
   updateStatusPemeliharaan,
   deletePemeliharaan,
+  listDokumenInventaris,
+  getDokumenInventaris,
+  createDokumenInventaris,
+  deleteDokumenInventaris,
   setujuiMutasiTahap,
   softDeleteInventaris,
   tolakMutasi,
@@ -49,6 +53,8 @@ import { hasPermission } from "@/features/rbac/application/authorization";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { findRoleById } from "@/features/rbac/infrastructure/rbac-repository";
 import { requirePermission } from "@/lib/dal";
+import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
+import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import { conflict, forbidden, notFound, validationError } from "@/lib/errors";
 
 const INVENTARIS_RESOURCE = RESOURCES.inventaris;
@@ -390,4 +396,39 @@ export async function hapusJadwalPemeliharaan(id:number) {
   const user=await requirePermission(INVENTARIS_RESOURCE,"delete");
   const villageId=await resolveVillageId(user);
   await deletePemeliharaan(villageId,id);
+}
+
+export async function unggahDokumenInventaris(input:{
+  inventarisId:number;nama:string;namaFile:string;mime:string;ukuran:number;isi:Uint8Array;
+}) {
+  const user=await requirePermission(INVENTARIS_RESOURCE,"update");
+  const villageId=await resolveVillageId(user);
+  const asset=await getInventaris(villageId,input.inventarisId);
+  if(!asset) throw notFound("Aset tidak ditemukan.");
+  if(input.ukuran>8*1024*1024) throw validationError("Ukuran dokumen maksimal 8 MB.");
+  if(!["application/pdf","image/jpeg","image/png","image/webp"].includes(input.mime)) throw validationError("Dokumen harus PDF, JPG, PNG, atau WEBP.");
+  const jalurMedia=await simpanBerkasMedia(villageId,{nama:input.namaFile,mime:input.mime,ukuran:input.ukuran,isi:input.isi},"inventaris","berkas");
+  try {
+    await createDokumenInventaris(villageId,input.inventarisId,{
+      nama:input.nama.trim(),namaFile:input.namaFile,mime:input.mime,ukuran:input.ukuran,jalurMedia,
+    });
+  } catch(error) {
+    await hapusMedia(jalurMedia).catch(()=>undefined);
+    throw error;
+  }
+}
+
+export async function getDokumenInventarisDownload(id:number) {
+  const user=await requirePermission(INVENTARIS_RESOURCE,"read");
+  const villageId=await resolveVillageId(user);
+  const doc=await getDokumenInventaris(villageId,id);
+  if(!doc) throw notFound("Dokumen inventaris tidak ditemukan.");
+  return doc;
+}
+
+export async function hapusDokumenInventarisUseCase(id:number) {
+  const user=await requirePermission(INVENTARIS_RESOURCE,"delete");
+  const villageId=await resolveVillageId(user);
+  const path=await deleteDokumenInventaris(villageId,id);
+  await hapusMedia(path);
 }
