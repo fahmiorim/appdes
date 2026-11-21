@@ -161,8 +161,8 @@ export async function getWilayahPemerintahanData() {
     db.select().from(regions).where(eq(regions.villageId, villageId)).orderBy(asc(regions.sortOrder), asc(regions.dusun), asc(regions.rw), asc(regions.rt)),
     db.select({ id: areas.id, nama: areas.nama, enabled: areas.enabled, path: areas.path, refPolygon: areas.refPolygon }).from(areas)
       .where(eq(areas.villageId, villageId)).orderBy(asc(areas.sortOrder)),
-    db.select({ id: polygons.id, nama: polygons.nama, color: polygons.color }).from(polygons)
-      .where(and(eq(polygons.villageId, villageId), eq(polygons.enabled, 1))).orderBy(asc(polygons.sortOrder)),
+    db.select({ id: polygons.id, nama: polygons.nama, color: polygons.color, enabled: polygons.enabled, sortOrder: polygons.sortOrder }).from(polygons)
+      .where(eq(polygons.villageId, villageId)).orderBy(asc(polygons.sortOrder)),
   ]);
   return { rows, shapes, layers };
 }
