@@ -487,8 +487,12 @@ export async function unggahDokumenInventaris(input:{
   const villageId=await resolveVillageId(user);
   const asset=await getInventaris(villageId,input.inventarisId);
   if(!asset) throw notFound("Aset tidak ditemukan.");
-  if(input.ukuran>8*1024*1024) throw validationError("Ukuran dokumen maksimal 8 MB.");
+  if(!input.nama.trim()||input.nama.trim().length>200) throw validationError("Nama dokumen wajib diisi (maksimal 200 karakter).");
+  if(!input.namaFile.trim()||input.namaFile.length>255) throw validationError("Nama berkas tidak valid.");
+  if(input.ukuran<=0) throw validationError("Berkas kosong tidak dapat diunggah.");
   if(!["application/pdf","image/jpeg","image/png","image/webp"].includes(input.mime)) throw validationError("Dokumen harus PDF, JPG, PNG, atau WEBP.");
+  const batasUkuran=input.mime.startsWith("image/")?5*1024*1024:8*1024*1024;
+  if(input.ukuran>batasUkuran) throw validationError(input.mime.startsWith("image/")?"Ukuran foto maksimal 5 MB.":"Ukuran PDF maksimal 8 MB.");
   const jalurMedia=await simpanBerkasMedia(villageId,{nama:input.namaFile,mime:input.mime,ukuran:input.ukuran,isi:input.isi},"inventaris","berkas");
   try {
     await createDokumenInventaris(villageId,input.inventarisId,{
