@@ -226,6 +226,8 @@ export async function updatePembangunan(
       slug,
       deskripsi: blankToNull(input.deskripsi),
       lokasi: blankToNull(input.lokasi),
+      latitude: input.latitude === null ? null : String(input.latitude),
+      longitude: input.longitude === null ? null : String(input.longitude),
       tahunAnggaran: input.tahunAnggaran,
       sumberDana: blankToNull(input.sumberDana ?? ""),
       anggaran: input.anggaran === null ? null : String(input.anggaran),
