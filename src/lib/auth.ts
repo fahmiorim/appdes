@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
-import { username } from "better-auth/plugins";
+import { twoFactor, username } from "better-auth/plugins";
 import { and, eq, ne, or, isNull, gt } from "drizzle-orm";
 
 import { db } from "@/db";
@@ -123,8 +123,10 @@ export const auth = betterAuth({
       if (ctx.path !== "/sign-in/username") return;
       const username = typeof ctx.body?.username === "string" ? ctx.body.username.trim().toLowerCase() : "";
       if (!username) return;
-      const [account] = await db.select({ villageId: users.villageId }).from(users).where(eq(users.username, username)).limit(1);
+      const [account] = await db.select({ villageId: users.villageId, twoFactorEnabled: users.twoFactorEnabled }).from(users).where(eq(users.username, username)).limit(1);
       if (!account?.villageId) return;
+      const [tenantPolicy] = await db.select({ requireTwoFactor: villageSecuritySettings.requireTwoFactorForAllUsers }).from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
+      if (tenantPolicy?.requireTwoFactor && !account.twoFactorEnabled) throw new APIError("FORBIDDEN", { message: "Administrator mewajibkan autentikasi dua faktor. Hubungi administrator desa untuk aktivasi." });
       const ip = alamatIpDariHeader(ctx.headers, env.TRUST_PROXY);
       const [blocked] = await db.select({ id: villageBlockedIps.id }).from(villageBlockedIps).where(and(
         eq(villageBlockedIps.villageId, account.villageId), eq(villageBlockedIps.ipAddress, ip),
@@ -140,9 +142,11 @@ export const auth = betterAuth({
       }
     }),
     after: createAuthMiddleware(async (ctx) => {
-      if (ctx.path !== "/sign-in/username") return;
+      if (ctx.path !== "/sign-in/username" && ctx.path !== "/two-factor/verify-totp") return;
       const current = ctx.context.newSession;
       if (!current) {
+        const returned = ctx.context.returned as { twoFactorRedirect?: boolean } | undefined;
+        if (returned?.twoFactorRedirect) return;
         const attemptedUsername = typeof ctx.body?.username === "string" ? ctx.body.username.trim().toLowerCase() : "";
         if (attemptedUsername) {
           const [failedAccount] = await db.select({ id: users.id, villageId: users.villageId }).from(users).where(eq(users.username, attemptedUsername)).limit(1);
@@ -220,6 +224,7 @@ export const auth = betterAuth({
       maxUsernameLength: 100,
       usernameValidator: (value) => /^[a-zA-Z0-9._-]+$/.test(value),
     }),
+    twoFactor({ issuer: APP_NAME, twoFactorTable: "two_factor", accountLockout: { enabled: true, maxFailedAttempts: 5, durationSeconds: 900 } }),
     // WAJIB paling akhir.
     nextCookies(),
   ],
