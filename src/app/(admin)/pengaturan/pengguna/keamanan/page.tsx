@@ -7,8 +7,9 @@ import { hapusBlokirIpAction, blokirIpAction, resetKeamananAction, simpanKeamana
 import styles from "./keamanan.module.css";
 import { TwoFactorSetup } from "./two-factor-setup";
 import { db } from "@/db";
-import { users } from "@/db/schema/auth";
-import { eq } from "drizzle-orm";
+import { sessions, users } from "@/db/schema/auth";
+import { auditLogs } from "@/db/schema/audit";
+import { and, count, eq, gt, gte, isNull } from "drizzle-orm";
 import { hasPermission } from "@/features/rbac/application/authorization";
 import { env } from "@/lib/env";
 
@@ -19,9 +20,18 @@ export default async function KeamananPage() {
   const canCreate = hasPermission(user.permissions, RESOURCES.pengguna, "create");
   const canManage = hasPermission(user.permissions, RESOURCES.pengguna, "update");
   const canDelete = hasPermission(user.permissions, RESOURCES.pengguna, "delete");
-  const [settings, blockedIps, account] = await Promise.all([getSecuritySettings(villageId), listBlockedIps(villageId), db.select({twoFactorEnabled:users.twoFactorEnabled,email:users.email,emailVerified:users.emailVerified}).from(users).where(eq(users.id,user.id)).limit(1)]);
+  const since = new Date(Date.now() - 7 * 86_400_000);
+  const [settings, blockedIps, account, staffCount, twoFactorCount, activeSessions, failedLogins] = await Promise.all([
+    getSecuritySettings(villageId), listBlockedIps(villageId),
+    db.select({twoFactorEnabled:users.twoFactorEnabled,email:users.email,emailVerified:users.emailVerified}).from(users).where(eq(users.id,user.id)).limit(1),
+    db.select({total:count()}).from(users).where(and(eq(users.villageId,villageId),isNull(users.residentId),eq(users.active,true))),
+    db.select({total:count()}).from(users).where(and(eq(users.villageId,villageId),isNull(users.residentId),eq(users.active,true),eq(users.twoFactorEnabled,true))),
+    db.select({total:count()}).from(sessions).innerJoin(users,eq(sessions.userId,users.id)).where(and(eq(users.villageId,villageId),gt(sessions.expiresAt,new Date()))),
+    db.select({total:count()}).from(auditLogs).where(and(eq(auditLogs.villageId,villageId),eq(auditLogs.event,"auth.login.failure"),gte(auditLogs.createdAt,since))),
+  ]);
   return <main className={styles.page}>
     <header><div><small>Pengaturan Desa / Manajemen Pengguna</small><h1>Pengaturan Keamanan</h1><p>Kebijakan kata sandi, sesi login, dan pembatasan akses jaringan.</p><Link href="/profil/keamanan">Kelola 2FA akun sendiri →</Link></div></header>
+<div className={styles.stats}><article><span>2FA Aktif</span><strong>{Number(twoFactorCount[0]?.total??0)} / {Number(staffCount[0]?.total??0)} Staf</strong></article><article><span>Sesi Aktif</span><strong>{Number(activeSessions[0]?.total??0)} Sesi</strong></article><article><span>Login Gagal · 7 Hari</span><strong>{Number(failedLogins[0]?.total??0)} Kali</strong></article><article><span>IP Diblokir</span><strong>{blockedIps.length} Alamat</strong></article></div>
     <nav className={styles.tabs}><Link href="/pengaturan/pengguna">Pengguna</Link><Link href="/pengaturan/grup-akses">Peran & Hak Akses</Link>{hasPermission(user.permissions,RESOURCES.auditLog,"read")?<Link href="/pengaturan/pengguna/aktivitas">Aktivitas Pengguna</Link>:null}<Link aria-current="page" href="/pengaturan/pengguna/keamanan">Pengaturan Keamanan</Link></nav>
     <TwoFactorSetup required={settings.requireTwoFactorForAllUsers} enabled={account[0]?.twoFactorEnabled ?? false} hasEmail={Boolean(account[0]?.email)} hasVerifiedEmail={account[0]?.emailVerified ?? false} canEmailOtp={Boolean(env.RESEND_API_KEY && env.RESEND_FROM)}/>
     {canManage ? <form action={simpanKeamananAction} className={styles.grid}>
