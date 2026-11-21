@@ -6,6 +6,7 @@ ALTER TABLE `kehadiran_perangkat`
   ADD COLUMN `foto_masuk` varchar(255) NULL,
   ADD COLUMN `catatan` varchar(500) NULL,
   ADD INDEX `kehadiran_perangkat_village_tanggal_idx` (`village_id`, `tanggal`),
+  ADD INDEX `kehadiran_perangkat_village_pegawai_idx` (`village_id`, `pegawai_id`),
   ADD INDEX `kehadiran_perangkat_village_status_idx` (`village_id`, `status`);
 
 CREATE TABLE `kepegawaian_pegawai` (
