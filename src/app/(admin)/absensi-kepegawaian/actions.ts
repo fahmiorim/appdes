@@ -3,12 +3,14 @@
 import { revalidatePath } from "next/cache";
 
 import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
+import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
-import { requirePermission } from "@/lib/dal";
+import { requirePermission, requireUser } from "@/lib/dal";
 
 import {
   ajukanCuti,
   catatAbsensiManual,
+  catatAbsensiMandiri,
   putuskanCuti,
   simpanKuotaCuti,
   simpanPegawai,
@@ -49,6 +51,29 @@ export async function simpanPegawaiAction(fd: FormData) {
     status: text(fd, "status") || "aktif", tanggalMasuk: nullable(fd, "tanggalMasuk"),
     tanggalKeluar: nullable(fd, "tanggalKeluar"),
   });
+  refresh();
+}
+
+
+export async function absensiMandiriAction(fd: FormData) {
+  const user=await requireUser();
+  const villageId=await resolveVillageId(user);
+  const latitude=Number(text(fd,"latitude"));
+  const longitude=Number(text(fd,"longitude"));
+  if(!Number.isFinite(latitude)||!Number.isFinite(longitude)) throw new Error("Ambil lokasi GPS sebelum mengirim absensi.");
+  const file=fd.get("foto");
+  let fotoMasuk:string|null=null;
+  if(file instanceof File && file.size>0) {
+    if(!["image/jpeg","image/png","image/webp"].includes(file.type)) throw new Error("Selfie harus berupa JPG, PNG, atau WEBP.");
+    if(file.size>5*1024*1024) throw new Error("Ukuran selfie maksimal 5 MB.");
+    fotoMasuk=await simpanBerkasMedia(villageId,{nama:file.name,mime:file.type,ukuran:file.size,isi:new Uint8Array(await file.arrayBuffer())},"kehadiran","foto-absensi");
+  }
+  try {
+    await catatAbsensiMandiri({latitude,longitude,fotoMasuk});
+  } catch(error) {
+    if(fotoMasuk) await hapusMedia(fotoMasuk);
+    throw error;
+  }
   refresh();
 }
 
