@@ -63,6 +63,12 @@ export async function getPengajuanPageData(status?: string, cari = "", page = 1)
   return { ...data, statusSummary, canUpdate: hasPermission(user.permissions, PENGAJUAN_RESOURCE, "update") };
 }
 
+export async function getPengajuanExportData(status?: string, cari = "") {
+  const user = await requirePermission(PENGAJUAN_RESOURCE, "read");
+  const villageId = await resolveVillageId(user);
+  return listPengajuanLayanan(villageId, status, cari, 1, 5000);
+}
+
 export async function getPengajuanDetailData(id: number) {
   const user = await requirePermission(PENGAJUAN_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
