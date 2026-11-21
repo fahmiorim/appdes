@@ -45,12 +45,7 @@ export default async function CutiIzinPage() {
     </section>
     <div className={styles["ak-grid"]}>
       <section className={styles["ak-card"]}>
-        <h2>Daftar Pengajuan Cuti & Izin</h2><p>Riwayat dan status seluruh pengajuan pegawai.</p>
-        <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}><thead><tr><th>Nama Pegawai</th><th>Jenis</th><th>Tanggal / Durasi</th><th>Alasan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
-          {rows.map(x=><tr key={x.id}><td>{x.nama}<br/><small>{x.jabatan??"—"}</small></td><td>{x.jenis.replaceAll("_"," ")}</td><td>{x.mulai} – {x.selesai}<br/>({x.durasi} hari)</td><td>{x.alasan}{x.lampiran?<><br/><a href={"/api/kepegawaian/cuti/"+x.id+"/lampiran"}>Lihat lampiran</a></>:null}</td><td><span className={styles["ak-badge"]}>{x.status}</span></td><td>{x.status==="menunggu"&&canManage?<details><summary>Putuskan</summary><form action={putuskanCutiAction} className={styles["ak-form"]}><input type="hidden" name="id" value={x.id}/><label>Catatan<input name="catatan"/></label><label>Keputusan<select name="status"><option value="disetujui">Setujui</option><option value="ditolak">Tolak</option></select></label><button className={styles["ak-button"]}>Simpan Keputusan</button></form></details>:"—"}</td></tr>)}
-        </tbody></table></div>
-        {!rows.length?<div className={styles["ak-empty"]}>Belum ada pengajuan cuti atau izin.</div>:null}
-      </section>
+        <div className={styles["ak-card-heading-row"]}><div><h2>Daftar Pengajuan Cuti & Izin</h2><p>Riwayat dan status seluruh pengajuan pegawai.</p></div></div>
       <section className={styles["ak-card"]}>
         <details className={styles["ak-add-panel"]}>
           <summary>＋ Ajukan Cuti / Izin</summary>
@@ -64,14 +59,26 @@ export default async function CutiIzinPage() {
         </form>:<p>Akun ini hanya memiliki akses baca untuk pengajuan cuti/izin.</p>}
         </details>
       </section>
-
-    </div>
-    <div className={styles["ak-grid"]} style={{marginTop:16}}>
+        <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}><thead><tr><th>Nama Pegawai</th><th>Jenis</th><th>Tanggal / Durasi</th><th>Alasan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
+          {rows.map(x=><tr key={x.id}><td>{x.nama}<br/><small>{x.jabatan??"—"}</small></td><td>{x.jenis.replaceAll("_"," ")}</td><td>{x.mulai} – {x.selesai}<br/>({x.durasi} hari)</td><td>{x.alasan}{x.lampiran?<><br/><a href={"/api/kepegawaian/cuti/"+x.id+"/lampiran"}>Lihat lampiran</a></>:null}</td><td><span className={styles["ak-badge"]}>{x.status}</span></td><td>{x.status==="menunggu"&&canManage?<details><summary>Putuskan</summary><form action={putuskanCutiAction} className={styles["ak-form"]}><input type="hidden" name="id" value={x.id}/><label>Catatan<input name="catatan"/></label><label>Keputusan<select name="status"><option value="disetujui">Setujui</option><option value="ditolak">Tolak</option></select></label><button className={styles["ak-button"]}>Simpan Keputusan</button></form></details>:"—"}</td></tr>)}
+        </tbody></table></div>
+        {!rows.length?<div className={styles["ak-empty"]}>Belum ada pengajuan cuti atau izin.</div>:null}
+      </section>
+      <div className={styles["ak-side-stack"]}>
       <section className={styles["ak-card"]}><h2>Kalender Cuti & Izin</h2><p>{monthLabel}</p><div className={styles["ak-calendar"]}>
         {["Min","Sen","Sel","Rab","Kam","Jum","Sab"].map(day=><span className={styles["ak-calendar-head"]} key={day}>{day}</span>)}
         {Array.from({length:monthStart},(_,i)=><span key={"blank-"+i}/>)}
         {Array.from({length:daysInMonth},(_,i)=>{const day=i+1;const types=calendarMap.get(day)??[];return <div key={day} className={styles["ak-calendar-day"]+" "+(types.length?styles["has-data"]:"")}><strong>{day}</strong>{types.length?<small>{types.length} agenda</small>:null}</div>;})}
       </div><p>Kalender menandai tanggal cuti yang sudah disetujui.</p></section>
+      <section className={styles["ak-card"]}><h2>Kuota Cuti Tahunan ({tahun})</h2><p>Default 12 hari per tahun. Kuota dapat disesuaikan per pegawai.</p>
+        <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}><thead><tr><th>Pegawai</th><th>Total</th><th>Terpakai</th><th>Sisa</th><th>Ubah Kuota</th></tr></thead><tbody>
+          {kuota.map(x=><tr key={x.id}><td>{x.nama}</td><td>{x.total} hari</td><td>{x.terpakai} hari</td><td>{x.total-x.terpakai} hari</td><td>{canManage?<form action={simpanKuotaCutiAction} className={styles["ak-filter"]}><input type="hidden" name="pegawaiId" value={x.id}/><input type="hidden" name="tahun" value={tahun}/><input type="number" name="total" min="0" max="365" defaultValue={x.total} style={{width:80}}/><button className={styles["ak-button"]}>Simpan</button></form>:<span>—</span>}</td></tr>)}
+        </tbody></table></div>
+      </section>
+      </div>
+    </div>
+      <section className={styles["ak-card"]}><h2>Informasi Singkat</h2><ul><li>Pengajuan cuti diproses melalui persetujuan pejabat berwenang.</li><li>Cuti tahunan memiliki kuota default 12 hari per tahun.</li><li>Durasi pengajuan dihitung berdasarkan hari kerja Senin–Jumat.</li><li>Riwayat keputusan tersimpan pada sistem.</li></ul></section>
+<p>Kalender menandai tanggal cuti yang sudah disetujui.</p></section>
       <section className={styles["ak-card"]}><h2>Kuota Cuti Tahunan ({tahun})</h2><p>Default 12 hari per tahun. Kuota dapat disesuaikan per pegawai.</p>
         <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}><thead><tr><th>Pegawai</th><th>Total</th><th>Terpakai</th><th>Sisa</th><th>Ubah Kuota</th></tr></thead><tbody>
           {kuota.map(x=><tr key={x.id}><td>{x.nama}</td><td>{x.total} hari</td><td>{x.terpakai} hari</td><td>{x.total-x.terpakai} hari</td><td>{canManage?<form action={simpanKuotaCutiAction} className={styles["ak-filter"]}><input type="hidden" name="pegawaiId" value={x.id}/><input type="hidden" name="tahun" value={tahun}/><input type="number" name="total" min="0" max="365" defaultValue={x.total} style={{width:80}}/><button className={styles["ak-button"]}>Simpan</button></form>:<span>—</span>}</td></tr>)}
