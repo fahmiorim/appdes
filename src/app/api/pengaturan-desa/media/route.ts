@@ -4,9 +4,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { pengaturanDesa, villages } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
-import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
-import type { BerkasUnggahan } from "@/features/publik/domain/media";
-import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
+import { hapusMedia, simpanUnggahanMedia } from "@/features/publik/infrastructure/media-storage";
 import { requirePermission } from "@/lib/dal";
 import { appErrorStatus, isAppError } from "@/lib/errors";
 
@@ -23,8 +21,8 @@ export async function POST(request:Request){
   if(field==="logo"&&file.size>2*1024*1024)return response({error:"Logo maksimal 2 MB."},413);
   if(field==="favicon"&&(file.size>1024*1024||file.type!=="image/png"))return response({error:"Favicon hanya PNG dengan ukuran maksimal 1 MB."},422);
   if(field==="logo"&&!["image/jpeg","image/png","image/svg+xml"].includes(file.type))return response({error:"Logo harus JPG, PNG, atau SVG."},422);
-  const upload:BerkasUnggahan={nama:file.name,mime:file.type,ukuran:file.size,isi:new Uint8Array(await file.arrayBuffer())};
-  const path=await simpanBerkasMedia(villageId,upload,"umum",field);
+  const saved=await simpanUnggahanMedia(villageId,"umum",{nama:file.name,mime:file.type,ukuran:file.size,isi:new Uint8Array(await file.arrayBuffer())});
+  const path=saved.jalur;
   let old:string|null=null;
   if(field==="logo"){
     const [v]=await db.select({logo:villages.logo}).from(villages).where(eq(villages.id,villageId)).limit(1);
