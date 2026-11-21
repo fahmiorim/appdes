@@ -12,7 +12,6 @@ export const villageSecuritySettings = mysqlTable("village_security_settings", {
   requireSymbol: boolean("require_symbol").notNull().default(false),
   sessionTimeoutMinutes: int("session_timeout_minutes").notNull().default(30),
   autoLogoutInactive: boolean("auto_logout_inactive").notNull().default(true),
-  warnBeforeSessionEnd: boolean("warn_before_session_end").notNull().default(true),
   concurrentLogin: boolean("concurrent_login").notNull().default(false),
   ipRestrictionEnabled: boolean("ip_restriction_enabled").notNull().default(false),
   allowedIps: text("allowed_ips"),
