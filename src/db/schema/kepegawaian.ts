@@ -41,6 +41,8 @@ export const kepegawaianPegawai = mysqlTable(
   (table) => [
     uniqueIndex("kepegawaian_pegawai_village_id_uq").on(table.villageId, table.id),
     uniqueIndex("kepegawaian_pegawai_village_perangkat_uq").on(table.villageId, table.perangkatId),
+    uniqueIndex("kepegawaian_pegawai_village_nip_uq").on(table.villageId, table.nip),
+    uniqueIndex("kepegawaian_pegawai_village_nik_uq").on(table.villageId, table.nik),
     index("kepegawaian_pegawai_village_status_idx").on(table.villageId, table.status),
     index("kepegawaian_pegawai_village_jabatan_idx").on(table.villageId, table.jabatan),
   ],
