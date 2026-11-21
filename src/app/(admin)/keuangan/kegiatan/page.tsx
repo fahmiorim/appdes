@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { listPembangunan } from "@/features/pembangunan/application/use-cases";
 import { formatAnggaran, statusPembangunanLabel } from "@/features/pembangunan/domain/pembangunan";
-import styles from "../../keuangan/keuangan.module.css";
+import styles from "../keuangan.module.css";
 import { buatKegiatanPembangunanAction, hapusKegiatanPembangunanAction } from "../actions";
 
 export const metadata = { title: "Kegiatan & Pembangunan" };
