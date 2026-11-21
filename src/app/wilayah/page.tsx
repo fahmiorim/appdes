@@ -332,7 +332,7 @@ export default async function WilayahPage() {
                           {group.name}
                         </td>
                         <td>—</td>
-                        <td>{new Set(group.items.map((r) => r.rt).filter(Boolean)).size || "—"}</td>
+                        <td>{new Set(group.items.filter((r) => r.rt).map((r) => `${r.rw ?? ""}::${r.rt}`)).size || "—"}</td>
                         <td>—</td>
                         <td>
                           {residentsByDusun.get(group.name) !== undefined
