@@ -37,7 +37,7 @@ export default async function MutasiPemeliharaanPage({searchParams}:Props){
       <label>Tanggal Mutasi *<input name="tanggalMutasi" type="date" required defaultValue={new Date().toISOString().slice(0,10)}/></label>
       <label>Jumlah Mutasi *<input name="jumlahMutasi" type="number" min="0.01" step="0.01" defaultValue="1" required/></label>
       <label>Lokasi Baru<input name="lokasiBaru" maxLength={150}/></label>
-      <label>Kondisi Baru<select name="kondisiBaru"><option value="">Tidak berubah</option><option value="baik">Baik</option><option value="rusak_ringan">Rusak Ringan</option><option value="rusak_berat">Rusak Berat</option></select></label>
+      <label>Kondisi Baru<select name="kondisiBaru"><option value="">Tidak berubah</option><option value="baik">Baik</option><option value="rusak_ringan">Rusak Ringan</option><option value="rusak_berat">Rusak Berat</option><option value="dalam_perbaikan">Dalam Perbaikan</option></select></label>
       <label className={styles.wide}>Alasan Mutasi *<textarea name="alasan" rows={2} required/></label><label className={styles.wide}>Keterangan Tambahan<textarea name="keterangan" rows={2}/></label><button className={styles.primary}>Kirim Pengajuan</button>
     </form></section>:null}
     <section className={styles.panel}><div className={styles.panelHead}><div><h2>Jadwal &amp; Pemeliharaan Aset</h2><p>Kelola perawatan berkala, servis, perbaikan, biaya, dan hasil pekerjaan.</p></div></div>
