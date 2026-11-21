@@ -211,6 +211,7 @@ export async function ajukanCuti(input: { pegawaiId: number; jenis: string; mula
   const { villageId } = await village("cuti-izin", "update");
   if (!input.alasan.trim()) throw new Error("Alasan cuti/izin wajib diisi.");
   if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(input.mulai) || !/^\\d{4}-\\d{2}-\\d{2}$/.test(input.selesai)) throw new Error("Tanggal cuti/izin tidak valid.");
+  if (new Date(input.mulai + "T00:00:00Z").toISOString().slice(0,10) !== input.mulai || new Date(input.selesai + "T00:00:00Z").toISOString().slice(0,10) !== input.selesai) throw new Error("Tanggal cuti/izin tidak valid.");
   if (input.mulai < tanggalLokal()) throw new Error("Tanggal mulai tidak boleh di masa lalu.");
   if (input.jenis === "cuti_tahunan" && input.mulai.slice(0,4) !== input.selesai.slice(0,4)) throw new Error("Cuti tahunan harus berada dalam satu tahun kalender.");
   const durasi = hitungHariKerja(input.mulai, input.selesai);
@@ -270,6 +271,9 @@ export async function ringkasanKuotaCuti(tahun = tahunLokal()) {
 export async function simpanKuotaCuti(pegawaiId: number, tahun: number, total: number) {
   const { villageId } = await village("cuti-izin", "update");
   if (!Number.isInteger(total) || total < 0 || total > 365) throw new Error("Kuota cuti tidak valid.");
+  const [used] = await db.select({ total: sql<number>`coalesce(sum(${cutiPegawai.durasi}),0)` }).from(cutiPegawai)
+    .where(and(eq(cutiPegawai.villageId,villageId),eq(cutiPegawai.pegawaiId,pegawaiId),eq(cutiPegawai.jenis,"cuti_tahunan"),eq(cutiPegawai.status,"disetujui"),gte(cutiPegawai.mulai,`${tahun}-01-01`),lte(cutiPegawai.selesai,`${tahun}-12-31`)));
+  if(total < Number(used?.total ?? 0)) throw new Error("Kuota baru tidak boleh lebih kecil dari cuti yang sudah terpakai.");
   const [pegawai] = await db.select({ id: kepegawaianPegawai.id }).from(kepegawaianPegawai)
     .where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.id, pegawaiId))).limit(1);
   if (!pegawai) throw new Error("Pegawai tidak ditemukan.");
