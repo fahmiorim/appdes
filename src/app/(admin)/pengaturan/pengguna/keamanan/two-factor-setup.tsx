@@ -17,7 +17,12 @@ export function TwoFactorSetup({enabled,hasEmail,hasVerifiedEmail,canEmailOtp}:{
   if(result.error){setError("Kode tidak benar. Periksa aplikasi autentikator.");return;}
   setUri("");setSecret("");setBackup([]);setPassword("");router.refresh();
  }catch{setError("Verifikasi gagal.");}finally{setBusy(false);}}
- if(enabled)return <section className={styles.card}><h2>🛡️ Autentikasi Dua Faktor (2FA)</h2><p>2FA aktif. Login akun ini memerlukan kode dari metode verifikasi yang telah didaftarkan.</p><span className={styles.enabled}>Aktif dan terverifikasi</span></section>;
+ async function generateBackup(){setError("");setBusy(true);try{const result=await authClient.twoFactor.generateBackupCodes({password});if(result.error||!result.data){setError("Kode cadangan tidak dapat dibuat. Periksa kata sandi.");return;}setBackup(result.data.backupCodes??[]);setPassword("");}catch{setError("Pembuatan kode cadangan gagal.");}finally{setBusy(false);}}
+ if(enabled)return <section className={styles.card}><h2>🛡️ Autentikasi Dua Faktor (2FA)</h2><p>2FA aktif. Login akun ini memerlukan kode dari metode verifikasi yang telah didaftarkan.</p><span className={styles.enabled}>Aktif dan terverifikasi</span>
+  <div className={styles.setupForm}><label>Kata sandi akun<input type="password" autoComplete="current-password" placeholder="Untuk membuat kode cadangan" value={password} onChange={e=>setPassword(e.target.value)}/></label><button type="button" disabled={busy||!password} onClick={generateBackup}>{busy?"Memproses...":"Buat kode cadangan baru"}</button></div>
+  {backup.length?<><p className={styles.note}>Simpan kode berikut. Kode cadangan lama telah diganti.</p><div className={styles.backup}>{backup.map(v=><code key={v}>{v}</code>)}</div><button type="button" className={styles.copyCodes} onClick={()=>navigator.clipboard.writeText(backup.join("\n"))}>Salin kode cadangan</button></>:null}
+  {error?<p role="alert" style={{color:"#b00"}}>{error}</p>:null}
+ </section>;
  return <section className={styles.card}><h2>🛡️ Autentikasi Dua Faktor (2FA)</h2><p>Tambahkan lapisan keamanan dengan kode email atau aplikasi autentikator.</p>
   {!uri?<div className={styles.setupForm}>
    <label>Metode verifikasi<select value={method} onChange={e=>setMethod(e.target.value as "totp"|"otp")}><option value="totp">Aplikasi autentikator (TOTP)</option><option value="otp" disabled={!hasEmail||!hasVerifiedEmail||!canEmailOtp}>Kode sekali pakai melalui email{!hasEmail?" (email akun belum tersedia)":!hasVerifiedEmail?" (email belum diverifikasi)":!canEmailOtp?" (layanan email belum dikonfigurasi)":""}</option></select></label>
