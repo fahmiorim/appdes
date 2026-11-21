@@ -83,7 +83,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     const [security] = await db.select({ timeout: villageSecuritySettings.sessionTimeoutMinutes, enabled: villageSecuritySettings.autoLogoutInactive })
       .from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
     if (security?.enabled) {
-      const lastActivity = new Date(session.session.updatedAt ?? session.session.createdAt).getTime();
+      const lastActivity = (session.session.updatedAt ?? session.session.createdAt).getTime();
       if (Date.now() - lastActivity > security.timeout * 60_000) {
         await db.delete(sessions).where(eq(sessions.id, session.session.id));
         return null;
