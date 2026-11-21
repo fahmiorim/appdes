@@ -146,10 +146,10 @@ export async function verifySession(redirectTo = "/masuk"): Promise<CurrentUser>
 /**
  * Ambil pengguna atau lempar `AppError` (untuk Server Action / Route Handler).
  */
-export async function requireUser(options: { allowPasswordExpired?: boolean } = {}): Promise<CurrentUser> {
+export async function requireUser(options: { allowSecurityRecovery?: boolean } = {}): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) throw unauthenticated();
-  if (user.passwordExpired && !options.allowPasswordExpired) throw forbidden();
+  if ((user.passwordExpired || user.mustEnrollTwoFactor) && !options.allowSecurityRecovery) throw forbidden();
   return user;
 }
 
