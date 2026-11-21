@@ -2,9 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 
+import { resolveVillageId } from "@/features/desa/application/resolve-village";
+import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
+import { requirePermission } from "@/lib/dal";
+
 import {
   hapusAnggotaLembaga, hapusAreaPeta, hapusJabatanPerangkat, hapusLembagaDesa, hapusPerangkatDesa,
-  simpanAnggotaLembaga, simpanAreaPeta, simpanJabatanPerangkat, simpanLembagaDesa, simpanPerangkatDesa, simpanRiwayatJabatan, hapusRiwayatJabatan,
+  simpanAnggotaLembaga, simpanAreaPeta, simpanJabatanPerangkat, simpanLembagaDesa, simpanPerangkatDesa, simpanRiwayatJabatan, hapusRiwayatJabatan, unggahDokumenPemerintahan, hapusDokumenPemerintahan,
 } from "@/features/pemerintahan/application/use-cases";
 import { hapusWilayah, simpanWilayah } from "@/features/wilayah/application/use-cases";
 
@@ -153,5 +157,29 @@ export async function hapusRiwayatAction(fd: FormData) {
   const id = numberOrNull(value(fd, "id"));
   if (!id) throw new Error("ID riwayat tidak valid.");
   await hapusRiwayatJabatan(id);
+  refresh();
+}
+
+export async function unggahDokumenPemerintahanAction(fd: FormData) {
+  const perangkatId = numberOrNull(value(fd, "perangkatId"));
+  const lembagaId = numberOrNull(value(fd, "lembagaId"));
+  const file = fd.get("berkas");
+  if (!(file instanceof File) || file.size === 0) throw new Error("Pilih dokumen PDF atau gambar terlebih dahulu.");
+  const user = await requirePermission(perangkatId ? "perangkat-desa" : "lembaga-desa", "create");
+  const villageId = await resolveVillageId(user);
+  const berkas = await simpanBerkasMedia(villageId, {
+    nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()),
+  }, "dokumen", "berkas");
+  await unggahDokumenPemerintahan({
+    perangkatId, lembagaId, judul: value(fd, "judul"), nomor: value(fd, "nomor") || null,
+    tanggal: value(fd, "tanggal") || null, berkas, tampilPublik: value(fd, "tampilPublik") === "on",
+  });
+  refresh();
+}
+
+export async function hapusDokumenPemerintahanAction(fd: FormData) {
+  const id = numberOrNull(value(fd, "id"));
+  if (!id) throw new Error("ID dokumen tidak valid.");
+  await hapusDokumenPemerintahan(id);
   refresh();
 }
