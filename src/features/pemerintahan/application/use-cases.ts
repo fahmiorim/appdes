@@ -32,8 +32,10 @@ export async function getPemerintahanDashboard() {
     getIdentitasDesa(villageId),
   ]);
   const dusunNames = new Set(wilayah.map((x) => x.dusun).filter(Boolean));
-  const rtNames = new Set(wilayah.map((x) => x.rt).filter(Boolean));
-  const rwNames = new Set(wilayah.map((x) => x.rw).filter(Boolean));
+  // Nomor RT/RW dapat berulang di dusun atau RW berbeda; hitung kombinasi
+  // wilayah, bukan hanya label nomor yang sama.
+  const rtNames = new Set(wilayah.filter((x) => x.rt).map((x) => `${x.dusun ?? ""}::${x.rw ?? ""}::${x.rt}`));
+  const rwNames = new Set(wilayah.filter((x) => x.rw).map((x) => `${x.dusun ?? ""}::${x.rw}`));
   return {
     totalPerangkat: perangkat?.total ?? 0,
     totalLembaga: lembaga?.total ?? 0,
