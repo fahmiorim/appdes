@@ -9,7 +9,7 @@ import { PasswordChangeForm } from "./password-change-form";
 
 export const metadata = { title: "Keamanan Akun" };
 export default async function KeamananAkunPage() {
-  const user = await requireUser({ allowPasswordExpired: true });
+  const user = await requireUser({ allowSecurityRecovery: true });
   const [account] = await db.select({ twoFactorEnabled: users.twoFactorEnabled, email: users.email, emailVerified: users.emailVerified }).from(users).where(eq(users.id,user.id)).limit(1);
   const [policy] = user.villageId ? await db.select().from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId,user.villageId)).limit(1) : [undefined];
   return <main style={{maxWidth:760,margin:"32px auto",padding:20,display:"grid",gap:16}}>
