@@ -6,6 +6,7 @@ import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import {
   hitungPerubahanAset,
   hitungPenyusutanAset,
+  INVENTARIS_KONDISI,
   MUTASI_STEP_LABELS,
   MUTASI_STEPS,
   mutasiLogBeforeStep,
@@ -453,6 +454,7 @@ export async function ubahStatusPemeliharaan(input:{
   const user=await requirePermission(INVENTARIS_RESOURCE,"update");
   const villageId=await resolveVillageId(user);
   if(input.biaya!==undefined&&(!Number.isFinite(input.biaya)||input.biaya<0)) throw validationError("Biaya pemeliharaan tidak valid.");
+  if(input.kondisiSetelah&&!((INVENTARIS_KONDISI as readonly string[]).includes(input.kondisiSetelah))) throw validationError("Kondisi akhir aset tidak valid.");
   if(input.tanggalRencana){
     const rencana=new Date(input.tanggalRencana+"T00:00:00Z");
     if(Number.isNaN(rencana.getTime())||rencana.toISOString().slice(0,10)!==input.tanggalRencana) throw validationError("Tanggal rencana tidak valid.");
