@@ -137,7 +137,8 @@ export async function verifySession(redirectTo = "/masuk"): Promise<CurrentUser>
   if (!user) {
     redirect(redirectTo);
   }
-  if (user.passwordExpired || user.mustEnrollTwoFactor) redirect("/profil/keamanan?passwordExpired=1");
+  if (user.passwordExpired) redirect("/profil/keamanan?passwordExpired=1");
+  if (user.mustEnrollTwoFactor) redirect("/profil/keamanan?require2fa=1");
 
   return user;
 }
