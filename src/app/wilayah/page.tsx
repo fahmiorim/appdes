@@ -10,8 +10,8 @@ import {
   proyeksikanKelompokRings,
   type KoordinatPeta,
 } from "@/features/gis/domain/peta-cetak";
-import { daftarWilayahPublik } from "@/features/wilayah/application/wilayah-publik";
 import { profilDesaPublik } from "@/features/publik/application/konten-publik";
+import { daftarWilayahPublik } from "@/features/wilayah/application/wilayah-publik";
 
 import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
 import styles from "./wilayah.module.css";
@@ -245,7 +245,11 @@ export default async function WilayahPage() {
               <dl>
                 <div>
                   <dt>⌖ Luas Wilayah</dt>
-                  <dd>{profil?.luasWilayah ? `${formatNumber(Number(profil.luasWilayah))} Ha` : "Belum tersedia"}</dd>
+                  <dd>
+                    {profil?.luasWilayah
+                      ? `${formatNumber(Number(profil.luasWilayah))} Ha`
+                      : "Belum tersedia"}
+                  </dd>
                 </div>
                 <div>
                   <dt>▧ Jumlah Dusun</dt>
@@ -335,7 +339,11 @@ export default async function WilayahPage() {
                           {group.name}
                         </td>
                         <td>—</td>
-                        <td>{new Set(group.items.filter((r) => r.rt).map((r) => `${r.rw ?? ""}::${r.rt}`)).size || "—"}</td>
+                        <td>
+                          {new Set(
+                            group.items.filter((r) => r.rt).map((r) => `${r.rw ?? ""}::${r.rt}`),
+                          ).size || "—"}
+                        </td>
                         <td>—</td>
                         <td>
                           {residentsByDusun.get(group.name) !== undefined
@@ -374,7 +382,10 @@ export default async function WilayahPage() {
             {geographyDetails.length ? (
               <dl className={styles.boundaries}>
                 {geographyDetails.map(([label, value]) => (
-                  <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
+                  <div key={label}>
+                    <dt>{label}</dt>
+                    <dd>{value}</dd>
+                  </div>
                 ))}
               </dl>
             ) : null}

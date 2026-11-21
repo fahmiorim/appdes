@@ -2,61 +2,543 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { getWilayahPemerintahanData } from "@/features/pemerintahan/application/use-cases";
-import { hapusAreaPetaAction, hapusLayerPetaAction, hapusWilayahAction, simpanAreaPetaAction, simpanLayerPetaAction, simpanProfilWilayahAction, simpanWilayahAction } from "../actions";
+
+import {
+  hapusAreaPetaAction,
+  hapusLayerPetaAction,
+  hapusWilayahAction,
+  simpanAreaPetaAction,
+  simpanLayerPetaAction,
+  simpanProfilWilayahAction,
+  simpanWilayahAction,
+} from "../actions";
 
 export const metadata = { title: "Wilayah & Organisasi" };
 
 export default async function WilayahOrganisasiPage() {
   const { rows, shapes, layers, officials, profil } = await getWilayahPemerintahanData();
-  const dusun = [...new Set(rows.map(x=>x.dusun).filter(Boolean))];
-  const rt = [...new Set(rows.filter((x) => x.rt).map((x) => `${x.dusun ?? ""}::${x.rw ?? ""}::${x.rt}`))];
+  const dusun = [...new Set(rows.map((x) => x.dusun).filter(Boolean))];
+  const rt = [
+    ...new Set(rows.filter((x) => x.rt).map((x) => `${x.dusun ?? ""}::${x.rw ?? ""}::${x.rt}`)),
+  ];
   const rw = [...new Set(rows.filter((x) => x.rw).map((x) => `${x.dusun ?? ""}::${x.rw}`))];
-  const countByDusun = dusun.map(name=>({name,items:rows.filter(x=>x.dusun===name)}));
-  const kepala = officials.find(x=>(x.jabatan ?? "").toLowerCase().includes("kepala desa"));
-  const anakPerangkat = (atasanId: number) => officials
-    .filter((person) => person.atasanId === atasanId)
-    .sort((a, b) => a.urut - b.urut || a.nama.localeCompare(b.nama, "id"));
-  const akarOrganisasi = officials.filter((person) =>
-    person.id === kepala?.id || !person.atasanId || !officials.some((parent) => parent.id === person.atasanId),
+  const countByDusun = dusun.map((name) => ({ name, items: rows.filter((x) => x.dusun === name) }));
+  const kepala = officials.find((x) => (x.jabatan ?? "").toLowerCase().includes("kepala desa"));
+  const anakPerangkat = (atasanId: number) =>
+    officials
+      .filter((person) => person.atasanId === atasanId)
+      .sort((a, b) => a.urut - b.urut || a.nama.localeCompare(b.nama, "id"));
+  const akarOrganisasi = officials.filter(
+    (person) =>
+      person.id === kepala?.id ||
+      !person.atasanId ||
+      !officials.some((parent) => parent.id === person.atasanId),
   );
-  const renderOrganisasi = (person: (typeof officials)[number], depth = 0, visited = new Set<number>()): ReactNode => {
+  const renderOrganisasi = (
+    person: (typeof officials)[number],
+    depth = 0,
+    visited = new Set<number>(),
+  ): ReactNode => {
     if (visited.has(person.id)) return null;
     const nextVisited = new Set(visited);
     nextVisited.add(person.id);
     const children = anakPerangkat(person.id).filter((child) => !nextVisited.has(child.id));
-    return <article className={`pemerintahan-org-node ${person.id === kepala?.id ? "root" : ""}`} key={person.id} data-depth={depth}>
-      <strong>{person.nama}</strong><span>{person.jabatan ?? "Perangkat Desa"}</span>
-      {children.length ? <div className="pemerintahan-org-children pemerintahan-org-nested">{children.map((child) => renderOrganisasi(child, depth + 1, nextVisited))}</div> : null}
-    </article>;
+    return (
+      <article
+        className={`pemerintahan-org-node ${person.id === kepala?.id ? "root" : ""}`}
+        key={person.id}
+        data-depth={depth}
+      >
+        <strong>{person.nama}</strong>
+        <span>{person.jabatan ?? "Perangkat Desa"}</span>
+        {children.length ? (
+          <div className="pemerintahan-org-children pemerintahan-org-nested">
+            {children.map((child) => renderOrganisasi(child, depth + 1, nextVisited))}
+          </div>
+        ) : null}
+      </article>
+    );
   };
-  return <div className="modul-page pemerintahan-page">
-    <header className="page-heading"><div><span className="eyebrow">PEMERINTAHAN DESA</span><h1>Wilayah & Organisasi</h1><p>Kelola dusun, RT/RW, area GIS, dan struktur organisasi pemerintahan desa.</p></div><Link className="button button-secondary" href="/pemerintahan-desa">← Dashboard</Link></header>
-    <nav className="pemerintahan-tabs"><Link href="/pemerintahan-desa">Dashboard Pemerintahan</Link><Link href="/pemerintahan-desa/perangkat">Perangkat Desa</Link><Link href="/pemerintahan-desa/lembaga">Lembaga & BPD</Link><Link className="active" href="/pemerintahan-desa/wilayah">Wilayah & Organisasi</Link></nav>
-    <section className="pemerintahan-metrics compact"><article className="pemerintahan-metric pemerintahan-metric-primary"><span>Total Dusun</span><strong>{dusun.length}</strong></article><article className="pemerintahan-metric"><span>RT Terdaftar</span><strong>{rt.length}</strong></article><article className="pemerintahan-metric"><span>RW Terdaftar</span><strong>{rw.length}</strong></article><article className="pemerintahan-metric"><span>Area GIS</span><strong>{shapes.length}</strong></article></section>
-    <section className="modul-card"><div className="pemerintahan-card-heading"><div><h2>Struktur Organisasi Pemerintahan Desa</h2><p>Atur atasan langsung pada formulir perangkat desa untuk mengubah bagan organisasi.</p></div><Link href="/pemerintahan-desa/perangkat">Kelola Perangkat ↗</Link></div>
-      {officials.length ? <div className="pemerintahan-org">{akarOrganisasi.map((person) => renderOrganisasi(person))}</div> : <p className="modul-empty">Struktur organisasi belum tersedia. Tambahkan Kepala Desa dan perangkat aktif terlebih dahulu.</p>}
-    </section>
-    <section className="pemerintahan-content-split">
-      <div className="modul-card"><div className="pemerintahan-card-heading"><div><h2>Data Dusun</h2><p>Dusun dikelompokkan dari entri wilayah yang sudah dipakai modul kependudukan.</p></div></div>
-        {countByDusun.length ? <div className="modul-table-wrap"><table className="modul-table"><thead><tr><th>Dusun</th><th>RT</th><th>RW</th><th>Entri Wilayah</th></tr></thead><tbody>{countByDusun.map(g=><tr key={g.name}><td><strong>{g.name}</strong></td><td>{new Set(g.items.filter((x)=>x.rt).map((x)=>`${x.rw ?? ""}::${x.rt}`)).size}</td><td>{new Set(g.items.map(x=>x.rw).filter(Boolean)).size}</td><td>{g.items.length}</td></tr>)}</tbody></table></div> : <p className="modul-empty">Belum ada dusun.</p>}
-      </div>
-      <div className="modul-card"><h2>Tambah Dusun / RT / RW</h2><p className="modul-empty">Setiap baris menghubungkan dusun, RW, dan RT. Struktur ini tetap memakai tabel wilayah yang dipakai data penduduk, sehingga perubahan wilayah tidak membuat data ganda.</p>
-        <form action={simpanWilayahAction} className="pemerintahan-form"><label>Nama Dusun<input name="dusun" required placeholder="Dusun I"/></label><label>Nomor RW<input name="rw" placeholder="01"/></label><label>Nomor RT<input name="rt" placeholder="001"/></label><label>Urutan<input name="urut" type="number" defaultValue="0"/></label><button className="button button-primary" type="submit">Tambah Wilayah</button></form>
-      </div>
-    </section>
-    <section className="modul-card"><div className="pemerintahan-card-heading"><div><h2>Data RT / RW</h2><p>Data wilayah aktual yang menjadi referensi alamat penduduk dan keluarga.</p></div><span>{rows.length} baris</span></div>
-      {rows.length ? <div className="modul-table-wrap"><table className="modul-table"><thead><tr><th>No.</th><th>Dusun</th><th>RT</th><th>RW</th><th>Urutan</th><th>Aksi</th></tr></thead><tbody>{rows.map((row,i)=><tr key={row.id}><td>{i+1}</td><td>{row.dusun || "—"}</td><td>{row.rt || "—"}</td><td>{row.rw || "—"}</td><td>{row.sortOrder}</td><td><details className="pemerintahan-row-edit"><summary>Edit / Hapus</summary><form action={simpanWilayahAction} className="pemerintahan-form compact-form"><input type="hidden" name="id" value={row.id}/><label>Dusun<input name="dusun" required defaultValue={row.dusun ?? ""}/></label><label>RT<input name="rt" defaultValue={row.rt ?? ""}/></label><label>RW<input name="rw" defaultValue={row.rw ?? ""}/></label><label>Urutan<input name="urut" type="number" defaultValue={row.sortOrder}/></label><button className="button button-primary" type="submit">Simpan Perubahan</button></form><form action={hapusWilayahAction}><input type="hidden" name="id" value={row.id}/><button className="button button-danger-ghost" type="submit">Hapus Wilayah</button></form></details></td></tr>)}</tbody></table></div> : <p className="modul-empty">Belum ada data RT/RW.</p>}
-    </section>
-    <section className="modul-card"><div className="pemerintahan-card-heading"><div><h2>Informasi Geografis & Batas Wilayah</h2><p>Data ini ditampilkan pada halaman Wilayah Desa di website publik.</p></div></div>
-      <form action={simpanProfilWilayahAction} className="pemerintahan-form"><label>Luas Wilayah (Ha)<input name="luasWilayah" type="number" min="0" step="0.01" defaultValue={profil?.luasWilayah ?? ""}/></label><label>Batas Utara<input name="batasUtara" defaultValue={profil?.batasUtara ?? ""}/></label><label>Batas Selatan<input name="batasSelatan" defaultValue={profil?.batasSelatan ?? ""}/></label><label>Batas Timur<input name="batasTimur" defaultValue={profil?.batasTimur ?? ""}/></label><label>Batas Barat<input name="batasBarat" defaultValue={profil?.batasBarat ?? ""}/></label><label>Ketinggian<input name="ketinggian" defaultValue={profil?.ketinggian ?? ""} placeholder="25 mdpl"/></label><label>Suhu Rata-rata<input name="suhuRataRata" defaultValue={profil?.suhuRataRata ?? ""}/></label><label>Curah Hujan<input name="curahHujan" defaultValue={profil?.curahHujan ?? ""}/></label><label>Topografi<input name="topografi" defaultValue={profil?.topografi ?? ""}/></label><button className="button button-primary" type="submit">Simpan Informasi Wilayah</button></form>
-    </section>
-    <section className="modul-card"><div className="pemerintahan-card-heading"><div><h2>Layer Peta</h2><p>Atur kategori warna untuk membedakan batas desa dan area dusun pada peta publik.</p></div></div>
-      <form action={simpanLayerPetaAction} className="pemerintahan-form"><label>Nama Layer<input name="nama" required placeholder="Batas Desa / Dusun I"/></label><label>Warna Layer<input name="color" type="color" defaultValue="#7c3aed"/></label><label>Urutan<input name="sortOrder" type="number" defaultValue="0"/></label><label className="pemerintahan-check"><input type="checkbox" name="enabled" defaultChecked/> Aktif</label><button className="button button-primary" type="submit">Tambah Layer</button></form>
-      {layers.length ? <div className="pemerintahan-layer-list">{layers.map(layer=><details key={layer.id}><summary><i style={{background:layer.color ?? "#7c3aed"}}/>{layer.nama} · {layer.enabled===1?"Aktif":"Nonaktif"}</summary><form action={simpanLayerPetaAction} className="pemerintahan-form compact-form"><input type="hidden" name="id" value={layer.id}/><label>Nama Layer<input name="nama" defaultValue={layer.nama}/></label><label>Warna<input type="color" name="color" defaultValue={layer.color ?? "#7c3aed"}/></label><label>Urutan<input type="number" name="sortOrder" defaultValue={layer.sortOrder}/></label><label className="pemerintahan-check"><input type="checkbox" name="enabled" defaultChecked={layer.enabled===1}/> Aktif</label><button className="button button-primary" type="submit">Simpan Layer</button></form><form action={hapusLayerPetaAction}><input type="hidden" name="id" value={layer.id}/><button className="button button-danger-ghost" type="submit">Hapus Layer</button></form></details>)}</div> : <p className="modul-empty">Belum ada layer peta.</p>}
-    </section>
-    <section className="modul-card" id="peta"><div className="pemerintahan-card-heading"><div><h2>Peta Wilayah / Area GIS</h2><p>Kelola polygon GeoJSON yang digunakan halaman wilayah publik.</p></div></div>
-      <form action={simpanAreaPetaAction} encType="multipart/form-data" className="pemerintahan-form"><label>Nama Area<input name="nama" required placeholder="Batas Desa / Dusun I"/></label><label>Deskripsi Area<textarea name="desk" rows={2} placeholder="Keterangan wilayah atau batas area"/></label><label>Foto Area<input type="file" name="fotoFile" accept="image/jpeg,image/png,image/webp"/></label><label>GeoJSON Polygon<textarea name="path" rows={5} placeholder='{"type":"Polygon","coordinates":[[[lng,lat],[lng,lat],[lng,lat],[lng,lat]]]}'/></label><label>Layer Polygon<select name="refPolygon"><option value="">Pilih layer (opsional)</option>{layers.map(layer=><option key={layer.id} value={layer.id}>{layer.nama}</option>)}</select></label><label>Urutan<input type="number" name="sortOrder" defaultValue="0"/></label><label className="pemerintahan-check"><input type="checkbox" name="enabled" defaultChecked/> Tampilkan di peta publik</label><button className="button button-primary" type="submit">Tambah Area GIS</button></form>
-      {shapes.length ? <div className="modul-table-wrap"><table className="modul-table"><thead><tr><th>Area</th><th>Layer Polygon</th><th>Status</th><th>Aksi</th></tr></thead><tbody>{shapes.map(shape=><tr key={shape.id}><td>{shape.nama}</td><td>{shape.refPolygon ?? "Belum terhubung"}</td><td>{shape.enabled===1?"Tayang":"Disembunyikan"}</td><td><details className="pemerintahan-row-edit"><summary>Kelola</summary><form action={simpanAreaPetaAction} encType="multipart/form-data" className="pemerintahan-form compact-form"><input type="hidden" name="id" value={shape.id}/><input type="hidden" name="foto" value={shape.foto ?? ""}/><label>Nama<input name="nama" defaultValue={shape.nama}/></label><label>Deskripsi Area<textarea name="desk" rows={2} defaultValue={shape.desk ?? ""}/></label><label>Ganti Foto Area<input type="file" name="fotoFile" accept="image/jpeg,image/png,image/webp"/></label><label>GeoJSON Polygon<textarea name="path" rows={5} defaultValue={shape.path ?? ""}/></label><label>Layer Polygon<select name="refPolygon" defaultValue={shape.refPolygon ?? ""}><option value="">Pilih layer (opsional)</option>{layers.map(layer=><option key={layer.id} value={layer.id}>{layer.nama}</option>)}</select></label><label>Urutan<input name="sortOrder" type="number" defaultValue={shape.sortOrder}/></label><label className="pemerintahan-check"><input type="checkbox" name="enabled" defaultChecked={shape.enabled===1}/> Tampilkan publik</label><button className="button button-primary" type="submit">Simpan</button></form><form action={hapusAreaPetaAction}><input type="hidden" name="id" value={shape.id}/><button className="button button-danger-ghost" type="submit">Hapus Area</button></form></details></td></tr>)}</tbody></table></div> : <p className="modul-empty">Belum ada area GIS. Tambahkan GeoJSON Polygon untuk menampilkan batas wilayah.</p>}
-    </section>
-  </div>;
+  return (
+    <div className="modul-page pemerintahan-page">
+      <header className="page-heading">
+        <div>
+          <span className="eyebrow">PEMERINTAHAN DESA</span>
+          <h1>Wilayah & Organisasi</h1>
+          <p>Kelola dusun, RT/RW, area GIS, dan struktur organisasi pemerintahan desa.</p>
+        </div>
+        <Link className="button button-secondary" href="/pemerintahan-desa">
+          ← Dashboard
+        </Link>
+      </header>
+      <nav className="pemerintahan-tabs">
+        <Link href="/pemerintahan-desa">Dashboard Pemerintahan</Link>
+        <Link href="/pemerintahan-desa/perangkat">Perangkat Desa</Link>
+        <Link href="/pemerintahan-desa/lembaga">Lembaga & BPD</Link>
+        <Link className="active" href="/pemerintahan-desa/wilayah">
+          Wilayah & Organisasi
+        </Link>
+      </nav>
+      <section className="pemerintahan-metrics compact">
+        <article className="pemerintahan-metric pemerintahan-metric-primary">
+          <span>Total Dusun</span>
+          <strong>{dusun.length}</strong>
+        </article>
+        <article className="pemerintahan-metric">
+          <span>RT Terdaftar</span>
+          <strong>{rt.length}</strong>
+        </article>
+        <article className="pemerintahan-metric">
+          <span>RW Terdaftar</span>
+          <strong>{rw.length}</strong>
+        </article>
+        <article className="pemerintahan-metric">
+          <span>Area GIS</span>
+          <strong>{shapes.length}</strong>
+        </article>
+      </section>
+      <section className="modul-card">
+        <div className="pemerintahan-card-heading">
+          <div>
+            <h2>Struktur Organisasi Pemerintahan Desa</h2>
+            <p>
+              Atur atasan langsung pada formulir perangkat desa untuk mengubah bagan organisasi.
+            </p>
+          </div>
+          <Link href="/pemerintahan-desa/perangkat">Kelola Perangkat ↗</Link>
+        </div>
+        {officials.length ? (
+          <div className="pemerintahan-org">
+            {akarOrganisasi.map((person) => renderOrganisasi(person))}
+          </div>
+        ) : (
+          <p className="modul-empty">
+            Struktur organisasi belum tersedia. Tambahkan Kepala Desa dan perangkat aktif terlebih
+            dahulu.
+          </p>
+        )}
+      </section>
+      <section className="pemerintahan-content-split">
+        <div className="modul-card">
+          <div className="pemerintahan-card-heading">
+            <div>
+              <h2>Data Dusun</h2>
+              <p>Dusun dikelompokkan dari entri wilayah yang sudah dipakai modul kependudukan.</p>
+            </div>
+          </div>
+          {countByDusun.length ? (
+            <div className="modul-table-wrap">
+              <table className="modul-table">
+                <thead>
+                  <tr>
+                    <th>Dusun</th>
+                    <th>RT</th>
+                    <th>RW</th>
+                    <th>Entri Wilayah</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {countByDusun.map((g) => (
+                    <tr key={g.name}>
+                      <td>
+                        <strong>{g.name}</strong>
+                      </td>
+                      <td>
+                        {
+                          new Set(g.items.filter((x) => x.rt).map((x) => `${x.rw ?? ""}::${x.rt}`))
+                            .size
+                        }
+                      </td>
+                      <td>{new Set(g.items.map((x) => x.rw).filter(Boolean)).size}</td>
+                      <td>{g.items.length}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="modul-empty">Belum ada dusun.</p>
+          )}
+        </div>
+        <div className="modul-card">
+          <h2>Tambah Dusun / RT / RW</h2>
+          <p className="modul-empty">
+            Setiap baris menghubungkan dusun, RW, dan RT. Struktur ini tetap memakai tabel wilayah
+            yang dipakai data penduduk, sehingga perubahan wilayah tidak membuat data ganda.
+          </p>
+          <form action={simpanWilayahAction} className="pemerintahan-form">
+            <label>
+              Nama Dusun
+              <input name="dusun" required placeholder="Dusun I" />
+            </label>
+            <label>
+              Nomor RW
+              <input name="rw" placeholder="01" />
+            </label>
+            <label>
+              Nomor RT
+              <input name="rt" placeholder="001" />
+            </label>
+            <label>
+              Urutan
+              <input name="urut" type="number" defaultValue="0" />
+            </label>
+            <button className="button button-primary" type="submit">
+              Tambah Wilayah
+            </button>
+          </form>
+        </div>
+      </section>
+      <section className="modul-card">
+        <div className="pemerintahan-card-heading">
+          <div>
+            <h2>Data RT / RW</h2>
+            <p>Data wilayah aktual yang menjadi referensi alamat penduduk dan keluarga.</p>
+          </div>
+          <span>{rows.length} baris</span>
+        </div>
+        {rows.length ? (
+          <div className="modul-table-wrap">
+            <table className="modul-table">
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>Dusun</th>
+                  <th>RT</th>
+                  <th>RW</th>
+                  <th>Urutan</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row, i) => (
+                  <tr key={row.id}>
+                    <td>{i + 1}</td>
+                    <td>{row.dusun || "—"}</td>
+                    <td>{row.rt || "—"}</td>
+                    <td>{row.rw || "—"}</td>
+                    <td>{row.sortOrder}</td>
+                    <td>
+                      <details className="pemerintahan-row-edit">
+                        <summary>Edit / Hapus</summary>
+                        <form
+                          action={simpanWilayahAction}
+                          className="pemerintahan-form compact-form"
+                        >
+                          <input type="hidden" name="id" value={row.id} />
+                          <label>
+                            Dusun
+                            <input name="dusun" required defaultValue={row.dusun ?? ""} />
+                          </label>
+                          <label>
+                            RT
+                            <input name="rt" defaultValue={row.rt ?? ""} />
+                          </label>
+                          <label>
+                            RW
+                            <input name="rw" defaultValue={row.rw ?? ""} />
+                          </label>
+                          <label>
+                            Urutan
+                            <input name="urut" type="number" defaultValue={row.sortOrder} />
+                          </label>
+                          <button className="button button-primary" type="submit">
+                            Simpan Perubahan
+                          </button>
+                        </form>
+                        <form action={hapusWilayahAction}>
+                          <input type="hidden" name="id" value={row.id} />
+                          <button className="button button-danger-ghost" type="submit">
+                            Hapus Wilayah
+                          </button>
+                        </form>
+                      </details>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="modul-empty">Belum ada data RT/RW.</p>
+        )}
+      </section>
+      <section className="modul-card">
+        <div className="pemerintahan-card-heading">
+          <div>
+            <h2>Informasi Geografis & Batas Wilayah</h2>
+            <p>Data ini ditampilkan pada halaman Wilayah Desa di website publik.</p>
+          </div>
+        </div>
+        <form action={simpanProfilWilayahAction} className="pemerintahan-form">
+          <label>
+            Luas Wilayah (Ha)
+            <input
+              name="luasWilayah"
+              type="number"
+              min="0"
+              step="0.01"
+              defaultValue={profil?.luasWilayah ?? ""}
+            />
+          </label>
+          <label>
+            Batas Utara
+            <input name="batasUtara" defaultValue={profil?.batasUtara ?? ""} />
+          </label>
+          <label>
+            Batas Selatan
+            <input name="batasSelatan" defaultValue={profil?.batasSelatan ?? ""} />
+          </label>
+          <label>
+            Batas Timur
+            <input name="batasTimur" defaultValue={profil?.batasTimur ?? ""} />
+          </label>
+          <label>
+            Batas Barat
+            <input name="batasBarat" defaultValue={profil?.batasBarat ?? ""} />
+          </label>
+          <label>
+            Ketinggian
+            <input
+              name="ketinggian"
+              defaultValue={profil?.ketinggian ?? ""}
+              placeholder="25 mdpl"
+            />
+          </label>
+          <label>
+            Suhu Rata-rata
+            <input name="suhuRataRata" defaultValue={profil?.suhuRataRata ?? ""} />
+          </label>
+          <label>
+            Curah Hujan
+            <input name="curahHujan" defaultValue={profil?.curahHujan ?? ""} />
+          </label>
+          <label>
+            Topografi
+            <input name="topografi" defaultValue={profil?.topografi ?? ""} />
+          </label>
+          <button className="button button-primary" type="submit">
+            Simpan Informasi Wilayah
+          </button>
+        </form>
+      </section>
+      <section className="modul-card">
+        <div className="pemerintahan-card-heading">
+          <div>
+            <h2>Layer Peta</h2>
+            <p>Atur kategori warna untuk membedakan batas desa dan area dusun pada peta publik.</p>
+          </div>
+        </div>
+        <form action={simpanLayerPetaAction} className="pemerintahan-form">
+          <label>
+            Nama Layer
+            <input name="nama" required placeholder="Batas Desa / Dusun I" />
+          </label>
+          <label>
+            Warna Layer
+            <input name="color" type="color" defaultValue="#7c3aed" />
+          </label>
+          <label>
+            Urutan
+            <input name="sortOrder" type="number" defaultValue="0" />
+          </label>
+          <label className="pemerintahan-check">
+            <input type="checkbox" name="enabled" defaultChecked /> Aktif
+          </label>
+          <button className="button button-primary" type="submit">
+            Tambah Layer
+          </button>
+        </form>
+        {layers.length ? (
+          <div className="pemerintahan-layer-list">
+            {layers.map((layer) => (
+              <details key={layer.id}>
+                <summary>
+                  <i style={{ background: layer.color ?? "#7c3aed" }} />
+                  {layer.nama} · {layer.enabled === 1 ? "Aktif" : "Nonaktif"}
+                </summary>
+                <form action={simpanLayerPetaAction} className="pemerintahan-form compact-form">
+                  <input type="hidden" name="id" value={layer.id} />
+                  <label>
+                    Nama Layer
+                    <input name="nama" defaultValue={layer.nama} />
+                  </label>
+                  <label>
+                    Warna
+                    <input type="color" name="color" defaultValue={layer.color ?? "#7c3aed"} />
+                  </label>
+                  <label>
+                    Urutan
+                    <input type="number" name="sortOrder" defaultValue={layer.sortOrder} />
+                  </label>
+                  <label className="pemerintahan-check">
+                    <input type="checkbox" name="enabled" defaultChecked={layer.enabled === 1} />{" "}
+                    Aktif
+                  </label>
+                  <button className="button button-primary" type="submit">
+                    Simpan Layer
+                  </button>
+                </form>
+                <form action={hapusLayerPetaAction}>
+                  <input type="hidden" name="id" value={layer.id} />
+                  <button className="button button-danger-ghost" type="submit">
+                    Hapus Layer
+                  </button>
+                </form>
+              </details>
+            ))}
+          </div>
+        ) : (
+          <p className="modul-empty">Belum ada layer peta.</p>
+        )}
+      </section>
+      <section className="modul-card" id="peta">
+        <div className="pemerintahan-card-heading">
+          <div>
+            <h2>Peta Wilayah / Area GIS</h2>
+            <p>Kelola polygon GeoJSON yang digunakan halaman wilayah publik.</p>
+          </div>
+        </div>
+        <form
+          action={simpanAreaPetaAction}
+          encType="multipart/form-data"
+          className="pemerintahan-form"
+        >
+          <label>
+            Nama Area
+            <input name="nama" required placeholder="Batas Desa / Dusun I" />
+          </label>
+          <label>
+            Deskripsi Area
+            <textarea name="desk" rows={2} placeholder="Keterangan wilayah atau batas area" />
+          </label>
+          <label>
+            Foto Area
+            <input type="file" name="fotoFile" accept="image/jpeg,image/png,image/webp" />
+          </label>
+          <label>
+            GeoJSON Polygon
+            <textarea
+              name="path"
+              rows={5}
+              placeholder='{"type":"Polygon","coordinates":[[[lng,lat],[lng,lat],[lng,lat],[lng,lat]]]}'
+            />
+          </label>
+          <label>
+            Layer Polygon
+            <select name="refPolygon">
+              <option value="">Pilih layer (opsional)</option>
+              {layers.map((layer) => (
+                <option key={layer.id} value={layer.id}>
+                  {layer.nama}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Urutan
+            <input type="number" name="sortOrder" defaultValue="0" />
+          </label>
+          <label className="pemerintahan-check">
+            <input type="checkbox" name="enabled" defaultChecked /> Tampilkan di peta publik
+          </label>
+          <button className="button button-primary" type="submit">
+            Tambah Area GIS
+          </button>
+        </form>
+        {shapes.length ? (
+          <div className="modul-table-wrap">
+            <table className="modul-table">
+              <thead>
+                <tr>
+                  <th>Area</th>
+                  <th>Layer Polygon</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {shapes.map((shape) => (
+                  <tr key={shape.id}>
+                    <td>{shape.nama}</td>
+                    <td>{shape.refPolygon ?? "Belum terhubung"}</td>
+                    <td>{shape.enabled === 1 ? "Tayang" : "Disembunyikan"}</td>
+                    <td>
+                      <details className="pemerintahan-row-edit">
+                        <summary>Kelola</summary>
+                        <form
+                          action={simpanAreaPetaAction}
+                          encType="multipart/form-data"
+                          className="pemerintahan-form compact-form"
+                        >
+                          <input type="hidden" name="id" value={shape.id} />
+                          <input type="hidden" name="foto" value={shape.foto ?? ""} />
+                          <label>
+                            Nama
+                            <input name="nama" defaultValue={shape.nama} />
+                          </label>
+                          <label>
+                            Deskripsi Area
+                            <textarea name="desk" rows={2} defaultValue={shape.desk ?? ""} />
+                          </label>
+                          <label>
+                            Ganti Foto Area
+                            <input
+                              type="file"
+                              name="fotoFile"
+                              accept="image/jpeg,image/png,image/webp"
+                            />
+                          </label>
+                          <label>
+                            GeoJSON Polygon
+                            <textarea name="path" rows={5} defaultValue={shape.path ?? ""} />
+                          </label>
+                          <label>
+                            Layer Polygon
+                            <select name="refPolygon" defaultValue={shape.refPolygon ?? ""}>
+                              <option value="">Pilih layer (opsional)</option>
+                              {layers.map((layer) => (
+                                <option key={layer.id} value={layer.id}>
+                                  {layer.nama}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <label>
+                            Urutan
+                            <input name="sortOrder" type="number" defaultValue={shape.sortOrder} />
+                          </label>
+                          <label className="pemerintahan-check">
+                            <input
+                              type="checkbox"
+                              name="enabled"
+                              defaultChecked={shape.enabled === 1}
+                            />{" "}
+                            Tampilkan publik
+                          </label>
+                          <button className="button button-primary" type="submit">
+                            Simpan
+                          </button>
+                        </form>
+                        <form action={hapusAreaPetaAction}>
+                          <input type="hidden" name="id" value={shape.id} />
+                          <button className="button button-danger-ghost" type="submit">
+                            Hapus Area
+                          </button>
+                        </form>
+                      </details>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="modul-empty">
+            Belum ada area GIS. Tambahkan GeoJSON Polygon untuk menampilkan batas wilayah.
+          </p>
+        )}
+      </section>
+    </div>
+  );
 }

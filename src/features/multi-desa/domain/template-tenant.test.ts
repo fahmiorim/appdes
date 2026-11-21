@@ -111,13 +111,33 @@ describe("template bawaan yang dikirim", () => {
     });
   });
 
-  it("menyediakan menu penduduk dengan akses baca untuk role non-admin", () => {
+  it("menyediakan grup Data Kependudukan dan lima halaman dengan akses role yang sesuai", () => {
+    expect(template.modules.find((modul) => modul.slug === "data-kependudukan")).toMatchObject({
+      isGroup: true,
+      url: null,
+      parentSlug: null,
+    });
+    for (const [slug, url] of [
+      ["dashboard-kependudukan", "/penduduk/dashboard"],
+      ["penduduk", "/penduduk"],
+      ["keluarga", "/keluarga"],
+      ["mutasi-penduduk", "/mutasi-penduduk"],
+      ["laporan-penduduk", "/statistik/penduduk"],
+    ]) {
+      expect(template.modules.find((modul) => modul.slug === slug)).toMatchObject({
+        url,
+        parentSlug: "data-kependudukan",
+      });
+    }
+  });
+
+  it("menyediakan akses baca penduduk untuk role non-admin", () => {
     const penduduk = template.modules.find((modul) => modul.slug === "penduduk");
     expect(penduduk).toMatchObject({
       name: "Data Penduduk",
       url: "/penduduk",
       isActive: true,
-      parentSlug: null,
+      parentSlug: "data-kependudukan",
     });
 
     const akses = template.akses

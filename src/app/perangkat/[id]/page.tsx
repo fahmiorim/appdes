@@ -3,8 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
-import { daftarPerangkatPublik } from "@/features/publik/application/konten-publik";
 import { detailPerangkatPemerintahanPublik } from "@/features/pemerintahan/application/publik";
+import { daftarPerangkatPublik } from "@/features/publik/application/konten-publik";
 
 import { PublicSiteFooter, PublicSiteHeader } from "../../public-site-layout";
 import styles from "./detail-perangkat.module.css";
@@ -283,12 +283,39 @@ export default async function DetailPerangkatPage({ params }: Props) {
               </section>
               <section className={styles.infoCard}>
                 <h2>▣ Dokumen Terkait</h2>
-                {detailPemerintahan.dokumen.length ? <ul>{detailPemerintahan.dokumen.map((doc) => <li key={doc.id}><a href={`/api/pemerintahan/dokumen/${doc.id}`}>{doc.judul}{doc.nomor ? ` · ${doc.nomor}` : ""}</a></li>)}</ul> : <div className={styles.documentEmpty}>Belum ada dokumen jabatan yang dipublikasikan.</div>}
+                {detailPemerintahan.dokumen.length ? (
+                  <ul>
+                    {detailPemerintahan.dokumen.map((doc) => (
+                      <li key={doc.id}>
+                        <a href={`/api/pemerintahan/dokumen/${doc.id}`}>
+                          {doc.judul}
+                          {doc.nomor ? ` · ${doc.nomor}` : ""}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className={styles.documentEmpty}>
+                    Belum ada dokumen jabatan yang dipublikasikan.
+                  </div>
+                )}
               </section>
               <section className={styles.infoCard}>
                 <h2>▦ Riwayat Jabatan</h2>
-                {detailPemerintahan.riwayat.length ? <ul>{detailPemerintahan.riwayat.map((history) => <li key={history.id}><strong>{history.jabatan}</strong><br/>{history.mulai ?? "—"} – {history.selesai ?? "Sekarang"}{history.nomorSk ? ` · SK ${history.nomorSk}` : ""}</li>)}</ul> : <div className={styles.documentEmpty}>Riwayat jabatan belum dipublikasikan.</div>}
-              </section>
+                {detailPemerintahan.riwayat.length ? (
+                  <ul>
+                    {detailPemerintahan.riwayat.map((history) => (
+                      <li key={history.id}>
+                        <strong>{history.jabatan}</strong>
+                        <br />
+                        {history.mulai ?? "—"} – {history.selesai ?? "Sekarang"}
+                        {history.nomorSk ? ` · SK ${history.nomorSk}` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className={styles.documentEmpty}>Riwayat jabatan belum dipublikasikan.</div>
+                )}
               </section>
             </div>
           </div>

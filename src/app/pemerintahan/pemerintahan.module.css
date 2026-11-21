@@ -674,7 +674,6 @@
   }
 }
 
-
 /* Hierarki perangkat mengikuti relasi atasanId dari data pemerintahan. */
 .orgNestedChildren {
   display: grid;

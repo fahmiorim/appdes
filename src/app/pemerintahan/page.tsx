@@ -1,6 +1,6 @@
 import Image from "next/image";
-import type { ReactNode } from "react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { daftarLembagaPublik } from "@/features/pemerintahan/application/publik";
@@ -117,11 +117,22 @@ export default async function PemerintahanPage() {
   );
   const struktur = perangkat;
   const anakPerangkat = (atasanId: number) =>
-    perangkat.filter((item) => item.atasanId === atasanId).sort((a, b) => a.urut - b.urut || a.nama.localeCompare(b.nama, "id"));
+    perangkat
+      .filter((item) => item.atasanId === atasanId)
+      .sort((a, b) => a.urut - b.urut || a.nama.localeCompare(b.nama, "id"));
   const akarStruktur = perangkat
-    .filter((item) => item.id === kepalaDesa?.id || !item.atasanId || !perangkat.some((parent) => parent.id === item.atasanId))
-    .sort((a, b) => a.id === kepalaDesa?.id ? -1 : b.id === kepalaDesa?.id ? 1 : a.urut - b.urut);
-  const renderNode = (item: (typeof perangkat)[number], depth = 0, visited = new Set<number>()): ReactNode => {
+    .filter(
+      (item) =>
+        item.id === kepalaDesa?.id ||
+        !item.atasanId ||
+        !perangkat.some((parent) => parent.id === item.atasanId),
+    )
+    .sort((a, b) => (a.id === kepalaDesa?.id ? -1 : b.id === kepalaDesa?.id ? 1 : a.urut - b.urut));
+  const renderNode = (
+    item: (typeof perangkat)[number],
+    depth = 0,
+    visited = new Set<number>(),
+  ): ReactNode => {
     if (visited.has(item.id)) return null;
     const nextVisited = new Set(visited);
     nextVisited.add(item.id);
@@ -241,9 +252,15 @@ export default async function PemerintahanPage() {
                   <div className={styles.orgLine} aria-hidden="true" />
                 ) : null}
                 <div className={styles.orgChildren}>
-                  {(kepalaDesa ? anakPerangkat(kepalaDesa.id) : akarStruktur).map((item) => renderNode(item))}
+                  {(kepalaDesa ? anakPerangkat(kepalaDesa.id) : akarStruktur).map((item) =>
+                    renderNode(item),
+                  )}
                 </div>
-                {kepalaDesa ? akarStruktur.filter((item) => item.id !== kepalaDesa.id).map((item) => renderNode(item)) : null}
+                {kepalaDesa
+                  ? akarStruktur
+                      .filter((item) => item.id !== kepalaDesa.id)
+                      .map((item) => renderNode(item))
+                  : null}
               </div>
             ) : (
               <div className={styles.emptyState}>
@@ -294,15 +311,134 @@ export default async function PemerintahanPage() {
         </section>
 
         <section className={styles.sectionCard} id="bpd">
-          <div className={styles.sectionHeading}><div><h2><span>♧</span> Badan Permusyawaratan Desa (BPD)</h2><p>Lembaga permusyawaratan desa yang menyalurkan aspirasi masyarakat.</p></div><span className={styles.sectionHint}>Informasi BPD</span></div>
-          {lembagaPublik.filter((item) => item.jenis === "bpd").length ? lembagaPublik.filter((item) => item.jenis === "bpd").map((item) => (
-            <article className={styles.bpdContent} key={item.id}><div><h3>{item.nama}</h3>{item.deskripsi ? <p className={styles.bpdDescription}>{item.deskripsi}</p> : null}{item.tugasFungsi ? <p>{item.tugasFungsi}</p> : null}{item.dasarHukum ? <small>Dasar hukum: {item.dasarHukum}</small> : null}{item.dokumen.length ? <ul>{item.dokumen.map((doc) => <li key={doc.id}><a href={`/api/pemerintahan/dokumen/${doc.id}`}>{doc.judul}</a></li>)}</ul> : null}<p>Masa bakti: {item.masaBaktiMulai ?? "—"} – {item.masaBaktiSelesai ?? "—"}</p></div>
-              {item.anggota.length ? <div className={styles.officialGrid}>{item.anggota.map((person) => <article className={styles.officialCard} key={person.id}><div className={styles.officialPhoto}>{mediaUrl(person.foto,desa.id) ? <Image src={mediaUrl(person.foto,desa.id)!} alt={person.nama} fill unoptimized sizes="100px"/> : <span>{person.nama.slice(0,1)}</span>}</div><div className={styles.officialBody}><h3>{person.nama}</h3><span className={styles.rolePill}>{person.jabatan ?? "Anggota"}</span></div></article>)}</div> : <p className={styles.emptyState}>Susunan anggota belum dipublikasikan.</p>}
-            </article>)) : <div className={styles.emptyState}><strong>Data BPD belum dipublikasikan</strong><p>Informasi BPD akan muncul setelah pemerintah desa mengaktifkan publikasi lembaga dan anggotanya.</p></div>}
+          <div className={styles.sectionHeading}>
+            <div>
+              <h2>
+                <span>♧</span> Badan Permusyawaratan Desa (BPD)
+              </h2>
+              <p>Lembaga permusyawaratan desa yang menyalurkan aspirasi masyarakat.</p>
+            </div>
+            <span className={styles.sectionHint}>Informasi BPD</span>
+          </div>
+          {lembagaPublik.filter((item) => item.jenis === "bpd").length ? (
+            lembagaPublik
+              .filter((item) => item.jenis === "bpd")
+              .map((item) => (
+                <article className={styles.bpdContent} key={item.id}>
+                  <div>
+                    <h3>{item.nama}</h3>
+                    {item.deskripsi ? (
+                      <p className={styles.bpdDescription}>{item.deskripsi}</p>
+                    ) : null}
+                    {item.tugasFungsi ? <p>{item.tugasFungsi}</p> : null}
+                    {item.dasarHukum ? <small>Dasar hukum: {item.dasarHukum}</small> : null}
+                    {item.dokumen.length ? (
+                      <ul>
+                        {item.dokumen.map((doc) => (
+                          <li key={doc.id}>
+                            <a href={`/api/pemerintahan/dokumen/${doc.id}`}>{doc.judul}</a>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    <p>
+                      Masa bakti: {item.masaBaktiMulai ?? "—"} – {item.masaBaktiSelesai ?? "—"}
+                    </p>
+                  </div>
+                  {item.anggota.length ? (
+                    <div className={styles.officialGrid}>
+                      {item.anggota.map((person) => (
+                        <article className={styles.officialCard} key={person.id}>
+                          <div className={styles.officialPhoto}>
+                            {mediaUrl(person.foto, desa.id) ? (
+                              <Image
+                                src={mediaUrl(person.foto, desa.id)!}
+                                alt={person.nama}
+                                fill
+                                unoptimized
+                                sizes="100px"
+                              />
+                            ) : (
+                              <span>{person.nama.slice(0, 1)}</span>
+                            )}
+                          </div>
+                          <div className={styles.officialBody}>
+                            <h3>{person.nama}</h3>
+                            <span className={styles.rolePill}>{person.jabatan ?? "Anggota"}</span>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className={styles.emptyState}>Susunan anggota belum dipublikasikan.</p>
+                  )}
+                </article>
+              ))
+          ) : (
+            <div className={styles.emptyState}>
+              <strong>Data BPD belum dipublikasikan</strong>
+              <p>
+                Informasi BPD akan muncul setelah pemerintah desa mengaktifkan publikasi lembaga dan
+                anggotanya.
+              </p>
+            </div>
+          )}
         </section>
         <section className={styles.sectionCard} id="lembaga">
-          <div className={styles.sectionHeading}><div><h2><span>♧</span> Lembaga Desa</h2><p>Informasi kelembagaan yang mendukung penyelenggaraan pemerintahan desa.</p></div></div>
-          {lembagaPublik.filter((item) => item.jenis !== "bpd").length ? <div className={styles.officialGrid}>{lembagaPublik.filter((item) => item.jenis !== "bpd").map((item) => <article className={styles.officialCard} key={item.id}><div className={styles.officialBody}><h3>{item.nama}</h3><span className={styles.rolePill}>{item.jenis.toUpperCase()}</span>{item.deskripsi ? <p>{item.deskripsi}</p> : null}{item.tugasFungsi ? <p>{item.tugasFungsi}</p> : null}<small>Masa bakti: {item.masaBaktiMulai ?? "—"} – {item.masaBaktiSelesai ?? "—"}</small>{item.anggota.length ? <ul>{item.anggota.map((person) => <li key={person.id}>{person.nama}{person.jabatan ? ` — ${person.jabatan}` : ""}</li>)}</ul> : null}{item.dokumen.length ? <ul>{item.dokumen.map((doc) => <li key={doc.id}><a href={`/api/pemerintahan/dokumen/${doc.id}`}>{doc.judul}</a></li>)}</ul> : null}</div></article>)}</div> : <div className={styles.emptyState}><strong>Belum ada lembaga yang dipublikasikan</strong><p>Data lembaga akan tampil setelah status publikasi diaktifkan oleh administrator desa.</p></div>}
+          <div className={styles.sectionHeading}>
+            <div>
+              <h2>
+                <span>♧</span> Lembaga Desa
+              </h2>
+              <p>Informasi kelembagaan yang mendukung penyelenggaraan pemerintahan desa.</p>
+            </div>
+          </div>
+          {lembagaPublik.filter((item) => item.jenis !== "bpd").length ? (
+            <div className={styles.officialGrid}>
+              {lembagaPublik
+                .filter((item) => item.jenis !== "bpd")
+                .map((item) => (
+                  <article className={styles.officialCard} key={item.id}>
+                    <div className={styles.officialBody}>
+                      <h3>{item.nama}</h3>
+                      <span className={styles.rolePill}>{item.jenis.toUpperCase()}</span>
+                      {item.deskripsi ? <p>{item.deskripsi}</p> : null}
+                      {item.tugasFungsi ? <p>{item.tugasFungsi}</p> : null}
+                      <small>
+                        Masa bakti: {item.masaBaktiMulai ?? "—"} – {item.masaBaktiSelesai ?? "—"}
+                      </small>
+                      {item.anggota.length ? (
+                        <ul>
+                          {item.anggota.map((person) => (
+                            <li key={person.id}>
+                              {person.nama}
+                              {person.jabatan ? ` — ${person.jabatan}` : ""}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                      {item.dokumen.length ? (
+                        <ul>
+                          {item.dokumen.map((doc) => (
+                            <li key={doc.id}>
+                              <a href={`/api/pemerintahan/dokumen/${doc.id}`}>{doc.judul}</a>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
+                  </article>
+                ))}
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <strong>Belum ada lembaga yang dipublikasikan</strong>
+              <p>
+                Data lembaga akan tampil setelah status publikasi diaktifkan oleh administrator
+                desa.
+              </p>
+            </div>
+          )}
         </section>
 
         <section className={styles.sectionCard} id="tugas">

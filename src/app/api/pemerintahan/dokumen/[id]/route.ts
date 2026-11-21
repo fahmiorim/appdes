@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
 
-import { db } from "@/db";
-import { lembagaDesa, pemerintahanDokumen, perangkatDesa } from "@/db/schema";
-import { getIdentitasFromRequest, resolveVillageId } from "@/features/desa/application/resolve-village";
-import { bacaMedia } from "@/features/publik/infrastructure/media-storage";
-import { requirePermission } from "@/lib/dal";
+import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
+import { unduhDokumenPemerintahanData } from "@/features/pemerintahan/application/use-cases";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 type Context = { params: Promise<{ id: string }> };
+
+const MIME_BY_EXT: Record<string, string> = {
+  pdf: "application/pdf",
+  png: "image/png",
+  webp: "image/webp",
+  gif: "image/gif",
+};
 
 export async function GET(_request: Request, { params }: Context) {
   const { id } = await params;
@@ -20,48 +23,16 @@ export async function GET(_request: Request, { params }: Context) {
   }
 
   const desa = await getIdentitasFromRequest();
-  const [document] = await db.select().from(pemerintahanDokumen)
-    .where(and(eq(pemerintahanDokumen.villageId, desa.id), eq(pemerintahanDokumen.id, documentId)))
-    .limit(1);
-  if (!document) return NextResponse.json({ error: "Dokumen tidak ditemukan." }, { status: 404 });
+  const dokumen = await unduhDokumenPemerintahanData(desa.id, documentId);
+  if (!dokumen) return NextResponse.json({ error: "Dokumen tidak ditemukan." }, { status: 404 });
 
-  // Dokumen publik tetap harus mengikuti status publik pemiliknya. Flag
-  // dokumen saja tidak boleh membuka berkas milik perangkat/lembaga tersembunyi.
-  if (Boolean(document.perangkatId) === Boolean(document.lembagaId)) {
-    return NextResponse.json({ error: "Dokumen tidak ditemukan." }, { status: 404 });
-  }
-  if (document.tampilPublik) {
-    if (document.perangkatId) {
-      const [owner] = await db.select({ status: perangkatDesa.status }).from(perangkatDesa)
-        .where(and(eq(perangkatDesa.villageId, desa.id), eq(perangkatDesa.id, document.perangkatId))).limit(1);
-      if (owner?.status !== "aktif") return NextResponse.json({ error: "Dokumen tidak ditemukan." }, { status: 404 });
-    } else if (document.lembagaId) {
-      const [owner] = await db.select({ status: lembagaDesa.status, tampilPublik: lembagaDesa.tampilPublik }).from(lembagaDesa)
-        .where(and(eq(lembagaDesa.villageId, desa.id), eq(lembagaDesa.id, document.lembagaId))).limit(1);
-      if (owner?.status !== "aktif" || !owner.tampilPublik) {
-        return NextResponse.json({ error: "Dokumen tidak ditemukan." }, { status: 404 });
-      }
-    }
-  } else {
-    const resource = document.perangkatId ? "perangkat-desa" : "lembaga-desa";
-    const user = await requirePermission(resource, "read");
-    const villageId = await resolveVillageId(user);
-    if (villageId !== desa.id) return NextResponse.json({ error: "Dokumen tidak ditemukan." }, { status: 404 });
-  }
-
-  try {
-    const bytes = await bacaMedia(document.berkas);
-    const ext = document.berkas.split(".").pop()?.toLowerCase();
-    const mime = ext === "pdf" ? "application/pdf" : ext === "png" ? "image/png" : ext === "webp" ? "image/webp" : ext === "gif" ? "image/gif" : "image/jpeg";
-    return new NextResponse(new Uint8Array(bytes), {
-      headers: {
-        "Content-Type": mime,
-        "Content-Disposition": `attachment; filename="dokumen-pemerintahan-${document.id}.${ext ?? "bin"}"`,
-        "Cache-Control": "private, no-store",
-        "X-Content-Type-Options": "nosniff",
-      },
-    });
-  } catch {
-    return NextResponse.json({ error: "Berkas dokumen tidak tersedia." }, { status: 404 });
-  }
+  const mime = MIME_BY_EXT[dokumen.ekstensi] ?? "image/jpeg";
+  return new NextResponse(new Uint8Array(dokumen.isi), {
+    headers: {
+      "Content-Type": mime,
+      "Content-Disposition": `attachment; filename="dokumen-pemerintahan-${dokumen.id}.${dokumen.ekstensi}"`,
+      "Cache-Control": "private, no-store",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
 }

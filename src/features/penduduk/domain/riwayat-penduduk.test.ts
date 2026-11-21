@@ -21,6 +21,7 @@ const kelahiran = {
   nationalId: "3201012001120001",
   gender: "female",
   familyId: "",
+  familyRelationId: "",
   regionId: "",
   address: "",
   fatherName: "",
@@ -38,6 +39,7 @@ const kedatangan = {
   birthDate: "",
   birthPlace: "",
   familyId: "",
+  familyRelationId: "",
   regionId: "",
   address: "",
   fromAddress: "",
@@ -58,6 +60,7 @@ describe("skema riwayat penduduk", () => {
 
     expect(parsed.name).toBe("Bayi Baru");
     expect(parsed.familyId).toBeNull();
+    expect(parsed.familyRelationId).toBeNull();
     expect(parsed.regionId).toBeNull();
     expect(parsed.nationalId).toBe("3201012001120001");
   });

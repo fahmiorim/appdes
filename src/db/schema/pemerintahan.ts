@@ -11,15 +11,17 @@ import {
   varchar,
 } from "drizzle-orm/mysql-core";
 
-import { villages } from "./village";
 import { perangkatDesa } from "./content";
+import { villages } from "./village";
 
 /** Lembaga desa dan BPD; seluruh data dipisahkan per tenant. */
 export const lembagaDesa = mysqlTable(
   "lembaga_desa",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
     nama: varchar("nama", { length: 150 }).notNull(),
     jenis: varchar("jenis", { length: 50 }).notNull().default("lainnya"),
     deskripsi: text("deskripsi"),
@@ -31,7 +33,10 @@ export const lembagaDesa = mysqlTable(
     tampilPublik: boolean("tampil_publik").notNull().default(false),
     urut: int("urut").notNull().default(0),
     createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   (t) => [
     index("lembaga_desa_village_status_idx").on(t.villageId, t.status),
@@ -44,7 +49,9 @@ export const lembagaAnggota = mysqlTable(
   "lembaga_anggota",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
     lembagaId: int("lembaga_id").notNull(),
     nama: varchar("nama", { length: 150 }).notNull(),
     jabatan: varchar("jabatan", { length: 100 }),
@@ -55,7 +62,10 @@ export const lembagaAnggota = mysqlTable(
     tampilPublik: boolean("tampil_publik").notNull().default(false),
     urut: int("urut").notNull().default(0),
     createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   (t) => [
     index("lembaga_anggota_village_lembaga_idx").on(t.villageId, t.lembagaId),
@@ -72,7 +82,9 @@ export const perangkatRiwayatJabatan = mysqlTable(
   "perangkat_riwayat_jabatan",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
     perangkatId: int("perangkat_id").notNull(),
     jabatan: varchar("jabatan", { length: 150 }).notNull(),
     nomorSk: varchar("nomor_sk", { length: 100 }),
@@ -97,7 +109,9 @@ export const pemerintahanDokumen = mysqlTable(
   "pemerintahan_dokumen",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
     perangkatId: int("perangkat_id"),
     lembagaId: int("lembaga_id"),
     judul: varchar("judul", { length: 180 }).notNull(),
