@@ -58,9 +58,11 @@ export async function simpanPegawaiAction(fd: FormData) {
 export async function absensiMandiriAction(fd: FormData) {
   const user=await requireUser();
   const villageId=await resolveVillageId(user);
-  const latitude=Number(text(fd,"latitude"));
-  const longitude=Number(text(fd,"longitude"));
-  if(!Number.isFinite(latitude)||!Number.isFinite(longitude)) throw new Error("Ambil lokasi GPS sebelum mengirim absensi.");
+  const latitudeRaw=text(fd,"latitude");
+  const longitudeRaw=text(fd,"longitude");
+  const latitude=latitudeRaw===""?null:Number(latitudeRaw);
+  const longitude=longitudeRaw===""?null:Number(longitudeRaw);
+  if((latitude!==null&&!Number.isFinite(latitude))||(longitude!==null&&!Number.isFinite(longitude))) throw new Error("Koordinat GPS tidak valid.");
   const file=fd.get("foto");
   let fotoMasuk:string|null=null;
   if(file instanceof File && file.size>0) {
