@@ -6,15 +6,21 @@ import { hapusAreaPetaAction, hapusLayerPetaAction, hapusWilayahAction, simpanAr
 export const metadata = { title: "Wilayah & Organisasi" };
 
 export default async function WilayahOrganisasiPage() {
-  const { rows, shapes, layers } = await getWilayahPemerintahanData();
+  const { rows, shapes, layers, officials } = await getWilayahPemerintahanData();
   const dusun = [...new Set(rows.map(x=>x.dusun).filter(Boolean))];
   const rt = [...new Set(rows.map(x=>x.rt).filter(Boolean))];
   const rw = [...new Set(rows.map(x=>x.rw).filter(Boolean))];
   const countByDusun = dusun.map(name=>({name,items:rows.filter(x=>x.dusun===name)}));
+  const kepala = officials.find(x=>(x.jabatan ?? "").toLowerCase().includes("kepala desa"));
+  const sekretaris = officials.find(x=>(x.jabatan ?? "").toLowerCase().includes("sekretaris"));
+  const lainnya = officials.filter(x=>x.id!==kepala?.id && x.id!==sekretaris?.id);
   return <div className="modul-page pemerintahan-page">
     <header className="page-heading"><div><span className="eyebrow">PEMERINTAHAN DESA</span><h1>Wilayah & Organisasi</h1><p>Kelola dusun, RT/RW, area GIS, dan struktur organisasi pemerintahan desa.</p></div><Link className="button button-secondary" href="/pemerintahan-desa">← Dashboard</Link></header>
     <nav className="pemerintahan-tabs"><Link href="/pemerintahan-desa">Dashboard Pemerintahan</Link><Link href="/pemerintahan-desa/perangkat">Perangkat Desa</Link><Link href="/pemerintahan-desa/lembaga">Lembaga & BPD</Link><Link className="active" href="/pemerintahan-desa/wilayah">Wilayah & Organisasi</Link></nav>
     <section className="pemerintahan-metrics compact"><article className="pemerintahan-metric pemerintahan-metric-primary"><span>Total Dusun</span><strong>{dusun.length}</strong></article><article className="pemerintahan-metric"><span>RT Terdaftar</span><strong>{rt.length}</strong></article><article className="pemerintahan-metric"><span>RW Terdaftar</span><strong>{rw.length}</strong></article><article className="pemerintahan-metric"><span>Area GIS</span><strong>{shapes.length}</strong></article></section>
+    <section className="modul-card"><div className="pemerintahan-card-heading"><div><h2>Struktur Organisasi Pemerintahan Desa</h2><p>Atur atasan langsung pada formulir perangkat desa untuk mengubah bagan organisasi.</p></div><Link href="/pemerintahan-desa/perangkat">Kelola Perangkat ↗</Link></div>
+      {kepala ? <div className="pemerintahan-org"><article className="pemerintahan-org-node root"><strong>{kepala.nama}</strong><span>{kepala.jabatan ?? "Kepala Desa"}</span></article>{sekretaris ? <><div className="pemerintahan-org-connector"/><article className="pemerintahan-org-node secretary"><strong>{sekretaris.nama}</strong><span>{sekretaris.jabatan}</span></article></> : null}<div className="pemerintahan-org-children">{lainnya.map(person=><article className="pemerintahan-org-node" key={person.id}><strong>{person.nama}</strong><span>{person.jabatan ?? "Perangkat Desa"}</span></article>)}</div></div> : <p className="modul-empty">Struktur organisasi belum tersedia. Tambahkan Kepala Desa dan perangkat aktif terlebih dahulu.</p>}
+    </section>
     <section className="pemerintahan-content-split">
       <div className="modul-card"><div className="pemerintahan-card-heading"><div><h2>Data Dusun</h2><p>Dusun dikelompokkan dari entri wilayah yang sudah dipakai modul kependudukan.</p></div></div>
         {countByDusun.length ? <div className="modul-table-wrap"><table className="modul-table"><thead><tr><th>Dusun</th><th>RT</th><th>RW</th><th>Entri Wilayah</th></tr></thead><tbody>{countByDusun.map(g=><tr key={g.name}><td><strong>{g.name}</strong></td><td>{new Set(g.items.map(x=>x.rt).filter(Boolean)).size}</td><td>{new Set(g.items.map(x=>x.rw).filter(Boolean)).size}</td><td>{g.items.length}</td></tr>)}</tbody></table></div> : <p className="modul-empty">Belum ada dusun.</p>}
