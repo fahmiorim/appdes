@@ -104,3 +104,25 @@ export async function daftarVideoGaleriPublik(villageId: number, limit = 8) {
 export async function daftarPotensiDesa(villageId: number, includeInactive = false) {
   return listPotensiDesa(villageId, includeInactive);
 }
+
+/** Pengaturan kontak publik tenant; hanya field kontak nonrahasia yang dibaca. */
+export async function pengaturanKontakPublik(villageId: number) {
+  const { and, eq } = await import("drizzle-orm");
+  const { db } = await import("@/db");
+  const { pengaturanDesa } = await import("@/db/schema");
+  const [row] = await db.select({ nilai: pengaturanDesa.nilai }).from(pengaturanDesa)
+    .where(and(eq(pengaturanDesa.villageId, villageId), eq(pengaturanDesa.kunci, "pengaturan.kontak"))).limit(1);
+  try {
+    const parsed: unknown = row?.nilai ? JSON.parse(row.nilai) : {};
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    const data = parsed as Record<string, unknown>;
+    const safe = (key: string) => typeof data[key] === "string" ? (data[key] as string).trim() : "";
+    return {
+      whatsapp: safe("whatsapp"), telepon: safe("telepon"), email: safe("email"), alamat: safe("alamat"),
+      website: safe("website"), instagram: safe("instagram"), facebook: safe("facebook"), youtube: safe("youtube"),
+      koordinat: safe("koordinat"), tautanPeta: safe("tautanPeta"), jamLayanan: safe("jamLayanan"),
+    };
+  } catch {
+    return {};
+  }
+}
