@@ -90,6 +90,12 @@ export default async function WilayahPage() {
     ["Timur", profil?.batasTimur],
     ["Barat", profil?.batasBarat],
   ].filter((row) => row[1]);
+  const geographyDetails = [
+    ["Ketinggian", profil?.ketinggian],
+    ["Suhu rata-rata", profil?.suhuRataRata],
+    ["Curah hujan", profil?.curahHujan],
+    ["Topografi", profil?.topografi],
+  ].filter((row): row is [string, string] => Boolean(row[1]));
 
   return (
     <main className={styles.site}>
@@ -358,9 +364,17 @@ export default async function WilayahPage() {
               <span>⌁</span> Kondisi Geografis
             </h2>
             <p>
-              Informasi kondisi geografis {desa.namaDesa ?? "desa"} belum dipublikasikan oleh
-              pemerintah desa.
+              {geographyDetails.length
+                ? `Kondisi geografis ${desa.namaDesa ?? "desa"} berdasarkan informasi yang dikelola pemerintah desa.`
+                : `Informasi kondisi geografis ${desa.namaDesa ?? "desa"} belum dilengkapi oleh pemerintah desa.`}
             </p>
+            {geographyDetails.length ? (
+              <dl className={styles.boundaries}>
+                {geographyDetails.map(([label, value]) => (
+                  <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
+                ))}
+              </dl>
+            ) : null}
             {mapPhoto ? (
               <div className={styles.geoPhoto}>
                 <Image
