@@ -39,3 +39,5 @@
 @media print{.ls-explorer{display:block}.ls-detail-cover{break-inside:avoid}.ls-subnav,.ls-period-form,.ls-pagination{display:none!important}}
 
 .ls-export-links{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.ls-export-links a{font-size:12px;font-weight:700;color:#5c43bd;text-decoration:none;padding:7px 10px;border:1px solid #e3ddf6;border-radius:8px;background:#fff}
+
+.ls-template-form{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end;margin-bottom:16px}.ls-template-form label{display:grid;gap:6px;font-size:12px;color:#6b6d80}.ls-template-form input,.ls-template-form select{min-height:40px;border:1px solid #e1def0;border-radius:10px;padding:0 12px;background:#fff;color:#25263d}.ls-template-form button{justify-self:start}@media(max-width:650px){.ls-template-form{grid-template-columns:1fr}}
