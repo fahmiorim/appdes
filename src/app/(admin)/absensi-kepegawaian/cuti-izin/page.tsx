@@ -29,7 +29,7 @@ export default async function CutiIzinPage() {
       <section className={styles["ak-card"]}>
         <h2>Daftar Pengajuan Cuti & Izin</h2><p>Riwayat dan status seluruh pengajuan pegawai.</p>
         <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}><thead><tr><th>Nama Pegawai</th><th>Jenis</th><th>Tanggal / Durasi</th><th>Alasan</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
-          {rows.map(x=><tr key={x.id}><td>{x.nama}<br/><small>{x.jabatan??"—"}</small></td><td>{x.jenis.replaceAll("_"," ")}</td><td>{x.mulai} – {x.selesai}<br/>({x.durasi} hari)</td><td>{x.alasan}</td><td><span className={styles["ak-badge"]}>{x.status}</span></td><td>{x.status==="menunggu"?<details><summary>Putuskan</summary><form action={putuskanCutiAction} className={styles["ak-form"]}><input type="hidden" name="id" value={x.id}/><label>Catatan<input name="catatan"/></label><label>Keputusan<select name="status"><option value="disetujui">Setujui</option><option value="ditolak">Tolak</option></select></label><button className={styles["ak-button"]}>Simpan Keputusan</button></form></details>:"—"}</td></tr>)}
+          {rows.map(x=><tr key={x.id}><td>{x.nama}<br/><small>{x.jabatan??"—"}</small></td><td>{x.jenis.replaceAll("_"," ")}</td><td>{x.mulai} – {x.selesai}<br/>({x.durasi} hari)</td><td>{x.alasan}{x.lampiran?<><br/><a href={"/api/kepegawaian/cuti/"+x.id+"/lampiran"}>Lihat lampiran</a></>:null}</td><td><span className={styles["ak-badge"]}>{x.status}</span></td><td>{x.status==="menunggu"?<details><summary>Putuskan</summary><form action={putuskanCutiAction} className={styles["ak-form"]}><input type="hidden" name="id" value={x.id}/><label>Catatan<input name="catatan"/></label><label>Keputusan<select name="status"><option value="disetujui">Setujui</option><option value="ditolak">Tolak</option></select></label><button className={styles["ak-button"]}>Simpan Keputusan</button></form></details>:"—"}</td></tr>)}
         </tbody></table></div>
         {!rows.length?<div className={styles["ak-empty"]}>Belum ada pengajuan cuti atau izin.</div>:null}
       </section>
@@ -39,7 +39,7 @@ export default async function CutiIzinPage() {
           <label className={styles.wide}>Nama Pegawai<select name="pegawaiId" required>{pegawai.filter(x=>x.status==="aktif").map(x=><option key={x.id} value={x.id}>{x.nama}</option>)}</select></label>
           <label>Jenis<select name="jenis"><option value="cuti_tahunan">Cuti Tahunan</option><option value="cuti_sakit">Cuti Sakit</option><option value="izin">Izin</option><option value="cuti_penting">Cuti Penting</option></select></label>
           <label>Tanggal Mulai<input type="date" name="mulai" required/></label><label>Tanggal Selesai<input type="date" name="selesai" required/></label>
-          <label className={styles.wide}>Alasan<textarea name="alasan" rows={3} required/></label>
+          <label className={styles.wide}>Alasan<textarea name="alasan" rows={3} required/></label><label className={styles.wide}>Lampiran Pendukung<input type="file" name="lampiran" accept=".pdf,image/jpeg,image/png,image/webp"/></label>
           <button className={styles["ak-button"]}>Ajukan Cuti / Izin</button>
         </form>
       </section>
