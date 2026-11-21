@@ -9,8 +9,8 @@ export const metadata = { title: "Wilayah & Organisasi" };
 export default async function WilayahOrganisasiPage() {
   const { rows, shapes, layers, officials, profil } = await getWilayahPemerintahanData();
   const dusun = [...new Set(rows.map(x=>x.dusun).filter(Boolean))];
-  const rt = [...new Set(rows.map(x=>x.rt).filter(Boolean))];
-  const rw = [...new Set(rows.map(x=>x.rw).filter(Boolean))];
+  const rt = [...new Set(rows.filter((x) => x.rt).map((x) => `${x.dusun ?? ""}::${x.rw ?? ""}::${x.rt}`))];
+  const rw = [...new Set(rows.filter((x) => x.rw).map((x) => `${x.dusun ?? ""}::${x.rw}`))];
   const countByDusun = dusun.map(name=>({name,items:rows.filter(x=>x.dusun===name)}));
   const kepala = officials.find(x=>(x.jabatan ?? "").toLowerCase().includes("kepala desa"));
   const anakPerangkat = (atasanId: number) => officials
