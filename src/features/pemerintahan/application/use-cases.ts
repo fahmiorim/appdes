@@ -216,7 +216,7 @@ export async function getWilayahPemerintahanData() {
   const villageId = await tenant("wilayah");
   const [rows, shapes, layers, officials, profil] = await Promise.all([
     db.select().from(regions).where(eq(regions.villageId, villageId)).orderBy(asc(regions.sortOrder), asc(regions.dusun), asc(regions.rw), asc(regions.rt)),
-    db.select({ id: areas.id, nama: areas.nama, desk: areas.desk, enabled: areas.enabled, path: areas.path, refPolygon: areas.refPolygon }).from(areas)
+    db.select({ id: areas.id, nama: areas.nama, desk: areas.desk, foto: areas.foto, enabled: areas.enabled, path: areas.path, refPolygon: areas.refPolygon }).from(areas)
       .where(eq(areas.villageId, villageId)).orderBy(asc(areas.sortOrder)),
     db.select({ id: polygons.id, nama: polygons.nama, color: polygons.color, enabled: polygons.enabled, sortOrder: polygons.sortOrder }).from(polygons)
       .where(eq(polygons.villageId, villageId)).orderBy(asc(polygons.sortOrder)),
@@ -229,13 +229,15 @@ export async function getWilayahPemerintahanData() {
 }
 
 
-export async function simpanAreaPeta(id: number | null, input: { nama: string; desk: string | null; path: string | null; enabled: number; sortOrder: number; refPolygon: number | null }) {
+export async function simpanAreaPeta(id: number | null, input: { nama: string; desk: string | null; foto: string | null; path: string | null; enabled: number; sortOrder: number; refPolygon: number | null }) {
   const villageId = await tenant("wilayah", id ? "update" : "create");
   if (!input.nama.trim()) throw new Error("Nama area GIS wajib diisi.");
+  let fotoSebelumnya: string | null = null;
   if (id) {
-    const [existing] = await db.select({ id: areas.id }).from(areas)
+    const [existing] = await db.select({ id: areas.id, foto: areas.foto }).from(areas)
       .where(and(eq(areas.villageId, villageId), eq(areas.id, id))).limit(1);
     if (!existing) throw new Error("Area GIS tidak ditemukan pada desa aktif.");
+    fotoSebelumnya = existing.foto;
   }
   if (input.refPolygon) {
     const [layer] = await db.select({ id: polygons.id }).from(polygons).where(and(eq(polygons.villageId, villageId), eq(polygons.id, input.refPolygon))).limit(1);
@@ -264,8 +266,10 @@ export async function simpanAreaPeta(id: number | null, input: { nama: string; d
       throw new Error("Setiap ring Polygon harus memiliki minimal empat titik, koordinat longitude/latitude valid, dan titik awal yang sama dengan titik akhir.");
     }
   }
-  if (id) await db.update(areas).set(input).where(and(eq(areas.villageId, villageId), eq(areas.id, id)));
-  else await db.insert(areas).values({ ...input, villageId });
+  if (id) {
+    await db.update(areas).set(input).where(and(eq(areas.villageId, villageId), eq(areas.id, id)));
+    if (fotoSebelumnya && fotoSebelumnya !== input.foto) await hapusMedia(fotoSebelumnya);
+  } else await db.insert(areas).values({ ...input, villageId });
 }
 
 export async function hapusAreaPeta(id: number) {
