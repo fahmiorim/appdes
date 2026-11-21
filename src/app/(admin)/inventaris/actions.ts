@@ -34,7 +34,7 @@ const positiveId = (value: string) => {
   return id;
 };
 const refresh = () => {
-  for (const path of ["/inventaris", "/inventaris/dashboard", "/inventaris/mutasi", "/inventaris/laporan"]) revalidatePath(path);
+  for (const path of ["/inventaris", "/inventaris/dashboard", "/inventaris/pengelolaan", "/inventaris/mutasi", "/inventaris/laporan"]) revalidatePath(path);
 };
 
 export async function simpanInventarisAction(fd: FormData) {
