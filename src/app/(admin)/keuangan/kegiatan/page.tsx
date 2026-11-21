@@ -5,13 +5,14 @@ import styles from "../keuangan.module.css";
 import { buatKegiatanPembangunanAction, hapusKegiatanPembangunanAction } from "../actions";
 
 export const metadata = { title: "Kegiatan & Pembangunan" };
-type Props = { searchParams: Promise<{ q?: string; tahun?: string; status?: string }> };
+type Props = { searchParams: Promise<{ q?: string; tahun?: string; status?: string; page?: string }> };
 
 export default async function KegiatanPage({searchParams}:Props) {
   const params=await searchParams; const tahunRaw=Number(params.tahun);
   const tahun=Number.isInteger(tahunRaw)&&tahunRaw>=2000&&tahunRaw<=2100?tahunRaw:null;
   const search=(params.q??"").trim().slice(0,100); const status=params.status??"";
-  const data = await listPembangunan({search,tahun,status,page:1,pageSize:100});
+  const pageRaw=Number(params.page); const page=Number.isInteger(pageRaw)&&pageRaw>0?pageRaw:1;
+  const data = await listPembangunan({search,tahun,status,page,pageSize:10});
   const all = await listPembangunan({search:"",tahun:null,status:"",page:1,pageSize:1000});
   const count=(key:string)=>all.rows.filter(x=>x.status===key).length;
   const pinned=all.rows.filter(x=>x.latitude!==null&&x.longitude!==null);
@@ -26,6 +27,14 @@ export default async function KegiatanPage({searchParams}:Props) {
       <form method="get" className={styles.filterForm}><input name="q" placeholder="Cari nama kegiatan atau lokasi..." defaultValue={search}/><select name="tahun" defaultValue={tahun??""}><option value="">Semua tahun</option>{all.rows.map(x=>x.tahunAnggaran).filter((x,i,a)=>a.indexOf(x)===i).sort((a,b)=>b-a).map(y=><option key={y} value={y}>{y}</option>)}</select><select name="status" defaultValue={status}><option value="">Semua status</option><option value="rencana">Rencana</option><option value="berjalan">Berjalan</option><option value="selesai">Selesai</option><option value="dibatalkan">Dibatalkan</option></select><button className={styles.primaryButton} type="submit">Filter</button><Link href="/keuangan/kegiatan">Reset</Link></form>
       {data.rows.length?<div className={styles.tableWrap}><table className={styles.dataTable}><thead><tr><th>No.</th><th>Nama Kegiatan</th><th>Lokasi</th><th>Tahun</th><th className={styles.number}>Anggaran</th><th>Progres</th><th>Status</th><th>Aksi</th></tr></thead><tbody>{data.rows.map((row,i)=><tr key={row.id}><td>{i+1}</td><td><Link href={"/keuangan/kegiatan/"+row.id} className={styles.rowLink}>{row.judul}</Link></td><td>{row.lokasi||"—"}</td><td>{row.tahunAnggaran}</td><td className={styles.number}>{formatAnggaran(row.anggaran)}</td><td><div className={styles.progress}><i style={{width:row.progres+"%"}}/></div><small>{row.progres}%</small></td><td><span className={styles.status}>{statusPembangunanLabel(row.status)}</span></td><td><Link href={"/keuangan/kegiatan/"+row.id}>Detail</Link><form action={hapusKegiatanPembangunanAction}><input type="hidden" name="id" value={row.id}/><button className={styles.textButton} type="submit">Hapus</button></form></td></tr>)}</tbody></table></div>:<p className={styles.empty}>Tidak ada kegiatan yang cocok dengan filter.</p>}
     </section>
+    <nav className={styles.pagination} aria-label="Halaman daftar kegiatan">
+      <span>Menampilkan {data.total===0?0:(data.page-1)*data.pageSize+1}–{Math.min(data.page*data.pageSize,data.total)} dari {data.total} kegiatan</span>
+      <div>
+        {data.page>1?<Link href={"/keuangan/kegiatan?"+new URLSearchParams({q:search,tahun:tahun?String(tahun):"",status,page:String(data.page-1)}).toString()}>← Sebelumnya</Link>:<span className={styles.disabledPage}>← Sebelumnya</span>}
+        <strong>{data.page} / {data.pageCount}</strong>
+        {data.page<data.pageCount?<Link href={"/keuangan/kegiatan?"+new URLSearchParams({q:search,tahun:tahun?String(tahun):"",status,page:String(data.page+1)}).toString()}>Berikutnya →</Link>:<span className={styles.disabledPage}>Berikutnya →</span>}
+      </div>
+    </nav>
     <details className={styles.panel}><summary className={styles.summary}>＋ Tambah Kegiatan Pembangunan</summary><form action={buatKegiatanPembangunanAction} className={styles.projectForm}>
       <label>Nama kegiatan<input name="judul" required maxLength={200}/></label><label>Tahun anggaran<input name="tahunAnggaran" type="number" min="2000" max="2100" defaultValue={new Date().getFullYear()} required/></label><label>Sumber dana<select name="sumberDana"><option value="APBDes">APBDes</option><option>Dana Desa</option><option>ADD</option><option>Bantuan Pusat</option><option>Bantuan Provinsi</option><option>Bantuan Kabupaten</option><option>Swadaya Masyarakat</option><option>Lainnya</option></select></label><label>Anggaran (Rp)<input name="anggaran" type="number" min="0" step="1"/></label><label>Lokasi<input name="lokasi" maxLength={200}/></label><label>Latitude<input name="latitude" type="number" min="-90" max="90" step="0.0000001" placeholder="-2.1234567"/></label><label>Longitude<input name="longitude" type="number" min="-180" max="180" step="0.0000001" placeholder="99.1234567"/></label><label>Pelaksana<input name="pelaksana" maxLength={200}/></label><label>Tanggal mulai<input name="mulai" type="date"/></label><label>Tanggal selesai<input name="selesai" type="date"/></label><label>Status<select name="status"><option value="rencana">Rencana</option><option value="berjalan">Berjalan</option><option value="selesai">Selesai</option><option value="dibatalkan">Dibatalkan</option></select></label><label>Progres (%)<input name="progres" type="number" min="0" max="100" defaultValue="0"/></label><label className={styles.fullField}>Deskripsi<textarea name="deskripsi" rows={3}/></label><label className={styles.fullField}>Hasil / manfaat<textarea name="hasil" rows={2}/></label><button className={styles.primaryButton} type="submit">Simpan Kegiatan</button>
     </form></details>
