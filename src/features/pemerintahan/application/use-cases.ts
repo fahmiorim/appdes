@@ -79,7 +79,7 @@ export async function simpanPerangkatDesa(id: number | null, input: {
   nip: string | null; nik: string | null; jenisKelamin: string | null; tempatLahir: string | null;
   tanggalLahir: string | null; foto: string | null; status: string; periode: string | null;
   pendidikan: string | null; telepon: string | null; email: string | null; alamat: string | null;
-  nomorSkPengangkatan: string | null; tanggalPengangkatan: string | null; atasanId: number | null; urut: number;
+  nomorSkPengangkatan: string | null; tanggalPengangkatan: string | null; nomorSkPemberhentian: string | null; tanggalPemberhentian: string | null; atasanId: number | null; urut: number;
 }) {
   const villageId = await tenant("perangkat-desa", id ? "update" : "create");
   if (input.jabatanId) {
