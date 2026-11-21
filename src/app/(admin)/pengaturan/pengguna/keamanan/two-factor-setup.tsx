@@ -5,7 +5,7 @@ import { authClient } from "@/lib/auth-client";
 import styles from "./keamanan.module.css";
 
 export function TwoFactorSetup({enabled,hasEmail,hasVerifiedEmail,canEmailOtp}:{enabled:boolean;hasEmail:boolean;hasVerifiedEmail:boolean;canEmailOtp:boolean}){
- const [password,setPassword]=useState("");const [method,setMethod]=useState<"totp"|"otp">("totp");const [uri,setUri]=useState("");const [secret,setSecret]=useState("");const [code,setCode]=useState("");const [backup,setBackup]=useState<string[]>([]);const [qrData,setQrData]=useState("");const [error,setError]=useState("");const [busy,setBusy]=useState(false);const router=useRouter();
+ const [password,setPassword]=useState("");const [method,setMethod]=useState<"totp"|"otp">("totp");const [uri,setUri]=useState("");const [secret,setSecret]=useState("");const [code,setCode]=useState("");const [backup,setBackup]=useState<string[]>([]);const [error,setError]=useState("");const [busy,setBusy]=useState(false);const router=useRouter();
  async function start(){setError("");setBusy(true);try{
   const result=await authClient.twoFactor.enable({password,method,issuer:"FlexiDesa"});
   if(result.error||!result.data){setError("Tidak dapat memulai aktivasi 2FA. Periksa kata sandi dan konfigurasi email.");return;}
