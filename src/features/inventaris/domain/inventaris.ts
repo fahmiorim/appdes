@@ -393,6 +393,8 @@ export function hitungPerubahanAset(
     return { kondisi: mutasi.kondisiBaru };
   }
 
-  const kondisiBaru = mutasi.kondisiBaru ?? "dalam_perbaikan";
-  return { kondisi: kondisiBaru };
+  if(mutasi.kondisiBaru && mutasi.kondisiBaru!=="dalam_perbaikan") {
+    throw conflict("Kondisi akhir perbaikan ditetapkan setelah jadwal pemeliharaan selesai.");
+  }
+  return { kondisi: "dalam_perbaikan" };
 }
