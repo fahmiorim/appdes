@@ -126,7 +126,7 @@ export async function updatePolygon(id: number, input: PolygonFormInput): Promis
 }
 
 export async function deletePolygon(id: number): Promise<void> {
-  const user = await requirePermission(POLYGON_RESOURCE, "update");
+  const user = await requirePermission(POLYGON_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
   const polygon = await repoFindPolygonById(villageId, id);
   if (!polygon) throw notFound();
@@ -168,7 +168,7 @@ export async function updateArea(id: number, input: AreaFormInput): Promise<void
 
 export async function deleteArea(id: number): Promise<void> {
   const user = await requireUser();
-  await requirePermission(AREA_RESOURCE, "update");
+  await requirePermission(AREA_RESOURCE, "delete");
   const area = await repoFindAreaById(await resolveVillageId(user), id);
   if (!area) throw notFound();
   await repoDeleteArea(await resolveVillageId(user), id);
@@ -207,7 +207,7 @@ export async function updateGaris(id: number, input: GarisFormInput): Promise<vo
 }
 
 export async function deleteGaris(id: number): Promise<void> {
-  const user = await requirePermission(GARIS_RESOURCE, "update");
+  const user = await requirePermission(GARIS_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
   const garis = await repoFindGarisById(villageId, id);
   if (!garis) throw notFound();
@@ -246,7 +246,7 @@ export async function updatePoint(id: number, input: PointFormInput): Promise<vo
 }
 
 export async function deletePoint(id: number): Promise<void> {
-  const user = await requirePermission(POINT_RESOURCE, "update");
+  const user = await requirePermission(POINT_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
   const existing = (await repoListPoints(villageId)).find((point) => point.id === id);
   if (!existing) throw notFound();
@@ -276,7 +276,7 @@ export async function updateSimbol(id: number, input: SimbolFormInput): Promise<
 
 export async function deleteSimbol(id: number): Promise<void> {
   await requireUser();
-  await requirePermission(SIMBOL_RESOURCE, "update");
+  await requirePermission(SIMBOL_RESOURCE, "delete");
   await repoDeleteSimbol(id);
 }
 
@@ -304,7 +304,7 @@ export async function updatePersil(id: number, input: PersilFormInput): Promise<
 }
 
 export async function deletePersil(id: number): Promise<void> {
-  const user = await requirePermission(PERTANAHAN_RESOURCE, "update");
+  const user = await requirePermission(PERTANAHAN_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
   const persil = await repoFindPersilById(villageId, id);
   if (!persil) throw notFound();
@@ -359,7 +359,7 @@ export async function updateCdesa(id: number, input: unknown): Promise<void> {
 }
 
 export async function deleteCdesa(id: number): Promise<void> {
-  const user = await requirePermission(PERTANAHAN_RESOURCE, "update");
+  const user = await requirePermission(PERTANAHAN_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
   const cdesa = await repoFindCdesaById(villageId, id);
   if (!cdesa) throw notFound();
@@ -406,7 +406,7 @@ export async function updateCdesaMutasi(id: number, input: unknown): Promise<voi
 }
 
 export async function deleteCdesaMutasi(id: number): Promise<void> {
-  const user = await requirePermission(PERTANAHAN_RESOURCE, "update");
+  const user = await requirePermission(PERTANAHAN_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
   const existing = await repoFindCdesaMutasiById(villageId, id);
   if (!existing) throw notFound();
