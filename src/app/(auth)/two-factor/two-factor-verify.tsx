@@ -1,11 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { authClient } from "@/lib/auth-client";
 
 export function TwoFactorVerify({method}:{method:"totp"|"otp"}){
  const [code,setCode]=useState("");const [error,setError]=useState("");const [pending,setPending]=useState(false);const [sent,setSent]=useState(false);
  async function sendCode(){setError("");setPending(true);try{const result=await authClient.twoFactor.sendOtp({trustDevice:true});if(result.error){setError("Kode email tidak dapat dikirim. Pastikan email akun sudah aktif.");return;}setSent(true);}catch{setError("Pengiriman kode email gagal.");}finally{setPending(false);}}
- async function submit(event:React.FormEvent<HTMLFormElement>){event.preventDefault();setError("");setPending(true);try{
+ async function submit(event:FormEvent<HTMLFormElement>){event.preventDefault();setError("");setPending(true);try{
   const result=method==="totp"
     ? await authClient.twoFactor.verifyTotp({code:code.trim(),trustDevice:true})
     : await authClient.twoFactor.verifyOtp({code:code.trim(),trustDevice:true});
