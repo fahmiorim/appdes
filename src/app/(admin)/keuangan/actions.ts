@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { listKeuangan, saveKeuanganData, saveKeuanganTriwulanData } from "@/features/keuangan/application/keuangan-use-cases";
 import { isInputRow } from "@/features/keuangan/domain/keuangan";
-import { createPembangunan, deletePembangunan, updatePembangunan } from "@/features/pembangunan/application/use-cases";
-import { pembangunanFormSchema } from "@/features/pembangunan/domain/pembangunan";
+import { addDokumentasi, createPembangunan, deleteDokumentasi, deletePembangunan, updatePembangunan } from "@/features/pembangunan/application/use-cases";
+import { dokumentasiFormSchema, pembangunanFormSchema } from "@/features/pembangunan/domain/pembangunan";
 import { redirect } from "next/navigation";
 
 export async function simpanPaguApbdesAction(formData: FormData): Promise<void> {
@@ -100,4 +100,36 @@ export async function hapusKegiatanPembangunanAction(formData: FormData): Promis
   revalidatePath("/keuangan");
   revalidatePath("/keuangan/kegiatan");
   revalidatePath("/pembangunan");
+}
+
+export async function tambahDokumentasiKegiatanAction(formData: FormData): Promise<void> {
+  const proyekId = Number(formData.get("proyekId"));
+  if (!Number.isInteger(proyekId) || proyekId < 1) throw new Error("ID kegiatan tidak valid.");
+  const file = formData.get("foto");
+  if (!(file instanceof File) || file.size === 0) throw new Error("Pilih foto dokumentasi.");
+  const parsed = dokumentasiFormSchema.parse({
+    judul: formData.get("judul") ?? "",
+    keterangan: formData.get("keterangan") ?? "",
+  });
+  await addDokumentasi(proyekId, parsed, {
+    nama: file.name,
+    mime: file.type,
+    ukuran: file.size,
+    isi: new Uint8Array(await file.arrayBuffer()),
+  });
+  revalidatePath("/keuangan/kegiatan/" + proyekId);
+  revalidatePath("/pembangunan");
+  redirect("/keuangan/kegiatan/" + proyekId + "?dokumentasi=1");
+}
+
+export async function hapusDokumentasiKegiatanAction(formData: FormData): Promise<void> {
+  const id = Number(formData.get("id"));
+  const proyekId = Number(formData.get("proyekId"));
+  if (!Number.isInteger(id) || id < 1 || !Number.isInteger(proyekId) || proyekId < 1) {
+    throw new Error("Data dokumentasi tidak valid.");
+  }
+  await deleteDokumentasi(id);
+  revalidatePath("/keuangan/kegiatan/" + proyekId);
+  revalidatePath("/pembangunan");
+  redirect("/keuangan/kegiatan/" + proyekId);
 }
