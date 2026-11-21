@@ -101,10 +101,11 @@ export async function simpanPegawai(input: {
       .where(and(eq(kepegawaianPegawai.villageId,villageId),eq(kepegawaianPegawai.nip,input.nip),...(input.id?[ne(kepegawaianPegawai.id,input.id)]:[]))).limit(1);
     if(duplicate) throw new Error("NIP sudah digunakan pegawai lain.");
   }
-  if (input.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.email)) throw new Error("Format email pegawai tidak valid.");
-  if (input.email) {
+  const email=input.email?.trim().toLowerCase()||null;
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Format email pegawai tidak valid.");
+  if (email) {
     const [duplicateEmail] = await db.select({id:kepegawaianPegawai.id}).from(kepegawaianPegawai)
-      .where(and(eq(kepegawaianPegawai.villageId,villageId),eq(kepegawaianPegawai.email,input.email),...(input.id?[ne(kepegawaianPegawai.id,input.id)]:[]))).limit(1);
+      .where(and(eq(kepegawaianPegawai.villageId,villageId),eq(kepegawaianPegawai.email,email),...(input.id?[ne(kepegawaianPegawai.id,input.id)]:[]))).limit(1);
     if(duplicateEmail) throw new Error("Email sudah terhubung ke pegawai lain. Satu akun hanya boleh terhubung ke satu pegawai.");
   }
   if (input.nik) {
