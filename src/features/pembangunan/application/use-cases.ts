@@ -169,7 +169,12 @@ export async function addDokumentasi(
   }
 
   const gambar = await simpanBerkasMedia(villageId, berkas, KATEGORI_MEDIA, "gambar");
-  await insertDokumentasi(villageId, proyekId, gambar, input);
+  try {
+    await insertDokumentasi(villageId, proyekId, gambar, input);
+  } catch (error) {
+    await hapusMedia(gambar).catch(() => undefined);
+    throw error;
+  }
 }
 
 export async function deleteDokumentasi(id: number): Promise<void> {
