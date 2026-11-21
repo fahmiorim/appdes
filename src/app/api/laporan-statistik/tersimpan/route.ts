@@ -28,7 +28,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const user = await requirePermission("laporan-statistik", "manage");
+    const user = await requirePermission("laporan-statistik", "update");
     const villageId = await resolveVillageId(user);
     const body = await request.json() as { judul?: string; jenis?: string; tahun?: number; deskripsi?: string };
     const judul = body.judul?.trim();
@@ -49,7 +49,7 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   try {
-    const user = await requirePermission("laporan-statistik", "manage");
+    const user = await requirePermission("laporan-statistik", "update");
     const villageId = await resolveVillageId(user);
     const body = await request.json() as { id?: number; judul?: string; deskripsi?: string };
     const id = Number(body.id), judul = body.judul?.trim();
@@ -66,7 +66,7 @@ export async function PATCH(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const user = await requirePermission("laporan-statistik", "manage");
+    const user = await requirePermission("laporan-statistik", "delete");
     const villageId = await resolveVillageId(user);
     const id = Number(new URL(request.url).searchParams.get("id"));
     if (!Number.isInteger(id) || id < 1) return jsonError("ID laporan tidak valid.", 400);
