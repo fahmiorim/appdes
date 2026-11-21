@@ -4,6 +4,7 @@ import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
 import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { catatPerubahanAnggotaKk } from "@/features/keluarga/application/catat-anggota-kk";
+import { listKeluargaMembers as listFamilyMembersRows } from "@/features/keluarga/infrastructure/keluarga-repository";
 import {
   HEAD_OF_FAMILY_RELATION_ID,
   PENDUDUK_RESOURCE,
@@ -236,6 +237,13 @@ export async function deletePenduduk(id: number): Promise<void> {
 
   const existing = await findPendudukById(villageId, id);
   if (!existing) throw notFound("Data penduduk tidak ditemukan.");
+  if (existing.familyId !== null && existing.familyRelationId === HEAD_OF_FAMILY_RELATION_ID) {
+    const members = await listFamilyMembersRows(villageId, existing.familyId);
+    if (members.length > 1)
+      throw conflict(
+        "Tetapkan anggota lain sebagai kepala keluarga sebelum menghapus kepala keluarga saat ini.",
+      );
+  }
 
   await deletePendudukRow(villageId, id);
 

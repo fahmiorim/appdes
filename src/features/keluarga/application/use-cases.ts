@@ -230,6 +230,12 @@ export async function deleteKeluarga(id: number): Promise<void> {
   const existing = await findKeluargaById(villageId, id);
   if (!existing) throw notFound("Kartu Keluarga tidak ditemukan.");
 
+  const members = await listKeluargaMembersRows(villageId, id);
+  if (members.length > 0)
+    throw conflict(
+      "Kartu Keluarga masih memiliki anggota. Pindahkan atau lepaskan seluruh anggota terlebih dahulu.",
+    );
+
   await deleteKeluargaRow(villageId, id);
 
   await recordAuditEvent({

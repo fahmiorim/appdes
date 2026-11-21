@@ -7,12 +7,19 @@ import {
   hapusAlbumGaleriWebsiteAction,
   hapusBeritaWebsiteAction,
   hapusFotoGaleriWebsiteAction,
+  hapusKategoriBeritaWebsiteAction,
   hapusSliderWebsiteAction,
   tambahAgendaWebsiteAction,
   tambahAlbumWebsiteAction,
   tambahBeritaWebsiteAction,
   tambahKategoriBeritaWebsiteAction,
   tambahSliderWebsiteAction,
+  ubahAgendaWebsiteAction,
+  ubahAlbumWebsiteAction,
+  ubahBeritaWebsiteAction,
+  ubahFotoGaleriWebsiteAction,
+  ubahKategoriBeritaWebsiteAction,
+  ubahSliderWebsiteAction,
   ubahStatusAgendaWebsiteAction,
   ubahStatusBeritaWebsiteAction,
   ubahStatusSliderWebsiteAction,
@@ -122,6 +129,94 @@ export default async function WebsiteContentPage() {
                       <td>{item.hit.toLocaleString("id-ID")}</td>
                       <td>
                         <div className="website-row-actions">
+                          <details>
+                            <summary className="website-mini-button">Edit</summary>
+                            <form action={ubahBeritaWebsiteAction} className="website-inline-form">
+                              <input type="hidden" name="id" value={item.id} />
+                              <label>
+                                Judul
+                                <input
+                                  name="judulBerita"
+                                  defaultValue={item.judul}
+                                  required
+                                  maxLength={200}
+                                />
+                              </label>
+                              <label>
+                                Slug
+                                <input
+                                  name="slugBerita"
+                                  defaultValue={item.slug}
+                                  required
+                                  maxLength={190}
+                                />
+                              </label>
+                              <label>
+                                Kategori
+                                <select
+                                  name="kategoriId"
+                                  defaultValue={item.kategoriId?.toString() ?? ""}
+                                >
+                                  <option value="">Umum</option>
+                                  {categories.map((category) => (
+                                    <option key={category.id} value={category.id}>
+                                      {category.nama}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                              <label>
+                                Status
+                                <select name="statusBerita" defaultValue={item.status}>
+                                  <option value="draft">Draft</option>
+                                  <option value="published">Tayang</option>
+                                </select>
+                              </label>
+                              <label>
+                                Ringkasan
+                                <textarea
+                                  name="ringkasanBerita"
+                                  defaultValue={item.ringkasan ?? ""}
+                                />
+                              </label>
+                              <label>
+                                Isi berita (HTML)
+                                <textarea
+                                  name="isiBerita"
+                                  defaultValue={item.isi}
+                                  rows={6}
+                                  required
+                                />
+                              </label>
+                              <label>
+                                Ganti gambar
+                                <input
+                                  name="gambarBerita"
+                                  type="file"
+                                  accept="image/jpeg,image/png,image/webp,image/gif"
+                                />
+                              </label>
+                              <label className="website-checkbox">
+                                <input
+                                  type="checkbox"
+                                  name="headline"
+                                  defaultChecked={item.headline}
+                                />{" "}
+                                Headline
+                              </label>
+                              <label className="website-checkbox">
+                                <input
+                                  type="checkbox"
+                                  name="tampilSlider"
+                                  defaultChecked={item.slider}
+                                />{" "}
+                                Tampilkan di slider
+                              </label>
+                              <button className="website-mini-button" type="submit">
+                                Simpan Perubahan
+                              </button>
+                            </form>
+                          </details>
                           <form action={ubahStatusBeritaWebsiteAction}>
                             <input type="hidden" name="id" value={item.id} />
                             <input
@@ -164,7 +259,51 @@ export default async function WebsiteContentPage() {
                 Tambah Kategori
               </button>
             </form>
-            \n{" "}
+            <div className="website-list">
+              {categories.map((category) => (
+                <div className="website-list-row" key={category.id}>
+                  <strong>{category.nama}</strong>
+                  <div className="website-row-actions">
+                    <details>
+                      <summary className="website-mini-button">Edit</summary>
+                      <form
+                        action={ubahKategoriBeritaWebsiteAction}
+                        className="website-inline-form"
+                      >
+                        <input type="hidden" name="id" value={category.id} />
+                        <label>
+                          Nama
+                          <input
+                            name="namaKategori"
+                            defaultValue={category.nama}
+                            required
+                            maxLength={100}
+                          />
+                        </label>
+                        <label>
+                          Slug
+                          <input
+                            name="slugKategori"
+                            defaultValue={category.slug}
+                            required
+                            maxLength={100}
+                          />
+                        </label>
+                        <button className="website-mini-button" type="submit">
+                          Simpan
+                        </button>
+                      </form>
+                    </details>
+                    <form action={hapusKategoriBeritaWebsiteAction}>
+                      <input type="hidden" name="id" value={category.id} />
+                      <button className="website-mini-button is-danger" type="submit">
+                        Hapus
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              ))}
+            </div>
             <form
               action={tambahBeritaWebsiteAction}
               className="website-inline-form"
@@ -267,6 +406,74 @@ export default async function WebsiteContentPage() {
                       </td>
                       <td>
                         <div className="website-row-actions">
+                          <details>
+                            <summary className="website-mini-button">Edit</summary>
+                            <form action={ubahAgendaWebsiteAction} className="website-inline-form">
+                              <input type="hidden" name="id" value={item.id} />
+                              <label>
+                                Nama kegiatan
+                                <input
+                                  name="judulAgenda"
+                                  defaultValue={item.judul}
+                                  required
+                                  maxLength={200}
+                                />
+                              </label>
+                              <label>
+                                Kategori
+                                <input name="kategoriAgenda" defaultValue={item.kategori} />
+                              </label>
+                              <label>
+                                Tanggal mulai
+                                <input
+                                  type="date"
+                                  name="mulaiAgenda"
+                                  defaultValue={String(item.mulai).slice(0, 10)}
+                                  required
+                                />
+                              </label>
+                              <label>
+                                Tanggal selesai
+                                <input
+                                  type="date"
+                                  name="selesaiAgenda"
+                                  defaultValue={
+                                    item.selesai ? String(item.selesai).slice(0, 10) : ""
+                                  }
+                                />
+                              </label>
+                              <label>
+                                Jam mulai
+                                <input
+                                  type="time"
+                                  name="jamMulai"
+                                  defaultValue={item.jamMulai ?? ""}
+                                />
+                              </label>
+                              <label>
+                                Jam selesai
+                                <input
+                                  type="time"
+                                  name="jamSelesai"
+                                  defaultValue={item.jamSelesai ?? ""}
+                                />
+                              </label>
+                              <label>
+                                Lokasi
+                                <input name="lokasiAgenda" defaultValue={item.lokasi ?? ""} />
+                              </label>
+                              <label>
+                                Deskripsi
+                                <textarea
+                                  name="deskripsiAgenda"
+                                  defaultValue={item.deskripsi ?? ""}
+                                />
+                              </label>
+                              <button className="website-mini-button" type="submit">
+                                Simpan Perubahan
+                              </button>
+                            </form>
+                          </details>
                           <form action={ubahStatusAgendaWebsiteAction}>
                             <input type="hidden" name="id" value={item.id} />
                             <input type="hidden" name="tayang" value={String(!item.tayang)} />
@@ -344,6 +551,59 @@ export default async function WebsiteContentPage() {
                   </div>
                   <div className="website-row-actions">
                     <span className="website-count">{item.jumlahFoto} foto</span>
+                    <details>
+                      <summary className="website-mini-button">Edit</summary>
+                      <form action={ubahAlbumWebsiteAction} className="website-inline-form">
+                        <input type="hidden" name="id" value={item.id} />
+                        <label>
+                          Nama album
+                          <input
+                            name="namaAlbum"
+                            defaultValue={item.nama}
+                            required
+                            maxLength={150}
+                          />
+                        </label>
+                        <label>
+                          Slug
+                          <input
+                            name="slugAlbum"
+                            defaultValue={item.slug}
+                            required
+                            maxLength={150}
+                          />
+                        </label>
+                        <label>
+                          Keterangan
+                          <textarea name="keteranganAlbum" defaultValue={item.keterangan ?? ""} />
+                        </label>
+                        <label>
+                          Ganti sampul
+                          <input
+                            type="file"
+                            name="sampulAlbum"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                          />
+                        </label>
+                        <label>
+                          Urutan
+                          <input type="number" min="0" name="urutAlbum" defaultValue={item.urut} />
+                        </label>
+                        <label className="website-checkbox">
+                          <input
+                            type="checkbox"
+                            name="aktifAlbum"
+                            value="true"
+                            defaultChecked={item.aktif}
+                          />{" "}
+                          Album aktif
+                        </label>
+                        <input type="hidden" name="aktifAlbum" value="false" />
+                        <button className="website-mini-button" type="submit">
+                          Simpan
+                        </button>
+                      </form>
+                    </details>
                     <form action={hapusAlbumGaleriWebsiteAction}>
                       <input type="hidden" name="id" value={item.id} />
                       <button className="website-mini-button is-danger" type="submit">
@@ -373,6 +633,65 @@ export default async function WebsiteContentPage() {
                       {album.find((item) => item.id === photo.albumId)?.nama ?? "Foto lepas"}
                     </small>
                   </div>
+                  <details>
+                    <summary className="website-mini-button">Edit</summary>
+                    <form action={ubahFotoGaleriWebsiteAction} className="website-inline-form">
+                      <input type="hidden" name="id" value={photo.id} />
+                      <label>
+                        Album
+                        <select name="albumId" defaultValue={photo.albumId ?? ""}>
+                          {album.map((item) => (
+                            <option key={item.id} value={item.id}>
+                              {item.nama}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        Judul
+                        <input name="judulFoto" defaultValue={photo.judul ?? ""} />
+                      </label>
+                      <label>
+                        Keterangan
+                        <textarea name="keteranganFoto" defaultValue={photo.keterangan ?? ""} />
+                      </label>
+                      <label>
+                        Ganti foto
+                        <input
+                          name="gambar"
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                        />
+                      </label>
+                      <label>
+                        Urutan
+                        <input type="number" min="0" name="urutFoto" defaultValue={photo.urut} />
+                      </label>
+                      <label className="website-checkbox">
+                        <input
+                          type="checkbox"
+                          name="aktifFoto"
+                          value="true"
+                          defaultChecked={photo.aktif}
+                        />{" "}
+                        Foto aktif
+                      </label>
+                      <input type="hidden" name="aktifFoto" value="false" />
+                      <label className="website-checkbox">
+                        <input
+                          type="checkbox"
+                          name="sliderFoto"
+                          value="true"
+                          defaultChecked={photo.slider}
+                        />{" "}
+                        Tampilkan sebagai slider
+                      </label>
+                      <input type="hidden" name="sliderFoto" value="false" />
+                      <button className="website-mini-button" type="submit">
+                        Simpan
+                      </button>
+                    </form>
+                  </details>
                   <form action={hapusFotoGaleriWebsiteAction}>
                     <input type="hidden" name="id" value={photo.id} />
                     <button className="website-mini-button is-danger" type="submit">
@@ -382,7 +701,6 @@ export default async function WebsiteContentPage() {
                 </article>
               ))}
             </div>
-            \n{" "}
             <form action={tambahAlbumWebsiteAction} className="website-inline-form">
               <strong>Tambah Album</strong>
               <label>
@@ -448,6 +766,39 @@ export default async function WebsiteContentPage() {
                     <span>Urutan {item.urut}</span>
                   </div>
                   <div className="website-row-actions">
+                    <details>
+                      <summary className="website-mini-button">Edit</summary>
+                      <form action={ubahSliderWebsiteAction} className="website-inline-form">
+                        <input type="hidden" name="id" value={item.id} />
+                        <label>
+                          Judul
+                          <input name="judulSlider" defaultValue={item.judul ?? ""} />
+                        </label>
+                        <label>
+                          Keterangan
+                          <textarea name="keteranganSlider" defaultValue={item.keterangan ?? ""} />
+                        </label>
+                        <label>
+                          Link tujuan
+                          <input type="url" name="tautanSlider" defaultValue={item.tautan ?? ""} />
+                        </label>
+                        <label>
+                          Urutan
+                          <input type="number" min="0" name="urutSlider" defaultValue={item.urut} />
+                        </label>
+                        <label>
+                          Ganti gambar
+                          <input
+                            type="file"
+                            name="gambarSlider"
+                            accept="image/jpeg,image/png,image/webp,image/gif"
+                          />
+                        </label>
+                        <button className="website-mini-button" type="submit">
+                          Simpan Perubahan
+                        </button>
+                      </form>
+                    </details>
                     <form action={ubahStatusSliderWebsiteAction}>
                       <input type="hidden" name="id" value={item.id} />
                       <input type="hidden" name="aktif" value={String(!item.aktif)} />

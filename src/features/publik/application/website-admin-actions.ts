@@ -36,9 +36,12 @@ import {
   buatFoto,
   buatHalamanStatis,
   buatKategoriBerita,
+  cariAgendaById,
   cariAlbumById,
   cariAlbumBySlug,
+  cariBeritaById,
   cariBeritaBySlug,
+  cariBeritaDenganKategori,
   cariDokumenById,
   cariDokumenBySlug,
   cariHalamanStatisAktifBySlug,
@@ -48,16 +51,24 @@ import {
   cariKategoriBySlug,
   cariMenuById,
   cariMenuInduk,
+  cariWidgetById,
   hapusAgenda,
   hapusAlbum,
   hapusBerita,
   hapusFoto,
   hapusHalamanStatis,
+  hapusKategoriBerita,
   listGambarFotoByAlbum,
+  ubahAgenda,
+  ubahAlbum,
+  ubahBerita,
   ubahDokumen,
+  ubahFoto,
   ubahHalamanStatis,
+  ubahKategoriBerita,
   ubahMenuDetail,
   ubahOpsiTema,
+  ubahSlider,
   ubahStatusAgenda,
   ubahStatusBerita,
   ubahStatusHalamanStatis,
@@ -794,4 +805,262 @@ export async function hapusAlbumGaleriWebsiteAction(fd: FormData): Promise<void>
   revalidatePath("/website/konten");
   revalidatePath("/website");
   redirect("/website/konten?deleted=1#galeri");
+}
+
+export async function ubahBeritaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  const judul = text(fd, "judulBerita");
+  const slug = slugify(text(fd, "slugBerita") || judul);
+  const isi = text(fd, "isiBerita");
+  if (!id || !judul || judul.length > 200 || !slug || !isi)
+    throw new Error("Data berita tidak valid.");
+  const current = await cariBeritaById(villageId, id);
+  if (!current) throw new Error("Berita tidak ditemukan.");
+  const duplicate = await cariBeritaBySlug(villageId, slug);
+  if (duplicate && duplicate.id !== id) throw new Error("Slug berita sudah digunakan.");
+  const kategoriText = text(fd, "kategoriId");
+  const kategoriId = kategoriText ? Number(kategoriText) : null;
+  if (kategoriId !== null) {
+    const category = await cariKategoriById(villageId, kategoriId);
+    if (!category) throw new Error("Kategori berita tidak ditemukan pada desa ini.");
+  }
+  const file = fd.get("gambarBerita");
+  let gambar = current.gambar;
+  if (file instanceof File && file.size > 0)
+    gambar = await simpanBerkasMedia(
+      villageId,
+      {
+        nama: file.name,
+        mime: file.type,
+        ukuran: file.size,
+        isi: new Uint8Array(await file.arrayBuffer()),
+      },
+      "berita",
+      "gambar",
+    );
+  const status = text(fd, "statusBerita") === "published" ? "published" : "draft";
+  const tanggal = text(fd, "terbitPada");
+  const terbitPada = tanggal ? new Date(tanggal) : status === "published" ? new Date() : null;
+  await ubahBerita(villageId, id, {
+    judul,
+    slug,
+    isi: sanitasiHtml(isi),
+    ringkasan: text(fd, "ringkasanBerita") || null,
+    kategoriId,
+    gambar,
+    status,
+    terbitPada,
+    headline: fd.get("headline") === "on",
+    slider: fd.get("tampilSlider") === "on",
+  });
+  if (file instanceof File && file.size > 0 && current.gambar) await hapusMedia(current.gambar);
+  revalidatePath("/website/konten");
+  revalidatePath("/website");
+  redirect("/website/konten?saved=1#berita");
+}
+
+export async function ubahAgendaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id"),
+    judul = text(fd, "judulAgenda");
+  const mulai = text(fd, "mulaiAgenda"),
+    selesai = text(fd, "selesaiAgenda");
+  if (!id || !judul || judul.length > 200 || !/^\d{4}-\d{2}-\d{2}$/.test(mulai))
+    throw new Error("Data agenda tidak valid.");
+  if (selesai && (!/^\d{4}-\d{2}-\d{2}$/.test(selesai) || selesai < mulai))
+    throw new Error("Tanggal selesai tidak valid.");
+  const existing = await cariAgendaById(villageId, id);
+  if (!existing) throw new Error("Agenda tidak ditemukan.");
+  await ubahAgenda(villageId, id, {
+    judul,
+    mulai,
+    selesai: selesai || null,
+    jamMulai: text(fd, "jamMulai") || null,
+    jamSelesai: text(fd, "jamSelesai") || null,
+    kategori: text(fd, "kategoriAgenda") || "umum",
+    lokasi: text(fd, "lokasiAgenda") || null,
+    deskripsi: text(fd, "deskripsiAgenda") || null,
+  });
+  revalidatePath("/website/konten");
+  revalidatePath("/website");
+  redirect("/website/konten?saved=1#agenda");
+}
+
+export async function ubahAlbumWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id"),
+    nama = text(fd, "namaAlbum");
+  const slug = slugify(text(fd, "slugAlbum") || nama);
+  if (!id || !nama || nama.length > 150 || !slug) throw new Error("Data album tidak valid.");
+  const current = await cariAlbumById(villageId, id);
+  if (!current) throw new Error("Album tidak ditemukan.");
+  const duplicate = await cariAlbumBySlug(villageId, slug);
+  if (duplicate && duplicate.id !== id) throw new Error("Slug album sudah digunakan.");
+  const file = fd.get("sampulAlbum");
+  let sampul = current.sampul;
+  if (file instanceof File && file.size > 0)
+    sampul = await simpanBerkasMedia(
+      villageId,
+      {
+        nama: file.name,
+        mime: file.type,
+        ukuran: file.size,
+        isi: new Uint8Array(await file.arrayBuffer()),
+      },
+      "galeri",
+      "sampul",
+    );
+  await ubahAlbum(villageId, id, {
+    nama,
+    slug,
+    keterangan: text(fd, "keteranganAlbum") || null,
+    sampul,
+    aktif: text(fd, "aktifAlbum") !== "false",
+    urut: Math.max(0, Number(text(fd, "urutAlbum")) || 0),
+  });
+  if (file instanceof File && file.size > 0 && current.sampul) await hapusMedia(current.sampul);
+  revalidatePath("/website/konten");
+  revalidatePath("/website");
+  redirect("/website/konten?saved=1#galeri");
+}
+
+export async function ubahFotoGaleriWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id"),
+    albumId = num(fd, "albumId");
+  if (!id || !albumId) throw new Error("Data foto tidak valid.");
+  const photo = await ambilGambarFoto(villageId, id);
+  const album = await cariAlbumById(villageId, albumId);
+  if (!photo || !album) throw new Error("Foto atau album tidak ditemukan pada desa ini.");
+  const file = fd.get("gambar");
+  let gambar = photo.gambar;
+  if (file instanceof File && file.size > 0)
+    gambar = await simpanBerkasMedia(
+      villageId,
+      {
+        nama: file.name,
+        mime: file.type,
+        ukuran: file.size,
+        isi: new Uint8Array(await file.arrayBuffer()),
+      },
+      "galeri",
+      "gambar",
+    );
+  await ubahFoto(villageId, id, {
+    albumId,
+    gambar,
+    judul: text(fd, "judulFoto") || null,
+    keterangan: text(fd, "keteranganFoto") || null,
+    aktif: text(fd, "aktifFoto") !== "false",
+    slider: text(fd, "sliderFoto") === "true",
+    urut: Math.max(0, Number(text(fd, "urutFoto")) || 0),
+  });
+  if (file instanceof File && file.size > 0) await hapusMedia(photo.gambar);
+  revalidatePath("/website/konten");
+  revalidatePath("/website");
+  redirect("/website/konten?saved=1#galeri");
+}
+
+export async function ubahSliderWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  if (!id) throw new Error("Slider tidak valid.");
+  const current = await ambilGambarSlider(villageId, id);
+  if (!current) throw new Error("Slider tidak ditemukan.");
+  const file = fd.get("gambarSlider");
+  let gambar = current.gambar;
+  if (file instanceof File && file.size > 0)
+    gambar = await simpanBerkasMedia(
+      villageId,
+      {
+        nama: file.name,
+        mime: file.type,
+        ukuran: file.size,
+        isi: new Uint8Array(await file.arrayBuffer()),
+      },
+      "slider",
+      "gambar",
+    );
+  const tautan = text(fd, "tautanSlider");
+  if (tautan) {
+    let url: URL;
+    try {
+      url = new URL(tautan);
+    } catch {
+      throw new Error("Tautan slider tidak valid.");
+    }
+    if (!["http:", "https:"].includes(url.protocol))
+      throw new Error("Tautan slider harus HTTP atau HTTPS.");
+  }
+  await ubahSlider(villageId, id, {
+    gambar,
+    judul: text(fd, "judulSlider") || null,
+    keterangan: text(fd, "keteranganSlider") || null,
+    tautan: tautan || null,
+    urut: Math.max(0, Number(text(fd, "urutSlider")) || 0),
+  });
+  if (file instanceof File && file.size > 0) await hapusMedia(current.gambar);
+  revalidatePath("/website/konten");
+  revalidatePath("/website");
+  redirect("/website/konten?saved=1#slider");
+}
+
+export async function ubahKategoriBeritaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id"),
+    nama = text(fd, "namaKategori");
+  const slug = slugify(text(fd, "slugKategori") || nama).slice(0, 100);
+  if (!id || !nama || nama.length > 100 || !slug) throw new Error("Data kategori tidak valid.");
+  const current = await cariKategoriById(villageId, id);
+  if (!current) throw new Error("Kategori tidak ditemukan.");
+  const duplicate = await cariKategoriBySlug(villageId, slug);
+  if (duplicate && duplicate.id !== id) throw new Error("Slug kategori sudah digunakan.");
+  await ubahKategoriBerita(villageId, id, nama, slug);
+  revalidatePath("/website/konten");
+  revalidatePath("/website");
+  redirect("/website/konten?saved=1#berita");
+}
+
+export async function hapusKategoriBeritaWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-konten", "delete");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id");
+  if (!id) throw new Error("Kategori tidak valid.");
+  const current = await cariKategoriById(villageId, id);
+  if (!current) throw new Error("Kategori tidak ditemukan.");
+  const used = await cariBeritaDenganKategori(villageId, id);
+  if (used)
+    throw new Error(
+      "Kategori masih digunakan berita. Pindahkan berita ke kategori lain terlebih dahulu.",
+    );
+  await hapusKategoriBerita(villageId, id);
+  revalidatePath("/website/konten");
+  redirect("/website/konten?deleted=1#berita");
+}
+
+export async function ubahWidgetWebsiteAction(fd: FormData): Promise<void> {
+  const user = await requirePermission("website-halaman", "update");
+  const villageId = await resolveVillageId(user);
+  const id = num(fd, "id"),
+    jenis = Number(text(fd, "jenisWidget"));
+  if (!id || !Number.isInteger(jenis) || jenis < 1 || jenis > 6)
+    throw new Error("Data widget tidak valid.");
+  const current = await cariWidgetById(villageId, id);
+  if (!current) throw new Error("Widget tidak ditemukan.");
+  await updateWidget(villageId, id, {
+    judul: text(fd, "judulWidget") || null,
+    isi: text(fd, "isiWidget") || null,
+    jenis,
+    urut: Math.max(0, Number(text(fd, "urutWidget")) || 0),
+  });
+  revalidatePath("/website/halaman");
+  revalidatePath("/website");
+  redirect("/website/halaman?saved=1#widget");
 }

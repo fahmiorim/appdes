@@ -15,6 +15,7 @@ import {
   pengunjungLog,
   slider,
   theme,
+  widget,
 } from "@/db/schema";
 
 /**
@@ -83,12 +84,15 @@ export async function listBeritaKontenAdmin(villageId: number, limit = 100) {
       judul: berita.judul,
       slug: berita.slug,
       ringkasan: berita.ringkasan,
+      isi: berita.isi,
       gambar: berita.gambar,
       status: berita.status,
       terbitPada: berita.terbitPada,
       kategoriId: berita.kategoriId,
       kategori: beritaKategori.nama,
       hit: berita.hit,
+      headline: berita.headline,
+      slider: berita.slider,
     })
     .from(berita)
     .leftJoin(
@@ -129,6 +133,8 @@ export async function listAlbumAdmin(villageId: number) {
       slug: galeriAlbum.slug,
       keterangan: galeriAlbum.keterangan,
       sampul: galeriAlbum.sampul,
+      aktif: galeriAlbum.aktif,
+      urut: galeriAlbum.urut,
     })
     .from(galeriAlbum)
     .where(eq(galeriAlbum.villageId, villageId));
@@ -143,6 +149,8 @@ export async function listFotoAdmin(villageId: number) {
       judul: galeriFoto.judul,
       keterangan: galeriFoto.keterangan,
       aktif: galeriFoto.aktif,
+      slider: galeriFoto.slider,
+      urut: galeriFoto.urut,
     })
     .from(galeriFoto)
     .where(eq(galeriFoto.villageId, villageId))
@@ -180,7 +188,7 @@ export async function listDokumenAdmin(villageId: number) {
 
 export async function listKategoriBeritaAdmin(villageId: number) {
   return db
-    .select({ id: beritaKategori.id, nama: beritaKategori.nama })
+    .select({ id: beritaKategori.id, nama: beritaKategori.nama, slug: beritaKategori.slug })
     .from(beritaKategori)
     .where(eq(beritaKategori.villageId, villageId))
     .orderBy(beritaKategori.nama);
@@ -191,7 +199,9 @@ export async function listSliderAdmin(villageId: number) {
     .select({
       id: slider.id,
       judul: slider.judul,
+      keterangan: slider.keterangan,
       gambar: slider.gambar,
+      tautan: slider.tautan,
       aktif: slider.aktif,
       urut: slider.urut,
     })
@@ -370,6 +380,37 @@ export async function hapusBerita(villageId: number, id: number) {
   await db.delete(berita).where(and(eq(berita.villageId, villageId), eq(berita.id, id)));
 }
 
+export async function cariBeritaById(villageId: number, id: number) {
+  const [row] = await db
+    .select({ id: berita.id, gambar: berita.gambar })
+    .from(berita)
+    .where(and(eq(berita.villageId, villageId), eq(berita.id, id)))
+    .limit(1);
+  return row;
+}
+
+export async function ubahBerita(
+  villageId: number,
+  id: number,
+  data: {
+    judul: string;
+    slug: string;
+    ringkasan: string | null;
+    isi: string;
+    kategoriId: number | null;
+    gambar: string | null;
+    status: string;
+    terbitPada: Date | null;
+    headline: boolean;
+    slider: boolean;
+  },
+) {
+  await db
+    .update(berita)
+    .set(data)
+    .where(and(eq(berita.villageId, villageId), eq(berita.id, id)));
+}
+
 /* ----------------------------------------------------------------- menu */
 
 export async function cariMenuById(villageId: number, id: number) {
@@ -426,6 +467,34 @@ export async function buatKategoriBerita(villageId: number, nama: string, slug: 
   await db.insert(beritaKategori).values({ villageId, nama, slug, aktif: true, urut: 0 });
 }
 
+export async function ubahKategoriBerita(
+  villageId: number,
+  id: number,
+  nama: string,
+  slug: string,
+) {
+  await db
+    .update(beritaKategori)
+    .set({ nama, slug })
+    .where(and(eq(beritaKategori.villageId, villageId), eq(beritaKategori.id, id)));
+}
+
+/** Berita pada desa ini yang masih memakai kategori tersebut. */
+export async function cariBeritaDenganKategori(villageId: number, kategoriId: number) {
+  const [row] = await db
+    .select({ id: berita.id })
+    .from(berita)
+    .where(and(eq(berita.villageId, villageId), eq(berita.kategoriId, kategoriId)))
+    .limit(1);
+  return row;
+}
+
+export async function hapusKategoriBerita(villageId: number, id: number) {
+  await db
+    .delete(beritaKategori)
+    .where(and(eq(beritaKategori.villageId, villageId), eq(beritaKategori.id, id)));
+}
+
 /* --------------------------------------------------------------- agenda */
 
 export async function buatAgenda(
@@ -467,6 +536,35 @@ export async function hapusAgenda(villageId: number, id: number) {
     .where(and(eq(agendaKegiatan.villageId, villageId), eq(agendaKegiatan.id, id)));
 }
 
+export async function cariAgendaById(villageId: number, id: number) {
+  const [row] = await db
+    .select({ id: agendaKegiatan.id })
+    .from(agendaKegiatan)
+    .where(and(eq(agendaKegiatan.villageId, villageId), eq(agendaKegiatan.id, id)))
+    .limit(1);
+  return row;
+}
+
+export async function ubahAgenda(
+  villageId: number,
+  id: number,
+  data: {
+    judul: string;
+    mulai: string;
+    selesai: string | null;
+    jamMulai: string | null;
+    jamSelesai: string | null;
+    kategori: string;
+    lokasi: string | null;
+    deskripsi: string | null;
+  },
+) {
+  await db
+    .update(agendaKegiatan)
+    .set(data)
+    .where(and(eq(agendaKegiatan.villageId, villageId), eq(agendaKegiatan.id, id)));
+}
+
 /* ---------------------------------------------------------------- album */
 
 export async function cariAlbumBySlug(villageId: number, slug: string) {
@@ -497,6 +595,24 @@ export async function buatAlbum(
 export async function hapusAlbum(villageId: number, id: number) {
   await db
     .delete(galeriAlbum)
+    .where(and(eq(galeriAlbum.villageId, villageId), eq(galeriAlbum.id, id)));
+}
+
+export async function ubahAlbum(
+  villageId: number,
+  id: number,
+  data: {
+    nama: string;
+    slug: string;
+    keterangan: string | null;
+    sampul: string | null;
+    aktif: boolean;
+    urut: number;
+  },
+) {
+  await db
+    .update(galeriAlbum)
+    .set(data)
     .where(and(eq(galeriAlbum.villageId, villageId), eq(galeriAlbum.id, id)));
 }
 
@@ -534,6 +650,55 @@ export async function hapusFoto(villageId: number, id: number) {
   await db
     .delete(galeriFoto)
     .where(and(eq(galeriFoto.villageId, villageId), eq(galeriFoto.id, id)));
+}
+
+export async function ubahFoto(
+  villageId: number,
+  id: number,
+  data: {
+    albumId: number;
+    gambar: string;
+    judul: string | null;
+    keterangan: string | null;
+    aktif: boolean;
+    slider: boolean;
+    urut: number;
+  },
+) {
+  await db
+    .update(galeriFoto)
+    .set(data)
+    .where(and(eq(galeriFoto.villageId, villageId), eq(galeriFoto.id, id)));
+}
+
+/* --------------------------------------------------------------- slider */
+
+export async function ubahSlider(
+  villageId: number,
+  id: number,
+  data: {
+    gambar: string;
+    judul: string | null;
+    keterangan: string | null;
+    tautan: string | null;
+    urut: number;
+  },
+) {
+  await db
+    .update(slider)
+    .set(data)
+    .where(and(eq(slider.villageId, villageId), eq(slider.id, id)));
+}
+
+/* --------------------------------------------------------------- widget */
+
+export async function cariWidgetById(villageId: number, id: number) {
+  const [row] = await db
+    .select({ id: widget.id })
+    .from(widget)
+    .where(and(eq(widget.villageId, villageId), eq(widget.id, id)))
+    .limit(1);
+  return row;
 }
 
 /* ------------------------------------------------------------- dokumen */

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
+import { hapusPendudukAction } from "@/app/(admin)/penduduk/actions";
 import { getPendudukDetailData } from "@/features/penduduk/application/use-cases";
 import {
   calculateAge,
@@ -46,6 +47,7 @@ export default async function PendudukDetailPage({ params }: { params: Promise<{
   if (!data) notFound();
 
   const bolehUbah = hasPermission(user.permissions, PENDUDUK_RESOURCE, "update");
+  const bolehHapus = hasPermission(user.permissions, PENDUDUK_RESOURCE, "delete");
 
   const penduduk = data.resident;
   const usia = calculateAge(penduduk.birthDate);
@@ -86,6 +88,14 @@ export default async function PendudukDetailPage({ params }: { params: Promise<{
             <Link className="button button-primary" href={`/penduduk/${penduduk.id}/ubah`}>
               Ubah Data
             </Link>
+          ) : null}
+          {bolehHapus ? (
+            <form action={hapusPendudukAction}>
+              <input type="hidden" name="id" value={penduduk.id} />
+              <button className="button button-secondary" type="submit">
+                Hapus Data
+              </button>
+            </form>
           ) : null}
         </div>
       </div>
