@@ -44,8 +44,8 @@ export async function PUT(request:Request){
 export async function DELETE(request:Request){
  try{const user=await requirePermission("pengaturan-desa","delete"),villageId=await resolveVillageId(user),id=Number(new URL(request.url).searchParams.get("id"));
  if(!Number.isInteger(id)||id<1)return response({error:"ID layanan tidak valid."},400);
- const result=await db.delete(layananPublik).where(and(eq(layananPublik.id,id),eq(layananPublik.villageId,villageId)));
+ const result=await db.update(layananPublik).set({aktif:false}).where(and(eq(layananPublik.id,id),eq(layananPublik.villageId,villageId)));
  if(!result.affectedRows)return response({error:"Layanan tidak ditemukan."},404);
- return response({message:"Layanan berhasil dihapus."});
+ return response({message:"Layanan berhasil dinonaktifkan. Riwayat permohonan tetap dipertahankan."});
  }catch(e){return error(e);}
 }
