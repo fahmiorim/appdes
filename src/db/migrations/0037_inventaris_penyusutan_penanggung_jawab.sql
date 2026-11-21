@@ -1,6 +1,6 @@
 ALTER TABLE `inventaris`
   ADD COLUMN `umur_manfaat_bulan` int NULL AFTER `akumulasi_penyusutan`,
-  ADD COLUMN `nilai_residu` decimal(15,2) NOT NULL DEFAULT '0.00' AFTER `umur_manfaat_bulan`,
+  ADD COLUMN `nilai_residu` decimal(15,2) NOT NULL DEFAULT '0' AFTER `umur_manfaat_bulan`,
   ADD COLUMN `tanggal_mulai_penyusutan` date NULL AFTER `nilai_residu`;
 --> statement-breakpoint
 CREATE TABLE `inventaris_penanggung_jawab_riwayat` (
