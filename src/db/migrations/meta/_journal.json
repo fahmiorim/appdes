@@ -260,6 +260,13 @@
       "when": 1795700000002,
       "tag": "0035_inventaris_kondisi_perbaikan",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "5",
+      "when": 1795700000003,
+      "tag": "0036_inventaris_penyusutan_penanggung_jawab",
+      "breakpoints": true
     }
   ]
 }
