@@ -189,6 +189,8 @@ export const inventarisPemeliharaan = mysqlTable(
     pelaksana: varchar("pelaksana", { length: 150 }),
     deskripsi: text("deskripsi"),
     hasil: text("hasil"),
+    isDeleted: boolean("is_deleted").notNull().default(false),
+    deletedAt: timestamp("deleted_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
   },
@@ -252,3 +254,34 @@ export const inventarisPenanggungJawabRiwayat = mysqlTable(
   ],
 );
 export type InventarisPenanggungJawabRiwayat = typeof inventarisPenanggungJawabRiwayat.$inferSelect;
+
+export const INVENTARIS_PEMELIHARAAN_AKSI = ["dibuat","diperbarui","dihapus"] as const;
+export const inventarisPemeliharaanRiwayat = mysqlTable(
+  "inventaris_pemeliharaan_riwayat",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    pemeliharaanId: int("pemeliharaan_id").notNull(),
+    inventarisId: int("inventaris_id").notNull(),
+    aksi: mysqlEnum("aksi", INVENTARIS_PEMELIHARAAN_AKSI).notNull(),
+    statusSebelum: mysqlEnum("status_sebelum", INVENTARIS_PEMELIHARAAN_STATUS),
+    statusSesudah: mysqlEnum("status_sesudah", INVENTARIS_PEMELIHARAAN_STATUS),
+    ringkasan: text("ringkasan"),
+    dilakukanOleh: varchar("dilakukan_oleh", { length: 150 }).notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("inv_pem_hist_village_date").on(table.villageId, table.createdAt),
+    index("inv_pem_hist_village_asset").on(table.villageId, table.inventarisId),
+    foreignKey({
+      name: "inventaris_pemeliharaan_history_schedule_tenant_fk",
+      columns: [table.villageId, table.pemeliharaanId],
+      foreignColumns: [inventarisPemeliharaan.villageId, inventarisPemeliharaan.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "inventaris_pemeliharaan_history_asset_tenant_fk",
+      columns: [table.villageId, table.inventarisId],
+      foreignColumns: [inventaris.villageId, inventaris.id],
+    }).onDelete("cascade"),
+  ],
+);
