@@ -164,3 +164,22 @@ export async function hapusAreaPeta(id: number) {
   const villageId = await tenant("wilayah", "delete");
   await db.delete(areas).where(and(eq(areas.villageId, villageId), eq(areas.id, id)));
 }
+
+export async function simpanJabatanPerangkat(id: number | null, nama: string, urut: number) {
+  const villageId = await tenant("perangkat-desa", id ? "update" : "create");
+  const slug = nama.normalize("NFKD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  if (!slug) throw new Error("Nama jabatan tidak valid.");
+  const [duplicate] = await db.select({ id: jabatanPerangkat.id }).from(jabatanPerangkat)
+    .where(and(eq(jabatanPerangkat.villageId, villageId), eq(jabatanPerangkat.slug, slug))).limit(1);
+  if (duplicate && duplicate.id !== id) throw new Error("Jabatan dengan nama tersebut sudah terdaftar.");
+  if (id) await db.update(jabatanPerangkat).set({ nama, slug, urut }).where(and(eq(jabatanPerangkat.villageId, villageId), eq(jabatanPerangkat.id, id)));
+  else await db.insert(jabatanPerangkat).values({ villageId, nama, slug, urut });
+}
+
+export async function hapusJabatanPerangkat(id: number) {
+  const villageId = await tenant("perangkat-desa", "delete");
+  const [used] = await db.select({ id: perangkatDesa.id }).from(perangkatDesa)
+    .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.jabatanId, id))).limit(1);
+  if (used) throw new Error("Jabatan masih dipakai perangkat desa. Pindahkan jabatan perangkat terlebih dahulu.");
+  await db.delete(jabatanPerangkat).where(and(eq(jabatanPerangkat.villageId, villageId), eq(jabatanPerangkat.id, id)));
+}
