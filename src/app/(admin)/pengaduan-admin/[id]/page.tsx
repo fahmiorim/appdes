@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 
 import { getPengaduanDetailData } from "@/features/pengaduan/application/use-cases";
 import {
-  KATEGORI_PENGADUAN,
   STATUS_PENGADUAN,
   labelKategori,
   labelStatus,
