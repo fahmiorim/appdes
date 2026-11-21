@@ -324,3 +324,22 @@ export async function getMutasiPageData(inventarisId?: number) {
     approverSteps: approverSteps as MutasiStep[],
   };
 }
+
+/** Detail aset dan riwayat mutasi untuk halaman pengelolaan aset. */
+export async function getInventarisDetailPageData(id: number) {
+  const user = await requirePermission(INVENTARIS_RESOURCE, "read");
+  const villageId = await resolveVillageId(user);
+  const [item, kategori, riwayat] = await Promise.all([
+    getInventaris(villageId, id),
+    listInventarisKategori(villageId),
+    listMutasi(villageId, id),
+  ]);
+  if (!item) throw notFound("Data inventaris tidak ditemukan.");
+  return {
+    item,
+    kategori,
+    riwayat,
+    canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
+    canDelete: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
+  };
+}
