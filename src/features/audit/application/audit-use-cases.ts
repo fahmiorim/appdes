@@ -19,7 +19,7 @@ export async function recordAuditEvent(input: AuditEventInput): Promise<void> {
   }
 }
 
-export async function getAuditLogPageData(input: { page?: number; search?: string }) {
+export async function getAuditLogPageData(input: { page?: number; search?: string; event?: string; createdAfter?: Date }) {
   const user = await requirePermission(RESOURCES.auditLog, "read");
   const villageId = await resolveVillageId(user);
   return listAuditLogs(villageId, { ...input, pageSize: 25 });
