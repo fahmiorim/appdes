@@ -43,9 +43,9 @@ export default async function KontakPage() {
   const location = locationLabel(desa);
   const logoUrl = mediaUrl(desa.logo, desa.id);
   const phone = settings.telepon || desa.telepon?.trim() || "";
-  const phoneDigits = phone.replace(/\\D/g, "");
+  const phoneDigits = phone.replace(/\D/g, "");
   const whatsapp = settings.whatsapp || phone;
-  const whatsappDigits = whatsapp.replace(/\\D/g, "");
+  const whatsappDigits = whatsapp.replace(/\D/g, "");
   const whatsappNumber = whatsappDigits.startsWith("0") ? "62" + whatsappDigits.slice(1) : whatsappDigits;
   const email = settings.email || desa.emailDesa?.trim() || "";
   const address = settings.alamat || desa.alamatKantor?.trim() || "";
@@ -148,7 +148,7 @@ export default async function KontakPage() {
                   <b>Telepon Kantor Desa</b>
                   <p>{phone || "Nomor telepon belum tersedia"}</p>
                 </div>
-                {phoneDigits ? <a href={`tel:${phone.replace(/[^\\d+]/g, "")}`}>↗</a> : null}
+                {phoneDigits ? <a href={`tel:${phone.replace(/[^\d+]/g, "")}`}>↗</a> : null}
               </article>
               <article>
                 <span className={styles.email}>✉</span>
