@@ -179,6 +179,15 @@ export async function listInventaris(
   return { rows, total: total[0]?.value ?? 0 };
 }
 
+
+export async function inventarisNomorExists(villageId:number,nomor:string,exceptId?:number):Promise<boolean> {
+  const [row]=await db.select({id:inventaris.id}).from(inventaris).where(and(
+    eq(inventaris.villageId,villageId),eq(inventaris.nomorInventaris,nomor),
+    eq(inventaris.isDeleted,false),exceptId===undefined?undefined:ne(inventaris.id,exceptId),
+  )).limit(1);
+  return Boolean(row);
+}
+
 export async function getInventaris(villageId: number, id: number) {
   const [row] = await db
     .select()
