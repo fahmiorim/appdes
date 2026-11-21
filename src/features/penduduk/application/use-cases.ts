@@ -164,7 +164,7 @@ async function ensureSingleHeadOfFamily(
 }
 
 export async function createPenduduk(input: PendudukFormInput): Promise<{ id: number }> {
-  const user = await requirePermission(PENDUDUK_RESOURCE, "update");
+  const user = await requirePermission(PENDUDUK_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   if (input.nationalId !== null && (await nationalIdExists(villageId, input.nationalId, null))) {
