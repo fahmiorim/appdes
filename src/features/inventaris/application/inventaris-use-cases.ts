@@ -5,6 +5,7 @@ import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import {
   hitungPerubahanAset,
+  hitungPenyusutanAset,
   MUTASI_STEP_LABELS,
   MUTASI_STEPS,
   mutasiLogBeforeStep,
@@ -66,6 +67,14 @@ function namaPengguna(user: { name: string; username: string | null; email: stri
   return user.name || user.username || user.email;
 }
 
+
+function denganPenyusutan<T extends {
+  hargaSatuan:string|null;jumlah:string;akumulasiPenyusutan?:string|null;
+  umurManfaatBulan?:number|null;nilaiResidu?:string|null;tanggalMulaiPenyusutan?:string|null;
+}>(rows:T[]) {
+  return rows.map(row=>({...row,akumulasiPenyusutan:hitungPenyusutanAset(row).akumulasiPenyusutan.toFixed(2)}));
+}
+
 export async function getInventarisPageData(search: string) {
   const user = await requirePermission(INVENTARIS_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
@@ -75,7 +84,7 @@ export async function getInventarisPageData(search: string) {
   ]);
   return {
     kategori,
-    rows: data.rows,
+    rows: denganPenyusutan(data.rows),
     total: data.total,
     canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canManage: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
@@ -105,8 +114,9 @@ export async function getLaporanInventaris(kategoriId?: number) {
     listInventarisKategori(villageId),
     listInventaris(villageId),
   ]);
+  const rows= denganPenyusutan(data.rows);
   const items: LaporanInventarisItem[] =
-    kategoriId != null ? data.rows.filter((row) => row.kategoriId === kategoriId) : data.rows;
+    kategoriId != null ? rows.filter((row) => row.kategoriId === kategoriId) : rows;
   return {
     kategori,
     kategoriId: kategoriId ?? null,
@@ -122,7 +132,7 @@ export async function getNeracaAset() {
   const user = await requirePermission(INVENTARIS_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
   const { rows } = await listInventaris(villageId);
-  return { neraca: neracaAset(rows) };
+  return { neraca: neracaAset(denganPenyusutan(rows)) };
 }
 
 /**
@@ -139,7 +149,7 @@ export async function getLaporanInventarisCsv(kategoriId?: number) {
   const kategoriNama =
     kategoriId != null ? (kategoriList.find((item) => item.id === kategoriId)?.nama ?? null) : null;
   return {
-    csv: buildInventarisCsv(data.rows, kategoriId ?? null),
+    csv: buildInventarisCsv(denganPenyusutan(data.rows), kategoriId ?? null),
     kategoriNama,
   };
 }
@@ -357,6 +367,7 @@ export async function getInventarisDetailPageData(id: number) {
   if (!item) throw notFound("Data inventaris tidak ditemukan.");
   return {
     item,
+    penyusutan:hitungPenyusutanAset(item),
     kategori,
     riwayat,
     dokumen,
