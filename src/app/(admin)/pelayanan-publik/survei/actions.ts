@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { hapusSurveiData, simpanSurveiData } from "@/features/pelayanan/application/survei-use-cases";
+import { hapusSoalSurveiData, hapusSurveiData, simpanSoalSurveiData, simpanSurveiData } from "@/features/pelayanan/application/survei-use-cases";
 
 export async function simpanSurveiAction(formData: FormData) {
   const rawId = String(formData.get("id") ?? "");
@@ -28,8 +28,6 @@ export async function hapusSurveiAction(formData: FormData) {
   redirect("/pelayanan-publik/survei?dihapus=1");
 }
 
-
-import { hapusSoalSurveiData, simpanSoalSurveiData } from "@/features/pelayanan/application/survei-use-cases";
 
 export async function simpanSoalSurveiAction(formData: FormData) {
   const surveyId = Number(formData.get("surveyId"));
