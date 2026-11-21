@@ -31,11 +31,13 @@ export async function simpanTanggapanPengaduanAction(formData: FormData): Promis
   revalidatePath("/pengaduan-admin");
   revalidatePath(`/pengaduan-admin/${id}`);
   revalidatePath("/pengaduan");
-  const info = hasil.notification === "failed"
-    ? "Tanggapan tersimpan, tetapi email notifikasi gagal dikirim."
-    : hasil.notification === "skipped"
-      ? "Tanggapan tersimpan. Email belum dikirim karena layanan notifikasi belum dikonfigurasi."
-      : "Tanggapan berhasil disimpan.";
+  const gagal = [hasil.notification, hasil.whatsappNotification].includes("failed");
+  const dilewati = [hasil.notification, hasil.whatsappNotification].includes("skipped");
+  const info = gagal
+    ? "Tanggapan tersimpan, tetapi salah satu notifikasi gagal dikirim. Periksa konfigurasi email/WhatsApp."
+    : dilewati
+      ? "Tanggapan tersimpan. Salah satu kanal notifikasi belum dikonfigurasi."
+      : "Tanggapan berhasil disimpan dan notifikasi dikirim jika kontak tersedia.";
   redirect(`/pengaduan-admin/${id}?berhasil=${encodeURIComponent(info)}`);
 }
 
