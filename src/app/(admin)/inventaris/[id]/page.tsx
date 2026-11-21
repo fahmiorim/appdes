@@ -4,7 +4,7 @@ import { getInventarisDetailPageData } from "@/features/inventaris/application/i
 import { formatRupiah } from "@/features/keuangan/domain/keuangan";
 import { INVENTARIS_ASAL, INVENTARIS_KONDISI_LABELS, MUTASI_JENIS_LABELS, MUTASI_STATUS_LABELS } from "@/features/inventaris/domain/inventaris";
 import styles from "../inventaris.module.css";
-import { simpanInventarisAction, hapusInventarisAction } from "../actions";
+import { simpanInventarisAction, hapusInventarisAction, unggahDokumenInventarisAction, hapusDokumenInventarisAction } from "../actions";
 
 export const metadata={title:"Pengelolaan Aset"};
 type Props={params:Promise<{id:string}>;searchParams:Promise<{edit?:string;saved?:string}>};
@@ -19,7 +19,7 @@ export default async function DetailInventarisPage({params,searchParams}:Props){
   return <main className={styles.page}>
     <header className={styles.heading}><div className={styles.headingIcon}>⬡</div><div><span className={styles.eyebrow}>INVENTARIS &amp; ASET / PENGELOLAAN ASET</span><h1>{x.namaBarang}</h1><p>{x.nomorInventaris??"Nomor inventaris belum ditetapkan"} · Detail informasi, perolehan, kondisi, dan riwayat aset.</p></div></header>
     <nav className={styles.tabs}><Link href="/inventaris">Daftar Inventaris</Link><Link className={styles.active} href={"/inventaris/"+id}>Detail Aset</Link><Link href={"/inventaris/mutasi?inventarisId="+id}>Riwayat Mutasi</Link><Link href="/inventaris/laporan">Laporan &amp; Statistik</Link></nav>
-    {query.saved?<p className={styles.notice}>Perubahan inventaris berhasil disimpan.</p>:null}
+    {query.saved?<p className={styles.notice}>Perubahan inventaris berhasil disimpan.</p>:null}{query.documentSaved?<p className={styles.notice}>Dokumen berhasil diunggah.</p>:null}
     <section className={styles.detailGrid}>
       <article className={styles.panel}><div className={styles.panelHead}><div><h2>Informasi Aset</h2><p>Data identitas barang dan klasifikasi.</p></div><span className={`${styles.tag} ${x.kondisi==="baik"?styles.good:x.kondisi==="rusak_ringan"?styles.warn:styles.bad}`}>{INVENTARIS_KONDISI_LABELS[x.kondisi]}</span></div>
         <dl className={styles.detailList}>
@@ -36,6 +36,10 @@ export default async function DetailInventarisPage({params,searchParams}:Props){
         <div className={styles.statLine}><span>Nilai Total Aset</span><strong>{formatRupiah(x.nilaiAkhir??"0")}</strong></div>
         <p className={styles.notice} style={{marginTop:12}}>Nilai buku bersih dan akumulasi penyusutan belum tersedia pada skema inventaris saat ini. Nilai yang ditampilkan adalah nilai tercatat.</p>
       </article>
+    </section>
+    <section className={styles.panel}><div className={styles.panelHead}><div><h2>Dokumen Terkait ({data.dokumen.length})</h2><p>Arsip bukti perolehan, BPKB, sertifikat, foto, dan dokumen pendukung. Berkas hanya dapat diunduh pengguna berwenang.</p></div></div>
+      {data.dokumen.length?<div className={styles.timeline}>{data.dokumen.map(doc=><article key={doc.id}><strong>{doc.nama}</strong><small>{doc.namaFile} · {(doc.ukuran/1024).toFixed(0)} KB · {dateLabel(doc.createdAt.toISOString().slice(0,10))}</small><div className={styles.actions}><a className={styles.secondary} href={"/inventaris/dokumen/"+doc.id}>Unduh</a>{data.canDelete?<form action={hapusDokumenInventarisAction}><input type="hidden" name="id" value={doc.id}/><button className={styles.secondary}>Hapus</button></form>:null}</div></article>)}</div>:<p className={styles.empty}>Belum ada dokumen untuk aset ini.</p>}
+      {data.canWrite?<form action={unggahDokumenInventarisAction} className={styles.form} style={{marginTop:14}}><input type="hidden" name="inventarisId" value={x.id}/><label>Nama Dokumen<input name="nama" placeholder="Contoh: BPKB / Sertifikat / Faktur"/></label><label className={styles.wide}>Berkas (PDF/JPG/PNG/WEBP, maks. 8 MB)<input name="berkas" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" required/></label><button className={styles.primary}>Unggah Dokumen</button></form>:null}
     </section>
     <section className={styles.grid}>
       <article className={styles.panel}><h2>Informasi Perolehan</h2><div className={styles.statLine}><span>Tanggal Perolehan</span><strong>{dateLabel(x.tanggalPembelian)}</strong></div><div className={styles.statLine}><span>Tahun Perolehan</span><strong>{x.tahunPembelian??"—"}</strong></div><div className={styles.statLine}><span>Sumber Dana / Asal</span><strong>{asalLabel(x.asal)}</strong></div><div className={styles.statLine}><span>Penyedia / Donatur</span><strong>{x.donatur??"—"}</strong></div></article>
