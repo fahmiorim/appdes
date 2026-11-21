@@ -185,6 +185,7 @@ export const inventarisPemeliharaan = mysqlTable(
     tanggalRencana: date("tanggal_rencana", { mode: "string" }).notNull(),
     tanggalSelesai: date("tanggal_selesai", { mode: "string" }),
     status: mysqlEnum("status", INVENTARIS_PEMELIHARAAN_STATUS).notNull().default("terjadwal"),
+    kondisiSetelah: mysqlEnum("kondisi_setelah", INVENTARIS_KONDISI),
     biaya: decimal("biaya", { precision: 15, scale: 2 }).notNull().default("0"),
     pelaksana: varchar("pelaksana", { length: 150 }),
     deskripsi: text("deskripsi"),
