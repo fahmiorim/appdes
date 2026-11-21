@@ -118,10 +118,16 @@ export async function pengaturanKontakPublik(villageId: number) {
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
     const data = parsed as Record<string, unknown>;
     const safe = (key: string) => typeof data[key] === "string" ? (data[key] as string).trim() : "";
+    const safeHttpUrl = (key: string) => {
+      const value = safe(key);
+      if (!value) return "";
+      try { const url = new URL(value); return ["http:", "https:"].includes(url.protocol) ? url.toString() : ""; }
+      catch { return ""; }
+    };
     return {
       whatsapp: safe("whatsapp"), telepon: safe("telepon"), email: safe("email"), alamat: safe("alamat"),
-      website: safe("website"), instagram: safe("instagram"), facebook: safe("facebook"), youtube: safe("youtube"),
-      koordinat: safe("koordinat"), tautanPeta: safe("tautanPeta"), jamLayanan: safe("jamLayanan"),
+      website: safeHttpUrl("website"), instagram: safe("instagram"), facebook: safe("facebook"), youtube: safe("youtube"),
+      koordinat: safe("koordinat"), tautanPeta: safeHttpUrl("tautanPeta"), jamLayanan: safe("jamLayanan"),
     };
   } catch {
     return {};
