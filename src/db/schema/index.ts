@@ -89,3 +89,4 @@ export * from "./plugin-registry";
 export * from "./login-otp";
 export * from "./umpan-balik";
 export * from "./laporan-statistik";
+export * from "./village-security";
