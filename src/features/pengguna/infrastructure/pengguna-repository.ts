@@ -155,7 +155,10 @@ export async function updatePengguna(
       })
       .where(eq(users.id, id));
 
-    if (passwordHash === null) return;
+    if (passwordHash === null) {
+      if (!input.active) await tx.delete(sessions).where(eq(sessions.userId, id));
+      return;
+    }
 
     const [account] = await tx
       .select({ id: accounts.id })
