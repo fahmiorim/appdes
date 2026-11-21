@@ -6257,3 +6257,10 @@ a.beranda-quick-tile:hover {
 .survey-question-edit input, .survey-question-edit select, .survey-question-edit textarea { min-width:0; width:100%; padding:8px 9px; border:1px solid #dfe4ef; border-radius:8px; font:inherit; font-size:11px; }
 .survey-question-edit textarea { grid-column:1/-1; resize:vertical; }
 @media(max-width:760px) { .survey-question { grid-template-columns:1fr; } .survey-question-edit { grid-template-columns:1fr; } .survey-question-edit textarea { grid-column:auto; } }
+
+
+.modul-filter-row > label { display:grid; gap:5px; min-width:190px; color:#68738e; font-size:10px; font-weight:700; }
+.modul-filter-row > label input, .modul-filter-row > label select { width:100%; min-width:0; border:1px solid #dfe4ef; border-radius:9px; background:#fff; color:#263451; font:inherit; font-size:12px; padding:10px 11px; }
+.table-pagination { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding-top:14px; color:#707b94; font-size:11px; }
+.table-pagination .page-actions { align-items:center; flex-direction:row; }
+@media(max-width:640px) { .table-pagination { align-items:flex-start; flex-direction:column; } .table-pagination .page-actions { width:100%; justify-content:space-between; } }
