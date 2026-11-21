@@ -188,6 +188,54 @@ export async function daftarAbsensi(tanggal = tanggalLokal()) {
     .orderBy(asc(kepegawaianPegawai.nama));
 }
 
+
+export async function daftarAbsensiRentang(mulai: string, selesai: string) {
+  const { villageId } = await village("kehadiran");
+  const validDate = (value: string) => /^\\d{4}-\\d{2}-\\d{2}$/.test(value)
+    && new Date(value + "T00:00:00Z").toISOString().slice(0, 10) === value;
+  if (!validDate(mulai) || !validDate(selesai) || selesai < mulai) throw new Error("Rentang laporan absensi tidak valid.");
+  const start = Date.parse(mulai + "T00:00:00Z");
+  const end = Date.parse(selesai + "T00:00:00Z");
+  if ((end - start) / 86400000 > 366) throw new Error("Rentang laporan maksimal 367 hari.");
+  await sinkronkanPegawaiPerangkat(villageId);
+  const [pegawai, catatan, setting] = await Promise.all([
+    db.select({ id: kepegawaianPegawai.id, nama: kepegawaianPegawai.nama, jabatan: kepegawaianPegawai.jabatan })
+      .from(kepegawaianPegawai)
+      .where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.status, "aktif")))
+      .orderBy(asc(kepegawaianPegawai.nama)),
+    db.select({
+      pegawaiId: kehadiranPerangkat.pegawaiId, tanggal: kehadiranPerangkat.tanggal,
+      jamMasuk: kehadiranPerangkat.jamMasuk, jamKeluar: kehadiranPerangkat.jamKeluar,
+      status: kehadiranPerangkat.status, catatan: kehadiranPerangkat.catatan,
+    }).from(kehadiranPerangkat)
+      .where(and(eq(kehadiranPerangkat.villageId, villageId), gte(kehadiranPerangkat.tanggal, mulai), lte(kehadiranPerangkat.tanggal, selesai))),
+    db.select({ jamMasuk: kehadiranPengaturan.jamMasuk, hariLibur: kehadiranPengaturan.hariLibur })
+      .from(kehadiranPengaturan).where(eq(kehadiranPengaturan.villageId, villageId)).limit(1),
+  ]);
+  let hariLibur: number[] = [0, 6];
+  try {
+    const parsed = JSON.parse(setting[0]?.hariLibur ?? "[0,6]");
+    if (Array.isArray(parsed) && parsed.every((day) => Number.isInteger(day) && day >= 0 && day <= 6)) hariLibur = [...new Set(parsed)];
+  } catch { /* gunakan akhir pekan sebagai fallback */ }
+  const byDate = new Map(catatan.map((row) => [row.tanggal + ":" + row.pegawaiId, row]));
+  const hasil = [];
+  for (let day = start; day <= end; day += 86400000) {
+    const tanggal = new Date(day).toISOString().slice(0, 10);
+    if (hariLibur.includes(new Date(day).getUTCDay())) continue;
+    for (const person of pegawai) {
+      const row = byDate.get(tanggal + ":" + person.id);
+      const status = row?.status ?? "tidak_hadir";
+      const jamMasuk = row?.jamMasuk ?? null;
+      hasil.push({
+        tanggal, nama: person.nama, jabatan: person.jabatan, jamMasuk,
+        jamKeluar: row?.jamKeluar ?? null, status, catatan: row?.catatan ?? null,
+        terlambat: status === "hadir" && Boolean(jamMasuk && setting[0]?.jamMasuk && jamMasuk > setting[0].jamMasuk),
+      });
+    }
+  }
+  return hasil;
+}
+
 export async function catatAbsensiManual(input: { pegawaiId: number; tanggal: string; jamMasuk?: string; jamKeluar?: string; status: string; catatan?: string }) {
   const { villageId } = await village("kehadiran", "update");
   const [pegawai] = await db.select({ id: kepegawaianPegawai.id }).from(kepegawaianPegawai)
