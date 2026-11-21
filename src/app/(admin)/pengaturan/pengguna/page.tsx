@@ -131,7 +131,7 @@ export default async function PenggunaPage() {
 
         <aside className="pengguna-rail">
           <section className="pengguna-rail-card pengguna-rail-aksi">
-            {data.canUpdate ? (
+            {data.canCreate ? (
               <DialogPengguna
                 aksi={buatPenggunaAction}
                 currentUserId={data.currentUserId}
