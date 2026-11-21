@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, count, desc, eq, isNull, like, ne, or } from "drizzle-orm";
 
 import { db } from "@/db";
-import { inventaris, inventarisKategori, inventarisMutasi, inventarisPemeliharaan, inventarisDokumen } from "@/db/schema";
+import { inventaris, inventarisKategori, inventarisMutasi, inventarisPemeliharaan, inventarisDokumen, inventarisPenanggungJawabRiwayat } from "@/db/schema";
 import {
   hitungPerubahanAset,
   mutasiLogBeforeStep,
@@ -247,25 +247,47 @@ function nilaiInventaris(input: InventarisInput) {
   };
 }
 
-export async function createInventaris(villageId: number, input: InventarisInput) {
-  const [row] = await db
-    .insert(inventaris)
-    .values({ villageId, ...nilaiInventaris(input) })
-    .$returningId();
-  return row?.id;
+export async function createInventaris(villageId:number,input:InventarisInput,actorName:string) {
+  return db.transaction(async(tx)=>{
+    const [row]=await tx.insert(inventaris).values({villageId,...nilaiInventaris(input)}).$returningId();
+    if(row?.id && (input.penanggungJawab||input.jabatanPenanggungJawab||input.teleponPenanggungJawab)){
+      await tx.insert(inventarisPenanggungJawabRiwayat).values({
+        villageId,inventarisId:row.id,namaSebelum:null,jabatanSebelum:null,teleponSebelum:null,
+        namaSesudah:input.penanggungJawab||null,jabatanSesudah:input.jabatanPenanggungJawab||null,
+        teleponSesudah:input.teleponPenanggungJawab||null,diubahOleh:actorName,
+      });
+    }
+    return row?.id;
+  });
 }
 
-export async function updateInventaris(villageId: number, id: number, input: InventarisInput) {
-  await db
-    .update(inventaris)
-    .set(nilaiInventaris(input))
-    .where(
-      and(
-        eq(inventaris.villageId, villageId),
-        eq(inventaris.id, id),
-        eq(inventaris.isDeleted, false),
-      ),
-    );
+export async function updateInventaris(villageId:number,id:number,input:InventarisInput,actorName:string) {
+  await db.transaction(async(tx)=>{
+    const [before]=await tx.select().from(inventaris).where(and(
+      eq(inventaris.villageId,villageId),eq(inventaris.id,id),eq(inventaris.isDeleted,false),
+    )).limit(1);
+    if(!before) throw notFound("Data inventaris tidak ditemukan.");
+    const changed=before.penanggungJawab!==(input.penanggungJawab||null)
+      ||before.jabatanPenanggungJawab!==(input.jabatanPenanggungJawab||null)
+      ||before.teleponPenanggungJawab!==(input.teleponPenanggungJawab||null);
+    await tx.update(inventaris).set(nilaiInventaris(input)).where(and(
+      eq(inventaris.villageId,villageId),eq(inventaris.id,id),eq(inventaris.isDeleted,false),
+    ));
+    if(changed){
+      await tx.insert(inventarisPenanggungJawabRiwayat).values({
+        villageId,inventarisId:id,
+        namaSebelum:before.penanggungJawab,jabatanSebelum:before.jabatanPenanggungJawab,teleponSebelum:before.teleponPenanggungJawab,
+        namaSesudah:input.penanggungJawab||null,jabatanSesudah:input.jabatanPenanggungJawab||null,
+        teleponSesudah:input.teleponPenanggungJawab||null,diubahOleh:actorName,
+      });
+    }
+  });
+}
+
+export async function listRiwayatPenanggungJawab(villageId:number,inventarisId:number) {
+  return db.select().from(inventarisPenanggungJawabRiwayat)
+    .where(and(eq(inventarisPenanggungJawabRiwayat.villageId,villageId),eq(inventarisPenanggungJawabRiwayat.inventarisId,inventarisId)))
+    .orderBy(desc(inventarisPenanggungJawabRiwayat.createdAt));
 }
 
 export async function softDeleteInventaris(villageId: number, id: number) {
