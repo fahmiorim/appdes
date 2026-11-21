@@ -53,20 +53,22 @@ export async function sinkronkanPegawaiPerangkat(villageId: number) {
   for (const item of perangkat) {
     const [existing] = await db.select({ id: kepegawaianPegawai.id }).from(kepegawaianPegawai)
       .where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.perangkatId, item.id))).limit(1);
-    if (!existing && item.status === "aktif") {
-      await db.insert(kepegawaianPegawai).values({
-        villageId, perangkatId: item.id, nama: item.nama, nip: item.nip, nik: item.nik,
-        jenisKelamin: item.jenisKelamin, tempatLahir: item.tempatLahir,
-        tanggalLahir: item.tanggalLahir, foto: item.foto, jabatan: item.jabatan,
-        statusPegawai: "tetap", status: "aktif",
-      });
-    } else {
-      await db.update(kepegawaianPegawai).set({
-        nama: item.nama, nip: item.nip, nik: item.nik, jenisKelamin: item.jenisKelamin,
-        tempatLahir: item.tempatLahir, tanggalLahir: item.tanggalLahir,
-        foto: item.foto, jabatan: item.jabatan, status: item.status === "aktif" ? "aktif" : "nonaktif",
-      }).where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.id, existing.id)));
+    if (!existing) {
+      if (item.status === "aktif") {
+        await db.insert(kepegawaianPegawai).values({
+          villageId, perangkatId: item.id, nama: item.nama, nip: item.nip, nik: item.nik,
+          jenisKelamin: item.jenisKelamin, tempatLahir: item.tempatLahir,
+          tanggalLahir: item.tanggalLahir, foto: item.foto, jabatan: item.jabatan,
+          statusPegawai: "tetap", status: "aktif",
+        });
+      }
+      continue;
     }
+    await db.update(kepegawaianPegawai).set({
+      nama: item.nama, nip: item.nip, nik: item.nik, jenisKelamin: item.jenisKelamin,
+      tempatLahir: item.tempatLahir, tanggalLahir: item.tanggalLahir,
+      foto: item.foto, jabatan: item.jabatan, status: item.status === "aktif" ? "aktif" : "nonaktif",
+    }).where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.id, existing.id)));
   }
 }
 
