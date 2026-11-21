@@ -7,7 +7,7 @@ import type { BlockedIpDTO, KeamananInput } from "../domain/keamanan";
 export const DEFAULT_SECURITY_SETTINGS: KeamananInput = {
   passwordMinLength: 8, requireUppercase: true, requireLowercase: true, requireNumber: true,
   requireSymbol: false, sessionTimeoutMinutes: 30, autoLogoutInactive: true,
-  warnBeforeSessionEnd: true, concurrentLogin: false, ipRestrictionEnabled: false, allowedIps: [],
+  concurrentLogin: false, ipRestrictionEnabled: false, allowedIps: [],
 };
 
 function parseIps(raw: string | null): string[] {
@@ -28,7 +28,7 @@ export async function saveSecuritySettings(villageId: number, actorId: string, i
     requireUppercase: input.requireUppercase, requireLowercase: input.requireLowercase,
     requireNumber: input.requireNumber, requireSymbol: input.requireSymbol,
     sessionTimeoutMinutes: input.sessionTimeoutMinutes, autoLogoutInactive: input.autoLogoutInactive,
-    warnBeforeSessionEnd: input.warnBeforeSessionEnd, concurrentLogin: input.concurrentLogin,
+    concurrentLogin: input.concurrentLogin,
     ipRestrictionEnabled: input.ipRestrictionEnabled, allowedIps: JSON.stringify(input.allowedIps),
   }).onDuplicateKeyUpdate({ set: {
     updatedBy: actorId, passwordMinLength: input.passwordMinLength,
