@@ -42,6 +42,7 @@ export default async function BuatPengaduanPage({
               <label className="modul-field">Nomor WhatsApp/telepon<input name="telepon" type="tel" maxLength={30} autoComplete="tel" /></label>
               <label className="modul-field">Email (opsional)<input name="email" type="email" maxLength={100} autoComplete="email" /></label>
               <label className="modul-field">Alamat<input name="alamat" maxLength={255} autoComplete="street-address" /></label>
+              <p className="modul-muted">Isi minimal satu identitas pelapor (NIK, nomor telepon, atau email) agar tiket dapat dilacak.</p>
               <label className="modul-field">Kategori<select name="kategori" required defaultValue="umum">{KATEGORI_PENGADUAN.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
               <label className="modul-field">Judul pengaduan<input name="judul" required minLength={5} maxLength={200} /></label>
               <label className="modul-field">Uraian pengaduan<textarea name="isi" required minLength={20} maxLength={4000} rows={6} /></label>
