@@ -1,0 +1,96 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+import {
+  ajukanMutasi,
+  hapusInventaris,
+  hapusInventarisKategori,
+  saveInventaris,
+  saveInventarisKategori,
+  setujuiMutasiData,
+  tolakMutasiData,
+} from "@/features/inventaris/application/inventaris-use-cases";
+import {
+  inventarisFormSchema,
+  inventarisKategoriFormSchema,
+  inventarisMutasiFormSchema,
+} from "@/features/inventaris/domain/inventaris";
+
+const text = (fd: FormData, key: string) => {
+  const value = fd.get(key);
+  return typeof value === "string" ? value.trim() : "";
+};
+const optionalNumber = (value: string) => value === "" ? undefined : Number(value);
+const positiveId = (value: string) => {
+  const id = Number(value);
+  if (!Number.isSafeInteger(id) || id < 1) throw new Error("ID tidak valid.");
+  return id;
+};
+const refresh = () => {
+  for (const path of ["/inventaris", "/inventaris/dashboard", "/inventaris/mutasi", "/inventaris/laporan"]) revalidatePath(path);
+};
+
+export async function simpanInventarisAction(fd: FormData) {
+  const id = text(fd,"id") ? positiveId(text(fd,"id")) : undefined;
+  const parsed = inventarisFormSchema.parse({
+    kategoriId: text(fd,"kategoriId") ? Number(text(fd,"kategoriId")) : "",
+    nomorInventaris:text(fd,"nomorInventaris"), namaBarang:text(fd,"namaBarang"),
+    kodeBarang:text(fd,"kodeBarang"), merk:text(fd,"merk"), tipe:text(fd,"tipe"),
+    spesifikasi:text(fd,"spesifikasi"), jumlah:Number(text(fd,"jumlah")||1),
+    satuan:text(fd,"satuan")||"buah", hargaSatuan:optionalNumber(text(fd,"hargaSatuan")),
+    tahunPembelian:optionalNumber(text(fd,"tahunPembelian")),
+    tanggalPembelian:text(fd,"tanggalPembelian"), asal:text(fd,"asal")||undefined,
+    donatur:text(fd,"donatur"), kondisi:text(fd,"kondisi")||"baik",
+    lokasi:text(fd,"lokasi"), keterangan:text(fd,"keterangan"),
+  });
+  const result = await saveInventaris(parsed,id);
+  refresh();
+  redirect(id ? "/inventaris/"+id+"?saved=1" : "/inventaris?created=1");
+}
+
+export async function hapusInventarisAction(fd: FormData) {
+  await hapusInventaris(positiveId(text(fd,"id")));
+  refresh();
+  redirect("/inventaris?deleted=1");
+}
+
+export async function simpanKategoriInventarisAction(fd: FormData) {
+  const id=text(fd,"id")?positiveId(text(fd,"id")):undefined;
+  const parsed=inventarisKategoriFormSchema.parse({kode:text(fd,"kode"),nama:text(fd,"nama"),golongan:text(fd,"golongan"),keterangan:text(fd,"keterangan")});
+  await saveInventarisKategori(parsed,id);
+  refresh();
+  redirect("/inventaris?categorySaved=1");
+}
+
+export async function hapusKategoriInventarisAction(fd: FormData) {
+  await hapusInventarisKategori(positiveId(text(fd,"id")));
+  refresh();
+  redirect("/inventaris?categoryDeleted=1");
+}
+
+export async function ajukanMutasiInventarisAction(fd: FormData) {
+  const parsed=inventarisMutasiFormSchema.parse({
+    inventarisId:Number(text(fd,"inventarisId")), jenis:text(fd,"jenis"),
+    tanggalMutasi:text(fd,"tanggalMutasi"), lokasiBaru:text(fd,"lokasiBaru"),
+    kondisiBaru:text(fd,"kondisiBaru")||undefined,
+    jumlahMutasi:Number(text(fd,"jumlahMutasi")||1),
+    alasan:text(fd,"alasan"), keterangan:text(fd,"keterangan"),
+  });
+  await ajukanMutasi(parsed);
+  refresh();
+  redirect("/inventaris/mutasi?submitted=1");
+}
+
+export async function setujuiMutasiInventarisAction(fd: FormData) {
+  await setujuiMutasiData(positiveId(text(fd,"id")));
+  refresh();
+  redirect("/inventaris/mutasi?updated=1");
+}
+
+export async function tolakMutasiInventarisAction(fd: FormData) {
+  await tolakMutasiData(positiveId(text(fd,"id")),text(fd,"catatanPenolakan"));
+  refresh();
+  redirect("/inventaris/mutasi?updated=1");
+}
