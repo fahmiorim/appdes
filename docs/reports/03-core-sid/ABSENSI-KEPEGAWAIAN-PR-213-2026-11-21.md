@@ -106,7 +106,9 @@ diterapkan, dan tidak ada penonaktifan test atau pelonggaran aturan lint.
 | `npx vitest run src/db/migrasi-paritas.test.ts` | **PASS** — 9 test |
 | `npx vitest run src/features/publik/application/lapisan-publik.test.ts` | **PASS** — 4 test |
 | `npm run build` | **PASS** |
-| Integration test MySQL | **SKIPPED** di lokal (tidak ada Docker/MySQL); dijalankan pada job CI |
+| Integration test MySQL | **SKIPPED** di lokal (tidak ada Docker/MySQL) |
+| CI run `44922472736` (head `f89ac496`) | **PASS** — Deteksi perubahan, Unit test dan quality check, Build produksi, Integration test (MySQL 8), Ringkasan CI |
+| Visual QA run `44922472631` (head `f89ac496`) | **PASS** — Visual QA login (desktop/mobile) |
 
 ## 7. Risiko dan keterbatasan
 
