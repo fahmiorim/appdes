@@ -270,3 +270,13 @@ export async function hapusLayerPeta(id: number) {
   if (used) throw new Error("Layer masih dipakai area peta. Pindahkan atau hapus area terkait terlebih dahulu.");
   await db.delete(polygons).where(and(eq(polygons.villageId, villageId), eq(polygons.id, id)));
 }
+
+export async function ubahMetadataDokumenPemerintahan(id: number, input: { judul: string; nomor: string | null; tanggal: string | null; tampilPublik: boolean }) {
+  const user = await requireUser();
+  const villageId = await resolveVillageId(user);
+  const [document] = await db.select({ perangkatId: pemerintahanDokumen.perangkatId }).from(pemerintahanDokumen)
+    .where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id))).limit(1);
+  if (!document) throw new Error("Dokumen tidak ditemukan.");
+  await requirePermission(document.perangkatId ? "perangkat-desa" : "lembaga-desa", "update");
+  await db.update(pemerintahanDokumen).set(input).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id)));
+}
