@@ -64,7 +64,7 @@ export default async function DetailPengaduanPage({
             <div className="modul-form-actions"><button className="button button-primary" type="submit">Simpan Tanggapan</button></div>
           </form>
           <hr />
-          <form action={hapusPengaduanAction} onSubmit={undefined}>
+          <form action={hapusPengaduanAction}>
             <input type="hidden" name="id" value={row.id} />
             <button className="button button-danger-ghost" type="submit">Hapus Pengaduan</button>
             <p className="modul-muted">Penghapusan menghapus data pengaduan dan lampiran yang tersimpan.</p>
