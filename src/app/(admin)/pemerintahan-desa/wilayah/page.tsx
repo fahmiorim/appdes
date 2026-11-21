@@ -1,12 +1,12 @@
 import Link from "next/link";
 
 import { getWilayahPemerintahanData } from "@/features/pemerintahan/application/use-cases";
-import { hapusAreaPetaAction, hapusLayerPetaAction, hapusWilayahAction, simpanAreaPetaAction, simpanLayerPetaAction, simpanWilayahAction } from "../actions";
+import { hapusAreaPetaAction, hapusLayerPetaAction, hapusWilayahAction, simpanAreaPetaAction, simpanLayerPetaAction, simpanProfilWilayahAction, simpanWilayahAction } from "../actions";
 
 export const metadata = { title: "Wilayah & Organisasi" };
 
 export default async function WilayahOrganisasiPage() {
-  const { rows, shapes, layers, officials } = await getWilayahPemerintahanData();
+  const { rows, shapes, layers, officials, profil } = await getWilayahPemerintahanData();
   const dusun = [...new Set(rows.map(x=>x.dusun).filter(Boolean))];
   const rt = [...new Set(rows.map(x=>x.rt).filter(Boolean))];
   const rw = [...new Set(rows.map(x=>x.rw).filter(Boolean))];
@@ -31,6 +31,9 @@ export default async function WilayahOrganisasiPage() {
     </section>
     <section className="modul-card"><div className="pemerintahan-card-heading"><div><h2>Data RT / RW</h2><p>Data wilayah aktual yang menjadi referensi alamat penduduk dan keluarga.</p></div><span>{rows.length} baris</span></div>
       {rows.length ? <div className="modul-table-wrap"><table className="modul-table"><thead><tr><th>No.</th><th>Dusun</th><th>RT</th><th>RW</th><th>Urutan</th><th>Aksi</th></tr></thead><tbody>{rows.map((row,i)=><tr key={row.id}><td>{i+1}</td><td>{row.dusun || "—"}</td><td>{row.rt || "—"}</td><td>{row.rw || "—"}</td><td>{row.sortOrder}</td><td><details className="pemerintahan-row-edit"><summary>Edit / Hapus</summary><form action={simpanWilayahAction} className="pemerintahan-form compact-form"><input type="hidden" name="id" value={row.id}/><label>Dusun<input name="dusun" required defaultValue={row.dusun ?? ""}/></label><label>RT<input name="rt" defaultValue={row.rt ?? ""}/></label><label>RW<input name="rw" defaultValue={row.rw ?? ""}/></label><label>Urutan<input name="urut" type="number" defaultValue={row.sortOrder}/></label><button className="button button-primary" type="submit">Simpan Perubahan</button></form><form action={hapusWilayahAction}><input type="hidden" name="id" value={row.id}/><button className="button button-danger-ghost" type="submit">Hapus Wilayah</button></form></details></td></tr>)}</tbody></table></div> : <p className="modul-empty">Belum ada data RT/RW.</p>}
+    </section>
+    <section className="modul-card"><div className="pemerintahan-card-heading"><div><h2>Informasi Geografis & Batas Wilayah</h2><p>Data ini ditampilkan pada halaman Wilayah Desa di website publik.</p></div></div>
+      <form action={simpanProfilWilayahAction} className="pemerintahan-form"><label>Luas Wilayah (Ha)<input name="luasWilayah" type="number" min="0" step="0.01" defaultValue={profil?.luasWilayah ?? ""}/></label><label>Batas Utara<input name="batasUtara" defaultValue={profil?.batasUtara ?? ""}/></label><label>Batas Selatan<input name="batasSelatan" defaultValue={profil?.batasSelatan ?? ""}/></label><label>Batas Timur<input name="batasTimur" defaultValue={profil?.batasTimur ?? ""}/></label><label>Batas Barat<input name="batasBarat" defaultValue={profil?.batasBarat ?? ""}/></label><label>Ketinggian<input name="ketinggian" defaultValue={profil?.ketinggian ?? ""} placeholder="25 mdpl"/></label><label>Suhu Rata-rata<input name="suhuRataRata" defaultValue={profil?.suhuRataRata ?? ""}/></label><label>Curah Hujan<input name="curahHujan" defaultValue={profil?.curahHujan ?? ""}/></label><label>Topografi<input name="topografi" defaultValue={profil?.topografi ?? ""}/></label><button className="button button-primary" type="submit">Simpan Informasi Wilayah</button></form>
     </section>
     <section className="modul-card"><div className="pemerintahan-card-heading"><div><h2>Layer Peta</h2><p>Atur kategori warna untuk membedakan batas desa dan area dusun pada peta publik.</p></div></div>
       <form action={simpanLayerPetaAction} className="pemerintahan-form"><label>Nama Layer<input name="nama" required placeholder="Batas Desa / Dusun I"/></label><label>Warna Layer<input name="color" type="color" defaultValue="#7c3aed"/></label><label>Urutan<input name="sortOrder" type="number" defaultValue="0"/></label><label className="pemerintahan-check"><input type="checkbox" name="enabled" defaultChecked/> Aktif</label><button className="button button-primary" type="submit">Tambah Layer</button></form>
