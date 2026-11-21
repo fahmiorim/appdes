@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
+import { pengaturanKontakPublik } from "@/features/publik/application/konten-publik";
 
 import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
 import { KontakFaq } from "./kontak-faq";
@@ -185,7 +186,7 @@ export default async function KontakPage() {
               {mapQuery ? (
                 <a
                   className={styles.mapLink}
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`}
+                  href={settings.tautanPeta || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`}
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -202,7 +203,7 @@ export default async function KontakPage() {
                 </div>
               </div>
               <p className={styles.hoursNote}>
-                Jadwal operasional belum dicantumkan pada profil desa.
+                {settings.jamLayanan || "Jadwal operasional belum dicantumkan pada profil desa."}
               </p>
             </section>
             <section className={styles.tracking}>
@@ -242,8 +243,8 @@ export default async function KontakPage() {
                   ? `mailto:${email}`
                   : "#saluran-kontak"
             }
-            target={phoneDigits || email ? "_blank" : undefined}
-            rel={phoneDigits || email ? "noreferrer" : undefined}
+            target={whatsappDigits || email ? "_blank" : undefined}
+            rel={whatsappDigits || email ? "noreferrer" : undefined}
           >
             Sampaikan Saran　→
           </a>
