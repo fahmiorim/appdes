@@ -129,29 +129,9 @@ export const auth = betterAuth({
         const token = typeof ctx.body?.token === "string" ? ctx.body.token : "";
         const newPassword = typeof ctx.body?.newPassword === "string" ? ctx.body.newPassword : "";
         if (token && newPassword) {
-          const [verification] = await db.select({ userId: verifications.value, expiresAt: verifications.expiresAt })
-            .from(verifications).where(eq(verifications.identifier, "reset-password:" + token)).limit(1);
-          if (verification && verification.expiresAt > new Date()) {
-            const [account] = await db.select({ villageId: users.villageId }).from(users).where(eq(users.id, verification.userId)).limit(1);
-            if (account?.villageId) {
-              const [policy] = await db.select().from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
-              if (policy) {
-                const passwordError = validasiKataSandi(newPassword, policy);
-                if (passwordError) throw new APIError("BAD_REQUEST", { message: passwordError });
-                if (policy.passwordReuseCount > 0) {
-                  const [[credential], history] = await Promise.all([
-                    db.select({ password: accounts.password }).from(accounts).where(and(eq(accounts.accountId, verification.userId), eq(accounts.providerId, "credential"))).limit(1),
-                    db.select({ passwordHash: passwordHistory.passwordHash }).from(passwordHistory).where(eq(passwordHistory.userId, verification.userId)).orderBy(desc(passwordHistory.createdAt)).limit(Math.max(0, policy.passwordReuseCount - 1)),
-                  ]);
-                  const hashes = [...new Set([credential?.password, ...history.map((item) => item.passwordHash)].filter((value): value is string => Boolean(value)))];
-                  for (const hash of hashes) {
-                    if (await ctx.context.password.verify({ password: newPassword, hash })) throw new APIError("BAD_REQUEST", { message: "Password tidak boleh sama dengan password terakhir yang pernah digunakan." });
-                  }
-                  if (credential?.password) await db.insert(passwordHistory).values({ userId: verification.userId, passwordHash: credential.password }).onDuplicateKeyUpdate({ set: { passwordHash: credential.password } });
-                }
-              }
-            }
-          }
+          const [verification] = await db.select({ userId: verifications.value, expiresAt: verifications.expiresAt }).from(verifications)
+            .where(eq(verifications.identifier, "reset-password:" + token)).limit(1);
+          if (verification && verification.expiresAt > new Date()) await enforceTenantPasswordPolicy(verification.userId, newPassword);
         }
         return;
       }
@@ -169,32 +149,7 @@ export const auth = betterAuth({
       if (ctx.path === "/change-password") {
         const userId = ctx.context.session?.user?.id;
         const newPassword = typeof ctx.body?.newPassword === "string" ? ctx.body.newPassword : "";
-        if (userId && newPassword) {
-          const [account] = await db.select({ villageId: users.villageId }).from(users).where(eq(users.id, userId)).limit(1);
-          if (account?.villageId) {
-            const [policy] = await db.select().from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
-            if (policy) {
-              const passwordError = validasiKataSandi(newPassword, policy);
-              if (passwordError) throw new APIError("BAD_REQUEST", { message: passwordError });
-              if (policy.passwordReuseCount > 0) {
-                const [[credential], history] = await Promise.all([
-                  db.select({ password: accounts.password }).from(accounts).where(and(eq(accounts.accountId, userId), eq(accounts.providerId, "credential"))).limit(1),
-                  db.select({ passwordHash: passwordHistory.passwordHash }).from(passwordHistory).where(eq(passwordHistory.userId, userId)).orderBy(desc(passwordHistory.createdAt)).limit(Math.max(0, policy.passwordReuseCount - 1)),
-                ]);
-                const hashes = [...new Set([credential?.password, ...history.map((item) => item.passwordHash)].filter((value): value is string => Boolean(value)))];
-                for (const hash of hashes) {
-                  if (await ctx.context.password.verify({ password: newPassword, hash })) {
-                    throw new APIError("BAD_REQUEST", { message: "Password tidak boleh sama dengan password terakhir yang pernah digunakan." });
-                  }
-                }
-                if (credential?.password) {
-                  await db.insert(passwordHistory).values({ userId, passwordHash: credential.password })
-                    .onDuplicateKeyUpdate({ set: { passwordHash: credential.password } });
-                }
-              }
-            }
-          }
-        }
+        if (userId && newPassword) await enforceTenantPasswordPolicy(userId, newPassword);
         return;
       }
       if (ctx.path !== "/sign-in/username") return;
