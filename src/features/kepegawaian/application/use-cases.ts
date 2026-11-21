@@ -13,9 +13,10 @@ import {
   kepegawaianDokumen,
   perangkatDesa,
   jabatanPerangkat,
+  users,
 } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
-import { requirePermission } from "@/lib/dal";
+import { requirePermission, requireUser } from "@/lib/dal";
 import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 
 function tanggalLokal(): string {
@@ -403,21 +404,71 @@ export async function getPengaturanKehadiran() {
   const { villageId } = await village("kehadiran");
   const [setting] = await db.select().from(kehadiranPengaturan)
     .where(eq(kehadiranPengaturan.villageId, villageId)).limit(1);
-  return setting ?? { jamMasuk:"08:00", jamKeluar:"16:00", hariLibur:"[0,6]" };
+  return setting ?? { jamMasuk:"08:00", jamKeluar:"16:00", hariLibur:"[0,6]", latitudeKantor:null, longitudeKantor:null, radiusMeter:100, toleransiTerlambatMenit:0, wajibGps:true, wajibFoto:true };
 }
 
-export async function simpanPengaturanKehadiran(input:{jamMasuk:string;jamKeluar:string;hariLibur:number[]}) {
+export async function simpanPengaturanKehadiran(input:{jamMasuk:string;jamKeluar:string;hariLibur:number[];latitudeKantor?:string|null;longitudeKantor?:string|null;radiusMeter?:number;toleransiTerlambatMenit?:number;wajibGps?:boolean;wajibFoto?:boolean}) {
   const { user, villageId } = await village("kehadiran","update");
   if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(input.jamMasuk)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(input.jamKeluar)) throw new Error("Format jam kerja harus HH:MM.");
   if(input.jamKeluar<=input.jamMasuk) throw new Error("Jam pulang harus setelah jam masuk.");
   if(!Array.isArray(input.hariLibur)||input.hariLibur.some(x=>!Number.isInteger(x)||x<0||x>6)) throw new Error("Hari libur tidak valid.");
+  const lat = input.latitudeKantor?.trim() || null;
+  const lng = input.longitudeKantor?.trim() || null;
+  if ((lat === null) !== (lng === null)) throw new Error("Koordinat kantor harus diisi berpasangan.");
+  if (lat !== null && (!Number.isFinite(Number(lat)) || Number(lat) < -90 || Number(lat) > 90 || !Number.isFinite(Number(lng)) || Number(lng) < -180 || Number(lng) > 180)) throw new Error("Koordinat kantor tidak valid.");
+  const radiusMeter = input.radiusMeter ?? 100;
+  const toleransiTerlambatMenit = input.toleransiTerlambatMenit ?? 0;
+  if (!Number.isInteger(radiusMeter) || radiusMeter < 20 || radiusMeter > 5000) throw new Error("Radius lokasi harus 20–5000 meter.");
+  if (!Number.isInteger(toleransiTerlambatMenit) || toleransiTerlambatMenit < 0 || toleransiTerlambatMenit > 180) throw new Error("Toleransi keterlambatan harus 0–180 menit.");
+  if (input.wajibGps !== false && (lat === null || lng === null)) throw new Error("Isi koordinat kantor sebelum mengaktifkan validasi GPS.");
   const [existing]=await db.select({id:kehadiranPengaturan.id}).from(kehadiranPengaturan)
     .where(eq(kehadiranPengaturan.villageId,villageId)).limit(1);
-  const values={jamMasuk:input.jamMasuk,jamKeluar:input.jamKeluar,hariLibur:JSON.stringify([...new Set(input.hariLibur)]),diperbaruiOleh:user.id};
+  const values={jamMasuk:input.jamMasuk,jamKeluar:input.jamKeluar,hariLibur:JSON.stringify([...new Set(input.hariLibur)]),latitudeKantor:lat,longitudeKantor:lng,radiusMeter,toleransiTerlambatMenit,wajibGps:input.wajibGps!==false,wajibFoto:input.wajibFoto!==false,diperbaruiOleh:user.id};
   if(existing) await db.update(kehadiranPengaturan).set(values).where(eq(kehadiranPengaturan.id,existing.id));
   else await db.insert(kehadiranPengaturan).values({...values,villageId});
 }
 
+
+
+function jarakMeter(lat1:number, lon1:number, lat2:number, lon2:number):number {
+  const rad=(value:number)=>value*Math.PI/180;
+  const dLat=rad(lat2-lat1), dLon=rad(lon2-lon1);
+  const a=Math.sin(dLat/2)**2+Math.cos(rad(lat1))*Math.cos(rad(lat2))*Math.sin(dLon/2)**2;
+  return 6371000*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+/** Catat check-in/check-out mandiri untuk akun yang emailnya terhubung ke master pegawai. */
+export async function catatAbsensiMandiri(input:{latitude:number;longitude:number;fotoMasuk?:string|null}) {
+  const user=await requireUser();
+  const villageId=await resolveVillageId(user);
+  if(!Number.isFinite(input.latitude)||input.latitude < -90||input.latitude > 90||!Number.isFinite(input.longitude)||input.longitude < -180||input.longitude > 180) throw new Error("Koordinat GPS tidak valid.");
+  const [pegawai]=await db.select({id:kepegawaianPegawai.id,nama:kepegawaianPegawai.nama}).from(kepegawaianPegawai)
+    .where(and(eq(kepegawaianPegawai.villageId,villageId),eq(kepegawaianPegawai.status,"aktif"),eq(kepegawaianPegawai.email,user.email))).limit(1);
+  if(!pegawai) throw new Error("Akun belum ditautkan ke data pegawai. Hubungi administrator desa untuk mengisi email akun pada profil pegawai.");
+  const [setting]=await db.select().from(kehadiranPengaturan).where(eq(kehadiranPengaturan.villageId,villageId)).limit(1);
+  if(setting?.wajibGps && (!setting.latitudeKantor||!setting.longitudeKantor)) throw new Error("Lokasi kantor belum dikonfigurasi administrator.");
+  if(setting?.wajibGps && setting.latitudeKantor && setting.longitudeKantor) {
+    const distance=jarakMeter(input.latitude,input.longitude,Number(setting.latitudeKantor),Number(setting.longitudeKantor));
+    if(distance>(setting.radiusMeter??100)) throw new Error(`Anda berada di luar area absensi kantor (jarak sekitar ${Math.round(distance)} meter).`);
+  }
+  const tanggal=tanggalLokal();
+  const now=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Jakarta",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(new Date());
+  const [existing]=await db.select().from(kehadiranPerangkat)
+    .where(and(eq(kehadiranPerangkat.villageId,villageId),eq(kehadiranPerangkat.pegawaiId,pegawai.id),eq(kehadiranPerangkat.tanggal,tanggal))).limit(1);
+  if(existing?.jamKeluar) throw new Error("Absensi hari ini sudah lengkap. Check-in dan check-out sudah tercatat.");
+  if(!existing && setting?.wajibFoto && !input.fotoMasuk) throw new Error("Foto selfie wajib dilampirkan saat check-in.");
+  if(existing) {
+    if(!existing.jamMasuk) throw new Error("Data absensi hari ini perlu diperiksa administrator.");
+    await db.update(kehadiranPerangkat).set({jamKeluar:now})
+      .where(and(eq(kehadiranPerangkat.villageId,villageId),eq(kehadiranPerangkat.id,existing.id)));
+    return {aksi:"check_out" as const,nama:pegawai.nama,jam:now};
+  }
+  await db.insert(kehadiranPerangkat).values({
+    villageId,pegawaiId:pegawai.id,perangkatId:null,tanggal,jamMasuk:now,status:"hadir",
+    latitudeMasuk:String(input.latitude),longitudeMasuk:String(input.longitude),fotoMasuk:input.fotoMasuk??null,
+  });
+  return {aksi:"check_in" as const,nama:pegawai.nama,jam:now};
+}
 
 export async function daftarKehadiranBulanan(tahun:number, bulan:number) {
   const { villageId } = await village("kehadiran");
