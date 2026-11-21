@@ -6,7 +6,8 @@ import { twoFactor, username } from "better-auth/plugins";
 import { and, eq, ne, or, isNull, gt } from "drizzle-orm";
 
 import { db } from "@/db";
-import { sessions, users } from "@/db/schema/auth";
+import { accounts, sessions, users } from "@/db/schema/auth";
+import { passwordHistory } from "@/db/schema/password-history";
 import { villageBlockedIps, villageSecuritySettings } from "@/db/schema/village-security";
 import { AUDIT_EVENTS, type AuditEventInput } from "@/features/audit/domain/audit";
 import { appendAuditLog } from "@/features/audit/infrastructure/audit-repository";
@@ -133,6 +134,22 @@ export const auth = betterAuth({
             if (policy) {
               const passwordError = validasiKataSandi(newPassword, policy);
               if (passwordError) throw new APIError("BAD_REQUEST", { message: passwordError });
+              if (policy.passwordReuseCount > 0) {
+                const [[credential], history] = await Promise.all([
+                  db.select({ password: accounts.password }).from(accounts).where(and(eq(accounts.accountId, userId), eq(accounts.providerId, "credential"))).limit(1),
+                  db.select({ passwordHash: passwordHistory.passwordHash }).from(passwordHistory).where(eq(passwordHistory.userId, userId)).orderBy(passwordHistory.createdAt).limit(policy.passwordReuseCount),
+                ]);
+                const hashes = [...new Set([credential?.password, ...history.map((item) => item.passwordHash)].filter((value): value is string => Boolean(value)))];
+                for (const hash of hashes) {
+                  if (await ctx.context.password.verify({ password: newPassword, hash })) {
+                    throw new APIError("BAD_REQUEST", { message: "Password tidak boleh sama dengan password terakhir yang pernah digunakan." });
+                  }
+                }
+                if (credential?.password) {
+                  await db.insert(passwordHistory).values({ userId, passwordHash: credential.password })
+                    .onDuplicateKeyUpdate({ set: { passwordHash: credential.password } });
+                }
+              }
             }
           }
         }
