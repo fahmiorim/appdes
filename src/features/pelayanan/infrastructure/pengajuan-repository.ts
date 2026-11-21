@@ -1,5 +1,5 @@
 import "server-only";
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, like, or } from "drizzle-orm";
 import { db } from "@/db";
 import { pengajuanLayanan, layananPublik, riwayatPengajuanLayanan, pengajuanLayananBerkas } from "@/db/schema";
 import { bolehTransisiPengajuan, type StatusPengajuanLayanan } from "../domain/pengajuan";
@@ -9,17 +9,23 @@ export async function listLayananAktif(villageId: number) {
   return db.select({ id: layananPublik.id, nama: layananPublik.nama, kategori: layananPublik.kategori, deskripsi: layananPublik.deskripsi, persyaratan: layananPublik.persyaratan, estimasiHari: layananPublik.estimasiHari, biaya: layananPublik.biaya }).from(layananPublik).where(and(eq(layananPublik.villageId, villageId), eq(layananPublik.aktif, true))).orderBy(layananPublik.nama);
 }
 
-export async function listPengajuanLayanan(villageId: number, status?: string) {
+export async function listPengajuanLayanan(villageId: number, status?: string, cari = "", page = 1, pageSize = 10) {
   const where = [eq(pengajuanLayanan.villageId, villageId)];
   if (status) where.push(eq(pengajuanLayanan.status, status));
+  if (cari.trim()) {
+    const term = `%${cari.trim().slice(0, 100)}%`;
+    const match = or(like(pengajuanLayanan.nomorTiket, term), like(pengajuanLayanan.namaPemohon, term), like(pengajuanLayanan.nik, term));
+    if (match) where.push(match);
+  }
   const [rows, totals] = await Promise.all([
     db.select({ id: pengajuanLayanan.id, nomorTiket: pengajuanLayanan.nomorTiket, namaPemohon: pengajuanLayanan.namaPemohon, nik: pengajuanLayanan.nik, telepon: pengajuanLayanan.telepon, keperluan: pengajuanLayanan.keperluan, status: pengajuanLayanan.status, createdAt: pengajuanLayanan.createdAt, namaLayanan: layananPublik.nama })
       .from(pengajuanLayanan)
       .leftJoin(layananPublik, and(eq(pengajuanLayanan.layananId, layananPublik.id), eq(layananPublik.villageId, villageId)))
-      .where(and(...where)).orderBy(desc(pengajuanLayanan.createdAt), desc(pengajuanLayanan.id)).limit(100),
+      .where(and(...where)).orderBy(desc(pengajuanLayanan.createdAt), desc(pengajuanLayanan.id))
+      .limit(pageSize).offset((page - 1) * pageSize),
     db.select({ total: count() }).from(pengajuanLayanan).where(and(...where)),
   ]);
-  return { rows, total: Number(totals[0]?.total ?? 0) };
+  return { rows, total: Number(totals[0]?.total ?? 0), page, pageSize, totalPages: Math.max(1, Math.ceil(Number(totals[0]?.total ?? 0) / pageSize)) };
 }
 
 export async function getPengajuanLayanan(villageId: number, id: number) {
