@@ -5,6 +5,7 @@ import { LaporanStatistikNav } from "../nav";
 import { PrintButton } from "../print-button";
 import { ReportExplorer } from "./report-explorer";
 import { SavedReports } from "./saved-reports";
+import { ReportTemplates } from "./templates";
 import styles from "../laporan-statistik.module.css";
 export const metadata: Metadata = { title: "Laporan Desa" };
 const options: {value:JenisLaporan;label:string;description:string}[]=[
@@ -36,6 +37,7 @@ export default async function Page({searchParams}:{searchParams:Promise<{jenis?:
   <ReportExplorer items={reports}/>
   <section className={styles["ls-card"]}><header><div><h2>Pratinjau Laporan · {selectedLabel} {year}</h2><p>{detail.rows.length.toLocaleString("id-ID")} baris data dari modul operasional.</p></div><div className={styles["ls-export-links"]}><a href={"/api/laporan-statistik/ekspor?jenis="+selected+"&tahun="+year}>CSV</a><a href={"/api/laporan-statistik/ekspor?jenis="+selected+"&tahun="+year+"&format=xlsx"}>Excel</a><a href={"/api/laporan-statistik/ekspor?jenis="+selected+"&tahun="+year+"&format=pdf"}>PDF</a></div></header>{detail.rows.length?<div className={styles["ls-table"]}><table><thead><tr>{detail.columns.map(column=><th key={column}>{column}</th>)}</tr></thead><tbody>{detail.rows.slice(0,100).map((row,index)=><tr key={index}>{row.map((cell,j)=><td key={j}>{typeof cell==="number"?new Intl.NumberFormat("id-ID").format(cell):String(cell??"")}</td>)}</tr>)}</tbody></table></div>:<p className={styles["ls-empty"]}>Belum ada data untuk laporan ini.</p>}{detail.rows.length>100&&<p className={styles["ls-muted"]}>Pratinjau dibatasi 100 baris. Unduh CSV untuk seluruh data.</p>}</section>
   <section className={styles["ls-card"]}><header><div><h2>Buat Laporan</h2><p>Pilih kategori untuk membuka laporan operasional sesuai periode.</p></div></header><div className={styles["ls-grid"]}>{options.map(o=><article className={styles["ls-template"]} key={o.value}><h3>{o.label}</h3><p>{o.description}</p><Link href={"/laporan-statistik/laporan-desa?jenis="+o.value+"&tahun="+year}>Buat / Buka Laporan →</Link></article>)}</div></section>
+  <ReportTemplates tahun={year}/>
   <SavedReports jenis={selected} tahun={year}/>
  </div>;
 }
