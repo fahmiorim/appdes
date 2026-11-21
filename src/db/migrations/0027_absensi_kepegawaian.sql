@@ -147,3 +147,10 @@ SELECT r.`id`,m.`id`,'read'
 FROM `roles` r INNER JOIN `modules` m ON m.`village_id`=r.`village_id`
 WHERE r.`slug` IN ('sekretaris','operator','kepala-desa') AND m.`slug` IN ('absensi-kepegawaian','absensi-dashboard','kehadiran','kepegawaian','cuti-izin')
 AND NOT EXISTS (SELECT 1 FROM `role_permissions` rp WHERE rp.`role_id`=r.`id` AND rp.`module_id`=m.`id`);
+--> statement-breakpoint
+-- Kepala Desa dan Sekretaris berwenang memutuskan pengajuan cuti/izin.
+UPDATE `role_permissions` rp
+INNER JOIN `roles` r ON r.`id`=rp.`role_id`
+INNER JOIN `modules` m ON m.`id`=rp.`module_id`
+SET rp.`access`='manage'
+WHERE r.`slug` IN ('kepala-desa','sekretaris') AND m.`slug`='cuti-izin';
