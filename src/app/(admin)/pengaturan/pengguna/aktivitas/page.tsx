@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getAuditLogPageData } from "@/features/audit/application/audit-use-cases";
 import { labelAktivitas } from "@/features/dashboard/domain/aktivitas";
-import { waktuRelatif } from "@/features/dashboard/domain/waktu-relatif";
 import styles from "./aktivitas.module.css";
 
 export const metadata = { title: "Aktivitas Pengguna" };
