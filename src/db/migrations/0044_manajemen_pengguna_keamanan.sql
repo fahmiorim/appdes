@@ -38,6 +38,12 @@ INNER JOIN `modules` parent ON parent.`village_id`=child.`village_id` AND parent
 SET child.`parent_id`=parent.`id`
 WHERE child.`slug` IN ('pengguna','grup-akses');
 --> statement-breakpoint
+INSERT INTO `modules` (`village_id`,`slug`,`name`,`url`,`icon`,`is_group`,`is_hidden`,`is_active`,`sort_order`,`parent_id`)
+SELECT v.`id`,'audit-log','Aktivitas Pengguna','/pengaturan/pengguna/aktivitas','',0,1,1,3,
+  COALESCE((SELECT p.`id` FROM `modules` p WHERE p.`village_id`=v.`id` AND p.`slug`='pengaturan-desa' LIMIT 1),0)
+FROM `villages` v
+WHERE NOT EXISTS (SELECT 1 FROM `modules` m WHERE m.`village_id`=v.`id` AND m.`slug`='audit-log');
+--> statement-breakpoint
 INSERT INTO `role_permissions` (`role_id`,`module_id`,`access`)
 SELECT r.`id`,m.`id`,'read'
 FROM `roles` r INNER JOIN `modules` m ON m.`village_id`=r.`village_id`
