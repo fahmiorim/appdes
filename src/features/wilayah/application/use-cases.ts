@@ -11,7 +11,7 @@ import {
 import { requirePermission } from "@/lib/dal";
 
 export async function simpanWilayah(id: number | null, input: WilayahFormInput) {
-  const user = await requirePermission("wilayah", "update");
+  const user = await requirePermission("wilayah", id === null ? "create" : "update");
   const villageId = await resolveVillageId(user);
   const parsed = wilayahFormSchema.parse(input);
   if (await wilayahExists(villageId, parsed, id))
