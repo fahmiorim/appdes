@@ -62,7 +62,8 @@ export async function getPerangkatDesaData() {
       tempatLahir: perangkatDesa.tempatLahir, tanggalLahir: perangkatDesa.tanggalLahir, foto: perangkatDesa.foto,
       status: perangkatDesa.status, periode: perangkatDesa.periode, pendidikan: perangkatDesa.pendidikan,
       telepon: perangkatDesa.telepon, email: perangkatDesa.email, alamat: perangkatDesa.alamat,
-      nomorSkPengangkatan: perangkatDesa.nomorSkPengangkatan, tanggalPengangkatan: perangkatDesa.tanggalPengangkatan,\n      nomorSkPemberhentian: perangkatDesa.nomorSkPemberhentian, tanggalPemberhentian: perangkatDesa.tanggalPemberhentian,
+      nomorSkPengangkatan: perangkatDesa.nomorSkPengangkatan, tanggalPengangkatan: perangkatDesa.tanggalPengangkatan,
+      nomorSkPemberhentian: perangkatDesa.nomorSkPemberhentian, tanggalPemberhentian: perangkatDesa.tanggalPemberhentian,
       atasanId: perangkatDesa.atasanId, urut: perangkatDesa.urut,
     }).from(perangkatDesa).leftJoin(jabatanPerangkat, and(eq(perangkatDesa.jabatanId, jabatanPerangkat.id), eq(jabatanPerangkat.villageId, villageId)))
       .where(eq(perangkatDesa.villageId, villageId)).orderBy(asc(perangkatDesa.urut), asc(perangkatDesa.id)),
