@@ -88,6 +88,9 @@ export async function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Prop
       : navigation;
   return (
     <>
+      {tema ? (
+        <style>{`:root{--public-primary:${tema.primary};--public-secondary:${tema.secondary};--public-accent:${tema.accent};--public-background:${tema.background};--public-surface:${tema.surface};--public-text:${tema.text};--public-heading-font:${tema.fontHeading === "serif" ? "Georgia,serif" : "inherit"};--public-radius:${tema.radius}}`}</style>
+      ) : null}
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <Link href="/" className={styles.brand} aria-label={`Beranda ${desa.namaDesa ?? "desa"}`}>
