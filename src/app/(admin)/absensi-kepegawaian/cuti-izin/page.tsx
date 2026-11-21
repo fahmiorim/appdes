@@ -18,11 +18,13 @@ export default async function CutiIzinPage() {
   const monthStart=new Date(Date.UTC(tahun,bulan-1,1)).getUTCDay();
   const daysInMonth=new Date(Date.UTC(tahun,bulan,0)).getUTCDate();
   const calendarMap=new Map<number,string[]>();
+  const monthFirst=Date.UTC(tahun,bulan-1,1);
+  const monthLast=Date.UTC(tahun,bulan,0);
   for(const item of rows.filter(x=>x.status==="disetujui")) {
-    const start=Math.max(1,Number(item.mulai.slice(8,10)));
-    const end=Math.min(daysInMonth,Number(item.selesai.slice(8,10)));
-    if(Number(item.mulai.slice(5,7))===bulan||Number(item.selesai.slice(5,7))===bulan) {
-      for(let day=start;day<=end;day++){const list=calendarMap.get(day)??[];list.push(item.jenis);calendarMap.set(day,list);}
+    const start=Date.UTC(Number(item.mulai.slice(0,4)),Number(item.mulai.slice(5,7))-1,Number(item.mulai.slice(8,10)));
+    const end=Date.UTC(Number(item.selesai.slice(0,4)),Number(item.selesai.slice(5,7))-1,Number(item.selesai.slice(8,10)));
+    for(let day=Math.max(monthFirst,start);day<=Math.min(monthLast,end);day+=86400000){
+      const number=new Date(day).getUTCDate();const list=calendarMap.get(number)??[];list.push(item.jenis);calendarMap.set(number,list);
     }
   }
   const monthLabel=new Intl.DateTimeFormat("id-ID",{month:"long",year:"numeric",timeZone:"Asia/Jakarta"}).format(new Date(Date.UTC(tahun,bulan-1,1)));
