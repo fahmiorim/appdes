@@ -24,11 +24,14 @@ export default async function PemerintahanDashboardPage() {
   const akarOrganisasi = data.perangkat.filter((item) =>
     item.id === kepala?.id || !item.atasanId || !data.perangkat.some((parent) => parent.id === item.atasanId),
   );
-  const renderOrganisasi = (item: (typeof data.perangkat)[number], depth = 0): ReactNode => {
-    const children = anakPerangkat(item.id);
+  const renderOrganisasi = (item: (typeof data.perangkat)[number], depth = 0, visited = new Set<number>()): ReactNode => {
+    if (visited.has(item.id)) return null;
+    const nextVisited = new Set(visited);
+    nextVisited.add(item.id);
+    const children = anakPerangkat(item.id).filter((child) => !nextVisited.has(child.id));
     return <article className={`pemerintahan-org-node ${item.id === kepala?.id ? "root" : ""}`} key={item.id} data-depth={depth}>
       <strong>{item.nama}</strong><span>{item.jabatan ?? "Perangkat Desa"}</span>
-      {children.length ? <div className="pemerintahan-org-children pemerintahan-org-nested">{children.map((child) => renderOrganisasi(child, depth + 1))}</div> : null}
+      {children.length ? <div className="pemerintahan-org-children pemerintahan-org-nested">{children.map((child) => renderOrganisasi(child, depth + 1, nextVisited))}</div> : null}
     </article>;
   };
   const stats = [
