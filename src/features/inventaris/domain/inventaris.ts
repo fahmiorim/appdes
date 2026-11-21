@@ -336,7 +336,7 @@ export function hitungPerubahanAset(
 
   if (mutasi.jenis === "rusak") {
     if (!mutasi.kondisiBaru || mutasi.kondisiBaru === "baik") {
-      throw conflict("Kondisi baru harus rusak ringan, rusak berat, atau dalam perbaikan untuk mutasi rusak.");
+      throw conflict("Kondisi baru harus rusak ringan atau rusak berat, atau dalam perbaikan untuk mutasi rusak.");
     }
     return { kondisi: mutasi.kondisiBaru };
   }
