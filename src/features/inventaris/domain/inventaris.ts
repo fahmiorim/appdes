@@ -310,11 +310,16 @@ export function hitungPerubahanAset(
       };
     }
 
-    return {
+    const patch: InventarisAssetPatch = {
       jumlah: sisa.toFixed(2),
       nilaiAkhir: nilaiAkhirBaru(aset.hargaSatuan, sisa),
-      akumulasiPenyusutan: jumlahAset > 0 ? (Number(aset.akumulasiPenyusutan ?? 0) * sisa / jumlahAset).toFixed(2) : "0.00",
     };
+    if (aset.akumulasiPenyusutan !== undefined && aset.akumulasiPenyusutan !== null) {
+      patch.akumulasiPenyusutan = jumlahAset > 0
+        ? (Number(aset.akumulasiPenyusutan) * sisa / jumlahAset).toFixed(2)
+        : "0.00";
+    }
+    return patch;
   }
 
   if (Math.abs(jumlahMutasi - jumlahAset) > TOLERANSI_JUMLAH) {
