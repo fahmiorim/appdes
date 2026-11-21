@@ -180,3 +180,8 @@
 .hadir{background:#dcfce7;color:#16733a}
 .menunggu{background:#fff0d7;color:#a35b00}
 .ditolak{background:#ffe2e5;color:#b42335}
+
+.ak-person>span{overflow:hidden;padding:0}
+.ak-person>span img{display:block;width:100%;height:100%;object-fit:cover;border-radius:50%}
+.ak-profile-avatar{position:relative;overflow:hidden}
+.ak-profile-avatar img{object-fit:cover}
