@@ -185,6 +185,50 @@ export async function listInventaris(
 }
 
 
+
+export async function listInventarisLocations(villageId:number):Promise<string[]> {
+  const rows=await db.selectDistinct({lokasi:inventaris.lokasi}).from(inventaris)
+    .where(and(eq(inventaris.villageId,villageId),eq(inventaris.isDeleted,false)));
+  return rows.map(x=>x.lokasi).filter((x):x is string=>Boolean(x)).sort((a,b)=>a.localeCompare(b,"id"));
+}
+
+export async function listInventarisPage(villageId:number,input:{
+  search?:string;kategoriId?:number;lokasi?:string;kondisi?:string;page:number;pageSize:number;
+}) {
+  const where=and(
+    eq(inventaris.villageId,villageId),eq(inventaris.isDeleted,false),
+    input.search?or(
+      like(inventaris.namaBarang,`%${input.search}%`),
+      like(inventaris.nomorInventaris,`%${input.search}%`),
+      like(inventaris.kodeBarang,`%${input.search}%`),
+      like(inventaris.merk,`%${input.search}%`),
+      like(inventaris.tipe,`%${input.search}%`),
+    ):undefined,
+    input.kategoriId?eq(inventaris.kategoriId,input.kategoriId):undefined,
+    input.lokasi?eq(inventaris.lokasi,input.lokasi):undefined,
+    input.kondisi?eq(inventaris.kondisi,input.kondisi as typeof inventaris.kondisi.enumValues[number]):undefined,
+  );
+  const [rows,total]=await Promise.all([
+    db.select({
+      id:inventaris.id,kategoriId:inventaris.kategoriId,nomorInventaris:inventaris.nomorInventaris,
+      namaBarang:inventaris.namaBarang,kodeBarang:inventaris.kodeBarang,merk:inventaris.merk,tipe:inventaris.tipe,
+      spesifikasi:inventaris.spesifikasi,jumlah:inventaris.jumlah,satuan:inventaris.satuan,
+      hargaSatuan:inventaris.hargaSatuan,nilaiAkhir:inventaris.nilaiAkhir,
+      akumulasiPenyusutan:inventaris.akumulasiPenyusutan,umurManfaatBulan:inventaris.umurManfaatBulan,
+      nilaiResidu:inventaris.nilaiResidu,tanggalMulaiPenyusutan:inventaris.tanggalMulaiPenyusutan,
+      tahunPembelian:inventaris.tahunPembelian,tanggalPembelian:inventaris.tanggalPembelian,
+      asal:inventaris.asal,donatur:inventaris.donatur,kondisi:inventaris.kondisi,lokasi:inventaris.lokasi,
+      keterangan:inventaris.keterangan,penanggungJawab:inventaris.penanggungJawab,
+      jabatanPenanggungJawab:inventaris.jabatanPenanggungJawab,teleponPenanggungJawab:inventaris.teleponPenanggungJawab,
+      kategoriNama:inventarisKategori.nama,kategoriKode:inventarisKategori.kode,
+    }).from(inventaris).leftJoin(inventarisKategori,and(
+      eq(inventaris.kategoriId,inventarisKategori.id),eq(inventaris.villageId,inventarisKategori.villageId),
+    )).where(where).orderBy(desc(inventaris.createdAt)).limit(input.pageSize).offset((input.page-1)*input.pageSize),
+    db.select({value:count()}).from(inventaris).where(where),
+  ]);
+  return {rows,total:total[0]?.value??0};
+}
+
 export async function inventarisNomorExists(villageId:number,nomor:string,exceptId?:number):Promise<boolean> {
   const [row]=await db.select({id:inventaris.id}).from(inventaris).where(and(
     eq(inventaris.villageId,villageId),eq(inventaris.nomorInventaris,nomor),
