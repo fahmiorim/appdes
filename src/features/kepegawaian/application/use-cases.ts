@@ -162,6 +162,13 @@ export async function getDashboardAbsensiData() {
     totalPegawai: employees.length, hadir, izin, cuti, tidakHadir,
     tingkatKehadiran: employees.length ? Math.round((hadir / employees.length) * 1000) / 10 : 0,
     komposisi: { tetap: employees.filter((x) => x.statusPegawai === "tetap").length, kontrak: employees.filter((x) => x.statusPegawai === "kontrak").length, purnaTugas: employees.filter((x) => x.statusPegawai === "purna_tugas").length },
+    jenisKelamin: { lakiLaki: employees.filter((x) => x.jenisKelamin === "male").length, perempuan: employees.filter((x) => x.jenisKelamin === "female").length },
+    rataMasaKerjaBulan: employees.length ? Math.round(employees.reduce((sum, x) => {
+      if (!x.tanggalMasuk) return sum;
+      const start = new Date(x.tanggalMasuk + "T00:00:00Z");
+      const end = x.tanggalKeluar ? new Date(x.tanggalKeluar + "T00:00:00Z") : new Date();
+      return sum + Math.max(0, (end.getUTCFullYear() - start.getUTCFullYear()) * 12 + end.getUTCMonth() - start.getUTCMonth());
+    }, 0) / employees.filter((x) => x.tanggalMasuk).length) : 0,
     todayRows: todayRows.map((x) => ({ ...x, status: x.status ?? "tidak_hadir" })),
     trendRows, leaves,
   };
