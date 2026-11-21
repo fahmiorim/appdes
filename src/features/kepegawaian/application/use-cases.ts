@@ -67,7 +67,8 @@ export async function sinkronkanPegawaiPerangkat(villageId: number) {
     await db.update(kepegawaianPegawai).set({
       nama: item.nama, nip: item.nip, nik: item.nik, jenisKelamin: item.jenisKelamin,
       tempatLahir: item.tempatLahir, tanggalLahir: item.tanggalLahir,
-      foto: item.foto, jabatan: item.jabatan, status: item.status === "aktif" ? "aktif" : "nonaktif",
+      foto: item.foto, jabatan: item.jabatan,
+      ...(item.status === "aktif" ? {} : { status: "nonaktif" }),
     }).where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.id, existing.id)));
   }
 }
