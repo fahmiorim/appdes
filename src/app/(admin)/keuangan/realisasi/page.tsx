@@ -6,14 +6,20 @@ import { simpanRealisasiKeuanganAction, simpanRealisasiTriwulanAction } from "..
 
 export const metadata = { title: "Realisasi Anggaran" };
 
-export default async function RealisasiPage() {
-  const [data, triwulan] = await Promise.all([listKeuangan(), getLaporanTriwulan()]);
+type Props = { searchParams: Promise<{ tahun?: string }> };
+
+export default async function RealisasiPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const tahunParam = Number(params.tahun);
+  const tahun = Number.isInteger(tahunParam) && tahunParam >= 2000 && tahunParam <= 2100 ? tahunParam : undefined;
+  const [data, triwulan] = await Promise.all([listKeuangan(tahun), getLaporanTriwulan(tahun)]);
   const rows = data.rows.filter((row) => isInputRow(row.templateUuid) && !["4","5","6"].includes(row.templateUuid));
   const akun = new Map(data.rows.map((row) => [row.templateUuid,row]));
   return <main className={styles.page}>
     <header className={styles.heading}><div className={styles.headingIcon}>▥</div><div><p className={styles.eyebrow}>KEUANGAN DESA</p><h1>Realisasi Anggaran</h1><p>Catat dan pantau realisasi pendapatan serta belanja terhadap APBDes.</p></div></header>
     <nav className={styles.tabs}><Link href="/keuangan">Dashboard</Link><Link href="/keuangan/apbdes">APBDes</Link><Link className={styles.activeTab} href="/keuangan/realisasi">Realisasi Anggaran</Link><Link href="/keuangan/kegiatan">Kegiatan &amp; Pembangunan</Link><Link href="/keuangan/laporan">Laporan Keuangan</Link><Link href="/keuangan/dokumen">Dokumen &amp; Peraturan</Link></nav>
     <section className={styles.metrics}><article className={styles.metricPrimary}><span>Total Pagu {data.tahun}</span><strong>{formatRupiah(akun.get("4")?.anggaran ?? "0")}</strong><small>Anggaran pendapatan</small></article><article className={styles.metric}><span>Realisasi Pendapatan</span><strong>{formatRupiah(akun.get("4")?.realisasi ?? "0")}</strong><small>{realisasiPersen(akun.get("4")?.anggaran ?? "0",akun.get("4")?.realisasi ?? "0").toFixed(1)}%</small></article><article className={styles.metric}><span>Realisasi Belanja</span><strong>{formatRupiah(akun.get("5")?.realisasi ?? "0")}</strong><small>{realisasiPersen(akun.get("5")?.anggaran ?? "0",akun.get("5")?.realisasi ?? "0").toFixed(1)}%</small></article><article className={styles.metric}><span>Sisa Belanja</span><strong>{formatRupiah((Number(akun.get("5")?.anggaran ?? 0)-Number(akun.get("5")?.realisasi ?? 0)).toString())}</strong><small>Dari pagu belanja</small></article><article className={styles.metric}><span>Bidang Belanja</span><strong>{triwulan.baris.length} bidang</strong><small>Rekap triwulan</small></article></section>
+    <form method="get" className={styles.filterForm}><label htmlFor="tahun-realisasi">Tahun anggaran</label><select id="tahun-realisasi" name="tahun" defaultValue={data.tahun}>{data.tersedia.map((y)=><option key={y} value={y}>{y}</option>)}</select><button className={styles.primaryButton} type="submit">Tampilkan</button></form>
     <form action={simpanRealisasiKeuanganAction} className={styles.panel}><input type="hidden" name="tahun" value={data.tahun}/><div className={styles.panelHeading}><div><h2>Input Realisasi Tahun {data.tahun}</h2><p>Isi realisasi rekening kegiatan. Akun induk dihitung otomatis dari rincian.</p></div><button className={styles.primaryButton} type="submit">Simpan Realisasi</button></div>
       <div className={styles.tableWrap}><table className={styles.dataTable}><thead><tr><th>Kode</th><th>Uraian</th><th className={styles.number}>Pagu (Rp)</th><th className={styles.number}>Realisasi (Rp)</th><th>Serapan</th></tr></thead><tbody>{rows.map((row)=><tr key={row.templateUuid}><td><b>{row.templateUuid}</b></td><td>{row.uraian}</td><td className={styles.number}>{formatRupiah(row.anggaran)}</td><td className={styles.number}><input className={styles.moneyInput} type="number" min="0" step="1" name={"realisasi:"+row.templateUuid} defaultValue={Number(row.realisasi)} aria-label={"Realisasi "+row.uraian}/></td><td><div className={styles.progress}><i style={{width:Math.min(100,realisasiPersen(row.anggaran,row.realisasi))+"%"}}/></div></td></tr>)}</tbody></table></div>
     </form>
