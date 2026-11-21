@@ -24,13 +24,13 @@ export default async function CutiIzinPage() {
   const calendarMap = new Map<number, string[]>();
   const monthFirst = Date.UTC(tahun, bulan - 1, 1);
   const monthLast = Date.UTC(tahun, bulan, 0);
-  for (const item of rows.filter((x) => x.status === "disetujui")) {
+  for (const item of rows) {
     const start = Date.UTC(Number(item.mulai.slice(0, 4)), Number(item.mulai.slice(5, 7)) - 1, Number(item.mulai.slice(8, 10)));
     const end = Date.UTC(Number(item.selesai.slice(0, 4)), Number(item.selesai.slice(5, 7)) - 1, Number(item.selesai.slice(8, 10)));
     for (let day = Math.max(monthFirst, start); day <= Math.min(monthLast, end); day += 86400000) {
       const date = new Date(day).getUTCDate();
       const list = calendarMap.get(date) ?? [];
-      list.push(item.jenis);
+      list.push(item.status);
       calendarMap.set(date, list);
     }
   }
@@ -92,7 +92,7 @@ export default async function CutiIzinPage() {
           <div className={styles["ak-calendar"]}>
             {["Min","Sen","Sel","Rab","Kam","Jum","Sab"].map((day) => <span className={styles["ak-calendar-head"]} key={day}>{day}</span>)}
             {Array.from({ length: monthStart }, (_, i) => <span key={"blank-" + i}/>)}
-            {Array.from({ length: daysInMonth }, (_, i) => { const day = i + 1; const types = calendarMap.get(day) ?? []; return <div key={day} className={styles["ak-calendar-day"] + " " + (types.length ? styles["has-data"] : "")}><strong>{day}</strong>{types.length ? <small>{types.length} agenda</small> : null}</div>; })}
+            {Array.from({ length: daysInMonth }, (_, i) => { const day = i + 1; const types = calendarMap.get(day) ?? []; return <div key={day} className={styles["ak-calendar-day"] + " " + (types.includes("disetujui") ? styles.hadir : types.includes("menunggu") ? styles.menunggu : types.includes("ditolak") ? styles.ditolak : "")}><strong>{day}</strong>{types.length ? <small>{types.length} agenda</small> : null}</div>; })}
           </div>
           <div className={styles["ak-calendar-legend"]}><span><i className={styles.green}/>Cuti disetujui</span><span><i className={styles.amber}/>Menunggu</span><span><i className={styles.red}/>Ditolak</span></div>
         </section>
