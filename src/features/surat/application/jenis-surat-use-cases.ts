@@ -63,7 +63,7 @@ export async function getMasterJenisSuratData() {
 }
 
 export async function getJenisSuratEditorData(id?: number) {
-  const user = await requirePermission(JENIS_SURAT_RESOURCE, "update");
+  const user = await requirePermission(JENIS_SURAT_RESOURCE, id === undefined ? "create" : "update");
   const villageId = await resolveVillageId(user);
   const [klasifikasi, syarat, jenis] = await Promise.all([
     listKlasifikasi(villageId),
