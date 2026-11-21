@@ -239,6 +239,13 @@
       "when": 1795715400000,
       "tag": "0032_pembangunan_gis_coordinates",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1795716000000,
+      "tag": "0033_keuangan_bulanan",
+      "breakpoints": true
     }
   ]
 }
