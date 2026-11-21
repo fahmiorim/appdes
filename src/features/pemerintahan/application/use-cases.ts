@@ -16,13 +16,10 @@ async function tenant(resource: string, action: "read" | "create" | "update" | "
 
 export async function getPemerintahanDashboard() {
   const villageId = await tenant("pemerintahan-dashboard");
-  const [[perangkat], [lembaga], [bpd], [dusun], [rt], [rw], [area]] = await Promise.all([
+  const [[perangkat], [lembaga], [bpd], [area]] = await Promise.all([
     db.select({ total: count() }).from(perangkatDesa).where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.status, "aktif"))),
     db.select({ total: count() }).from(lembagaDesa).where(and(eq(lembagaDesa.villageId, villageId), eq(lembagaDesa.status, "aktif"))),
-    db.select({ total: count() }).from(lembagaAnggota).innerJoin(lembagaDesa, and(eq(lembagaAnggota.lembagaId, lembagaDesa.id), eq(lembagaAnggota.villageId, villageId))).where(and(eq(lembagaAnggota.villageId, villageId), eq(lembagaAnggota.aktif, true), eq(lembagaDesa.jenis, "bpd"))),
-    db.select({ total: count() }).from(regions).where(and(eq(regions.villageId, villageId), eq(regions.rw, ""), eq(regions.rt, ""))),
-    db.select({ total: count() }).from(regions).where(and(eq(regions.villageId, villageId), eq(regions.rt, ""))),
-    db.select({ total: count() }).from(regions).where(and(eq(regions.villageId, villageId), eq(regions.rw, ""))),
+    db.select({ total: count() }).from(lembagaAnggota).innerJoin(lembagaDesa, and(eq(lembagaAnggota.lembagaId, lembagaDesa.id), eq(lembagaAnggota.villageId, villageId))).where(and(eq(lembagaAnggota.villageId, villageId), eq(lembagaAnggota.aktif, true), eq(lembagaDesa.status, "aktif"), eq(lembagaDesa.jenis, "bpd"))),
     db.select({ total: count() }).from(areas).where(and(eq(areas.villageId, villageId), eq(areas.enabled, 1))),
   ]);
   const [officials, institutions, wilayah, identitas] = await Promise.all([
@@ -41,9 +38,9 @@ export async function getPemerintahanDashboard() {
     totalPerangkat: perangkat?.total ?? 0,
     totalLembaga: lembaga?.total ?? 0,
     totalBpd: bpd?.total ?? 0,
-    totalDusun: dusun?.total ? dusun.total : dusunNames.size,
-    totalRt: rt?.total ? rt.total : rtNames.size,
-    totalRw: rw?.total ? rw.total : rwNames.size,
+    totalDusun: dusunNames.size,
+    totalRt: rtNames.size,
+    totalRw: rwNames.size,
     totalArea: area?.total ?? 0,
     perangkat: officials,
     lembaga: institutions,
