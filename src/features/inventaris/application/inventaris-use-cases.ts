@@ -35,6 +35,10 @@ import {
   listInventaris,
   listInventarisKategori,
   listMutasi,
+  listPemeliharaan,
+  createPemeliharaan,
+  updateStatusPemeliharaan,
+  deletePemeliharaan,
   setujuiMutasiTahap,
   softDeleteInventaris,
   tolakMutasi,
@@ -342,4 +346,48 @@ export async function getInventarisDetailPageData(id: number) {
     canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canDelete: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
   };
+}
+
+export async function getPemeliharaanPageData() {
+  const user=await requirePermission(INVENTARIS_RESOURCE,"read");
+  const villageId=await resolveVillageId(user);
+  const [mutasi,inventarisData,pemeliharaan]=await Promise.all([
+    listMutasi(villageId),
+    listInventaris(villageId),
+    listPemeliharaan(villageId),
+  ]);
+  return {
+    mutasi,
+    inventaris:inventarisData.rows.map(x=>({id:x.id,namaBarang:x.namaBarang,nomorInventaris:x.nomorInventaris,jumlah:x.jumlah,satuan:x.satuan})),
+    pemeliharaan,
+    canWrite:hasPermission(user.permissions,MUTASI_RESOURCE,"update"),
+    approverSteps:(await getMutasiPageData()).approverSteps,
+  };
+}
+
+export async function buatJadwalPemeliharaan(input:{
+  inventarisId:number;jenis:string;tanggalRencana:string;biaya:number;pelaksana?:string;deskripsi?:string;
+}) {
+  const user=await requirePermission(INVENTARIS_RESOURCE,"update");
+  const villageId=await resolveVillageId(user);
+  const item=await getInventaris(villageId,input.inventarisId);
+  if(!item) throw notFound("Aset tidak ditemukan.");
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(input.tanggalRencana)||Number.isNaN(Date.parse(input.tanggalRencana))) throw validationError("Tanggal jadwal tidak valid.");
+  if(!input.jenis.trim()||input.jenis.length>100||input.biaya<0||!Number.isFinite(input.biaya)) throw validationError("Data pemeliharaan tidak valid.");
+  await createPemeliharaan(villageId,{
+    inventarisId:input.inventarisId,jenis:input.jenis.trim(),tanggalRencana:input.tanggalRencana,
+    biaya:input.biaya.toFixed(2),pelaksana:input.pelaksana?.trim()||null,deskripsi:input.deskripsi?.trim()||null,
+  });
+}
+
+export async function ubahStatusPemeliharaan(input:{id:number;status:"dalam_proses"|"selesai"|"dibatalkan";tanggalSelesai?:string;hasil?:string}) {
+  const user=await requirePermission(INVENTARIS_RESOURCE,"update");
+  const villageId=await resolveVillageId(user);
+  await updateStatusPemeliharaan(villageId,input.id,input.status,input.tanggalSelesai||null,input.hasil?.trim()||null);
+}
+
+export async function hapusJadwalPemeliharaan(id:number) {
+  const user=await requirePermission(INVENTARIS_RESOURCE,"delete");
+  const villageId=await resolveVillageId(user);
+  await deletePemeliharaan(villageId,id);
 }
