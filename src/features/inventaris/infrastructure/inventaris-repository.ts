@@ -127,6 +127,8 @@ export async function listInventaris(
           like(inventaris.namaBarang, `%${search}%`),
           like(inventaris.nomorInventaris, `%${search}%`),
           like(inventaris.kodeBarang, `%${search}%`),
+          like(inventaris.merk, `%${search}%`),
+          like(inventaris.tipe, `%${search}%`),
         )
       : undefined,
   );
