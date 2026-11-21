@@ -8,6 +8,7 @@ import { and, desc, eq, ne, or, isNull, gt } from "drizzle-orm";
 import { db } from "@/db";
 import { accounts, sessions, users } from "@/db/schema/auth";
 import { passwordHistory } from "@/db/schema/password-history";
+import { verifications } from "@/db/schema/auth";
 import { villageBlockedIps, villageSecuritySettings } from "@/db/schema/village-security";
 import { AUDIT_EVENTS, type AuditEventInput } from "@/features/audit/domain/audit";
 import { appendAuditLog } from "@/features/audit/infrastructure/audit-repository";
@@ -124,6 +125,36 @@ export const auth = betterAuth({
 
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === "/reset-password") {
+        const token = typeof ctx.body?.token === "string" ? ctx.body.token : "";
+        const newPassword = typeof ctx.body?.newPassword === "string" ? ctx.body.newPassword : "";
+        if (token && newPassword) {
+          const [verification] = await db.select({ userId: verifications.value, expiresAt: verifications.expiresAt })
+            .from(verifications).where(eq(verifications.identifier, "reset-password:" + token)).limit(1);
+          if (verification && verification.expiresAt > new Date()) {
+            const [account] = await db.select({ villageId: users.villageId }).from(users).where(eq(users.id, verification.userId)).limit(1);
+            if (account?.villageId) {
+              const [policy] = await db.select().from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
+              if (policy) {
+                const passwordError = validasiKataSandi(newPassword, policy);
+                if (passwordError) throw new APIError("BAD_REQUEST", { message: passwordError });
+                if (policy.passwordReuseCount > 0) {
+                  const [[credential], history] = await Promise.all([
+                    db.select({ password: accounts.password }).from(accounts).where(and(eq(accounts.accountId, verification.userId), eq(accounts.providerId, "credential"))).limit(1),
+                    db.select({ passwordHash: passwordHistory.passwordHash }).from(passwordHistory).where(eq(passwordHistory.userId, verification.userId)).orderBy(desc(passwordHistory.createdAt)).limit(Math.max(0, policy.passwordReuseCount - 1)),
+                  ]);
+                  const hashes = [...new Set([credential?.password, ...history.map((item) => item.passwordHash)].filter((value): value is string => Boolean(value)))];
+                  for (const hash of hashes) {
+                    if (await ctx.context.password.verify({ password: newPassword, hash })) throw new APIError("BAD_REQUEST", { message: "Password tidak boleh sama dengan password terakhir yang pernah digunakan." });
+                  }
+                  if (credential?.password) await db.insert(passwordHistory).values({ userId: verification.userId, passwordHash: credential.password }).onDuplicateKeyUpdate({ set: { passwordHash: credential.password } });
+                }
+              }
+            }
+          }
+        }
+        return;
+      }
       if (ctx.path === "/two-factor/disable") {
         const userId = ctx.context.session?.user?.id;
         if (userId) {
