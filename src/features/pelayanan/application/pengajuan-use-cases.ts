@@ -85,12 +85,17 @@ export async function ubahStatusPengajuanData(id: number, raw: unknown) {
     const { kirimNotifikasiWarga } = await import("@/features/notifikasi/application/kirim-notifikasi");
     const emailAkun = await findWargaEmailByResident(villageId, detail.request.residentId);
     const email = emailAkun?.endsWith(".warga.desa.local") ? null : emailAkun;
-    await kirimNotifikasiWarga({
-      villageId, residentId: detail.request.residentId, jenis: "pengajuan-layanan.status",
-      subjek: "Pembaruan status pengajuan " + detail.request.nomorTiket,
-      pesan: "Status pengajuan " + detail.request.nomorTiket + " berubah menjadi " + perubahan.statusBaru + ". " + (parsed.data.catatanPetugas || parsed.data.alasanPenolakan || ""),
-      email, telepon: detail.request.telepon,
-    });
+    try {
+      await kirimNotifikasiWarga({
+        villageId, residentId: detail.request.residentId, jenis: "pengajuan-layanan.status",
+        subjek: "Pembaruan status pengajuan " + detail.request.nomorTiket,
+        pesan: "Status pengajuan " + detail.request.nomorTiket + " berubah menjadi " + perubahan.statusBaru + ". " + (parsed.data.catatanPetugas || parsed.data.alasanPenolakan || ""),
+        email, telepon: detail.request.telepon,
+      });
+    } catch (error) {
+      // Status dan riwayat sudah tersimpan; kegagalan notifikasi tidak membatalkan perubahan.
+      console.error("Notifikasi perubahan status pengajuan gagal dikirim.", { pengajuanId: id, villageId, error });
+    }
   }
 }
 
