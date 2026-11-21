@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 
 import {
-  hapusAnggotaLembaga, hapusAreaPeta, hapusLembagaDesa, hapusPerangkatDesa,
-  simpanAnggotaLembaga, simpanAreaPeta, simpanLembagaDesa, simpanPerangkatDesa,
+  hapusAnggotaLembaga, hapusAreaPeta, hapusJabatanPerangkat, hapusLembagaDesa, hapusPerangkatDesa,
+  simpanAnggotaLembaga, simpanAreaPeta, simpanJabatanPerangkat, simpanLembagaDesa, simpanPerangkatDesa,
 } from "@/features/pemerintahan/application/use-cases";
 import { hapusWilayah, simpanWilayah } from "@/features/wilayah/application/use-cases";
 
@@ -118,5 +118,20 @@ export async function hapusAreaPetaAction(fd: FormData) {
   const id = numberOrNull(value(fd, "id"));
   if (!id) throw new Error("ID area tidak valid.");
   await hapusAreaPeta(id);
+  refresh();
+}
+
+export async function simpanJabatanAction(fd: FormData) {
+  const id = numberOrNull(value(fd, "id"));
+  const nama = value(fd, "nama");
+  if (!nama) throw new Error("Nama jabatan wajib diisi.");
+  await simpanJabatanPerangkat(id, nama, Number(value(fd, "urut") || 0));
+  refresh();
+}
+
+export async function hapusJabatanAction(fd: FormData) {
+  const id = numberOrNull(value(fd, "id"));
+  if (!id) throw new Error("ID jabatan tidak valid.");
+  await hapusJabatanPerangkat(id);
   refresh();
 }
