@@ -5,7 +5,7 @@ import { hashPassword } from "better-auth/crypto";
 import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { accounts, roles, users } from "@/db/schema";
+import { accounts, roles, sessions, users } from "@/db/schema";
 import type { PenggunaDTO } from "@/features/pengguna/domain/pengguna";
 
 /**
@@ -165,8 +165,12 @@ export async function updatePengguna(
 
     if (account) {
       await tx.update(accounts).set({ password: passwordHash }).where(eq(accounts.id, account.id));
-      return;
+    } else {
+      await tx.insert(accounts).values({ id: randomUUID(), accountId: id, providerId: "credential", userId: id, password: passwordHash });
     }
+    // Reset password oleh admin mencabut semua sesi lama seperti reset via Better Auth.
+    await tx.delete(sessions).where(eq(sessions.userId, id));
+    return;
 
     await tx.insert(accounts).values({
       id: randomUUID(),
