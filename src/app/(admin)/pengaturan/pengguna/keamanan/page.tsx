@@ -16,6 +16,7 @@ export const metadata = { title: "Pengaturan Keamanan" };
 export default async function KeamananPage() {
   const user = await requirePermission(RESOURCES.pengguna, "read");
   const villageId = await resolveVillageId(user);
+  const canCreate = hasPermission(user.permissions, RESOURCES.pengguna, "create");
   const canManage = hasPermission(user.permissions, RESOURCES.pengguna, "update");
   const canDelete = hasPermission(user.permissions, RESOURCES.pengguna, "delete");
   const [settings, blockedIps, account] = await Promise.all([getSecuritySettings(villageId), listBlockedIps(villageId), db.select({twoFactorEnabled:users.twoFactorEnabled,email:users.email,emailVerified:users.emailVerified}).from(users).where(eq(users.id,user.id)).limit(1)]);
@@ -42,7 +43,7 @@ export default async function KeamananPage() {
       </section>
       <div className={styles.actions}><button type="submit">Simpan Pengaturan</button><button formAction={resetKeamananAction} className={styles.reset} type="submit">Reset ke Default</button></div>
     </form> : <section className={styles.card}><p>Anda memiliki akses baca. Minta administrator desa untuk mengubah kebijakan keamanan.</p></section>}
-    <section className={styles.card}><h2>🚫 Daftar IP Diblokir</h2>{canManage ? <form action={blokirIpAction} className={styles.inline}><input name="ipAddress" placeholder="Alamat IP" required/><input name="reason" placeholder="Alasan pemblokiran" required/><button type="submit">Blokir IP</button></form> : null}
+    <section className={styles.card}><h2>🚫 Daftar IP Diblokir</h2>{canCreate ? <form action={blokirIpAction} className={styles.inline}><input name="ipAddress" placeholder="Alamat IP" required/><input name="reason" placeholder="Alasan pemblokiran" required/><button type="submit">Blokir IP</button></form> : null}
       <div className={styles.list}>{blockedIps.map((ip)=><form action={hapusBlokirIpAction} key={ip.id}><input type="hidden" name="id" value={ip.id}/><span><b>{ip.ipAddress}</b><small>{ip.reason}</small></span>{canDelete ? <button type="submit">Cabut blokir</button> : null}</form>)}{blockedIps.length===0?<p>Belum ada IP yang diblokir.</p>:null}</div>
     </section>
   </main>;
