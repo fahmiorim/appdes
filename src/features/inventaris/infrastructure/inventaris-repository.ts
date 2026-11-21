@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, count, desc, eq, isNull, like, ne, or } from "drizzle-orm";
 
 import { db } from "@/db";
-import { inventaris, inventarisKategori, inventarisMutasi } from "@/db/schema";
+import { inventaris, inventarisKategori, inventarisMutasi, inventarisPemeliharaan } from "@/db/schema";
 import {
   hitungPerubahanAset,
   mutasiLogBeforeStep,
@@ -457,4 +457,47 @@ export async function tolakMutasi(
   if (result.affectedRows === 0) {
     throw conflict("Pengajuan mutasi sudah diproses atau urutannya tidak valid.");
   }
+}
+
+export async function listPemeliharaan(villageId: number) {
+  return db.select({
+    id: inventarisPemeliharaan.id,
+    inventarisId: inventarisPemeliharaan.inventarisId,
+    namaBarang: inventaris.namaBarang,
+    nomorInventaris: inventaris.nomorInventaris,
+    jenis: inventarisPemeliharaan.jenis,
+    tanggalRencana: inventarisPemeliharaan.tanggalRencana,
+    tanggalSelesai: inventarisPemeliharaan.tanggalSelesai,
+    status: inventarisPemeliharaan.status,
+    biaya: inventarisPemeliharaan.biaya,
+    pelaksana: inventarisPemeliharaan.pelaksana,
+    deskripsi: inventarisPemeliharaan.deskripsi,
+    hasil: inventarisPemeliharaan.hasil,
+  }).from(inventarisPemeliharaan)
+    .leftJoin(inventaris,and(
+      eq(inventaris.id,inventarisPemeliharaan.inventarisId),
+      eq(inventaris.villageId,inventarisPemeliharaan.villageId),
+    ))
+    .where(eq(inventarisPemeliharaan.villageId,villageId))
+    .orderBy(desc(inventarisPemeliharaan.tanggalRencana));
+}
+
+export async function createPemeliharaan(villageId:number,input:{
+  inventarisId:number;jenis:string;tanggalRencana:string;biaya:string;pelaksana:string|null;deskripsi:string|null;
+}) {
+  const [row]=await db.insert(inventarisPemeliharaan).values({
+    villageId,...input,status:"terjadwal",
+  }).$returningId();
+  return row?.id;
+}
+
+export async function updateStatusPemeliharaan(villageId:number,id:number,status:"dalam_proses"|"selesai"|"dibatalkan",tanggalSelesai:string|null,hasil:string|null) {
+  const [result]=await db.update(inventarisPemeliharaan).set({status,tanggalSelesai,hasil})
+    .where(and(eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id)));
+  if(result.affectedRows===0) throw notFound("Jadwal pemeliharaan tidak ditemukan.");
+}
+
+export async function deletePemeliharaan(villageId:number,id:number) {
+  const [result]=await db.delete(inventarisPemeliharaan).where(and(eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id)));
+  if(result.affectedRows===0) throw notFound("Jadwal pemeliharaan tidak ditemukan.");
 }
