@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, count, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { areas, lembagaAnggota, lembagaDesa, perangkatDesa, jabatanPerangkat, regions } from "@/db/schema";
+import { areas, lembagaAnggota, lembagaDesa, perangkatDesa, jabatanPerangkat, regions, perangkatRiwayatJabatan } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { requirePermission } from "@/lib/dal";
 
@@ -50,7 +50,7 @@ export async function getPemerintahanDashboard() {
 
 export async function getPerangkatDesaData() {
   const villageId = await tenant("perangkat-desa");
-  const [rows, jabatan] = await Promise.all([
+  const [rows, jabatan, riwayat] = await Promise.all([
     db.select({
       id: perangkatDesa.id, nama: perangkatDesa.nama, gelarDepan: perangkatDesa.gelarDepan,
       gelarBelakang: perangkatDesa.gelarBelakang, nip: perangkatDesa.nip, nik: perangkatDesa.nik,
@@ -64,8 +64,9 @@ export async function getPerangkatDesaData() {
       .where(eq(perangkatDesa.villageId, villageId)).orderBy(asc(perangkatDesa.urut), asc(perangkatDesa.id)),
     db.select({ id: jabatanPerangkat.id, nama: jabatanPerangkat.nama }).from(jabatanPerangkat)
       .where(eq(jabatanPerangkat.villageId, villageId)).orderBy(asc(jabatanPerangkat.urut)),
+    db.select().from(perangkatRiwayatJabatan).where(eq(perangkatRiwayatJabatan.villageId, villageId)).orderBy(asc(perangkatRiwayatJabatan.mulai)),
   ]);
-  return { rows, jabatan };
+  return { rows, jabatan, riwayat };
 }
 
 export async function simpanPerangkatDesa(id: number | null, input: {
@@ -182,4 +183,18 @@ export async function hapusJabatanPerangkat(id: number) {
     .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.jabatanId, id))).limit(1);
   if (used) throw new Error("Jabatan masih dipakai perangkat desa. Pindahkan jabatan perangkat terlebih dahulu.");
   await db.delete(jabatanPerangkat).where(and(eq(jabatanPerangkat.villageId, villageId), eq(jabatanPerangkat.id, id)));
+}
+
+export async function simpanRiwayatJabatan(id: number | null, input: { perangkatId: number; jabatan: string; nomorSk: string | null; mulai: string | null; selesai: string | null; keterangan: string | null }) {
+  const villageId = await tenant("perangkat-desa", id ? "update" : "create");
+  const [owner] = await db.select({ id: perangkatDesa.id }).from(perangkatDesa)
+    .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, input.perangkatId))).limit(1);
+  if (!owner) throw new Error("Perangkat tidak ditemukan pada desa aktif.");
+  if (id) await db.update(perangkatRiwayatJabatan).set(input).where(and(eq(perangkatRiwayatJabatan.villageId, villageId), eq(perangkatRiwayatJabatan.id, id)));
+  else await db.insert(perangkatRiwayatJabatan).values({ ...input, villageId });
+}
+
+export async function hapusRiwayatJabatan(id: number) {
+  const villageId = await tenant("perangkat-desa", "delete");
+  await db.delete(perangkatRiwayatJabatan).where(and(eq(perangkatRiwayatJabatan.villageId, villageId), eq(perangkatRiwayatJabatan.id, id)));
 }
