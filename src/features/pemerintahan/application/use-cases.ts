@@ -7,7 +7,7 @@ import { areas, lembagaAnggota, lembagaDesa, perangkatDesa, jabatanPerangkat, re
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { getIdentitasDesa } from "@/features/desa/infrastructure/desa-repository";
 import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
-import { requirePermission } from "@/lib/dal";
+import { requirePermission, requireUser } from "@/lib/dal";
 
 async function tenant(resource: string, action: "read" | "create" | "update" | "delete" = "read") {
   const user = await requirePermission(resource, action);
@@ -100,8 +100,12 @@ export async function simpanPerangkatDesa(id: number | null, input: {
 
 export async function hapusPerangkatDesa(id: number) {
   const villageId = await tenant("perangkat-desa", "delete");
+  const [person] = await db.select({ foto: perangkatDesa.foto }).from(perangkatDesa).where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, id))).limit(1);
+  const docs = await db.select({ berkas: pemerintahanDokumen.berkas }).from(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.perangkatId, id)));
   await db.update(perangkatDesa).set({ atasanId: null }).where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.atasanId, id)));
   await db.delete(perangkatDesa).where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, id)));
+  if (person?.foto) await hapusMedia(person.foto);
+  await Promise.all(docs.map((doc) => hapusMedia(doc.berkas)));
 }
 
 export async function getLembagaDesaData() {
@@ -126,7 +130,10 @@ export async function simpanLembagaDesa(id: number | null, input: {
 
 export async function hapusLembagaDesa(id: number) {
   const villageId = await tenant("lembaga-desa", "delete");
+  const members = await db.select({ foto: lembagaAnggota.foto }).from(lembagaAnggota).where(and(eq(lembagaAnggota.villageId, villageId), eq(lembagaAnggota.lembagaId, id)));
+  const docs = await db.select({ berkas: pemerintahanDokumen.berkas }).from(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.lembagaId, id)));
   await db.delete(lembagaDesa).where(and(eq(lembagaDesa.villageId, villageId), eq(lembagaDesa.id, id)));
+  await Promise.all([...members.flatMap((x) => x.foto ? [hapusMedia(x.foto)] : []), ...docs.map((x) => hapusMedia(x.berkas))]);
 }
 
 export async function simpanAnggotaLembaga(id: number | null, input: {
@@ -143,7 +150,9 @@ export async function simpanAnggotaLembaga(id: number | null, input: {
 
 export async function hapusAnggotaLembaga(id: number) {
   const villageId = await tenant("lembaga-desa", "delete");
+  const [member] = await db.select({ foto: lembagaAnggota.foto }).from(lembagaAnggota).where(and(eq(lembagaAnggota.villageId, villageId), eq(lembagaAnggota.id, id))).limit(1);
   await db.delete(lembagaAnggota).where(and(eq(lembagaAnggota.villageId, villageId), eq(lembagaAnggota.id, id)));
+  if (member?.foto) await hapusMedia(member.foto);
 }
 
 export async function getWilayahPemerintahanData() {
@@ -229,10 +238,11 @@ export async function unggahDokumenPemerintahan(input: {
 }
 
 export async function hapusDokumenPemerintahan(id: number) {
-  const user = await requirePermission("perangkat-desa", "delete");
+  const user = await requireUser();
   const villageId = await resolveVillageId(user);
-  const [document] = await db.select({ berkas: pemerintahanDokumen.berkas }).from(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id))).limit(1);
+  const [document] = await db.select({ berkas: pemerintahanDokumen.berkas, perangkatId: pemerintahanDokumen.perangkatId }).from(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id))).limit(1);
   if (!document) return;
+  await requirePermission(document.perangkatId ? "perangkat-desa" : "lembaga-desa", "delete");
   await db.delete(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id)));
   await hapusMedia(document.berkas);
 }
