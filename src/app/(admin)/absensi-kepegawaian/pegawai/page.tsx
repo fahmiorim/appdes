@@ -21,6 +21,9 @@ function mediaUrl(value: string | null | undefined, villageId: number): string |
 export default async function PegawaiPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
   const params=await searchParams;
   const selectedRaw=Array.isArray(params.id)?params.id[0]:params.id;
+  const query=Array.isArray(params.q)?params.q[0]??"":params.q??"";
+  const statusFilter=Array.isArray(params.status)?params.status[0]??"":params.status??"";
+  const jabatanFilter=Array.isArray(params.jabatan)?params.jabatan[0]??"":params.jabatan??"";
   const [pegawai, perangkat, user]=await Promise.all([daftarPegawai(),opsiPerangkatBelumTerhubung(),verifySession()]);
   const canManage=hasPermission(user.permissions,"kepegawaian","update");
   const selected=pegawai.find(x=>x.id===Number(selectedRaw))??pegawai[0]??null;
@@ -28,6 +31,12 @@ export default async function PegawaiPage({searchParams}:{searchParams:Promise<R
   const tetap=pegawai.filter(x=>x.statusPegawai==="tetap").length;
   const kontrak=pegawai.filter(x=>x.statusPegawai==="kontrak").length;
   const purna=pegawai.filter(x=>x.statusPegawai==="purna_tugas").length;
+  const filteredPegawai=pegawai.filter((x)=>
+    (!query||[x.nama,x.nik,x.nip,x.jabatan].some((value)=>value?.toLocaleLowerCase("id-ID").includes(query.toLocaleLowerCase("id-ID")))) &&
+    (!statusFilter||x.status===statusFilter) &&
+    (!jabatanFilter||(x.jabatan??"")===jabatanFilter)
+  );
+  const jabatanOptions=[...new Set(pegawai.map((x)=>x.jabatan).filter((value):value is string=>Boolean(value)))].sort();
   const selectedPhoto=selected?mediaUrl(selected.foto,selected.villageId):null;
   const hitungMasaKerja=(mulai:string|null,selesai:string|null)=>{
     if(!mulai) return "—";
@@ -63,9 +72,16 @@ export default async function PegawaiPage({searchParams}:{searchParams:Promise<R
     </section>
     <div id="daftar-pegawai" className={styles["ak-grid"]} style={{marginTop:16}}>
       <section className={styles["ak-card"]}><h2>Daftar Data Pegawai</h2><p>{pegawai.length} pegawai terdaftar.</p>
+        <form className={styles["ak-filter"]} method="get">
+          <label>Cari nama, NIK, atau jabatan<input type="search" name="q" placeholder="Cari pegawai..." defaultValue={query}/></label>
+          <label>Jabatan<select name="jabatan" defaultValue={jabatanFilter}><option value="">Semua Jabatan</option>{jabatanOptions.map((name)=><option key={name} value={name}>{name}</option>)}</select></label>
+          <label>Status<select name="status" defaultValue={statusFilter}><option value="">Semua Status</option><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option></select></label>
+          <button className={styles["ak-button"]} type="submit">⌕ Filter</button>
+        </form>
         <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}><thead><tr><th>No.</th><th>Nama</th><th>Jabatan</th><th>Status</th><th>Masa Kerja</th><th>Detail</th></tr></thead><tbody>
-          {pegawai.map((x,i)=><tr key={x.id}><td>{i+1}</td><td><span className={styles["ak-person"]}><span>{mediaUrl(x.foto,x.villageId)?<Image src={mediaUrl(x.foto,x.villageId)!} alt="" width={32} height={32} unoptimized/>:x.nama.split(" ").slice(0,2).map((part)=>part[0]).join("").toUpperCase()}</span><b>{x.nama}</b></span><br/><small>{x.nip??"NIP belum diisi"}</small></td><td>{x.jabatan??"—"}</td><td><span className={styles["ak-badge"]}>{x.statusPegawai}</span></td><td>{hitungMasaKerja(x.tanggalMasuk,x.tanggalKeluar)}</td><td><Link className={styles["ak-button"]} href={"/absensi-kepegawaian/pegawai?id="+x.id}>Lihat</Link></td></tr>)}
+          {filteredPegawai.map((x,i)=><tr key={x.id}><td>{i+1}</td><td><span className={styles["ak-person"]}><span>{mediaUrl(x.foto,x.villageId)?<Image src={mediaUrl(x.foto,x.villageId)!} alt="" width={32} height={32} unoptimized/>:x.nama.split(" ").slice(0,2).map((part)=>part[0]).join("").toUpperCase()}</span><b>{x.nama}</b></span><br/><small>{x.nip??"NIP belum diisi"}</small></td><td>{x.jabatan??"—"}</td><td><span className={styles["ak-badge"]}>{x.statusPegawai}</span></td><td>{hitungMasaKerja(x.tanggalMasuk,x.tanggalKeluar)}</td><td><Link className={styles["ak-button"]} href={"/absensi-kepegawaian/pegawai?id="+x.id}>Lihat</Link></td></tr>)}
         </tbody></table></div>
+        {!filteredPegawai.length?<div className={styles["ak-empty"]}>Tidak ada pegawai yang sesuai filter.</div>:null}
       </section>
       <section id="detail-pegawai" className={styles["ak-card"]}>
         {selected?<><div className={styles["ak-profile-head"]}><div className={styles["ak-profile-avatar"]}>{selectedPhoto?<Image src={selectedPhoto} alt={"Foto "+selected.nama} fill unoptimized sizes="84px"/>:selected.nama.split(" ").slice(0,2).map((part)=>part[0]).join("").toUpperCase()}</div><div><h2>{selected.nama}</h2><p>{selected.jabatan??"Jabatan belum ditentukan"}</p><span className={`${styles["ak-badge"]} ${selected.status==="aktif"?styles.aktif:styles.nonaktif}`}>{selected.status==="aktif"?"Aktif":"Nonaktif"} · {selected.statusPegawai.replaceAll("_"," ")}</span></div></div>
