@@ -125,7 +125,7 @@ export async function pengaturanKontakPublik(villageId: number) {
       catch { return ""; }
     };
     return {
-      whatsapp: safe("whatsapp"), telepon: safe("telepon"), email: /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(safe("email")) ? safe("email") : "", alamat: safe("alamat"),
+      whatsapp: safe("whatsapp"), telepon: safe("telepon"), email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safe("email")) ? safe("email") : "", alamat: safe("alamat"),
       website: safeHttpUrl("website"), instagram: safe("instagram"), facebook: safe("facebook"), youtube: safe("youtube"),
       koordinat: safe("koordinat"), tautanPeta: safeHttpUrl("tautanPeta"), jamLayanan: safe("jamLayanan"),
     };
