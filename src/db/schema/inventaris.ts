@@ -90,6 +90,9 @@ export const inventaris = mysqlTable(
     kondisi: mysqlEnum("kondisi", INVENTARIS_KONDISI).notNull().default("baik"),
     lokasi: varchar("lokasi", { length: 150 }),
     keterangan: text("keterangan"),
+    penanggungJawab: varchar("penanggung_jawab", { length: 150 }),
+    jabatanPenanggungJawab: varchar("jabatan_penanggung_jawab", { length: 100 }),
+    teleponPenanggungJawab: varchar("telepon_penanggung_jawab", { length: 30 }),
     isDeleted: boolean("is_deleted").notNull().default(false),
     deletedAt: timestamp("deleted_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -164,3 +167,35 @@ export type Inventaris = typeof inventaris.$inferSelect;
 export type NewInventaris = typeof inventaris.$inferInsert;
 export type InventarisMutasi = typeof inventarisMutasi.$inferSelect;
 export type NewInventarisMutasi = typeof inventarisMutasi.$inferInsert;
+
+export const INVENTARIS_PEMELIHARAAN_STATUS = ["terjadwal", "dalam_proses", "selesai", "dibatalkan"] as const;
+export type InventarisPemeliharaanStatus = (typeof INVENTARIS_PEMELIHARAAN_STATUS)[number];
+
+export const inventarisPemeliharaan = mysqlTable(
+  "inventaris_pemeliharaan",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    inventarisId: int("inventaris_id").notNull(),
+    jenis: varchar("jenis", { length: 100 }).notNull(),
+    tanggalRencana: date("tanggal_rencana", { mode: "string" }).notNull(),
+    tanggalSelesai: date("tanggal_selesai", { mode: "string" }),
+    status: mysqlEnum("status", INVENTARIS_PEMELIHARAAN_STATUS).notNull().default("terjadwal"),
+    biaya: decimal("biaya", { precision: 15, scale: 2 }).notNull().default("0"),
+    pelaksana: varchar("pelaksana", { length: 150 }),
+    deskripsi: text("deskripsi"),
+    hasil: text("hasil"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+  },
+  (table) => [
+    index("inv_pem_village_date").on(table.villageId, table.tanggalRencana),
+    index("inv_pem_village_status").on(table.villageId, table.status),
+    foreignKey({
+      name: "inventaris_pemeliharaan_asset_tenant_fk",
+      columns: [table.villageId, table.inventarisId],
+      foreignColumns: [inventaris.villageId, inventaris.id],
+    }).onDelete("cascade"),
+  ],
+);
+export type InventarisPemeliharaan = typeof inventarisPemeliharaan.$inferSelect;
