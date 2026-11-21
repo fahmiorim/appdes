@@ -364,12 +364,14 @@ export async function getPemeliharaanPageData() {
     listInventaris(villageId),
     listPemeliharaan(villageId),
   ]);
+  const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
+  const approverSteps = MUTASI_STEPS.filter((step) => roleCanApproveMutasiStep(step, role?.slug ?? null, user.permissions.isSuperadmin));
   return {
     mutasi,
     inventaris:inventarisData.rows.map(x=>({id:x.id,namaBarang:x.namaBarang,nomorInventaris:x.nomorInventaris,jumlah:x.jumlah,satuan:x.satuan})),
     pemeliharaan,
-    canWrite:hasPermission(user.permissions,MUTASI_RESOURCE,"update"),
-    approverSteps:(await getMutasiPageData()).approverSteps,
+    canWrite:hasPermission(user.permissions,INVENTARIS_RESOURCE,"update"),
+    approverSteps:approverSteps as MutasiStep[],
   };
 }
 
