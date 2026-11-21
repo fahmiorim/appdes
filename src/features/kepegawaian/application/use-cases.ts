@@ -87,6 +87,16 @@ export async function simpanPegawai(input: {
   if (!["tetap", "kontrak", "purna_tugas"].includes(input.statusPegawai)) throw new Error("Status kepegawaian tidak valid.");
   if (!["aktif", "nonaktif"].includes(input.status)) throw new Error("Status pegawai tidak valid.");
   if (input.nik && !/^\d{16}$/.test(input.nik)) throw new Error("NIK harus 16 digit.");
+  if (input.nip) {
+    const [duplicate] = await db.select({id:kepegawaianPegawai.id}).from(kepegawaianPegawai)
+      .where(and(eq(kepegawaianPegawai.villageId,villageId),eq(kepegawaianPegawai.nip,input.nip),...(input.id?[ne(kepegawaianPegawai.id,input.id)]:[]))).limit(1);
+    if(duplicate) throw new Error("NIP sudah digunakan pegawai lain.");
+  }
+  if (input.nik) {
+    const [duplicate] = await db.select({id:kepegawaianPegawai.id}).from(kepegawaianPegawai)
+      .where(and(eq(kepegawaianPegawai.villageId,villageId),eq(kepegawaianPegawai.nik,input.nik),...(input.id?[ne(kepegawaianPegawai.id,input.id)]:[]))).limit(1);
+    if(duplicate) throw new Error("NIK sudah digunakan pegawai lain.");
+  }
   if (input.tanggalMasuk && input.tanggalKeluar && input.tanggalKeluar < input.tanggalMasuk) throw new Error("Tanggal keluar tidak boleh sebelum tanggal masuk.");
   if (input.perangkatId) {
     const [official] = await db.select({ id: perangkatDesa.id }).from(perangkatDesa)
