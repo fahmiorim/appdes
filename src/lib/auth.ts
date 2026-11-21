@@ -54,6 +54,8 @@ export const auth = betterAuth({
   appName: APP_NAME,
   baseURL: env.BETTER_AUTH_URL,
   secret: env.BETTER_AUTH_SECRET,
+  // Login tenant hanya melalui username agar kebijakan tenant tidak dapat dilewati lewat email endpoint.
+  disabledPaths: ["/sign-in/email"],
 
   // `transaction: true` membuat penyimpanan password baru, penandaan token reset,
   // dan pencabutan sesi berjalan atomik saat reset password.
