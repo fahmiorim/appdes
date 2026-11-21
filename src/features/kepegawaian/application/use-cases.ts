@@ -9,6 +9,7 @@ import {
   kehadiranPerangkat,
   kepegawaianPegawai,
   kepegawaianRiwayat,
+  kepegawaianDokumen,
   perangkatDesa,
   jabatanPerangkat,
 } from "@/db/schema";
@@ -255,4 +256,39 @@ export async function daftarRiwayatPegawai(pegawaiId: number) {
   return db.select().from(kepegawaianRiwayat)
     .where(and(eq(kepegawaianRiwayat.villageId, villageId), eq(kepegawaianRiwayat.pegawaiId, pegawaiId)))
     .orderBy(desc(kepegawaianRiwayat.mulai));
+}
+
+
+export async function opsiPerangkatBelumTerhubung() {
+  const { villageId } = await village("kepegawaian", "update");
+  return db.select({ id: perangkatDesa.id, nama: perangkatDesa.nama, jabatan: jabatanPerangkat.nama })
+    .from(perangkatDesa)
+    .leftJoin(jabatanPerangkat, and(eq(perangkatDesa.jabatanId, jabatanPerangkat.id), eq(jabatanPerangkat.villageId, villageId)))
+    .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.status, "aktif")));
+}
+
+export async function tambahRiwayatPegawai(input: { pegawaiId:number; jabatan:string; unitKerja?:string|null; nomorSk?:string|null; mulai:string; selesai?:string|null; keterangan?:string|null }) {
+  const { villageId } = await village("kepegawaian", "update");
+  if (!input.jabatan.trim() || !input.mulai) throw new Error("Jabatan dan tanggal mulai wajib diisi.");
+  if (input.selesai && input.selesai < input.mulai) throw new Error("Tanggal selesai tidak boleh sebelum tanggal mulai.");
+  const [pegawai] = await db.select({id:kepegawaianPegawai.id}).from(kepegawaianPegawai)
+    .where(and(eq(kepegawaianPegawai.villageId,villageId),eq(kepegawaianPegawai.id,input.pegawaiId))).limit(1);
+  if(!pegawai) throw new Error("Pegawai tidak ditemukan.");
+  await db.insert(kepegawaianRiwayat).values({villageId,pegawaiId:input.pegawaiId,jabatan:input.jabatan.trim(),unitKerja:input.unitKerja||null,nomorSk:input.nomorSk||null,mulai:input.mulai,selesai:input.selesai||null,keterangan:input.keterangan||null});
+}
+
+export async function simpanDokumenPegawai(input: {pegawaiId:number;judul:string;kategori:string;nomor?:string|null;tanggal?:string|null;berkas:string}) {
+  const { villageId } = await village("kepegawaian", "update");
+  if(!input.judul.trim()||!input.berkas) throw new Error("Judul dan berkas dokumen wajib diisi.");
+  const [pegawai]=await db.select({id:kepegawaianPegawai.id}).from(kepegawaianPegawai)
+    .where(and(eq(kepegawaianPegawai.villageId,villageId),eq(kepegawaianPegawai.id,input.pegawaiId))).limit(1);
+  if(!pegawai) throw new Error("Pegawai tidak ditemukan.");
+  await db.insert(kepegawaianDokumen).values({villageId,pegawaiId:input.pegawaiId,judul:input.judul.trim(),kategori:input.kategori,nomor:input.nomor||null,tanggal:input.tanggal||null,berkas:input.berkas});
+}
+
+export async function daftarDokumenPegawai(pegawaiId:number) {
+  const { villageId } = await village("kepegawaian");
+  return db.select().from(kepegawaianDokumen)
+    .where(and(eq(kepegawaianDokumen.villageId,villageId),eq(kepegawaianDokumen.pegawaiId,pegawaiId)))
+    .orderBy(desc(kepegawaianDokumen.createdAt));
 }
