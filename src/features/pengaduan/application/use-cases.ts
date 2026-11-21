@@ -34,7 +34,7 @@ import { RESOURCES } from "@/features/rbac/domain/resources";
 import { requirePermission } from "@/lib/dal";
 import { notFound } from "@/lib/errors";
 
-import { notifyStatusChange } from "./notification";
+import { notifyStatusChange, notifyStatusChangeWhatsApp } from "./notification";
 
 /**
  * Use case pengaduan untuk panel admin.
@@ -75,7 +75,7 @@ export type StatusEmailNotification = "not-needed" | "sent" | "skipped" | "faile
 export async function tanggapiPengaduanData(
   id: number,
   input: TanggapanInput,
-): Promise<{ id: number; notification: StatusEmailNotification }> {
+): Promise<{ id: number; notification: StatusEmailNotification; whatsappNotification: StatusEmailNotification }> {
   const user = await requirePermission(RESOURCES.pengaduan, "update");
   const villageId = await resolveVillageId(user);
 
@@ -91,17 +91,29 @@ export async function tanggapiPengaduanData(
   });
 
   let notification: StatusEmailNotification = "not-needed";
-  if (pengaduan.email && input.status !== pengaduan.status) {
-    const result = await notifyStatusChange(
-      pengaduan.nomorTiket,
-      pengaduan.email,
-      input.status,
-      pengaduan.status,
-    );
-    notification = result.success ? "sent" : result.skipped ? "skipped" : "failed";
+  let whatsappNotification: StatusEmailNotification = "not-needed";
+  if (input.status !== pengaduan.status) {
+    if (pengaduan.email) {
+      const result = await notifyStatusChange(
+        pengaduan.nomorTiket,
+        pengaduan.email,
+        input.status,
+        pengaduan.status,
+      );
+      notification = result.success ? "sent" : result.skipped ? "skipped" : "failed";
+    }
+    if (pengaduan.telepon) {
+      const result = await notifyStatusChangeWhatsApp(
+        pengaduan.nomorTiket,
+        pengaduan.telepon,
+        input.status,
+        pengaduan.status,
+      );
+      whatsappNotification = result.success ? "sent" : result.skipped ? "skipped" : "failed";
+    }
   }
 
-  return { id, notification };
+  return { id, notification, whatsappNotification };
 }
 
 /** Tandai pengaduan boleh tampil di halaman publik. */
