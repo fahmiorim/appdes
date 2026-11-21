@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { db } from "@/db";
-import { sessions, users, villages } from "@/db/schema";
+import { accounts, sessions, users, villages } from "@/db/schema";
 import { villageSecuritySettings } from "@/db/schema/village-security";
 import {
   computeEffectivePermissions,
@@ -30,6 +30,7 @@ export interface CurrentUser {
   residentId: number | null;
   /** Warga wajib mengganti PIN sementara sebelum memakai layanan. */
   mustChangePin: boolean;
+  passwordExpired: boolean;
   permissions: EffectivePermissions;
 }
 
@@ -79,9 +80,15 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
 
   if (!account?.active) return null;
 
+  let passwordExpired = false;
   if (account.villageId !== null) {
-    const [security] = await db.select({ timeout: villageSecuritySettings.sessionTimeoutMinutes, enabled: villageSecuritySettings.autoLogoutInactive })
-      .from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
+    const [[security], [credential]] = await Promise.all([
+      db.select({ timeout: villageSecuritySettings.sessionTimeoutMinutes, enabled: villageSecuritySettings.autoLogoutInactive, passwordExpiryDays: villageSecuritySettings.passwordExpiryDays })
+        .from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1),
+      db.select({ updatedAt: accounts.updatedAt }).from(accounts).where(eq(accounts.userId, user.id)).limit(1),
+    ]);
+    const expiryDays = security?.passwordExpiryDays ?? 90;
+    passwordExpired = account.residentId === null && expiryDays > 0 && Boolean(credential?.updatedAt) && Date.now() - credential!.updatedAt!.getTime() > expiryDays * 86_400_000;
     if (security?.enabled ?? true) {
       const timeoutMinutes = security?.timeout ?? 30;
       const lastActivity = (session.session.updatedAt ?? session.session.createdAt).getTime();
@@ -110,6 +117,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     roleId: account.roleId,
     residentId: account.residentId,
     mustChangePin: account.mustChangePin,
+    passwordExpired,
     permissions,
   };
 });
@@ -207,6 +215,7 @@ export async function requireWargaAktif(): Promise<WargaUser> {
  */
 export async function requirePermission(resource: string, action: Action): Promise<CurrentUser> {
   const user = await requireUser();
+  if (user.passwordExpired) redirect("/profil/keamanan?passwordExpired=1");
 
   if (!hasPermission(user.permissions, resource, action)) {
     throw forbidden();
