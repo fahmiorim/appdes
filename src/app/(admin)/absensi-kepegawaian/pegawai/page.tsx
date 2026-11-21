@@ -29,8 +29,8 @@ export default async function PegawaiPage({searchParams}:{searchParams:Promise<R
       <article className={styles["ak-kpi"]}><span>Purna Tugas</span><strong>{purna} orang</strong></article>
     </section>
     <section className={styles["ak-card"]}>
-      <h2>Tambah Pegawai</h2><p>Aparatur yang sudah ada disinkronkan dari data Perangkat Desa. Tambahkan staf lain di sini.</p>
-      {canManage?<form action={simpanPegawaiAction} className={styles["ak-form"]}>
+      <div className={styles["ak-section-heading"]}><div><h2>Data Pegawai</h2><p>Aparatur desa tersinkron otomatis; staf tambahan dapat didaftarkan di sini.</p></div>{canManage?<span className={styles["ak-badge"]}>Master Pegawai</span>:null}</div>
+      {canManage?<details className={styles["ak-add-panel"]}><summary>＋ Tambah Pegawai Baru</summary><form action={simpanPegawaiAction} className={styles["ak-form"]}>
         <label>Nama Lengkap<input name="nama" required/></label>
         <label>Hubungkan Perangkat Desa<select name="perangkatId" defaultValue=""><option value="">Pegawai/staf baru</option>{perangkat.map(x=><option key={x.id} value={x.id}>{x.nama} — {x.jabatan??"Perangkat"}</option>)}</select></label>
         <label>NIP<input name="nip"/></label><label>NIK<input name="nik" inputMode="numeric" maxLength={16}/></label>
@@ -41,7 +41,7 @@ export default async function PegawaiPage({searchParams}:{searchParams:Promise<R
         <label>Tanggal Masuk<input type="date" name="tanggalMasuk"/></label><label>Tanggal Keluar<input type="date" name="tanggalKeluar"/></label>
         <label className={styles.wide}>Alamat<textarea name="alamat" rows={2}/></label><input type="hidden" name="status" value="aktif"/>
         <button className={styles["ak-button"]} type="submit">+ Simpan Pegawai</button>
-      </form>:<p>Akun ini hanya memiliki akses baca data pegawai.</p>}
+      </form></details>:<p>Akun ini hanya memiliki akses baca data pegawai.</p>}
     </section>
     <div className={styles["ak-grid"]} style={{marginTop:16}}>
       <section className={styles["ak-card"]}><h2>Daftar Data Pegawai</h2><p>{pegawai.length} pegawai terdaftar.</p>
