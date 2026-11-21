@@ -351,9 +351,9 @@ export function DomainConsole({
                   </td>
                   <td>
                     <Link
-                      aria-label={`Kelola ${item.villageName}`}
+                      aria-label={`Detail domain ${item.domain}`}
                       className="button button-secondary tenant-row-action"
-                      href={`/super-admin/tenant?q=${encodeURIComponent(item.villageName)}`}
+                      href={`/super-admin/domain/${item.id}`}
                     >
                       <svg
                         aria-hidden="true"

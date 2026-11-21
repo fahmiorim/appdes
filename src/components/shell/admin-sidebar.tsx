@@ -6,7 +6,11 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import type { MenuNode } from "@/features/navigation/application/build-menu";
-import { grupMenuPlatform, menuPlatformAktif } from "@/features/navigation/domain/menu-platform";
+import {
+  grupMenuPlatform,
+  menuPlatformAktif,
+  submenuPlatformAktif,
+} from "@/features/navigation/domain/menu-platform";
 import { pathMenu, ratakanMenu } from "@/features/navigation/domain/menu-tampil";
 
 export function AdminSidebar({
@@ -174,7 +178,9 @@ export function AdminSidebar({
                             {item.submenu.map((sub) => (
                               <Link
                                 aria-current={
-                                  menuPlatformAktif(sub.href, pathname) ? "page" : undefined
+                                  submenuPlatformAktif(item.submenu ?? [], pathname) === sub.href
+                                    ? "page"
+                                    : undefined
                                 }
                                 className="platform-nav-sublink"
                                 href={sub.href}

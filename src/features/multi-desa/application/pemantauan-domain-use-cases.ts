@@ -1,20 +1,26 @@
 import "server-only";
 
-import type { DataDns } from "@/features/multi-desa/domain/status-dns";
-import type { DataSsl } from "@/features/multi-desa/domain/status-ssl";
+import { DNS_BELUM_DIPERIKSA, type DataDns } from "@/features/multi-desa/domain/status-dns";
+import { SSL_BELUM_DIPERIKSA, type DataSsl } from "@/features/multi-desa/domain/status-ssl";
 import {
+  getHasilDns,
   listHasilDns,
   simpanHasilDns,
   type HasilDnsRow,
 } from "@/features/multi-desa/infrastructure/domain-dns-repository";
 import {
+  getHasilSsl,
   listHasilSsl,
   simpanHasilSsl,
   type HasilSslRow,
 } from "@/features/multi-desa/infrastructure/domain-ssl-repository";
 import {
+  getDetailDomainPlatform,
   getDomainPlatform,
+  listDomainDesa,
   listSemuaDomain,
+  type DesaDetailDomainRow,
+  type DomainDesaRow,
 } from "@/features/multi-desa/infrastructure/kelola-desa-repository";
 import { periksaDnsDomain } from "@/features/multi-desa/infrastructure/pemeriksa-dns";
 import { periksaSslDomain } from "@/features/multi-desa/infrastructure/pemeriksa-ssl";
@@ -49,6 +55,51 @@ export interface RingkasanDns {
 export interface PemeriksaanDomain {
   ssl: HasilSslRow[];
   dns: HasilDnsRow[];
+}
+
+export interface DetailDomainPlatform {
+  domain: DomainDesaRow;
+  desa: DesaDetailDomainRow;
+  aliases: DomainDesaRow[];
+  dns: DataDns;
+  ssl: DataSsl;
+}
+
+/**
+ * Detail satu domain untuk konsol platform.
+ *
+ * `domainId` hanya id; host, tenant, dan seluruh relasi dibaca ulang dari
+ * database. Domain yang tidak ada mengembalikan `null` agar route dapat
+ * memakai halaman 404, bukan membocorkan keberadaan domain tenant lain.
+ */
+export async function ambilDetailDomainPlatform(
+  domainId: number,
+): Promise<DetailDomainPlatform | null> {
+  await requireSuperAdmin();
+  if (!Number.isSafeInteger(domainId) || domainId <= 0) return null;
+
+  const detail = await getDetailDomainPlatform(domainId);
+  if (!detail) return null;
+
+  const [aliases, dns, ssl] = await Promise.all([
+    listDomainDesa(detail.villageId),
+    getHasilDns(detail.id),
+    getHasilSsl(detail.id),
+  ]);
+
+  return {
+    domain: {
+      id: detail.id,
+      villageId: detail.villageId,
+      domain: detail.domain,
+      isPrimary: detail.isPrimary,
+      createdAt: detail.createdAt,
+    },
+    desa: detail.desa,
+    aliases,
+    dns: dns ?? DNS_BELUM_DIPERIKSA,
+    ssl: ssl ?? SSL_BELUM_DIPERIKSA,
+  };
 }
 
 /** Baca cache pemeriksaan; halaman tidak memicu koneksi jaringan. */

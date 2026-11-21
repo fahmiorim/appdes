@@ -48,6 +48,11 @@ function segarkanHalaman(): void {
   for (const path of HALAMAN) revalidatePath(path);
 }
 
+/** Segarkan halaman detail domain setelah cache pemeriksaan berubah. */
+function segarkanDetailDomain(domainId: number): void {
+  revalidatePath(`/super-admin/domain/${domainId}`);
+}
+
 export async function buatDesaAction(
   _state: ActionState<{ id: number }>,
   formData: FormData,
@@ -207,6 +212,7 @@ export async function periksaDnsDomainAction(domainId: number): Promise<ActionSt
     const hasil = await periksaDnsSatuDomain(domainId);
 
     segarkanHalaman();
+    segarkanDetailDomain(domainId);
     return successState(
       hasil.status === "normal"
         ? `DNS normal: ${hasil.addresses.join(", ")}`
@@ -224,6 +230,7 @@ export async function periksaSslDomainAction(domainId: number): Promise<ActionSt
     const hasil = await periksaSslSatuDomain(domainId);
 
     segarkanHalaman();
+    segarkanDetailDomain(domainId);
     return successState(
       hasil.status === "aktif"
         ? `Sertifikat aktif${hasil.issuer ? ` dari ${hasil.issuer}` : ""}.`

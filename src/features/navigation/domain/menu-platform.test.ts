@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { grupMenuPlatform, MENU_PLATFORM, menuPlatformAktif } from "./menu-platform";
+import {
+  grupMenuPlatform,
+  MENU_PLATFORM,
+  menuPlatformAktif,
+  submenuPlatformAktif,
+} from "./menu-platform";
 
 describe("menuPlatformAktif", () => {
   it("hanya menandai Ringkasan aktif tepat di /super-admin", () => {
@@ -16,6 +21,25 @@ describe("menuPlatformAktif", () => {
 
   it("tidak salah mencocokkan prefiks yang mirip", () => {
     expect(menuPlatformAktif("/super-admin/audit", "/super-admin/audit-lain")).toBe(false);
+  });
+});
+
+describe("submenuPlatformAktif", () => {
+  const anak = [
+    { href: "/super-admin/domain", label: "Daftar Domain" },
+    { href: "/super-admin/domain/tambah", label: "Tambah Domain" },
+  ];
+
+  it("memilih submenu paling spesifik", () => {
+    expect(submenuPlatformAktif(anak, "/super-admin/domain/tambah")).toBe(
+      "/super-admin/domain/tambah",
+    );
+    expect(submenuPlatformAktif(anak, "/super-admin/domain/12")).toBe("/super-admin/domain");
+    expect(submenuPlatformAktif(anak, "/super-admin/domain")).toBe("/super-admin/domain");
+  });
+
+  it("tidak menandai submenu pada halaman di luar prefiksnya", () => {
+    expect(submenuPlatformAktif(anak, "/super-admin/audit")).toBeNull();
   });
 });
 

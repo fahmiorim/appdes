@@ -1,6 +1,6 @@
 import "server-only";
 
-import { asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { domainSslChecks } from "@/db/schema";
@@ -26,6 +26,25 @@ export async function listHasilSsl(): Promise<HasilSslRow[]> {
     })
     .from(domainSslChecks)
     .orderBy(asc(domainSslChecks.domainId));
+}
+
+/** Hasil TLS terakhir untuk satu domain, tanpa memuat cache domain lain. */
+export async function getHasilSsl(domainId: number): Promise<HasilSslRow | null> {
+  const [row] = await db
+    .select({
+      domainId: domainSslChecks.domainId,
+      status: domainSslChecks.status,
+      validFrom: domainSslChecks.validFrom,
+      validTo: domainSslChecks.validTo,
+      issuer: domainSslChecks.issuer,
+      error: domainSslChecks.error,
+      checkedAt: domainSslChecks.checkedAt,
+    })
+    .from(domainSslChecks)
+    .where(eq(domainSslChecks.domainId, domainId))
+    .limit(1);
+
+  return row ?? null;
 }
 
 /**

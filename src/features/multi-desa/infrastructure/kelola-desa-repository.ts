@@ -30,6 +30,24 @@ export interface DomainDesaRow {
   createdAt: Date;
 }
 
+export interface DesaDetailDomainRow {
+  id: number;
+  name: string | null;
+  slug: string | null;
+  code: string | null;
+  logo: string | null;
+  district: string | null;
+  regency: string | null;
+  province: string | null;
+  active: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface DetailDomainPlatformRow extends DomainDesaRow {
+  desa: DesaDetailDomainRow;
+}
+
 /** Satu desa untuk validasi/pengelolaan. */
 export async function getDesaKelola(villageId: number): Promise<DesaKelolaRow | null> {
   const [row] = await db
@@ -77,6 +95,63 @@ export async function getDomainPlatform(domainId: number): Promise<DomainDesaRow
     .limit(1);
 
   return row ?? null;
+}
+
+/**
+ * Satu domain beserta identitas desa pemiliknya untuk halaman detail platform.
+ *
+ * Relasi memakai inner join pada `village_domains.village_id`, sehingga domain
+ * yatim tidak pernah ditampilkan sebagai milik desa lain.
+ */
+export async function getDetailDomainPlatform(
+  domainId: number,
+): Promise<DetailDomainPlatformRow | null> {
+  const [row] = await db
+    .select({
+      id: villageDomains.id,
+      villageId: villageDomains.villageId,
+      domain: villageDomains.domain,
+      isPrimary: villageDomains.isPrimary,
+      createdAt: villageDomains.createdAt,
+      desaId: villages.id,
+      desaName: villages.name,
+      desaSlug: villages.slug,
+      desaCode: villages.code,
+      desaLogo: villages.logo,
+      desaDistrict: villages.district,
+      desaRegency: villages.regency,
+      desaProvince: villages.province,
+      desaActive: villages.active,
+      desaCreatedAt: villages.createdAt,
+      desaUpdatedAt: villages.updatedAt,
+    })
+    .from(villageDomains)
+    .innerJoin(villages, eq(villages.id, villageDomains.villageId))
+    .where(eq(villageDomains.id, domainId))
+    .limit(1);
+
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    villageId: row.villageId,
+    domain: row.domain,
+    isPrimary: row.isPrimary,
+    createdAt: row.createdAt,
+    desa: {
+      id: row.desaId,
+      name: row.desaName,
+      slug: row.desaSlug,
+      code: row.desaCode,
+      logo: row.desaLogo,
+      district: row.desaDistrict,
+      regency: row.desaRegency,
+      province: row.desaProvince,
+      active: row.desaActive,
+      createdAt: row.desaCreatedAt,
+      updatedAt: row.desaUpdatedAt,
+    },
+  };
 }
 
 /** Domain/alias milik satu desa. */
