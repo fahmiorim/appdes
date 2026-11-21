@@ -16,6 +16,7 @@ import {
 } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { requirePermission } from "@/lib/dal";
+import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 
 function tanggalLokal(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" }).format(new Date());
@@ -362,4 +363,19 @@ export async function daftarKehadiranBulanan(tahun:number, bulan:number) {
     .where(and(eq(kehadiranPerangkat.villageId,villageId),gte(kehadiranPerangkat.tanggal,mulai),lte(kehadiranPerangkat.tanggal,akhir)))
     .groupBy(kehadiranPerangkat.tanggal,kehadiranPerangkat.status)
     .orderBy(asc(kehadiranPerangkat.tanggal));
+}
+
+
+export async function hapusRiwayatPegawai(id:number) {
+  const { villageId } = await village("kepegawaian","update");
+  await db.delete(kepegawaianRiwayat).where(and(eq(kepegawaianRiwayat.villageId,villageId),eq(kepegawaianRiwayat.id,id)));
+}
+
+export async function hapusDokumenPegawai(id:number) {
+  const { villageId } = await village("kepegawaian","update");
+  const [doc]=await db.select({berkas:kepegawaianDokumen.berkas}).from(kepegawaianDokumen)
+    .where(and(eq(kepegawaianDokumen.villageId,villageId),eq(kepegawaianDokumen.id,id))).limit(1);
+  if(!doc) throw new Error("Dokumen pegawai tidak ditemukan.");
+  await db.delete(kepegawaianDokumen).where(and(eq(kepegawaianDokumen.villageId,villageId),eq(kepegawaianDokumen.id,id)));
+  await hapusMedia(doc.berkas);
 }
