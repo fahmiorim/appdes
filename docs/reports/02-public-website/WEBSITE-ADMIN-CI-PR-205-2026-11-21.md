@@ -32,9 +32,10 @@ gagal pada 4 test (batas lapisan, paritas migrasi, dan layout publik).
    schema secara langsung, route `halaman/[slug]` dan `public-site-layout`
    mengimpor repository infrastructure, dan use case `website-admin.ts`
    mengimpor `@/db`. Guard `lapisan-publik.test.ts` menolak ketiganya.
-3. **Snapshot migrasi 0020 tidak ada.** Journal mencatat
-   `0020_website_desa_menu`, tetapi `meta/0020_snapshot.json` belum dibuat,
-   sehingga `migrasi-paritas.test.ts` gagal.
+3. **Snapshot migrasi tidak ada.** Journal mencatat `website_desa_menu`, tetapi
+   berkas snapshot-nya belum dibuat, sehingga `migrasi-paritas.test.ts` gagal.
+   Setelah `main` disinkronkan, migrasi dinomori ulang menjadi
+   `0026_website_desa_menu` karena `0020`–`0025` sudah dipakai `main`.
 4. **Header publik menjadi async.** `PublicSiteHeader` kini membaca menu tenant,
    sehingga `renderToStaticMarkup` pada test layout memicu Suspense tanpa
    boundary.
@@ -52,7 +53,10 @@ gagal pada 4 test (batas lapisan, paritas migrasi, dan layout publik).
 | `src/app/public-site-layout.tsx` | menu tenant dibaca lewat use case application |
 | `src/app/halaman/[slug]/page.tsx` | memakai use case application; breadcrumb memakai `next/link` |
 | `src/app/public-site-layout.test.ts` | menunggu komponen server async dan mem-mock pembacaan menu (assertion tidak diubah) |
-| `src/db/migrations/meta/0020_snapshot.json` (baru) | snapshot paritas migrasi 0020 (identik dengan 0019 karena migrasi hanya backfill data) |
+| `src/db/migrations/0026_website_desa_menu.sql` | migrasi backfill modul website, dinomori ulang dari 0020 setelah sinkronisasi `main` (isi SQL tidak berubah) |
+| `src/db/migrations/meta/0026_snapshot.json` (baru) | snapshot paritas migrasi 0026 (identik dengan 0025 karena migrasi hanya backfill data) |
+| `src/db/migrations/meta/_journal.json` | entri `0026_website_desa_menu` ditambahkan di atas journal `main` |
+| `src/app/globals.css` | konflik dengan `main` diselesaikan dengan mempertahankan blok CSS website dan blok CSS domain/beranda `main` |
 | 13 file lain (CSS, shell, halaman) | hanya diformat Prettier sesuai tuntutan CI |
 
 Tidak ada perubahan schema, migration SQL, atau perilaku bisnis baru.
@@ -74,7 +78,7 @@ Tidak ada perubahan schema, migration SQL, atau perilaku bisnis baru.
 | `npm run typecheck` | PASS |
 | `npm run lint` | PASS — 2 warning lama di `scripts/wilayah/generate-wilayah.mjs` |
 | `npm run format:check` | PASS |
-| `npm run test:unit` | PASS — 233 file, 2.009 test |
+| `npm run test:unit` | PASS — 244 file, 2.074 test (setelah merge `main`) |
 | `npm run build` | PASS |
 
 Validasi integration dan Visual QA dijalankan oleh CI; hasilnya dicatat pada
@@ -82,9 +86,11 @@ komentar PR/run setelah push.
 
 ## Risiko tersisa
 
-- Migrasi `0020` hanya berisi backfill idempoten; snapshot disalin dari `0019`
+- Migrasi `0026` hanya berisi backfill idempoten; snapshot disalin dari `0025`
   karena tidak ada perubahan DDL. Bila `db:generate` dijalankan ulang, pastikan
   tidak menghasilkan diff tak terduga.
+- Migrasi backfill 0026 belum dijalankan pada database uji; verifikasinya
+  dijalankan job integration test CI.
 - Perilaku header publik sekarang membaca menu tenant pada setiap permintaan
   (sudah demikian sebelum perbaikan); biaya query tambahan per halaman belum
   diukur.

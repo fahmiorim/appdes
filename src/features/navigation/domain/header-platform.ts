@@ -9,10 +9,17 @@
  * keduanya tidak melenceng saat menu ditambah.
  */
 
+export interface RemahPlatform {
+  readonly label: string;
+  readonly href?: string;
+}
+
 export interface HeaderPlatform {
   readonly eyebrow: string;
   readonly title: string;
   readonly description: string;
+  /** Induk navigasi yang ditampilkan sebelum judul halaman. */
+  readonly remah?: readonly RemahPlatform[];
   /** Aksi utama halaman, bila ada. */
   readonly aksi?: { readonly label: string; readonly href: string };
 }
@@ -24,17 +31,24 @@ export const HEADER_PLATFORM: Readonly<Record<string, HeaderPlatform>> = {
     description: "Pantau tenant desa, domain, akses platform, dan retensi data dalam satu tempat.",
   },
   "/super-admin/tenant": {
-    eyebrow: "Konsol platform",
-    title: "Tenant desa",
+    eyebrow: "Desa & Domain",
+    title: "Konsol tenant",
     description:
-      "Kelola status, kuota media, domain, akses administrator, ekspor, dan purge tenant desa.",
+      "Kelola status, kuota media, domain, akses administrator, ekspor, dan purge tiap desa.",
+    remah: [{ label: "Desa & Domain" }],
   },
   "/super-admin/domain": {
-    eyebrow: "Konsol platform",
-    title: "Domain tenant",
+    eyebrow: "Desa & Domain",
+    title: "Daftar domain",
     description:
-      "Semua hostname yang mengarah ke desa. Domain utama dipakai untuk mengenali tenant dari host; alias lain mengarah ke desa yang sama.",
-    aksi: { label: "Buka konsol tenant", href: "/super-admin/tenant" },
+      "Kelola domain dan alamat website publik seluruh desa/tenant pada platform FlexiDesa.",
+    remah: [{ label: "Desa & Domain" }],
+  },
+  "/super-admin/domain/tambah": {
+    eyebrow: "Desa & Domain",
+    title: "Tambah Domain",
+    description: "Daftarkan subdomain atau custom domain baru untuk tenant desa.",
+    remah: [{ label: "Desa & Domain" }, { label: "Daftar Domain", href: "/super-admin/domain" }],
   },
   "/super-admin/pengguna": {
     eyebrow: "Konsol platform",
@@ -50,9 +64,27 @@ export const HEADER_PLATFORM: Readonly<Record<string, HeaderPlatform>> = {
   },
   "/super-admin/template": {
     eyebrow: "Konsol platform",
-    title: "Template tenant",
+    title: "Manajemen template",
     description:
-      "Fondasi yang disalin ke setiap desa baru: role, modul, matriks akses, tema, dan menu publik. Katalog surat dan data master desa sengaja tidak termasuk.",
+      "Katalog tema website: token tampilan, status publikasi, penggunaan tenant, dan distribusi versi. Unggahan kode atau paket ZIP tidak termasuk.",
+  },
+  "/super-admin/template/baru": {
+    eyebrow: "Manajemen template",
+    title: "Tambah template",
+    description:
+      "Buat metadata tema baru dari token tampilan yang tervalidasi. Template tersimpan sebagai draf sampai diterbitkan.",
+  },
+  "/super-admin/template/penggunaan": {
+    eyebrow: "Manajemen template",
+    title: "Penggunaan & pembaruan",
+    description:
+      "Lihat tenant yang memakai setiap tema dan kirim versi terbaru hanya kepada tenant yang memakai slug template tersebut.",
+  },
+  "/super-admin/template/fondasi": {
+    eyebrow: "Manajemen template",
+    title: "Fondasi tenant",
+    description:
+      "Bacaan template fondasi yang disalin ke desa baru: role, modul, matriks akses, tema, dan menu publik. Diperbarui lewat rilis aplikasi.",
   },
   "/super-admin/pengaturan": {
     eyebrow: "Konsol platform",
@@ -74,6 +106,17 @@ const BAWAAN = HEADER_PLATFORM["/super-admin"] as HeaderPlatform;
 export function headerPlatform(pathname: string): HeaderPlatform {
   const persis = HEADER_PLATFORM[pathname];
   if (persis) return persis;
+
+  // Detail domain memakai id dinamis; top bar tetap menampilkan konteks
+  // "Desa & Domain → Detail Domain" tanpa menambah entri per id.
+  if (/^\/super-admin\/domain\/\d+$/.test(pathname)) {
+    return {
+      eyebrow: "Desa & Domain",
+      title: "Detail Domain",
+      description: "Informasi dan pengaturan domain, DNS, SSL, serta riwayat perubahan.",
+      remah: [{ label: "Desa & Domain" }, { label: "Daftar Domain", href: "/super-admin/domain" }],
+    };
+  }
 
   const induk = Object.keys(HEADER_PLATFORM)
     .filter((href) => href !== "/super-admin" && pathname.startsWith(`${href}/`))

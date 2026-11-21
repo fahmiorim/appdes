@@ -20,19 +20,34 @@ import type { TitikTrenTenant } from "../domain/tren-tenant";
 export function PlatformPageHeader({
   path,
   actions,
+  judul,
+  deskripsi,
+  backHref,
+  backLabel,
 }: {
   /** Rute halaman; judul dan deskripsi diambil dari `HEADER_PLATFORM`. */
   path: string;
   /** Aksi tambahan di kanan header, mis. tombol daftar desa. */
   actions?: ReactNode;
+  /** Judul dinamis, mis. nama template pada halaman detail. */
+  judul?: string;
+  deskripsi?: string;
+  /** Tautan kembali di atas judul. */
+  backHref?: string;
+  backLabel?: string;
 }) {
   const { title, description, aksi } = headerPlatform(path);
 
   return (
     <div className="platform-page-header">
       <div className="platform-page-heading">
-        <h1>{title}</h1>
-        <p>{description}</p>
+        {backHref ? (
+          <Link className="platform-back-link" href={backHref}>
+            ← {backLabel ?? "Kembali"}
+          </Link>
+        ) : null}
+        <h1>{judul ?? title}</h1>
+        <p>{deskripsi ?? description}</p>
       </div>
       {aksi || actions ? (
         <div className="platform-page-actions">
