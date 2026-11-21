@@ -297,6 +297,9 @@ export async function tolakMutasiData(id: number, catatanPenolakan: string) {
   const mutasi = await getMutasi(villageId, id);
   if (!mutasi) throw notFound("Pengajuan mutasi tidak ditemukan.");
   if (mutasi.status !== "diajukan") throw conflict("Pengajuan mutasi sudah diproses.");
+  if (mutasi.diajukanOlehId === user.id && !user.permissions.isSuperadmin) {
+    throw forbidden("Pengaju mutasi tidak boleh menolak pengajuannya sendiri.");
+  }
   if (!catatanPenolakan.trim()) throw conflict("Catatan penolakan wajib diisi.");
 
   const step = nextMutasiStep(mutasi);
