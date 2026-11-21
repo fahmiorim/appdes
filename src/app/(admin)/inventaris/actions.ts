@@ -46,7 +46,8 @@ export async function simpanInventarisAction(fd: FormData) {
     tahunPembelian:optionalNumber(text(fd,"tahunPembelian")),
     tanggalPembelian:text(fd,"tanggalPembelian"), asal:text(fd,"asal")||undefined,
     donatur:text(fd,"donatur"), kondisi:text(fd,"kondisi")||"baik",
-    lokasi:text(fd,"lokasi"), keterangan:text(fd,"keterangan"),
+    lokasi:text(fd,"lokasi"), keterangan:text(fd,"keterangan"), penanggungJawab:text(fd,"penanggungJawab"),
+    jabatanPenanggungJawab:text(fd,"jabatanPenanggungJawab"), teleponPenanggungJawab:text(fd,"teleponPenanggungJawab"),
   });
   const result = await saveInventaris(parsed,id);
   refresh();
