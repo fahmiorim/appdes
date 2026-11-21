@@ -192,8 +192,14 @@ export async function daftarCuti(tahun = tahunLokal()) {
 export async function ajukanCuti(input: { pegawaiId: number; jenis: string; mulai: string; selesai: string; alasan: string }) {
   const { villageId } = await village("cuti-izin", "update");
   if (!input.alasan.trim()) throw new Error("Alasan cuti/izin wajib diisi.");
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(input.mulai) || !/^\\d{4}-\\d{2}-\\d{2}$/.test(input.selesai)) throw new Error("Tanggal cuti/izin tidak valid.");
   if (input.mulai < tanggalLokal()) throw new Error("Tanggal mulai tidak boleh di masa lalu.");
+  if (input.jenis === "cuti_tahunan" && input.mulai.slice(0,4) !== input.selesai.slice(0,4)) throw new Error("Cuti tahunan harus berada dalam satu tahun kalender.");
   const durasi = hitungHariKerja(input.mulai, input.selesai);
+  const [overlap] = await db.select({ id: cutiPegawai.id }).from(cutiPegawai)
+    .where(and(eq(cutiPegawai.villageId, villageId), eq(cutiPegawai.pegawaiId, input.pegawaiId),
+      lte(cutiPegawai.mulai, input.selesai), gte(cutiPegawai.selesai, input.mulai), ne(cutiPegawai.status, "ditolak"))).limit(1);
+  if (overlap) throw new Error("Pegawai sudah memiliki pengajuan cuti/izin yang bertabrakan pada tanggal tersebut.");
   if (!["cuti_tahunan", "cuti_sakit", "izin", "cuti_penting"].includes(input.jenis)) throw new Error("Jenis cuti/izin tidak valid.");
   const [pegawai] = await db.select({ id: kepegawaianPegawai.id }).from(kepegawaianPegawai)
     .where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.id, input.pegawaiId), eq(kepegawaianPegawai.status, "aktif"))).limit(1);
