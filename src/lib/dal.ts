@@ -132,6 +132,7 @@ export async function verifySession(redirectTo = "/masuk"): Promise<CurrentUser>
   if (!user) {
     redirect(redirectTo);
   }
+  if (user.passwordExpired) redirect("/profil/keamanan?passwordExpired=1");
 
   return user;
 }
@@ -215,6 +216,7 @@ export async function requireWargaAktif(): Promise<WargaUser> {
  */
 export async function requirePermission(resource: string, action: Action): Promise<CurrentUser> {
   const user = await requireUser();
+  if (user.passwordExpired) throw forbidden();
 
   if (!hasPermission(user.permissions, resource, action)) {
     throw forbidden();
