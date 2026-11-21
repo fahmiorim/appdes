@@ -43,7 +43,13 @@ const columns = {
 
 export async function listAuditLogs(
   villageId: number,
-  input: { page?: number; pageSize?: number; search?: string; resource?: string; resourceId?: string } = {},
+  input: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    resource?: string;
+    resourceId?: string;
+  } = {},
 ): Promise<AuditLogPage> {
   const pageSize = Math.min(Math.max(input.pageSize ?? 25, 1), 100);
   const page = Math.max(input.page ?? 1, 1);

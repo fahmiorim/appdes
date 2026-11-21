@@ -21,7 +21,11 @@ export async function lacakPengaduanAction(
     });
     return hasil
       ? { error: null, hasil }
-      : { error: "Tiket atau identitas pelapor tidak cocok. Periksa kembali data yang Anda masukkan.", hasil: null };
+      : {
+          error:
+            "Tiket atau identitas pelapor tidak cocok. Periksa kembali data yang Anda masukkan.",
+          hasil: null,
+        };
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "Pengaduan tidak dapat dilacak saat ini.",

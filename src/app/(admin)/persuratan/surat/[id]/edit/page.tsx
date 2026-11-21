@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getSuratFormOptions, getSuratPrintData } from "@/features/surat/application/surat-use-cases";
+import {
+  getSuratFormOptions,
+  getSuratPrintData,
+} from "@/features/surat/application/surat-use-cases";
 import { parseIsianFields, parseNilaiIsian } from "@/features/surat/domain/isian";
 import { parsePendudukLuar, parsePengikutIds } from "@/features/surat/domain/pengikut";
 import { todayIsoDate } from "@/lib/forms";
@@ -26,10 +29,7 @@ export default async function UbahKonsepSuratPage({
   const id = Number(rawId);
   if (!Number.isSafeInteger(id) || id < 1) notFound();
 
-  const [data, options] = await Promise.all([
-    getSuratPrintData(id),
-    getSuratFormOptions(),
-  ]);
+  const [data, options] = await Promise.all([getSuratPrintData(id), getSuratFormOptions()]);
   if (data.surat.status !== "draft") notFound();
 
   const jenis = options.jenis.map((item) => ({
@@ -49,9 +49,15 @@ export default async function UbahKonsepSuratPage({
           <h1>Ubah Konsep Surat</h1>
           <p>Perbarui data surat sebelum diajukan ke proses verifikasi.</p>
         </div>
-        <Link href={`/persuratan/surat/${id}`} className="button button-secondary">← Kembali ke detail</Link>
+        <Link href={`/persuratan/surat/${id}`} className="button button-secondary">
+          ← Kembali ke detail
+        </Link>
       </div>
-      {query.error ? <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>{query.error}</div> : null}
+      {query.error ? (
+        <div className="alert alert-error" role="alert" style={{ marginBottom: 16 }}>
+          {query.error}
+        </div>
+      ) : null}
       <SuratForm
         jenis={jenis}
         penduduk={options.penduduk}

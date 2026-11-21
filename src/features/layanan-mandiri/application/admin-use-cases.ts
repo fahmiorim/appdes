@@ -76,7 +76,7 @@ export async function getPermohonanAdminDetailData(id: number) {
     canManage: hasPermission(user.permissions, RESOURCES.permohonanSurat, "update"),
     canCreateLetter:
       hasPermission(user.permissions, RESOURCES.permohonanSurat, "update") &&
-      hasPermission(user.permissions, SURAT_RESOURCE, "create"),
+      hasPermission(user.permissions, SURAT_RESOURCE, "update"),
   };
 }
 

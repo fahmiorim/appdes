@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
 import { getPendudukFormData } from "@/features/penduduk/application/use-cases";
 import { PENDUDUK_RESOURCE } from "@/features/penduduk/domain/penduduk";
 import { hasPermission } from "@/features/rbac/application/authorization";
@@ -14,14 +15,24 @@ export const metadata: Metadata = {
   title: "Tambah Penduduk",
 };
 
-export default async function TambahPendudukPage() {
+export default async function TambahPendudukPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const user = await verifySession();
   if (!hasPermission(user.permissions, PENDUDUK_RESOURCE, "update")) notFound();
 
+  const params = await searchParams;
+  const familyRaw = typeof params.familyId === "string" ? Number(params.familyId) : null;
+  const familyId =
+    familyRaw !== null && Number.isInteger(familyRaw) && familyRaw > 0 ? familyRaw : null;
   const { references } = await getPendudukFormData();
+  if (familyId !== null && !references.families.some((item) => item.id === familyId)) notFound();
 
   return (
-    <div className="modul-page penduduk-page">
+    <div className="modul-page penduduk-page data-kependudukan-page">
+      <DataKependudukanNav active="/penduduk" />
       <Link className="penduduk-back" href="/penduduk">
         ← Kembali ke Data Penduduk
       </Link>
@@ -34,7 +45,7 @@ export default async function TambahPendudukPage() {
         </div>
       </div>
 
-      <FormPenduduk aksi={buatPendudukAction} references={references} />
+      <FormPenduduk aksi={buatPendudukAction} familyId={familyId} references={references} />
     </div>
   );
 }

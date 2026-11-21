@@ -48,8 +48,12 @@ export default async function PengaduanPage() {
             pengaduan yang telah disetujui untuk ditampilkan kepada publik.
           </p>
           <div className="modul-form-actions">
-            <Link className="button button-primary" href="/pengaduan/baru">Kirim Pengaduan</Link>
-            <Link className="button button-secondary" href="/pengaduan/lacak">Lacak Tiket</Link>
+            <Link className="button button-primary" href="/pengaduan/baru">
+              Kirim Pengaduan
+            </Link>
+            <Link className="button button-secondary" href="/pengaduan/lacak">
+              Lacak Tiket
+            </Link>
           </div>
         </div>
       </section>

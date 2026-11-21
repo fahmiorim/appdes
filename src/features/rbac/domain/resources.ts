@@ -3,6 +3,7 @@ export const RESOURCES = {
   villages: "villages",
   residents: "residents",
   penduduk: "penduduk",
+  mutasiPenduduk: "mutasi-penduduk",
   keluarga: "keluarga",
   rumahTangga: "rumah-tangga",
   wilayah: "wilayah",

@@ -1,7 +1,6 @@
 import "server-only";
 
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
-import { denganKunciMysql } from "@/db/kunci-mysql";
 import {
   formatNomorTiket,
   identitasCocok,
@@ -11,16 +10,17 @@ import {
   pengaduanFormSchema,
   prefiksNomorTiket,
   samarkanNama,
-  type PengaduanPublikRow,
-  type PengaduanLacak,
-  type PengaduanInput,
   type LacakPengaduanInput,
+  type PengaduanInput,
+  type PengaduanLacak,
+  type PengaduanPublikRow,
   type StatusPengaduan,
   type TanggapanInput,
 } from "@/features/pengaduan/domain/pengaduan";
 import {
   countTiketPadaTanggal,
   deletePengaduan,
+  denganKunciNomorTiket,
   getPengaduan,
   getPengaduanByTiket,
   insertPengaduan,
@@ -29,7 +29,12 @@ import {
   setPublikPengaduan,
   updateTanggapanPengaduan,
 } from "@/features/pengaduan/infrastructure/pengaduan-repository";
-import { bacaMedia, hapusMedia } from "@/features/publik/infrastructure/media-storage";
+import type { BerkasUnggahan } from "@/features/publik/domain/media";
+import {
+  bacaMedia,
+  hapusMedia,
+  simpanUnggahanMedia,
+} from "@/features/publik/infrastructure/media-storage";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { requirePermission } from "@/lib/dal";
 import { notFound } from "@/lib/errors";
@@ -75,7 +80,11 @@ export type StatusEmailNotification = "not-needed" | "sent" | "skipped" | "faile
 export async function tanggapiPengaduanData(
   id: number,
   input: TanggapanInput,
-): Promise<{ id: number; notification: StatusEmailNotification; whatsappNotification: StatusEmailNotification }> {
+): Promise<{
+  id: number;
+  notification: StatusEmailNotification;
+  whatsappNotification: StatusEmailNotification;
+}> {
   const user = await requirePermission(RESOURCES.pengaduan, "update");
   const villageId = await resolveVillageId(user);
 
@@ -165,7 +174,6 @@ export async function listPengaduanPublikData(villageId: number): Promise<Pengad
   }));
 }
 
-
 /**
  * Kirim pengaduan publik. Nomor tiket dibuat server dan diserialisasi per
  * tenant/tanggal agar dua kiriman bersamaan tidak menghasilkan nomor sama.
@@ -184,7 +192,7 @@ export async function kirimPengaduanData(
   const sekarang = new Date();
   const prefiks = prefiksNomorTiket(sekarang);
 
-  return denganKunciMysql(`pengaduan:${villageId}:${prefiks}`, async () => {
+  return denganKunciNomorTiket(villageId, prefiks, async () => {
     const urutan = (await countTiketPadaTanggal(villageId, prefiks)) + 1;
     const nomorTiket = formatNomorTiket(sekarang, urutan);
     const id = await insertPengaduan(villageId, {
@@ -201,6 +209,32 @@ export async function kirimPengaduanData(
     });
     return { id, nomorTiket };
   });
+}
+
+/**
+ * Kirim pengaduan beserta lampiran opsional.
+ *
+ * Berkas divalidasi dan disimpan lebih dulu (magic bytes, ukuran, kuota desa);
+ * bila penyimpanan pengaduan gagal, lampiran yang sudah tertulis dibersihkan
+ * agar tidak menjadi sampah media.
+ */
+export async function kirimPengaduanDenganLampiranData(
+  villageId: number,
+  raw: unknown,
+  unggahan: BerkasUnggahan | null,
+): Promise<{ id: number; nomorTiket: string }> {
+  let lampiran: string | null = null;
+  if (unggahan) {
+    const saved = await simpanUnggahanMedia(villageId, "pengaduan", unggahan);
+    lampiran = saved.jalur;
+  }
+
+  try {
+    return await kirimPengaduanData(villageId, raw, lampiran);
+  } catch (error) {
+    if (lampiran) await hapusMedia(lampiran).catch(() => undefined);
+    throw error;
+  }
 }
 
 /**

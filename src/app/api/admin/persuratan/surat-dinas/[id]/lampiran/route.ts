@@ -1,10 +1,6 @@
-import { notFound } from "next/navigation";
 import { getSuratDinasLampiranData } from "@/features/surat/application/surat-dinas-use-cases";
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const id = Number((await params).id);
   if (!Number.isSafeInteger(id) || id < 1) {
     return new Response("Lampiran tidak ditemukan.", { status: 404 });

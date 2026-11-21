@@ -346,12 +346,7 @@ export async function countPermohonanByJenis(villageId: number, typeId: number):
   const [row] = await db
     .select({ value: count() })
     .from(permohonanSurat)
-    .where(
-      and(
-        eq(permohonanSurat.villageId, villageId),
-        eq(permohonanSurat.letterTypeId, typeId),
-      ),
-    );
+    .where(and(eq(permohonanSurat.villageId, villageId), eq(permohonanSurat.letterTypeId, typeId)));
 
   return row?.value ?? 0;
 }

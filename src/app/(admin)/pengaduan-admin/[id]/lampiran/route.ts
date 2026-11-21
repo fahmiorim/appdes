@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 
-import { getPengaduanDetailData, bacaLampiranPengaduan } from "@/features/pengaduan/application/use-cases";
+import {
+  bacaLampiranPengaduan,
+  getPengaduanDetailData,
+} from "@/features/pengaduan/application/use-cases";
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id: rawId } = await params;
   const id = Number(rawId);
   if (!Number.isSafeInteger(id) || id < 1) {
@@ -18,7 +18,12 @@ export async function GET(
   }
 
   const isi = await bacaLampiranPengaduan(row.lampiran);
-  const ekstensi = row.lampiran.split(".").pop()?.replace(/[^a-z0-9]/gi, "").toLowerCase() || "bin";
+  const ekstensi =
+    row.lampiran
+      .split(".")
+      .pop()
+      ?.replace(/[^a-z0-9]/gi, "")
+      .toLowerCase() || "bin";
   return new Response(new Uint8Array(isi), {
     headers: {
       "Content-Type": "application/octet-stream",

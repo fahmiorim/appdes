@@ -13,10 +13,7 @@ export const metadata: Metadata = { title: "Buat Surat" };
 type SearchParams = Promise<{ error?: string }>;
 
 export default async function BuatSuratPage({ searchParams }: { searchParams: SearchParams }) {
-  const [{ jenis, penduduk }, query] = await Promise.all([
-    getSuratFormOptions(),
-    searchParams,
-  ]);
+  const [{ jenis, penduduk }, query] = await Promise.all([getSuratFormOptions(), searchParams]);
   const options = jenis.map((item) => ({
     id: item.id,
     name: item.name,
@@ -33,7 +30,9 @@ export default async function BuatSuratPage({ searchParams }: { searchParams: Se
           <h1>Buat Surat Baru</h1>
           <p>Buat konsep surat berdasarkan jenis layanan dan data penduduk desa.</p>
         </div>
-        <Link href="/persuratan/surat" className="button button-secondary">← Kembali ke daftar</Link>
+        <Link href="/persuratan/surat" className="button button-secondary">
+          ← Kembali ke daftar
+        </Link>
       </div>
 
       {query.error ? (
@@ -45,8 +44,12 @@ export default async function BuatSuratPage({ searchParams }: { searchParams: Se
       {options.length === 0 ? (
         <section className="modul-card" style={{ padding: 24 }}>
           <h2 className="beranda-card-title">Belum ada jenis surat aktif</h2>
-          <p className="modul-muted">Aktifkan atau buat jenis surat terlebih dahulu sebelum membuat surat baru.</p>
-          <Link href="/persuratan/surat" className="button button-secondary">Kembali ke Administrasi Surat</Link>
+          <p className="modul-muted">
+            Aktifkan atau buat jenis surat terlebih dahulu sebelum membuat surat baru.
+          </p>
+          <Link href="/persuratan/surat" className="button button-secondary">
+            Kembali ke Administrasi Surat
+          </Link>
         </section>
       ) : (
         <SuratForm

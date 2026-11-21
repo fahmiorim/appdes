@@ -1,8 +1,8 @@
 import "server-only";
 
 import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
-import { listAuditLogs } from "@/features/audit/infrastructure/audit-repository";
 import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
+import { listAuditLogs } from "@/features/audit/infrastructure/audit-repository";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import {
   getIdentitasDesa,
@@ -427,7 +427,7 @@ async function loadPengikutSurat(
 }
 
 export async function createSuratDraftData(input: SuratInput): Promise<{ id: number }> {
-  const user = await requirePermission(SURAT_RESOURCE, "create");
+  const user = await requirePermission(SURAT_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
 
   const jenis = await loadJenis(villageId, input.typeId);
@@ -449,7 +449,14 @@ export async function createSuratDraftData(input: SuratInput): Promise<{ id: num
     createdBy: user.id,
   });
 
-  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.suratCreate, resource: SURAT_RESOURCE, resourceId: String(id), details: { typeId: jenis.id } });
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.suratCreate,
+    resource: SURAT_RESOURCE,
+    resourceId: String(id),
+    details: { typeId: jenis.id },
+  });
   return { id };
 }
 
@@ -476,7 +483,14 @@ export async function updateSuratDraftData(id: number, input: SuratInput): Promi
     typeName: jenis.name,
     nilaiIsian: serializeNilaiIsian(denganPengikut(values, input.pengikut ?? [], input.luar ?? [])),
   });
-  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.suratUpdate, resource: SURAT_RESOURCE, resourceId: String(id), details: { typeId: jenis.id } });
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.suratUpdate,
+    resource: SURAT_RESOURCE,
+    resourceId: String(id),
+    details: { typeId: jenis.id },
+  });
 }
 
 export async function deleteSuratData(id: number): Promise<void> {
@@ -488,7 +502,13 @@ export async function deleteSuratData(id: number): Promise<void> {
   if (surat.status !== "draft") throw conflict("Hanya konsep surat yang dapat dihapus.");
 
   await deleteSurat(villageId, id);
-  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.suratDelete, resource: SURAT_RESOURCE, resourceId: String(id) });
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.suratDelete,
+    resource: SURAT_RESOURCE,
+    resourceId: String(id),
+  });
 }
 
 /** Ajukan konsep ke antrean verifikasi (operator → sekdes → kades). */
@@ -521,7 +541,13 @@ export async function ajukanVerifikasiSuratData(
     logVerifikasi: "diajukan",
     catatanVerifikasi: null,
   });
-  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.suratSubmit, resource: SURAT_RESOURCE, resourceId: String(id) });
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.suratSubmit,
+    resource: SURAT_RESOURCE,
+    resourceId: String(id),
+  });
 }
 
 async function nomorUrutBerikutnya(
@@ -689,7 +715,14 @@ async function terbitkanSurat(
     verificationToken: token,
     verificationTokenHash: hash,
   });
-  await recordAuditEvent({ villageId, actorId, event: AUDIT_EVENTS.suratVerify, resource: SURAT_RESOURCE, resourceId: String(surat.id), details: { tahap: "kades", nomor: number } });
+  await recordAuditEvent({
+    villageId,
+    actorId,
+    event: AUDIT_EVENTS.suratVerify,
+    resource: SURAT_RESOURCE,
+    resourceId: String(surat.id),
+    details: { tahap: "kades", nomor: number },
+  });
 
   // TTE pasca-terbit: mode nonaktif (default) → keluar segera tanpa I/O.
   const origin = await getRequestOrigin();
@@ -752,7 +785,14 @@ export async function verifySuratData(
       logVerifikasi: "operator",
       status: "verifikasi",
     });
-    await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.suratVerify, resource: SURAT_RESOURCE, resourceId: String(id), details: { tahap: step } });
+    await recordAuditEvent({
+      villageId,
+      actorId: user.id,
+      event: AUDIT_EVENTS.suratVerify,
+      resource: SURAT_RESOURCE,
+      resourceId: String(id),
+      details: { tahap: step },
+    });
     return { number: null, verificationToken: null };
   }
 
@@ -762,7 +802,14 @@ export async function verifySuratData(
       logVerifikasi: "sekdes",
       status: "verifikasi",
     });
-    await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.suratVerify, resource: SURAT_RESOURCE, resourceId: String(id), details: { tahap: step } });
+    await recordAuditEvent({
+      villageId,
+      actorId: user.id,
+      event: AUDIT_EVENTS.suratVerify,
+      resource: SURAT_RESOURCE,
+      resourceId: String(id),
+      details: { tahap: step },
+    });
     return { number: null, verificationToken: null };
   }
 
@@ -812,7 +859,14 @@ export async function rejectSuratData(id: number, reason: string): Promise<void>
   }
 
   await rejectSurat(villageId, id, reason.trim());
-  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.suratReject, resource: SURAT_RESOURCE, resourceId: String(id), details: { tahap: nextStep } });
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.suratReject,
+    resource: SURAT_RESOURCE,
+    resourceId: String(id),
+    details: { tahap: nextStep },
+  });
 
   // Surat yang ditolak membuat permohonan terkait ikut dibatalkan dengan alasan.
   await sinkronStatusSuratPermohonan(villageId, id, 5, reason.trim());
@@ -877,6 +931,13 @@ export async function getSuratPrintData(
   const user = await requirePermission(SURAT_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
   return loadSuratPrintData(villageId, id, varian);
+}
+
+export async function getSuratCurrentRoleSlugData(): Promise<string | null> {
+  const user = await requirePermission(SURAT_RESOURCE, "read");
+  if (user.roleId === null) return null;
+  const role = await findRoleById(user.roleId, user.villageId);
+  return role?.slug ?? null;
 }
 
 /**

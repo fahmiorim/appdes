@@ -75,6 +75,10 @@ export const AUDIT_EVENTS = {
   platformUserStatus: "platform.user.status",
   platformUserReset: "platform.user.reset",
   platformUserSessionRevoke: "platform.user.session.revoke",
+  websiteTemplateCreate: "website-template.create",
+  websiteTemplateUpdate: "website-template.update",
+  websiteTemplateStatus: "website-template.status",
+  websiteTemplateDistribute: "website-template.distribute",
 } as const;
 
 export type AuditEvent = (typeof AUDIT_EVENTS)[keyof typeof AUDIT_EVENTS];
@@ -156,6 +160,10 @@ export const AUDIT_EVENT_LABELS: Record<AuditEvent, string> = {
   [AUDIT_EVENTS.platformUserStatus]: "Ubah status pengguna platform",
   [AUDIT_EVENTS.platformUserReset]: "Reset sandi pengguna platform",
   [AUDIT_EVENTS.platformUserSessionRevoke]: "Cabut sesi pengguna platform",
+  [AUDIT_EVENTS.websiteTemplateCreate]: "Buat template website",
+  [AUDIT_EVENTS.websiteTemplateUpdate]: "Ubah template website",
+  [AUDIT_EVENTS.websiteTemplateStatus]: "Ubah status template website",
+  [AUDIT_EVENTS.websiteTemplateDistribute]: "Distribusikan versi template website",
 };
 
 export interface AuditEventInput {

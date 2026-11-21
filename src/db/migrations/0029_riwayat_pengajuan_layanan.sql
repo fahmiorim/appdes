@@ -1,12 +1,12 @@
 CREATE TABLE `riwayat_pengajuan_layanan` (
-  `id` int AUTO_INCREMENT NOT NULL,
-  `village_id` int NOT NULL,
-  `pengajuan_id` int NOT NULL,
-  `status_sebelumnya` varchar(24),
-  `status_baru` varchar(24) NOT NULL,
-  `catatan` text,
-  `actor_id` varchar(36),
-  `created_at` timestamp NOT NULL DEFAULT (now()),
+	`id` int AUTO_INCREMENT NOT NULL,
+	`village_id` int NOT NULL,
+	`pengajuan_id` int NOT NULL,
+	`status_sebelumnya` varchar(24),
+	`status_baru` varchar(24) NOT NULL,
+	`catatan` text,
+	`actor_id` varchar(36),
+	`created_at` timestamp NOT NULL DEFAULT (now()),
   CONSTRAINT `riwayat_pengajuan_layanan_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint

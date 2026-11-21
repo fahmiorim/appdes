@@ -91,25 +91,91 @@ describe("template bawaan yang dikirim", () => {
 
   it("menyediakan menu Administrasi Surat dengan akses sesuai role", () => {
     const surat = template.modules.find((modul) => modul.slug === "surat");
-    expect(surat).toMatchObject({ name: "Administrasi Surat", url: "/persuratan/dashboard", isActive: true });
-    const akses = template.akses.filter((grant) => grant.moduleSlug === "surat").map((grant) => `${grant.roleSlug}:${grant.access}`).sort();
-    expect(akses).toEqual(["administrator:manage", "kepala-desa:read", "operator:read", "sekretaris:read"]);
+    expect(surat).toMatchObject({
+      name: "Administrasi Surat",
+      url: "/persuratan/dashboard",
+      isActive: true,
+    });
+    const akses = template.akses
+      .filter((grant) => grant.moduleSlug === "surat")
+      .map((grant) => `${grant.roleSlug}:${grant.access}`)
+      .sort();
+    expect(akses).toEqual([
+      "administrator:manage",
+      "kepala-desa:read",
+      "operator:read",
+      "sekretaris:read",
+    ]);
   });
 
   it("menyediakan modul Permohonan Surat dengan grant sesuai role", () => {
     const modul = template.modules.find((item) => item.slug === "permohonan-surat");
-    expect(modul).toMatchObject({ name: "Permohonan Surat", url: "/permohonan-surat", isActive: true });
-    const akses = template.akses.filter((grant) => grant.moduleSlug === "permohonan-surat").map((grant) => `${grant.roleSlug}:${grant.access}`).sort();
-    expect(akses).toEqual(["administrator:manage", "kepala-desa:read", "operator:read", "sekretaris:read"]);
+    expect(modul).toMatchObject({
+      name: "Permohonan Surat",
+      url: "/permohonan-surat",
+      isActive: true,
+    });
+    const akses = template.akses
+      .filter((grant) => grant.moduleSlug === "permohonan-surat")
+      .map((grant) => `${grant.roleSlug}:${grant.access}`)
+      .sort();
+    expect(akses).toEqual([
+      "administrator:manage",
+      "kepala-desa:read",
+      "operator:read",
+      "sekretaris:read",
+    ]);
   });
 
-  it("menyediakan menu penduduk dengan akses baca untuk role non-admin", () => {
+  it("menyediakan lima modul Website Desa dengan hak kelola administrator", () => {
+    const expected = [
+      "website-dashboard",
+      "website-pengaturan",
+      "website-halaman",
+      "website-konten",
+      "website-dokumen",
+    ];
+    for (const slug of expected) {
+      expect(template.modules.some((module) => module.slug === slug)).toBe(true);
+      expect(template.akses).toContainEqual({
+        roleSlug: ROLE_ADMINISTRATOR,
+        moduleSlug: slug,
+        access: "manage",
+      });
+    }
+    expect(template.modules.find((module) => module.slug === "website-desa")).toMatchObject({
+      isGroup: true,
+      url: null,
+    });
+  });
+
+  it("menyediakan grup Data Kependudukan dan lima halaman dengan akses role yang sesuai", () => {
+    expect(template.modules.find((modul) => modul.slug === "data-kependudukan")).toMatchObject({
+      isGroup: true,
+      url: null,
+      parentSlug: null,
+    });
+    for (const [slug, url] of [
+      ["dashboard-kependudukan", "/penduduk/dashboard"],
+      ["penduduk", "/penduduk"],
+      ["keluarga", "/keluarga"],
+      ["mutasi-penduduk", "/mutasi-penduduk"],
+      ["laporan-penduduk", "/statistik/penduduk"],
+    ]) {
+      expect(template.modules.find((modul) => modul.slug === slug)).toMatchObject({
+        url,
+        parentSlug: "data-kependudukan",
+      });
+    }
+  });
+
+  it("menyediakan akses baca penduduk untuk role non-admin", () => {
     const penduduk = template.modules.find((modul) => modul.slug === "penduduk");
     expect(penduduk).toMatchObject({
       name: "Data Penduduk",
       url: "/penduduk",
       isActive: true,
-      parentSlug: null,
+      parentSlug: "data-kependudukan",
     });
 
     const akses = template.akses

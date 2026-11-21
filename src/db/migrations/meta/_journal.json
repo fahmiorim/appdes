@@ -166,36 +166,71 @@
     {
       "idx": 23,
       "version": "5",
-      "when": 1795538400000,
-      "tag": "0023_layanan_publik_catalog",
+      "when": 1795452000002,
+      "tag": "0023_template_website",
       "breakpoints": true
     },
     {
       "idx": 24,
       "version": "5",
-      "when": 1795624800000,
-      "tag": "0024_pengajuan_layanan",
+      "when": 1795452000003,
+      "tag": "0024_domain_ssl_checks",
       "breakpoints": true
     },
     {
       "idx": 25,
       "version": "5",
-      "when": 1795711200000,
-      "tag": "0025_riwayat_pengajuan_layanan",
+      "when": 1795452000004,
+      "tag": "0025_domain_dns_checks",
       "breakpoints": true
     },
     {
       "idx": 26,
       "version": "5",
-      "when": 1795797600000,
-      "tag": "0026_pengajuan_layanan_berkas",
+      "when": 1795538163264,
+      "tag": "0026_website_desa_menu",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "5",
+      "when": 1795624563264,
+      "tag": "0021_data_kependudukan_menu",
       "breakpoints": true
     },
     {
       "idx": 27,
       "version": "5",
-      "when": 1795884000000,
-      "tag": "0027_pengajuan_layanan_hasil",
+      "when": 1795625000000,
+      "tag": "0027_layanan_publik_catalog",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "5",
+      "when": 1795626000000,
+      "tag": "0028_pengajuan_layanan",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "5",
+      "when": 1795627000000,
+      "tag": "0029_riwayat_pengajuan_layanan",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "5",
+      "when": 1795628000000,
+      "tag": "0030_pengajuan_layanan_berkas",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "5",
+      "when": 1795629000000,
+      "tag": "0031_pengajuan_layanan_hasil",
       "breakpoints": true
     }
   ]

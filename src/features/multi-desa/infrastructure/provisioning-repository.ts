@@ -20,6 +20,7 @@ export interface DesaSuperAdminRow {
   code: string | null;
   domain: string | null;
   district: string | null;
+  regency: string | null;
   active: boolean;
   kuotaMediaMb: number | null;
   /** Slug tema publik aktif; `null` bila desa belum memilih tema. */
@@ -48,6 +49,7 @@ export async function listDesaSuperAdmin(): Promise<DesaSuperAdminRow[]> {
       code: villages.code,
       domain: villages.domain,
       district: villages.district,
+      regency: villages.regency,
       active: villages.active,
       kuotaMediaMb: villages.kuotaMediaMb,
       createdAt: villages.createdAt,

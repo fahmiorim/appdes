@@ -3,6 +3,7 @@ import "server-only";
 import { and, count, desc, eq, like, or } from "drizzle-orm";
 
 import { db } from "@/db";
+import { denganKunciMysql } from "@/db/kunci-mysql";
 import { pengaduan, users } from "@/db/schema";
 import {
   normalizeKategori,
@@ -216,6 +217,20 @@ export async function countTiketPadaTanggal(villageId: number, prefiks: string):
     .where(and(eq(pengaduan.villageId, villageId), like(pengaduan.nomorTiket, `${prefiks}%`)));
 
   return Number(row?.value ?? 0);
+}
+
+/**
+ * Jalankan pembuatan nomor tiket di bawah kunci per tenant/tanggal.
+ *
+ * Kunci database adalah detail infrastruktur; use case hanya meminta
+ * serialisasi berdasarkan desa dan prefiks nomor.
+ */
+export async function denganKunciNomorTiket<T>(
+  villageId: number,
+  prefiks: string,
+  fn: () => Promise<T>,
+): Promise<T> {
+  return denganKunciMysql(`pengaduan:${villageId}:${prefiks}`, fn);
 }
 
 /** Pengaduan yang boleh tampil di situs publik. */

@@ -1,16 +1,16 @@
 CREATE TABLE `layanan_publik` (
-  `id` int AUTO_INCREMENT NOT NULL,
-  `village_id` int NOT NULL,
-  `nama` varchar(180) NOT NULL,
-  `kategori` varchar(60) NOT NULL DEFAULT 'administrasi',
-  `deskripsi` text,
-  `persyaratan` text,
-  `estimasi_hari` int NOT NULL DEFAULT 1,
-  `biaya` int NOT NULL DEFAULT 0,
-  `metode` varchar(80) NOT NULL DEFAULT 'online_dan_langsung',
-  `aktif` boolean NOT NULL DEFAULT true,
-  `created_at` timestamp NOT NULL DEFAULT (now()),
-  `updated_at` timestamp NOT NULL DEFAULT (now()),
+	`id` int AUTO_INCREMENT NOT NULL,
+	`village_id` int NOT NULL,
+	`nama` varchar(180) NOT NULL,
+	`kategori` varchar(60) NOT NULL DEFAULT 'administrasi',
+	`deskripsi` text,
+	`persyaratan` text,
+	`estimasi_hari` int NOT NULL DEFAULT 1,
+	`biaya` int NOT NULL DEFAULT 0,
+	`metode` varchar(80) NOT NULL DEFAULT 'online_dan_langsung',
+	`aktif` boolean NOT NULL DEFAULT true,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()),
   CONSTRAINT `layanan_publik_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint

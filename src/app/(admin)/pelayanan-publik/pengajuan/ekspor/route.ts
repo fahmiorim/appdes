@@ -12,10 +12,25 @@ export async function GET(request: Request) {
   const status = allowed.includes(statusValue) ? statusValue : undefined;
   const q = (url.searchParams.get("q") ?? "").slice(0, 100);
   const data = await getPengajuanExportData(status, q);
-  const header = ["No. Tiket", "Nama Pemohon", "NIK", "Telepon", "Layanan", "Keperluan", "Tanggal Pengajuan", "Status"];
+  const header = [
+    "No. Tiket",
+    "Nama Pemohon",
+    "NIK",
+    "Telepon",
+    "Layanan",
+    "Keperluan",
+    "Tanggal Pengajuan",
+    "Status",
+  ];
   const rows = data.rows.map((row) => [
-    row.nomorTiket, row.namaPemohon, row.nik, row.telepon, row.namaLayanan,
-    row.keperluan, row.createdAt, row.status,
+    row.nomorTiket,
+    row.namaPemohon,
+    row.nik,
+    row.telepon,
+    row.namaLayanan,
+    row.keperluan,
+    row.createdAt,
+    row.status,
   ]);
   const body = "\uFEFF" + [header, ...rows].map((row) => row.map(csv).join(",")).join("\r\n");
   return new Response(body, {

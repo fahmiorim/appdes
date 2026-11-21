@@ -3,14 +3,11 @@ import "server-only";
 import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
 import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
-import { hasPermission } from "@/features/rbac/application/authorization";
 import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
-import { hapusMedia, bacaMedia } from "@/features/publik/infrastructure/media-storage";
 import type { BerkasUnggahan } from "@/features/publik/domain/media";
-import {
-  SURAT_DINAS_RESOURCE,
-  suratDinasFormSchema,
-} from "@/features/surat/domain/surat";
+import { bacaMedia, hapusMedia } from "@/features/publik/infrastructure/media-storage";
+import { hasPermission } from "@/features/rbac/application/authorization";
+import { SURAT_DINAS_RESOURCE, suratDinasFormSchema } from "@/features/surat/domain/surat";
 import { getKlasifikasi, listKlasifikasi } from "@/features/surat/infrastructure/master-repository";
 import {
   deleteSuratDinas,
@@ -18,8 +15,8 @@ import {
   listSuratDinas,
   saveSuratDinas,
 } from "@/features/surat/infrastructure/surat-dinas-repository";
-import { notFound, validationError } from "@/lib/errors";
 import { requirePermission } from "@/lib/dal";
+import { notFound, validationError } from "@/lib/errors";
 
 const KATEGORI_LAMPIRAN = "surat";
 const MAKS_PDF = 20 * 1024 * 1024;
@@ -30,14 +27,14 @@ export async function getSuratDinasData(search = "") {
   const rows = await listSuratDinas(villageId, search);
   return {
     rows,
-    canCreate: hasPermission(user.permissions, SURAT_DINAS_RESOURCE, "create"),
+    canCreate: hasPermission(user.permissions, SURAT_DINAS_RESOURCE, "update"),
     canUpdate: hasPermission(user.permissions, SURAT_DINAS_RESOURCE, "update"),
     canDelete: hasPermission(user.permissions, SURAT_DINAS_RESOURCE, "delete"),
   };
 }
 
 export async function getSuratDinasEditorData(id?: number) {
-  const user = await requirePermission(SURAT_DINAS_RESOURCE, id ? "update" : "create");
+  const user = await requirePermission(SURAT_DINAS_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
   const [row, klasifikasi] = await Promise.all([
     id ? getSuratDinas(villageId, id) : null,
@@ -52,12 +49,16 @@ export async function simpanSuratDinasData(
   raw: unknown,
   unggahan?: BerkasUnggahan | null,
 ) {
-  const user = await requirePermission(SURAT_DINAS_RESOURCE, id ? "update" : "create");
+  const user = await requirePermission(SURAT_DINAS_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
   const parsed = suratDinasFormSchema.safeParse(raw);
-  if (!parsed.success) throw validationError(parsed.error.issues[0]?.message ?? "Data surat dinas tidak valid.");
+  if (!parsed.success)
+    throw validationError(parsed.error.issues[0]?.message ?? "Data surat dinas tidak valid.");
   const input = parsed.data;
-  if (input.classificationId !== null && !(await getKlasifikasi(villageId, input.classificationId))) {
+  if (
+    input.classificationId !== null &&
+    !(await getKlasifikasi(villageId, input.classificationId))
+  ) {
     throw validationError("Klasifikasi tidak ditemukan pada desa aktif.");
   }
   const existing = id === null ? null : await getSuratDinas(villageId, id);
@@ -80,10 +81,14 @@ export async function simpanSuratDinasData(
     newPath = await simpanBerkasMedia(villageId, unggahan, KATEGORI_LAMPIRAN, "archiveFile");
   }
 
-  const archiveFile = input.hapusArsip ? null : newPath ?? existing?.archiveFile ?? null;
+  const archiveFile = input.hapusArsip ? null : (newPath ?? existing?.archiveFile ?? null);
   let savedId: number;
   try {
-    savedId = await saveSuratDinas(villageId, id, { ...input, archiveFile, hapusArsip: false });
+    savedId = await saveSuratDinas(villageId, id, {
+      ...input,
+      archiveFile: archiveFile ?? "",
+      hapusArsip: false,
+    });
   } catch (error) {
     // Jangan tinggalkan file yatim bila penulisan metadata gagal.
     if (newPath) await hapusMedia(newPath);
@@ -93,7 +98,11 @@ export async function simpanSuratDinasData(
   // Hapus berkas lama hanya setelah DB menunjuk berkas baru/NULL. Batasi
   // penghapusan pada folder tenant kategori surat, jangan percaya jalur input.
   const oldPath = existing?.archiveFile ?? null;
-  if (oldPath && oldPath !== archiveFile && oldPath.startsWith(`${villageId}/${KATEGORI_LAMPIRAN}/`)) {
+  if (
+    oldPath &&
+    oldPath !== archiveFile &&
+    oldPath.startsWith(`${villageId}/${KATEGORI_LAMPIRAN}/`)
+  ) {
     await hapusMedia(oldPath);
   }
 
@@ -118,9 +127,13 @@ export async function getSuratDinasLampiranData(id: number) {
   const bytes = await bacaMedia(row.archiveFile);
   if (
     bytes.length < 5 ||
-    bytes[0] !== 0x25 || bytes[1] !== 0x50 || bytes[2] !== 0x44 ||
-    bytes[3] !== 0x46 || bytes[4] !== 0x2d
-  ) throw notFound("Berkas lampiran tidak valid.");
+    bytes[0] !== 0x25 ||
+    bytes[1] !== 0x50 ||
+    bytes[2] !== 0x44 ||
+    bytes[3] !== 0x46 ||
+    bytes[4] !== 0x2d
+  )
+    throw notFound("Berkas lampiran tidak valid.");
   return { bytes, fileName: `surat-dinas-${id}.pdf` };
 }
 

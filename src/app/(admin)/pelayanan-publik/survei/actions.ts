@@ -2,12 +2,19 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { hapusSoalSurveiData, hapusSurveiData, simpanSoalSurveiData, simpanSurveiData } from "@/features/pelayanan/application/survei-use-cases";
+
+import {
+  hapusSoalSurveiData,
+  hapusSurveiData,
+  simpanSoalSurveiData,
+  simpanSurveiData,
+} from "@/features/pelayanan/application/survei-use-cases";
 
 export async function simpanSurveiAction(formData: FormData) {
   const rawId = String(formData.get("id") ?? "");
   const id = rawId ? Number(rawId) : null;
-  if (id !== null && (!Number.isSafeInteger(id) || id < 1)) throw new Error("ID survei tidak valid.");
+  if (id !== null && (!Number.isSafeInteger(id) || id < 1))
+    throw new Error("ID survei tidak valid.");
   const saved = await simpanSurveiData(id, {
     judul: String(formData.get("judul") ?? ""),
     deskripsi: String(formData.get("deskripsi") ?? ""),
@@ -28,12 +35,16 @@ export async function hapusSurveiAction(formData: FormData) {
   redirect("/pelayanan-publik/survei?dihapus=1");
 }
 
-
 export async function simpanSoalSurveiAction(formData: FormData) {
   const surveyId = Number(formData.get("surveyId"));
   const rawId = String(formData.get("questionId") ?? "");
   const questionId = rawId ? Number(rawId) : null;
-  if (!Number.isSafeInteger(surveyId) || surveyId < 1 || (questionId !== null && (!Number.isSafeInteger(questionId) || questionId < 1))) throw new Error("ID survei atau pertanyaan tidak valid.");
+  if (
+    !Number.isSafeInteger(surveyId) ||
+    surveyId < 1 ||
+    (questionId !== null && (!Number.isSafeInteger(questionId) || questionId < 1))
+  )
+    throw new Error("ID survei atau pertanyaan tidak valid.");
   await simpanSoalSurveiData(surveyId, questionId, {
     pertanyaan: String(formData.get("pertanyaan") ?? ""),
     tipe: String(formData.get("tipe") ?? "text"),
@@ -47,7 +58,13 @@ export async function simpanSoalSurveiAction(formData: FormData) {
 export async function hapusSoalSurveiAction(formData: FormData) {
   const surveyId = Number(formData.get("surveyId"));
   const questionId = Number(formData.get("questionId"));
-  if (!Number.isSafeInteger(surveyId) || surveyId < 1 || !Number.isSafeInteger(questionId) || questionId < 1) throw new Error("ID pertanyaan tidak valid.");
+  if (
+    !Number.isSafeInteger(surveyId) ||
+    surveyId < 1 ||
+    !Number.isSafeInteger(questionId) ||
+    questionId < 1
+  )
+    throw new Error("ID pertanyaan tidak valid.");
   await hapusSoalSurveiData(surveyId, questionId);
   revalidatePath("/pelayanan-publik/survei/" + surveyId);
   redirect("/pelayanan-publik/survei/" + surveyId + "?soal=dihapus");
