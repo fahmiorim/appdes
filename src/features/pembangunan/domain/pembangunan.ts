@@ -73,6 +73,8 @@ export const pembangunanFormSchema = z.object({
   judul: z.string().trim().min(1, "Judul proyek wajib diisi.").max(200, "Maksimal 200 karakter."),
   deskripsi: optionalText(2000),
   lokasi: optionalText(200),
+  latitude: z.preprocess((v) => (isBlankSelection(v) ? null : Number(v)), z.number().min(-90).max(90).nullable()),
+  longitude: z.preprocess((v) => (isBlankSelection(v) ? null : Number(v)), z.number().min(-180).max(180).nullable()),
   tahunAnggaran: z.coerce
     .number({ error: "Tahun anggaran tidak valid." })
     .int("Tahun anggaran tidak valid.")
@@ -98,6 +100,13 @@ export const pembangunanFormSchema = z.object({
     .min(0, "Progres 0–100.")
     .max(100, "Progres 0–100."),
   hasil: optionalText(2000),
+}).superRefine((value, ctx) => {
+  if ((value.latitude === null) !== (value.longitude === null)) {
+    ctx.addIssue({ code: "custom", path: ["latitude"], message: "Latitude dan longitude harus diisi bersamaan." });
+  }
+  if (value.mulai && value.selesai && value.selesai < value.mulai) {
+    ctx.addIssue({ code: "custom", path: ["selesai"], message: "Tanggal selesai tidak boleh sebelum tanggal mulai." });
+  }
 });
 
 export type PembangunanFormInput = z.infer<typeof pembangunanFormSchema>;
@@ -118,6 +127,8 @@ export interface PembangunanProyekDTO {
   slug: string;
   deskripsi: string | null;
   lokasi: string | null;
+  latitude: number | null;
+  longitude: number | null;
   tahunAnggaran: number;
   sumberDana: string | null;
   anggaran: string | null;

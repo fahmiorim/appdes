@@ -59,6 +59,7 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
       { href: "/pengumuman", label: "Pengumuman" },
       { href: "/agenda", label: "Agenda Kegiatan" },
       { href: "/statistik", label: "Statistik Desa" },
+      { href: "/pembangunan", label: "Pembangunan Desa" },
       { href: "/transparansi/apbdes", label: "APBDes & Transparansi Anggaran" },
       { href: "/transparansi/laporan-keuangan", label: "Laporan Keuangan Desa" },
     ],
@@ -69,7 +70,7 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
 
 export async function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Props) {
   const configuredMenu = await muatMenuPublik(desa.id);
-  const menu =
+  const menuItems =
     configuredMenu.length > 0
       ? configuredMenu
           .filter((item) => item.parentId === null)
@@ -86,6 +87,9 @@ export async function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Prop
               : { href: item.link, label: item.nama };
           })
       : navigation;
+  const menu: (NavigationLink | NavigationGroup)[] = [...menuItems];
+  const pembangunanAda = menu.some((item) => "href" in item ? item.href === "/pembangunan" : item.children.some((child) => child.href === "/pembangunan"));
+  if (!pembangunanAda) menu.push({ href: "/pembangunan", label: "Pembangunan Desa" });
   return (
     <>
       <header className={styles.header}>

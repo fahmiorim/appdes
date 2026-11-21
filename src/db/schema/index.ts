@@ -94,3 +94,4 @@ export * from "./pengguna-menu-urutan";
 export * from "./plugin-registry";
 export * from "./login-otp";
 export * from "./umpan-balik";
+export * from "./keuangan-bulanan";

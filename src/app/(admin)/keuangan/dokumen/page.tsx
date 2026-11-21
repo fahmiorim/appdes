@@ -1,0 +1,28 @@
+import Link from "next/link";
+import { listLaporanKeuanganDokumen } from "@/features/keuangan/application/laporan-dokumen-use-cases";
+import { laporanTipeLabel, semesterLabel, tanggalUntukInput } from "@/features/keuangan/domain/laporan-dokumen";
+import styles from "../keuangan.module.css";
+import { hapusDokumenLaporanAction, simpanDokumenLaporanAction, tandaiDokumenLaporanAction } from "../actions";
+
+export const metadata = { title: "Dokumen & Peraturan Keuangan" };
+
+type Props = { searchParams: Promise<{ tahun?: string }> };
+
+export default async function DokumenKeuanganPage({ searchParams }: Props) {
+  const params = await searchParams;
+  const tahunParam = Number(params.tahun);
+  const tahun = Number.isInteger(tahunParam) && tahunParam >= 2000 && tahunParam <= 2100 ? tahunParam : undefined;
+  const data=await listLaporanKeuanganDokumen(tahun);
+  const rows = data.rows.filter((row) => row.tahun === data.tahun);
+  return <main className={styles.page}>
+    <header className={styles.heading}><div className={styles.headingIcon}>▧</div><div><p className={styles.eyebrow}>KEUANGAN DESA</p><h1>Dokumen &amp; Peraturan</h1><p>Arsip dokumen laporan periodik APBDes dan penduduk per semester.</p></div></header>
+    <nav className={styles.tabs}><Link href="/keuangan">Dashboard</Link><Link href="/keuangan/apbdes">APBDes</Link><Link href="/keuangan/realisasi">Realisasi Anggaran</Link><Link href="/keuangan/kegiatan">Kegiatan &amp; Pembangunan</Link><Link href="/keuangan/laporan">Laporan Keuangan</Link><Link className={styles.activeTab} href="/keuangan/dokumen">Dokumen &amp; Peraturan</Link></nav>
+    <form method="get" className={styles.filterForm}><label htmlFor="tahun-dokumen">Tahun anggaran</label><select id="tahun-dokumen" name="tahun" defaultValue={data.tahun}>{data.tahunTersedia.map((y)=><option key={y} value={y}>{y}</option>)}</select><button className={styles.primaryButton} type="submit">Tampilkan</button></form>
+    <section className={styles.metrics}><article className={styles.metricPrimary}><span>Arsip {data.tahun}</span><strong>{data.periode.jumlahDokumen} dokumen</strong><small>Dokumen laporan tercatat</small></article><article className={styles.metric}><span>Semester I</span><strong>{data.periode.tercatat.includes(data.tahun+"-S1")?"Tersedia":"Belum ada"}</strong><small>Januari – Juni</small></article><article className={styles.metric}><span>Semester II</span><strong>{data.periode.tercatat.includes(data.tahun+"-S2")?"Tersedia":"Belum ada"}</strong><small>Juli – Desember</small></article><article className={styles.metric}><span>Total Arsip</span><strong>{data.rows.length}</strong><small>Semua tahun anggaran</small></article></section>
+    {data.periode.belumLengkap?<p className={styles.notice}>{data.periode.belumLengkap} Kelengkapan arsip ditampilkan sebagai pengingat, bukan penghalang unggah.</p>:null}
+    <section className={styles.panel}><div className={styles.panelHeading}><div><h2>Arsip Dokumen Laporan</h2><p>PDF resmi disimpan privat dan hanya dapat diakses pengguna berwenang.</p></div></div>
+      {rows.length?<div className={styles.tableWrap}><table className={styles.dataTable}><thead><tr><th>Jenis</th><th>Judul</th><th>Periode</th><th>Berkas</th><th>Tanggal Penyerahan</th><th>Aksi</th></tr></thead><tbody>{rows.map(row=><tr key={row.id}><td>{laporanTipeLabel(row.tipe)}</td><td><strong>{row.judul}</strong></td><td>{row.tahun} · {semesterLabel(row.semester)}</td><td><a href={"/keuangan/laporan-dokumen/"+row.id+"/berkas"}>{row.namaFile} ↓</a></td><td><form action={tandaiDokumenLaporanAction} className={styles.inlineDate}><input type="hidden" name="id" value={row.id}/><input type="date" name="diserahkanPada" defaultValue={tanggalUntukInput(row.diserahkanPada)}/><button type="submit">Simpan</button></form></td><td><form action={hapusDokumenLaporanAction}><input type="hidden" name="id" value={row.id}/><button className={styles.textButton} type="submit">Hapus</button></form></td></tr>)}</tbody></table></div>:<p className={styles.empty}>Belum ada dokumen laporan yang diarsipkan.</p>}
+    </section>
+    <section className={styles.panel}><div className={styles.panelHeading}><div><h2>Tambah Dokumen Laporan</h2><p>Unggah PDF maksimal 8 MB. Satu dokumen per jenis laporan dan semester.</p></div></div><form action={simpanDokumenLaporanAction} className={styles.projectForm} encType="multipart/form-data"><label>Jenis laporan<select name="tipe"><option value="laporan_apbdes">Laporan APBDes</option><option value="laporan_penduduk">Laporan Penduduk</option></select></label><label>Judul dokumen<input name="judul" required minLength={3} maxLength={255}/></label><label>Tahun anggaran<input name="tahun" type="number" min="2000" max="2100" defaultValue={data.tahun} required/></label><label>Semester<select name="semester"><option value="1">Semester I (Januari–Juni)</option><option value="2">Semester II (Juli–Desember)</option></select></label><label className={styles.fullField}>Berkas PDF<input name="berkas" type="file" accept="application/pdf,.pdf" required/></label><button className={styles.primaryButton} type="submit">Simpan Dokumen</button></form></section>
+  </main>;
+}
