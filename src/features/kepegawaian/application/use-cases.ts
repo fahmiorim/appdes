@@ -343,3 +343,16 @@ export async function simpanPengaturanKehadiran(input:{jamMasuk:string;jamKeluar
   if(existing) await db.update(kehadiranPengaturan).set(values).where(eq(kehadiranPengaturan.id,existing.id));
   else await db.insert(kehadiranPengaturan).values({...values,villageId});
 }
+
+
+export async function daftarKehadiranBulanan(tahun:number, bulan:number) {
+  const { villageId } = await village("kehadiran");
+  if(!Number.isInteger(tahun)||tahun<2000||tahun>2200||!Number.isInteger(bulan)||bulan<1||bulan>12) throw new Error("Periode kalender tidak valid.");
+  const mulai=`${tahun}-${String(bulan).padStart(2,"0")}-01`;
+  const akhir=new Date(Date.UTC(tahun,bulan,0)).toISOString().slice(0,10);
+  return db.select({tanggal:kehadiranPerangkat.tanggal,status:kehadiranPerangkat.status,total:sql<number>`count(*)`})
+    .from(kehadiranPerangkat)
+    .where(and(eq(kehadiranPerangkat.villageId,villageId),gte(kehadiranPerangkat.tanggal,mulai),lte(kehadiranPerangkat.tanggal,akhir)))
+    .groupBy(kehadiranPerangkat.tanggal,kehadiranPerangkat.status)
+    .orderBy(asc(kehadiranPerangkat.tanggal));
+}
