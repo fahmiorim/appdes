@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import styles from "./pengaturan-desa.module.css";
 
@@ -18,7 +19,7 @@ const blankIntegrasi:Integrasi={webhookUrl:"",webhookAktif:false,endpointEkstern
 const blankUmum:Umum={komentarAktif:true,beritaBeranda:5,pendaftaranWargaAktif:true,penomoranSurat:2};
 const blankService={nama:"",kategori:"administrasi",deskripsi:"",persyaratan:"",estimasiHari:1,biaya:0,metode:"online_dan_langsung",aktif:true};
 const mediaUrl=(path:string|null|undefined)=>path?"/api/publik/media/"+path.split("/").map(encodeURIComponent).join("/"):"";
-function Field({label,children,required=false}:{label:string;children:React.ReactNode;required?:boolean}){return <label className={styles.field}><span>{label}{required&&<b> *</b>}</span>{children}</label>}
+function Field({label,children,required=false}:{label:string;children:ReactNode;required?:boolean}){return <label className={styles.field}><span>{label}{required&&<b> *</b>}</span>{children}</label>}
 export function PengaturanDesaClient(){
  const [data,setData]=useState<Data|null>(null),[tab,setTab]=useState<string>("profil"),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState("");
  const [profile,setProfile]=useState({namaDesa:"",kodeDesa:"",namaKecamatan:"",namaKabupaten:"",namaPropinsi:"",kodePos:"",namaKepalaDesa:"",nipKepalaDesa:"",visi:"",misi:"",sejarah:"",sambutan:""});
