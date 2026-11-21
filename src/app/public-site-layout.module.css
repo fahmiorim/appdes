@@ -3,7 +3,7 @@
   margin-inline: auto;
 }
 .topline {
-  background: #0d2136;
+  background: var(--public-secondary, #0d2136);
   color: #d9e5f7;
   font-size: 10px;
 }
@@ -35,7 +35,7 @@
   align-items: center;
   gap: 9px;
   min-width: 230px;
-  color: #101a3b;
+  color: var(--public-text, #101a3b);
 }
 .logo {
   width: 42px;
@@ -50,7 +50,7 @@
   place-items: center;
   border-radius: 11px;
   background: #eaf2ff;
-  color: #075cf0;
+  color: var(--public-primary, #075cf0);
   font-weight: 900;
   font-size: 22px;
 }
@@ -100,7 +100,7 @@
   position: absolute;
   content: "";
   height: 2px;
-  background: #075cf0;
+  background: var(--public-primary, #075cf0);
   bottom: 10px;
   left: 0;
   right: 0;
