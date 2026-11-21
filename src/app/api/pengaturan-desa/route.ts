@@ -13,7 +13,7 @@ export const runtime = "nodejs";
 const json = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { "Cache-Control": "private, no-store" } });
 const settingsSchema = z.object({
   kontak: z.object({
-    whatsapp: z.string().trim().max(30).default(""),
+    whatsapp: z.string().trim().max(30).default(""),\n    telepon: z.string().trim().max(30).default(""),\n    email: z.string().trim().max(100).default(""),\n    alamat: z.string().trim().max(255).default(""),\n    website: z.string().trim().max(255).default(""),
     instagram: z.string().trim().max(150).default(""),
     facebook: z.string().trim().max(255).default(""),
     youtube: z.string().trim().max(255).default(""),
@@ -84,7 +84,7 @@ export async function PUT(request:Request) {
       if(d.tautanPeta){try{const u=new URL(d.tautanPeta);if(!["https:","http:"].includes(u.protocol))throw new Error();}catch{return json({error:"Tautan peta harus berupa URL HTTP/HTTPS."},422);}}
       const coord=d.koordinat? /^-?\d{1,2}(?:\.\d+)?\s*,\s*-?\d{1,3}(?:\.\d+)?$/.test(d.koordinat):true;
       if(!coord)return json({error:"Koordinat harus berformat latitude, longitude."},422);
-      await db.update(villages).set({phone:d.whatsapp||null}).where(eq(villages.id,villageId));
+      await db.update(villages).set({phone:d.telepon||d.whatsapp||null,email:d.email||null,officeAddress:d.alamat||null,website:d.website||null}).where(eq(villages.id,villageId));
       await db.insert(profilDesa).values({villageId,koordinat:d.koordinat||null}).onDuplicateKeyUpdate({set:{koordinat:d.koordinat||null}});
       await simpanNilai(villageId,"pengaturan.kontak",d);
       return json({message:"Kontak dan lokasi berhasil disimpan."});
