@@ -17,6 +17,8 @@ export interface PenggunaAdminData {
   roles: RoleRecord[];
   statistik: StatistikPengguna;
   currentUserId: string;
+  canCreate: boolean;
+  canCreate: boolean;
   canUpdate: boolean;
   canDelete: boolean;
   moduleCount: number;
@@ -43,6 +45,7 @@ export async function getPenggunaAdminData(): Promise<PenggunaAdminData> {
     roles,
     statistik: hitungStatistikPengguna(rows),
     currentUserId: user.id,
+    canCreate: hasPermission(user.permissions, PENGGUNA_RESOURCE, "create"),
     canUpdate: hasPermission(user.permissions, PENGGUNA_RESOURCE, "update"),
     canDelete: hasPermission(user.permissions, PENGGUNA_RESOURCE, "delete"),
     moduleCount: modules.filter((module) => module.isActive && !module.isHidden && !module.isGroup).length,
@@ -84,6 +87,7 @@ export async function getGrupAksesAdminData(roleParam?: number): Promise<GrupAks
     roles,
     statistik: hitungStatistikPengguna(pengguna),
     selected: dipilih,
+    canCreate: hasPermission(user.permissions, GRUP_AKSES_RESOURCE, "create"),
     canUpdate: hasPermission(user.permissions, GRUP_AKSES_RESOURCE, "update"),
     canDelete: hasPermission(user.permissions, GRUP_AKSES_RESOURCE, "delete"),
     moduleCount: modules.filter((module) => module.isActive && !module.isHidden && !module.isGroup).length,
