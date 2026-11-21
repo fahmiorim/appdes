@@ -461,6 +461,7 @@ export async function ubahStatusPemeliharaan(input:{
     if(Number.isNaN(rencana.getTime())||rencana.toISOString().slice(0,10)!==input.tanggalRencana) throw validationError("Tanggal rencana tidak valid.");
   }
   if(input.status==="selesai"){
+    if(!input.tanggalRencana) throw validationError("Tanggal rencana wajib tersedia.");
     if(!input.tanggalSelesai) throw validationError("Tanggal selesai wajib diisi untuk pemeliharaan yang selesai.");
     const selesai=new Date(input.tanggalSelesai+"T00:00:00Z");
     const rencana=new Date((input.tanggalRencana??"")+"T00:00:00Z");
