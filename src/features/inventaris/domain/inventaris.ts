@@ -181,7 +181,7 @@ export interface InventarisRow {
   satuan: string | null;
   hargaSatuan: string | null;
   nilaiAkhir: string | null;
-  akumulasiPenyusutan: string;
+  akumulasiPenyusutan?: string;
   tahunPembelian: number | null;
   tanggalPembelian: string | null;
   asal: InventarisAsal | null;
@@ -189,9 +189,9 @@ export interface InventarisRow {
   kondisi: InventarisKondisi;
   lokasi: string | null;
   keterangan: string | null;
-  penanggungJawab: string | null;
-  jabatanPenanggungJawab: string | null;
-  teleponPenanggungJawab: string | null;
+  penanggungJawab?: string | null;
+  jabatanPenanggungJawab?: string | null;
+  teleponPenanggungJawab?: string | null;
 }
 
 /** Kategori inventaris untuk pilihan formulir dan halaman kategori. */
@@ -240,7 +240,7 @@ export interface MutasiAssetSnapshot {
   jumlah: string;
   hargaSatuan: string | null;
   nilaiAkhir: string | null;
-  akumulasiPenyusutan: string | null;
+  akumulasiPenyusutan?: string | null;
   kondisi: InventarisKondisi;
   lokasi: string | null;
   isDeleted: boolean;
