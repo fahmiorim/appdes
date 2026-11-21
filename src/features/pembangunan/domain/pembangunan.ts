@@ -104,6 +104,9 @@ export const pembangunanFormSchema = z.object({
   if ((value.latitude === null) !== (value.longitude === null)) {
     ctx.addIssue({ code: "custom", path: ["latitude"], message: "Latitude dan longitude harus diisi bersamaan." });
   }
+  if (value.mulai && value.selesai && value.selesai < value.mulai) {
+    ctx.addIssue({ code: "custom", path: ["selesai"], message: "Tanggal selesai tidak boleh sebelum tanggal mulai." });
+  }
 });
 
 export type PembangunanFormInput = z.infer<typeof pembangunanFormSchema>;
