@@ -66,7 +66,7 @@ export async function assertPasswordNotReused(userId: string, password: string, 
     auth.$context,
     db.select({ password: accounts.password }).from(accounts).where(and(eq(accounts.userId, userId), eq(accounts.providerId, "credential"))).limit(1),
     db.select({ passwordHash: passwordHistory.passwordHash }).from(passwordHistory)
-      .where(eq(passwordHistory.userId, userId)).orderBy(desc(passwordHistory.createdAt)).limit(reuseCount),
+      .where(eq(passwordHistory.userId, userId)).orderBy(desc(passwordHistory.createdAt)).limit(Math.max(0, reuseCount - 1)),
   ]);
   const hashes = [...new Set([credential?.password, ...history.map((item) => item.passwordHash)].filter((value): value is string => Boolean(value)))];
   for (const hash of hashes) {
