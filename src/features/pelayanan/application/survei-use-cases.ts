@@ -167,14 +167,15 @@ export async function getHasilSurveiData(id: number) {
     db.select().from(surveyJawaban).where(eq(surveyJawaban.villageId, villageId)),
   ]);
   const respondentIds = new Set(respondents.map((item) => item.id));
-  const surveyAnswers = answers.filter((answer) => respondentIds.has(answer.respondenId));
+  const questionIds = new Set(questions.map((question) => question.id));
+  const surveyAnswers = answers.filter((answer) => respondentIds.has(answer.respondenId) && questionIds.has(answer.soalId));
   const byRespondent = new Map<number, Map<number, string>>();
   for (const answer of surveyAnswers) {
     const map = byRespondent.get(answer.respondenId) ?? new Map<number, string>();
     map.set(answer.soalId, answer.jawaban ?? "");
     byRespondent.set(answer.respondenId, map);
   }
-  const scoreQuestions = questions.map((question) => {
+  const scoreQuestions = questions.filter((question) => question.tipe === "choice" || question.tipe === "number").map((question) => {
     let skorPilihan: Record<string, number> = {};
     try {
       const parsed: unknown = question.skorPilihan ? JSON.parse(question.skorPilihan) : {};
