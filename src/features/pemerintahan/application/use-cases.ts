@@ -204,7 +204,7 @@ export async function getWilayahPemerintahanData() {
   const villageId = await tenant("wilayah");
   const [rows, shapes, layers, officials, profil] = await Promise.all([
     db.select().from(regions).where(eq(regions.villageId, villageId)).orderBy(asc(regions.sortOrder), asc(regions.dusun), asc(regions.rw), asc(regions.rt)),
-    db.select({ id: areas.id, nama: areas.nama, enabled: areas.enabled, path: areas.path, refPolygon: areas.refPolygon }).from(areas)
+    db.select({ id: areas.id, nama: areas.nama, desk: areas.desk, enabled: areas.enabled, path: areas.path, refPolygon: areas.refPolygon }).from(areas)
       .where(eq(areas.villageId, villageId)).orderBy(asc(areas.sortOrder)),
     db.select({ id: polygons.id, nama: polygons.nama, color: polygons.color, enabled: polygons.enabled, sortOrder: polygons.sortOrder }).from(polygons)
       .where(eq(polygons.villageId, villageId)).orderBy(asc(polygons.sortOrder)),
@@ -217,7 +217,7 @@ export async function getWilayahPemerintahanData() {
 }
 
 
-export async function simpanAreaPeta(id: number | null, input: { nama: string; path: string | null; enabled: number; sortOrder: number; refPolygon: number | null }) {
+export async function simpanAreaPeta(id: number | null, input: { nama: string; desk: string | null; path: string | null; enabled: number; sortOrder: number; refPolygon: number | null }) {
   const villageId = await tenant("wilayah", id ? "update" : "create");
   if (!input.nama.trim()) throw new Error("Nama area GIS wajib diisi.");
   if (id) {
