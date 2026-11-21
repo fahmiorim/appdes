@@ -21,7 +21,7 @@ export const INVENTARIS_ASAL = [
 ] as const;
 export type InventarisAsal = (typeof INVENTARIS_ASAL)[number];
 
-export const INVENTARIS_KONDISI = ["baik", "rusak_ringan", "rusak_berat"] as const;
+export const INVENTARIS_KONDISI = ["baik", "rusak_ringan", "rusak_berat", "dalam_perbaikan"] as const;
 export type InventarisKondisi = (typeof INVENTARIS_KONDISI)[number];
 
 export const MUTASI_JENIS = ["pindah", "rusak", "hapus", "perbaikan"] as const;
@@ -104,6 +104,7 @@ export const INVENTARIS_KONDISI_LABELS: Record<InventarisKondisi, string> = {
   baik: "Baik",
   rusak_ringan: "Rusak Ringan",
   rusak_berat: "Rusak Berat",
+  dalam_perbaikan: "Dalam Perbaikan",
 };
 
 export const MUTASI_JENIS_LABELS: Record<MutasiJenis, string> = {
