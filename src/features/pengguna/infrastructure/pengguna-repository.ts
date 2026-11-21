@@ -2,10 +2,10 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 import { hashPassword } from "better-auth/crypto";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { accounts, roles, users } from "@/db/schema";
+import { accounts, passwordHistory, roles, sessions, users } from "@/db/schema";
 import type { PenggunaDTO } from "@/features/pengguna/domain/pengguna";
 
 /**
@@ -155,7 +155,10 @@ export async function updatePengguna(
       })
       .where(eq(users.id, id));
 
-    if (passwordHash === null) return;
+    if (passwordHash === null) {
+      if (!input.active) await tx.delete(sessions).where(eq(sessions.userId, id));
+      return;
+    }
 
     const [account] = await tx
       .select({ id: accounts.id })
@@ -165,19 +168,20 @@ export async function updatePengguna(
 
     if (account) {
       await tx.update(accounts).set({ password: passwordHash }).where(eq(accounts.id, account.id));
-      return;
+    } else {
+      await tx.insert(accounts).values({ id: randomUUID(), accountId: id, providerId: "credential", userId: id, password: passwordHash });
     }
-
-    await tx.insert(accounts).values({
-      id: randomUUID(),
-      accountId: id,
-      providerId: "credential",
-      userId: id,
-      password: passwordHash,
-    });
+    // Reset password oleh admin mencabut semua sesi lama seperti reset via Better Auth.
+    await tx.delete(sessions).where(eq(sessions.userId, id));
+    return;
   });
 }
 
 export async function deletePengguna(id: string): Promise<void> {
   await db.delete(users).where(eq(users.id, id));
+}
+
+export async function countPenggunaDenganRole(villageId: number, roleId: number): Promise<number> {
+  const [row] = await db.select({ total: count() }).from(users).where(and(eq(users.villageId, villageId), eq(users.roleId, roleId)));
+  return row?.total ?? 0;
 }

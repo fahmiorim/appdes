@@ -139,7 +139,7 @@ export async function getBerkasSyaratAdminData(
  * menjadi 3 saat Kades menerbitkan (lihat sinkronisasi di use case persuratan).
  */
 export async function buatKonsepSuratPermohonanData(permohonanId: number): Promise<{ id: number }> {
-  const user = await requirePermission(RESOURCES.permohonanSurat, "update");
+  const user = await requirePermission(RESOURCES.permohonanSurat, "create");
   const villageId = await resolveVillageId(user);
   const permohonan = await getPermohonan(villageId, permohonanId);
 

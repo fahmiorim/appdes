@@ -36,7 +36,7 @@ export async function cariPerangkatKiosk(villageId: number, uuid: string | null 
 }
 
 export async function tambahAnjungan(villageId: number, input: unknown) {
-  await requirePermission(ANJUNGAN_RESOURCE, "update");
+  await requirePermission(ANJUNGAN_RESOURCE, "create");
   const parsed = anjunganFormSchema.parse(input);
   const uuid = parsed.uuid ?? randomUUID();
   const id = await createAnjungan({

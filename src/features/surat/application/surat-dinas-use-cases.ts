@@ -34,7 +34,7 @@ export async function getSuratDinasData(search = "") {
 }
 
 export async function getSuratDinasEditorData(id?: number) {
-  const user = await requirePermission(SURAT_DINAS_RESOURCE, "update");
+  const user = await requirePermission(SURAT_DINAS_RESOURCE, id === undefined ? "create" : "update");
   const villageId = await resolveVillageId(user);
   const [row, klasifikasi] = await Promise.all([
     id ? getSuratDinas(villageId, id) : null,
@@ -49,7 +49,7 @@ export async function simpanSuratDinasData(
   raw: unknown,
   unggahan?: BerkasUnggahan | null,
 ) {
-  const user = await requirePermission(SURAT_DINAS_RESOURCE, "update");
+  const user = await requirePermission(SURAT_DINAS_RESOURCE, id === null ? "create" : "update");
   const villageId = await resolveVillageId(user);
   const parsed = suratDinasFormSchema.safeParse(raw);
   if (!parsed.success)
