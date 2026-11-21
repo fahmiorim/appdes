@@ -67,7 +67,7 @@ export async function GET() {
       hitungUkuranMedia(villageId),
       db.select({kuotaMediaMb:villages.kuotaMediaMb}).from(villages).where(eq(villages.id,villageId)).limit(1),
     ]);
-    return json({desa:desa??null,profil:profil??null,layanan,kontak:settings[0]??{},integrasi:settings[1]??{},favicon:settings[2],templates:templates.map(t=>({...t,tokens:(()=>{try{return JSON.parse(t.tokens)}catch{return {}}})(),tags:(()=>{try{return JSON.parse(t.tags)}catch{return []}})()})),temaAktif:activeTheme??null,umum:general,media:{usedBytes:mediaUsage,quotaMb:mediaQuota?.kuotaMediaMb??null}})
+    return json({desa:desa??null,profil:profil??null,layanan,kontak:settings[0]??{},integrasi:settings[1]??{},favicon:settings[2],templates:templates.map(t=>({...t,tokens:(()=>{try{const parsed=tokenTemplateSchema.safeParse(JSON.parse(t.tokens));return parsed.success?parsed.data:{}}catch{return {}}})(),tags:(()=>{try{return JSON.parse(t.tags)}catch{return []}})()})),temaAktif:activeTheme??null,umum:general,media:{usedBytes:mediaUsage,quotaMb:mediaQuota?.kuotaMediaMb??null}})
   } catch(error){return handleError(error);}
 }
 export async function PUT(request:Request) {
