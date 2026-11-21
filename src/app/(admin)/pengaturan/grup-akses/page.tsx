@@ -38,7 +38,7 @@ export default async function GrupAksesPage({
           <h1>Hak Akses &amp; Permission</h1>
           <p>Atur role desa dan izin baca, tulis, serta kelola untuk setiap modul.</p>
         </div>
-        {data.canUpdate ? (
+        {data.canCreate ? (
           <DialogRole aksi={buatRoleAction} label="+ Tambah Grup" varian="primary" />
         ) : null}
       </div>
@@ -112,7 +112,7 @@ export default async function GrupAksesPage({
                     </span>
                   </Link>
                   <div className="pengguna-role-aksi">
-                    {data.canUpdate ? <DialogSalinRole role={{ id: role.id, name: role.name }} aksi={salinRoleAction} /> : null}
+                    {data.canCreate && data.canUpdate ? <DialogSalinRole role={{ id: role.id, name: role.name }} aksi={salinRoleAction} /> : null}
                     {data.canUpdate && !role.isSystem ? (
                       <DialogRole
                         aksi={ubahRoleAction}
