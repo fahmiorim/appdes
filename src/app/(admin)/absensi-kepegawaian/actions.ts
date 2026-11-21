@@ -15,6 +15,8 @@ import {
   tambahRiwayatPegawai,
   simpanDokumenPegawai,
   simpanPengaturanKehadiran,
+  hapusRiwayatPegawai,
+  hapusDokumenPegawai,
 } from "@/features/kepegawaian/application/use-cases";
 
 function text(fd: FormData, key: string): string {
@@ -116,5 +118,16 @@ export async function unggahDokumenPegawaiAction(fd: FormData) {
 export async function simpanPengaturanKehadiranAction(fd: FormData) {
   const hariLibur=fd.getAll("hariLibur").map((x)=>Number(x));
   await simpanPengaturanKehadiran({jamMasuk:text(fd,"jamMasuk"),jamKeluar:text(fd,"jamKeluar"),hariLibur});
+  refresh();
+}
+
+
+export async function hapusRiwayatPegawaiAction(fd:FormData) {
+  await hapusRiwayatPegawai(number(fd,"id"));
+  refresh();
+}
+
+export async function hapusDokumenPegawaiAction(fd:FormData) {
+  await hapusDokumenPegawai(number(fd,"id"));
   refresh();
 }
