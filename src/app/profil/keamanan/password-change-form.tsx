@@ -15,7 +15,7 @@ export function PasswordChangeForm({expired,minLength,requireUppercase,requireLo
    <label>Password baru<input required type="password" autoComplete="new-password" value={newPassword} onChange={e=>setNewPassword(e.target.value)}/></label>
    <label>Ulangi password baru<input required type="password" autoComplete="new-password" value={confirmation} onChange={e=>setConfirmation(e.target.value)}/></label>
    {error?<p role="alert" style={{color:"#b42318",fontSize:13}}>{error}</p>:null}
-   {success?<p role="status" style={{color:"#08752d",fontSize:13}}>{success}</p>:null}
+   {success?<><p role="status" style={{color:"#08752d",fontSize:13}}>{success}</p><button type="button" onClick={()=>router.push("/beranda")} style={{padding:10,border:0,borderRadius:8,background:"#1b8b3d",color:"#fff",fontWeight:700}}>Lanjutkan ke Dashboard</button></>:null}
    <button type="submit" disabled={busy} style={{padding:11,border:0,borderRadius:8,background:"linear-gradient(110deg,#a200ff,#3214ed)",color:"#fff",fontWeight:700}}>{busy?"Menyimpan...":"Simpan Password Baru"}</button>
   </form>
  </section>;
