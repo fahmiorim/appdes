@@ -316,10 +316,12 @@ export async function updateInventaris(villageId:number,id:number,input:Inventar
       eq(inventaris.villageId,villageId),eq(inventaris.id,id),eq(inventaris.isDeleted,false),
     )).limit(1);
     if(!before) throw notFound("Data inventaris tidak ditemukan.");
+    const values=nilaiInventaris(input);
+    if(!values.nomorInventaris) values.nomorInventaris=before.nomorInventaris;
     const changed=before.penanggungJawab!==(input.penanggungJawab||null)
       ||before.jabatanPenanggungJawab!==(input.jabatanPenanggungJawab||null)
       ||before.teleponPenanggungJawab!==(input.teleponPenanggungJawab||null);
-    await tx.update(inventaris).set(nilaiInventaris(input)).where(and(
+    await tx.update(inventaris).set(values).where(and(
       eq(inventaris.villageId,villageId),eq(inventaris.id,id),eq(inventaris.isDeleted,false),
     ));
     if(changed){
