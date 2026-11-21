@@ -32,6 +32,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
   return <div className="modul-page">
     <div className="page-heading"><div><span className="eyebrow">ABSENSI & KEPEGAWAIAN</span><h1>Absensi Pegawai</h1><p>Kelola dan pantau kehadiran perangkat desa serta staf secara terpusat.</p></div></div>
     <AbsensiKepegawaianNav active="/absensi-kepegawaian/absensi"/>
+    <nav className={styles["ak-subnav"]} aria-label="Navigasi absensi"><a className={styles["selected"]} href="#rekap">▦ Rekap Kehadiran</a><a href="#kalender">◷ Riwayat Absensi</a><a href="#rekap">♙ Absensi Manual</a><a href="#pengaturan">⚙ Pengaturan Absensi</a></nav>
     <section className={styles["ak-kpi-grid"]}>
       <article className={`${styles["ak-kpi"]} ${styles.primary}`}><span>Kehadiran Hari Ini</span><strong>{counts.hadir} orang</strong><span>{tingkatKehadiran.toLocaleString("id-ID")}% tingkat kehadiran</span></article>
       <article className={styles["ak-kpi"]}><span>Hadir</span><strong>{counts.hadir} orang</strong></article>
@@ -40,7 +41,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
       <article className={styles["ak-kpi"]}><span>Tidak Hadir</span><strong>{counts.tidak} orang</strong></article>
     </section>
     <div className={styles["ak-grid"]}>
-      <section className={styles["ak-card"]}>
+      <section id="rekap" className={styles["ak-card"]}>
         <div className={styles["ak-card-heading-row"]}><div><h2>Rekap Absensi Pegawai</h2><p>Daftar kehadiran pegawai untuk tanggal yang dipilih.</p></div><a className={styles["ak-button"]} href={"/absensi-kepegawaian/absensi/ekspor?tanggal="+tanggal}>↓ Export</a></div>
         <form className={styles["ak-filter"]} method="get">
           <label>Tanggal<input type="date" name="tanggal" defaultValue={tanggal}/></label>
@@ -61,7 +62,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
         {!rows.length?<div className={styles["ak-empty"]}>Belum ada pegawai aktif. Tambahkan pegawai terlebih dahulu.</div>:null}
       </section>
       <div className={styles["ak-side-stack"]}>
-        <section className={styles["ak-card"]}><h2>Kalender Kehadiran</h2><p>{monthLabel}</p>
+        <section id="kalender" className={styles["ak-card"]}><h2>Kalender Kehadiran</h2><p>{monthLabel}</p>
           <div className={styles["ak-calendar"]}>
             {["Min","Sen","Sel","Rab","Kam","Jum","Sab"].map(day=><span className={styles["ak-calendar-head"]} key={day}>{day}</span>)}
             {Array.from({length:monthStart},(_,i)=><span key={"blank-"+i}/>)}
@@ -74,7 +75,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
         </section>
       </div>
     </div>
-    <section className={styles["ak-card"]} style={{marginTop:16}}><h2>Pengaturan Absensi</h2><p>Atur jam kerja dan hari libur mingguan desa.</p>
+    <section id="pengaturan" className={styles["ak-card"]} style={{marginTop:16}}><h2>Pengaturan Absensi</h2><p>Atur jam kerja dan hari libur mingguan desa.</p>
       {canManage?<form action={simpanPengaturanKehadiranAction} className={styles["ak-form"]}>
         <label>Jam Masuk<input type="time" name="jamMasuk" defaultValue={setting.jamMasuk}/></label>
         <label>Jam Pulang<input type="time" name="jamKeluar" defaultValue={setting.jamKeluar}/></label>
