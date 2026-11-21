@@ -19,11 +19,14 @@ export default async function WilayahOrganisasiPage() {
   const akarOrganisasi = officials.filter((person) =>
     person.id === kepala?.id || !person.atasanId || !officials.some((parent) => parent.id === person.atasanId),
   );
-  const renderOrganisasi = (person: (typeof officials)[number], depth = 0): ReactNode => {
-    const children = anakPerangkat(person.id);
+  const renderOrganisasi = (person: (typeof officials)[number], depth = 0, visited = new Set<number>()): ReactNode => {
+    if (visited.has(person.id)) return null;
+    const nextVisited = new Set(visited);
+    nextVisited.add(person.id);
+    const children = anakPerangkat(person.id).filter((child) => !nextVisited.has(child.id));
     return <article className={`pemerintahan-org-node ${person.id === kepala?.id ? "root" : ""}`} key={person.id} data-depth={depth}>
       <strong>{person.nama}</strong><span>{person.jabatan ?? "Perangkat Desa"}</span>
-      {children.length ? <div className="pemerintahan-org-children pemerintahan-org-nested">{children.map((child) => renderOrganisasi(child, depth + 1))}</div> : null}
+      {children.length ? <div className="pemerintahan-org-children pemerintahan-org-nested">{children.map((child) => renderOrganisasi(child, depth + 1, nextVisited))}</div> : null}
     </article>;
   };
   return <div className="modul-page pemerintahan-page">
