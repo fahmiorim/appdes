@@ -28,8 +28,8 @@ export default async function KeuanganPage() {
   const pendapatan = akun.get("4");
   const belanja = akun.get("5");
   const pembiayaan = akun.get("6");
-  const pagu = toMinor(pendapatan?.anggaran ?? "0") + toMinor(belanja?.anggaran ?? "0") + toMinor(pembiayaan?.anggaran ?? "0");
-  const realisasi = toMinor(pendapatan?.realisasi ?? "0") + toMinor(belanja?.realisasi ?? "0") + toMinor(pembiayaan?.realisasi ?? "0");
+  const pagu = toMinor(pendapatan?.anggaran ?? "0");
+  const realisasi = toMinor(pendapatan?.realisasi ?? "0");
   const sisa = pagu - realisasi;
   const selesai = pembangunan.rows.filter((row) => row.status === "selesai").length;
   const berjalan = pembangunan.rows.filter((row) => row.status === "berjalan").length;
