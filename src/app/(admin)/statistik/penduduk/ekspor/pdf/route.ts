@@ -212,7 +212,8 @@ export async function GET(request: Request, _context: { params: Promise<Record<s
     : "gender";
 
   const villageId = await resolveVillageId(user);
-  const textParam = (key: string) => (url.searchParams.get(key) ?? "").trim().slice(0, 100) || undefined;
+  const textParam = (key: string) =>
+    (url.searchParams.get(key) ?? "").trim().slice(0, 100) || undefined;
   const ageParam = (key: string) => {
     const value = url.searchParams.get(key) ?? "";
     if (!/^\d{1,3}$/.test(value)) return undefined;
@@ -220,9 +221,13 @@ export async function GET(request: Request, _context: { params: Promise<Record<s
     return parsed >= 0 && parsed <= 120 ? parsed : undefined;
   };
   const result = await getStatistikPendudukUseCase(villageId, {
-    kind, perPage: 100,
-    dusun: textParam("dusun"), rw: textParam("rw"), rt: textParam("rt"),
-    umurMin: ageParam("umurMin"), umurMax: ageParam("umurMax"),
+    kind,
+    perPage: 100,
+    dusun: textParam("dusun"),
+    rw: textParam("rw"),
+    rt: textParam("rt"),
+    umurMin: ageParam("umurMin"),
+    umurMax: ageParam("umurMax"),
   });
 
   // Get village name for header

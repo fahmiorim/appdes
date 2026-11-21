@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
 import { notFound } from "next/navigation";
 
+import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
 import { getPendudukFormData } from "@/features/penduduk/application/use-cases";
 import { PENDUDUK_RESOURCE } from "@/features/penduduk/domain/penduduk";
 import { hasPermission } from "@/features/rbac/application/authorization";

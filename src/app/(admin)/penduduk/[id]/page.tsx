@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
 import { notFound } from "next/navigation";
 
+import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
 import { getPendudukDetailData } from "@/features/penduduk/application/use-cases";
 import {
   calculateAge,

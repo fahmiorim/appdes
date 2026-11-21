@@ -112,9 +112,22 @@ describe("template bawaan yang dikirim", () => {
   });
 
   it("menyediakan grup Data Kependudukan dan lima halaman dengan akses role yang sesuai", () => {
-    expect(template.modules.find((modul) => modul.slug === "data-kependudukan")).toMatchObject({ isGroup: true, url: null, parentSlug: null });
-    for (const [slug, url] of [["dashboard-kependudukan", "/penduduk/dashboard"], ["penduduk", "/penduduk"], ["keluarga", "/keluarga"], ["mutasi-penduduk", "/mutasi-penduduk"], ["laporan-penduduk", "/statistik/penduduk"]]) {
-      expect(template.modules.find((modul) => modul.slug === slug)).toMatchObject({ url, parentSlug: "data-kependudukan" });
+    expect(template.modules.find((modul) => modul.slug === "data-kependudukan")).toMatchObject({
+      isGroup: true,
+      url: null,
+      parentSlug: null,
+    });
+    for (const [slug, url] of [
+      ["dashboard-kependudukan", "/penduduk/dashboard"],
+      ["penduduk", "/penduduk"],
+      ["keluarga", "/keluarga"],
+      ["mutasi-penduduk", "/mutasi-penduduk"],
+      ["laporan-penduduk", "/statistik/penduduk"],
+    ]) {
+      expect(template.modules.find((modul) => modul.slug === slug)).toMatchObject({
+        url,
+        parentSlug: "data-kependudukan",
+      });
     }
   });
 

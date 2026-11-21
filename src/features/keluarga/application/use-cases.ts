@@ -64,7 +64,9 @@ export async function getKeluargaFormReference(): Promise<KeluargaReferenceData>
   const user = await requirePermission(KELUARGA_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
   const regions = await listWilayahOptions(villageId);
-  return { regions: regions.map((region) => ({ id: region.id, label: formatWilayahLabel(region) })) };
+  return {
+    regions: regions.map((region) => ({ id: region.id, label: formatWilayahLabel(region) })),
+  };
 }
 
 export async function getKeluargaReference(): Promise<KeluargaReferenceData> {
