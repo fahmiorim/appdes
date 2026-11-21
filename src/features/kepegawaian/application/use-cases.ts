@@ -168,7 +168,7 @@ export async function getDashboardAbsensiData() {
       const start = new Date(x.tanggalMasuk + "T00:00:00Z");
       const end = x.tanggalKeluar ? new Date(x.tanggalKeluar + "T00:00:00Z") : new Date();
       return sum + Math.max(0, (end.getUTCFullYear() - start.getUTCFullYear()) * 12 + end.getUTCMonth() - start.getUTCMonth());
-    }, 0) / employees.filter((x) => x.tanggalMasuk).length) : 0,
+    }, 0) / Math.max(1, employees.filter((x) => x.tanggalMasuk).length)) : 0,
     todayRows: todayRows.map((x) => ({ ...x, status: x.status ?? "tidak_hadir" })),
     trendRows, leaves,
   };
