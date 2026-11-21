@@ -12,6 +12,7 @@ export default async function InventarisDashboardPage() {
   const count=(kondisi:string)=>rows.filter(x=>x.kondisi===kondisi).reduce((sum,x)=>sum+Number(x.jumlah),0);
   const unit=rows.reduce((sum,x)=>sum+Number(x.jumlah),0);
   const total=Number(neracaData.neraca.grandTotal);
+  const totalNilaiBuku=rows.reduce((sum,x)=>sum+Number(x.nilaiBuku??x.nilaiAkhir??0),0);
   const categories=neracaData.neraca.baris;
   const lokasi=new Map<string,number>();
   for(const row of rows) lokasi.set(row.lokasi||"Lokasi belum ditentukan",(lokasi.get(row.lokasi||"Lokasi belum ditentukan")??0)+Number(row.jumlah));
@@ -26,7 +27,7 @@ export default async function InventarisDashboardPage() {
     <header className={styles.heading}><div className={styles.headingIcon}>▣</div><div><span className={styles.eyebrow}>INVENTARIS &amp; ASET DESA</span><h1>Dashboard Inventaris &amp; Aset</h1><p>Ringkasan data inventaris, kondisi, nilai, dan pemanfaatan aset desa.</p></div></header>
     <section className={styles.metrics}>
       <article className={`${styles.metric} ${styles.metricPrimary}`}><span>Total Aset</span><strong>{unit.toLocaleString("id-ID")} Unit</strong><small>{rows.length} jenis inventaris aktif</small></article>
-      <article className={styles.metric}><span>Nilai Total Aset</span><strong>{formatRupiah(neracaData.neraca.grandTotal)}</strong><small>Nilai tercatat saat ini</small></article>
+      <article className={styles.metric}><span>Nilai Perolehan</span><strong>{formatRupiah(neracaData.neraca.grandTotal)}</strong><small>Akumulasi harga perolehan</small></article><article className={styles.metric}><span>Nilai Buku Saat Ini</span><strong>{formatRupiah(totalNilaiBuku.toFixed(2))}</strong><small>Setelah penyusutan</small></article>
       <article className={styles.metric}><span>Aset Kondisi Baik</span><strong>{count("baik").toLocaleString("id-ID")} Unit</strong><small>{unit?((count("baik")/unit)*100).toFixed(1):"0"}% dari total unit</small></article>
       <article className={styles.metric}><span>Rusak Ringan / Berat</span><strong>{(count("rusak_ringan")+count("rusak_berat")).toLocaleString("id-ID")} Unit</strong><small>Perlu tindak lanjut</small></article>
       <article className={styles.metric}><span>Dalam Perbaikan</span><strong>{count("dalam_perbaikan").toLocaleString("id-ID")} Unit</strong><small>Status kondisi dalam perbaikan</small></article>
