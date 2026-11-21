@@ -4,7 +4,7 @@ import { getInventarisDetailPageData } from "@/features/inventaris/application/i
 import { formatRupiah } from "@/features/keuangan/domain/keuangan";
 import { INVENTARIS_ASAL, INVENTARIS_KONDISI_LABELS, MUTASI_JENIS_LABELS, MUTASI_STATUS_LABELS } from "@/features/inventaris/domain/inventaris";
 import styles from "../inventaris.module.css";
-import { simpanInventarisAction, hapusInventarisAction, unggahDokumenInventarisAction, hapusDokumenInventarisAction } from "../actions";
+import { simpanInventarisAction, unggahDokumenInventarisAction, hapusDokumenInventarisAction } from "../actions";
 
 export const metadata={title:"Pengelolaan Aset"};
 type Props={params:Promise<{id:string}>;searchParams:Promise<{edit?:string;saved?:string;documentSaved?:string}>};
@@ -63,6 +63,6 @@ export default async function DetailInventarisPage({params,searchParams}:Props){
       <label>Donatur / Penyedia<input name="donatur" defaultValue={x.donatur??""}/></label><label>Penanggung Jawab<input name="penanggungJawab" defaultValue={x.penanggungJawab??""}/></label><label>Jabatan Penanggung Jawab<input name="jabatanPenanggungJawab" defaultValue={x.jabatanPenanggungJawab??""}/></label><label>Telepon Penanggung Jawab<input name="teleponPenanggungJawab" defaultValue={x.teleponPenanggungJawab??""}/></label><label>Lokasi<input name="lokasi" defaultValue={x.lokasi??""}/></label><label>Kondisi<select name="kondisi" defaultValue={x.kondisi}><option value="baik">Baik</option><option value="rusak_ringan">Rusak Ringan</option><option value="rusak_berat">Rusak Berat</option><option value="dalam_perbaikan">Dalam Perbaikan</option></select></label>
       <label className={styles.wide}>Spesifikasi<textarea name="spesifikasi" defaultValue={x.spesifikasi??""}/></label><label className={styles.wide}>Keterangan<textarea name="keterangan" defaultValue={x.keterangan??""}/></label><button className={styles.primary}>Simpan Perubahan</button><Link className={styles.secondary} href={"/inventaris/"+id}>Batal</Link>
     </form></section>:null}
-    <div className={styles.actions}>{data.canWrite?<Link className={styles.primary} href={"/inventaris/"+id+"?edit=1"}>✎ Edit Aset</Link>:null}<Link className={styles.secondary} href={"/inventaris/mutasi?inventarisId="+id}>＋ Ajukan Mutasi / Perawatan</Link>{data.canDelete?<form action={hapusInventarisAction}><input type="hidden" name="id" value={id}/><button className={styles.secondary}>Hapus Aset</button></form>:null}</div>
+    <div className={styles.actions}>{data.canWrite?<Link className={styles.primary} href={"/inventaris/"+id+"?edit=1"}>✎ Edit Aset</Link>:null}<Link className={styles.secondary} href={"/inventaris/mutasi?inventarisId="+id}>＋ Ajukan Mutasi / Perawatan</Link>{data.canWrite?<Link className={styles.secondary} href={"/inventaris/mutasi?inventarisId="+id+"&jenis=hapus"}>Ajukan Penghapusan Aset</Link>:null}</div>
   </main>;
 }
