@@ -31,9 +31,9 @@ export default async function KeuanganPage() {
   const pendapatan = akun.get("4");
   const belanja = akun.get("5");
   const pembiayaan = akun.get("6");
-  const pagu = toMinor(pendapatan?.anggaran ?? "0");
-  const realisasi = toMinor(pendapatan?.realisasi ?? "0");
-  const sisa = pagu - realisasi;
+  const paguBelanja = toMinor(belanja?.anggaran ?? "0");
+  const realisasiBelanja = toMinor(belanja?.realisasi ?? "0");
+  const sisa = paguBelanja - realisasiBelanja;
   const selesai = pembangunan.rows.filter((row) => row.status === "selesai").length;
   const berjalan = pembangunan.rows.filter((row) => row.status === "berjalan").length;
   const persiapan = pembangunan.rows.filter((row) => row.status === "rencana").length;
@@ -50,7 +50,7 @@ export default async function KeuanganPage() {
         <article className={styles.metricPrimary}><span>Pagu APBDes {keuangan.tahun}</span><strong>{formatRupiah((pendapatan?.anggaran ?? "0"))}</strong><small>Tahun anggaran berjalan</small></article>
         <article className={styles.metric}><span>Realisasi Pendapatan</span><strong>{formatRupiah(pendapatan?.realisasi ?? "0")}</strong><small>{pct(pendapatan?.realisasi ?? "0", pendapatan?.anggaran ?? "0").toFixed(1)}% dari pagu</small></article>
         <article className={styles.metric}><span>Realisasi Belanja</span><strong>{formatRupiah(belanja?.realisasi ?? "0")}</strong><small>{pct(belanja?.realisasi ?? "0", belanja?.anggaran ?? "0").toFixed(1)}% dari pagu</small></article>
-        <article className={styles.metric}><span>Sisa Anggaran</span><strong>{rupiah(sisa)}</strong><small>Dari total akun APBDes</small></article>
+        <article className={styles.metric}><span>Sisa Anggaran</span><strong>{rupiah(sisa)}</strong><small>Dari pagu belanja</small></article>
         <article className={styles.metric}><span>Total Kegiatan</span><strong>{pembangunan.total} kegiatan</strong><small>{selesai} selesai · {berjalan} berjalan</small></article>
       </section>
 
