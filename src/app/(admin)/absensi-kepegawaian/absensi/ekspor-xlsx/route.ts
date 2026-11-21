@@ -5,10 +5,16 @@ import { daftarAbsensiRentang } from "@/features/kepegawaian/application/use-cas
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const now = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" }).format(new Date());
-  const [year, month] = now.split("-");
-  const tahun = url.searchParams.get("tahun") ?? year;
-  const bulan = url.searchParams.get("bulan") ?? month;
-  if (!/^\d{4}$/.test(tahun) || Number(tahun) < 2000 || Number(tahun) > 2200 || !/^\d{1,2}$/.test(bulan) || Number(bulan) < 1 || Number(bulan) > 12) {
+  const tahun = url.searchParams.get("tahun") ?? now.slice(0, 4);
+  const bulan = url.searchParams.get("bulan") ?? now.slice(5, 7);
+  if (
+    !/^\d{4}$/.test(tahun) ||
+    Number(tahun) < 2000 ||
+    Number(tahun) > 2200 ||
+    !/^\d{1,2}$/.test(bulan) ||
+    Number(bulan) < 1 ||
+    Number(bulan) > 12
+  ) {
     return new Response("Periode laporan tidak valid.", { status: 400 });
   }
   const mulai = `${tahun}-${bulan.padStart(2, "0")}-01`;

@@ -17,7 +17,9 @@ export const kepegawaianPegawai = mysqlTable(
   "kepegawaian_pegawai",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
     perangkatId: int("perangkat_id"),
     nama: varchar("nama", { length: 150 }).notNull(),
     nip: varchar("nip", { length: 30 }),
@@ -36,7 +38,10 @@ export const kepegawaianPegawai = mysqlTable(
     tanggalKeluar: date("tanggal_keluar", { mode: "string" }),
     foto: varchar("foto", { length: 255 }),
     createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   (table) => [
     uniqueIndex("kepegawaian_pegawai_village_id_uq").on(table.villageId, table.id),
@@ -51,7 +56,9 @@ export const kepegawaianRiwayat = mysqlTable(
   "kepegawaian_riwayat",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
     pegawaiId: int("pegawai_id").notNull(),
     jabatan: varchar("jabatan", { length: 150 }).notNull(),
     unitKerja: varchar("unit_kerja", { length: 150 }),
@@ -63,7 +70,11 @@ export const kepegawaianRiwayat = mysqlTable(
   },
   (table) => [
     index("kepegawaian_riwayat_village_pegawai_idx").on(table.villageId, table.pegawaiId),
-    foreignKey({ name: "kepegawaian_riwayat_pegawai_tenant_fk", columns: [table.villageId, table.pegawaiId], foreignColumns: [kepegawaianPegawai.villageId, kepegawaianPegawai.id] }).onDelete("cascade"),
+    foreignKey({
+      name: "kepegawaian_riwayat_pegawai_tenant_fk",
+      columns: [table.villageId, table.pegawaiId],
+      foreignColumns: [kepegawaianPegawai.villageId, kepegawaianPegawai.id],
+    }).onDelete("cascade"),
   ],
 );
 
@@ -72,7 +83,9 @@ export const kepegawaianDokumen = mysqlTable(
   "kepegawaian_dokumen",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
     pegawaiId: int("pegawai_id").notNull(),
     judul: varchar("judul", { length: 180 }).notNull(),
     kategori: varchar("kategori", { length: 50 }).notNull().default("lainnya"),
@@ -83,7 +96,11 @@ export const kepegawaianDokumen = mysqlTable(
   },
   (table) => [
     index("kepegawaian_dokumen_village_pegawai_idx").on(table.villageId, table.pegawaiId),
-    foreignKey({ name: "kepegawaian_dokumen_pegawai_tenant_fk", columns: [table.villageId, table.pegawaiId], foreignColumns: [kepegawaianPegawai.villageId, kepegawaianPegawai.id] }).onDelete("cascade"),
+    foreignKey({
+      name: "kepegawaian_dokumen_pegawai_tenant_fk",
+      columns: [table.villageId, table.pegawaiId],
+      foreignColumns: [kepegawaianPegawai.villageId, kepegawaianPegawai.id],
+    }).onDelete("cascade"),
   ],
 );
 
@@ -92,7 +109,9 @@ export const cutiPegawai = mysqlTable(
   "cuti_pegawai",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
     pegawaiId: int("pegawai_id").notNull(),
     jenis: varchar("jenis", { length: 30 }).notNull().default("cuti_tahunan"),
     mulai: date("mulai", { mode: "string" }).notNull(),
@@ -105,13 +124,20 @@ export const cutiPegawai = mysqlTable(
     diputuskanOleh: varchar("diputuskan_oleh", { length: 36 }),
     diputuskanAt: timestamp("diputuskan_at"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   (table) => [
     index("cuti_pegawai_village_status_idx").on(table.villageId, table.status),
     index("cuti_pegawai_village_pegawai_idx").on(table.villageId, table.pegawaiId),
     index("cuti_pegawai_village_dates_idx").on(table.villageId, table.mulai, table.selesai),
-    foreignKey({ name: "cuti_pegawai_pegawai_tenant_fk", columns: [table.villageId, table.pegawaiId], foreignColumns: [kepegawaianPegawai.villageId, kepegawaianPegawai.id] }).onDelete("cascade"),
+    foreignKey({
+      name: "cuti_pegawai_pegawai_tenant_fk",
+      columns: [table.villageId, table.pegawaiId],
+      foreignColumns: [kepegawaianPegawai.villageId, kepegawaianPegawai.id],
+    }).onDelete("cascade"),
   ],
 );
 
@@ -120,16 +146,29 @@ export const cutiKuota = mysqlTable(
   "cuti_kuota",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id")
+      .notNull()
+      .references(() => villages.id, { onDelete: "cascade" }),
     pegawaiId: int("pegawai_id").notNull(),
     tahun: int("tahun").notNull(),
     total: int("total").notNull().default(12),
     createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   (table) => [
-    uniqueIndex("cuti_kuota_village_pegawai_tahun_uq").on(table.villageId, table.pegawaiId, table.tahun),
-    foreignKey({ name: "cuti_kuota_pegawai_tenant_fk", columns: [table.villageId, table.pegawaiId], foreignColumns: [kepegawaianPegawai.villageId, kepegawaianPegawai.id] }).onDelete("cascade"),
+    uniqueIndex("cuti_kuota_village_pegawai_tahun_uq").on(
+      table.villageId,
+      table.pegawaiId,
+      table.tahun,
+    ),
+    foreignKey({
+      name: "cuti_kuota_pegawai_tenant_fk",
+      columns: [table.villageId, table.pegawaiId],
+      foreignColumns: [kepegawaianPegawai.villageId, kepegawaianPegawai.id],
+    }).onDelete("cascade"),
   ],
 );
 

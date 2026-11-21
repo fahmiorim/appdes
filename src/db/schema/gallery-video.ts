@@ -1,4 +1,13 @@
-import { boolean, index, int, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import {
+  boolean,
+  foreignKey,
+  index,
+  int,
+  mysqlTable,
+  text,
+  timestamp,
+  varchar,
+} from "drizzle-orm/mysql-core";
 
 import { villages } from "./village";
 
@@ -11,9 +20,7 @@ export const galeriVideo = mysqlTable(
   "galeri_video",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id")
-      .notNull()
-      .references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id").notNull(),
     judul: varchar("judul", { length: 150 }).notNull(),
     keterangan: text("keterangan"),
     url: varchar("url", { length: 500 }).notNull(),
@@ -29,5 +36,10 @@ export const galeriVideo = mysqlTable(
   },
   (table) => [
     index("galeri_video_village_published_idx").on(table.villageId, table.aktif, table.publishedAt),
+    foreignKey({
+      name: "galeri_video_village_fk",
+      columns: [table.villageId],
+      foreignColumns: [villages.id],
+    }).onDelete("cascade"),
   ],
 );

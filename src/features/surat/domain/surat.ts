@@ -370,6 +370,18 @@ export const klasifikasiSuratFormSchema = z.object({
 });
 export type KlasifikasiSuratInput = z.infer<typeof klasifikasiSuratFormSchema>;
 
+export const syaratSuratFormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Nama persyaratan wajib diisi.")
+    .max(150, "Maksimal 150 karakter."),
+  description: z.string().trim().max(255, "Maksimal 255 karakter.").optional().default(""),
+  sortOrder: z.coerce.number().int().min(0).max(9999).optional().default(0),
+  isActive: z.boolean().optional().default(true),
+});
+export type SyaratSuratInput = z.infer<typeof syaratSuratFormSchema>;
+
 export const jenisSuratFormSchema = z.object({
   code: codeField,
   name: nameField("Nama jenis surat"),

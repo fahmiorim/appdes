@@ -10,7 +10,17 @@ const items = [
 ];
 
 export function AbsensiKepegawaianNav({ active }: { active: string }) {
-  return <nav className={styles["ak-nav"]} aria-label="Navigasi Absensi dan Kepegawaian">
-    {items.map((item) => <Link key={item.href} href={item.href} className={active === item.href ? styles.active : ""}>{item.label}</Link>)}
-  </nav>;
+  return (
+    <nav className={styles["ak-nav"]} aria-label="Navigasi Absensi dan Kepegawaian">
+      {items.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          className={active === item.href ? styles.active : ""}
+        >
+          {item.label}
+        </Link>
+      ))}
+    </nav>
+  );
 }

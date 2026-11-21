@@ -17,9 +17,7 @@ export const potensiDesa = mysqlTable(
   "potensi_desa",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id")
-      .notNull()
-      .references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id").notNull(),
     kategori: varchar("kategori", { length: 40 }).notNull(),
     judul: varchar("judul", { length: 160 }).notNull(),
     slug: varchar("slug", { length: 180 }).notNull(),
@@ -41,6 +39,11 @@ export const potensiDesa = mysqlTable(
     uniqueIndex("potensi_desa_village_slug_uq").on(t.villageId, t.slug),
     uniqueIndex("potensi_desa_village_id_uq").on(t.villageId, t.id),
     index("potensi_desa_village_category_active_idx").on(t.villageId, t.kategori, t.aktif, t.urut),
+    foreignKey({
+      name: "potensi_desa_village_fk",
+      columns: [t.villageId],
+      foreignColumns: [villages.id],
+    }).onDelete("cascade"),
   ],
 );
 
@@ -48,9 +51,7 @@ export const potensiIndikator = mysqlTable(
   "potensi_indikator",
   {
     id: int("id").autoincrement().primaryKey(),
-    villageId: int("village_id")
-      .notNull()
-      .references(() => villages.id, { onDelete: "cascade" }),
+    villageId: int("village_id").notNull(),
     potensiId: int("potensi_id").notNull(),
     label: varchar("label", { length: 100 }).notNull(),
     nilai: varchar("nilai", { length: 100 }).notNull(),
@@ -59,6 +60,11 @@ export const potensiIndikator = mysqlTable(
   },
   (t) => [
     index("potensi_indikator_village_potensi_idx").on(t.villageId, t.potensiId, t.urut),
+    foreignKey({
+      name: "potensi_indikator_village_fk",
+      columns: [t.villageId],
+      foreignColumns: [villages.id],
+    }).onDelete("cascade"),
     foreignKey({
       name: "potensi_indikator_tenant_fk",
       columns: [t.villageId, t.potensiId],
