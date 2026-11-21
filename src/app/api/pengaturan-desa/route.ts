@@ -86,6 +86,8 @@ export async function PUT(request:Request) {
       const s=kontakSchema.safeParse(body.data);
       if(!s.success)return json({error:s.error.issues[0]?.message??"Kontak tidak valid."},422);
       const d=s.data;
+      if(d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email))return json({error:"Format email desa tidak valid."},422);
+      if(d.website){try{const u=new URL(d.website);if(!["https:","http:"].includes(u.protocol))throw new Error();}catch{return json({error:"Website desa harus berupa URL HTTP/HTTPS."},422);}}
       if(d.tautanPeta){try{const u=new URL(d.tautanPeta);if(!["https:","http:"].includes(u.protocol))throw new Error();}catch{return json({error:"Tautan peta harus berupa URL HTTP/HTTPS."},422);}}
       for (const number of [d.telepon,d.whatsapp]) {
         if(number && !/^[0-9+()\s-]{6,30}$/.test(number))return json({error:"Nomor telepon/WhatsApp tidak valid."},422);
