@@ -7,9 +7,11 @@ import {
   levelAllows,
   type AccessLevel,
   type Action,
+  type ModuleActions,
 } from "@/features/rbac/domain/permission";
 import {
   findRoleById,
+  listActionsByRole,
   listLevelsByRole,
   listModules,
 } from "@/features/rbac/infrastructure/rbac-repository";
@@ -23,11 +25,13 @@ export const DEFAULT_RESOURCE = "beranda";
 export interface EffectivePermissions {
   isSuperadmin: boolean;
   levelByResource: Map<string, AccessLevel>;
+  actionByResource: Map<string, ModuleActions>;
 }
 
 const EMPTY_PERMISSIONS: EffectivePermissions = {
   isSuperadmin: false,
   levelByResource: new Map(),
+  actionByResource: new Map(),
 };
 
 /**
@@ -51,14 +55,20 @@ export const computeEffectivePermissions = cache(
       return { isSuperadmin: true, levelByResource: new Map() };
     }
 
-    const [modules, levelById] = await Promise.all([
+    const [modules, levelById, actionsById] = await Promise.all([
       listModules(villageId),
       listLevelsByRole(roleId, villageId),
+      listActionsByRole(roleId, villageId),
     ]);
-
+    const actionByResource = new Map<string, ModuleActions>();
+    for (const module of modules) {
+      const actions = actionsById.get(module.id);
+      if (actions) actionByResource.set(module.slug, actions);
+    }
     return {
       isSuperadmin: false,
       levelByResource: applyParentInheritance(modules, levelById),
+      actionByResource,
     };
   },
 );
@@ -71,6 +81,9 @@ export function hasPermission(
 ): boolean {
   if (permissions.isSuperadmin) return true;
   if (resource === DEFAULT_RESOURCE) return action === "read";
+  const actions = permissions.actionByResource.get(resource);
+  if (action === "read") return Boolean(actions?.read) || levelAllows(permissions.levelByResource.get(resource), "read");
+  if (actions) return actions[action];
   return levelAllows(permissions.levelByResource.get(resource), action);
 }
 
