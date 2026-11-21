@@ -267,6 +267,13 @@
       "when": 1795700000003,
       "tag": "0036_inventaris_penyusutan_penanggung_jawab",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "5",
+      "when": 1795700000004,
+      "tag": "0037_inventaris_riwayat_pemeliharaan",
+      "breakpoints": true
     }
   ]
 }
