@@ -5,7 +5,8 @@
 - **Tanggal:** 2026-11-21.
 - **Branch:** `feat/admin-data-kependudukan`.
 - **Base commit saat sinkronisasi:** `d149a2d1e3c37ea9c3406d38b4524a96f8c6ec12` (`main`, hasil merge PR #205).
-- **Commit hasil pekerjaan:** belum dibuat pada saat laporan disusun; akan direkam lewat riwayat commit branch.
+- **Commit hasil pekerjaan:** `1878dbd10c7095c38695763fe075f4222fdec1b8`.
+- **Base PR saat CI:** `main` (PR sebelumnya menargetkan branch parent #205; setelah #205 merged, base diperbarui ke `main`).
 - **PR:** https://github.com/fahmiorim/appdes/pull/206
 
 ## Kondisi awal dan analisis
@@ -59,7 +60,7 @@ Field hubungan keluarga kini diteruskan dari formulir penduduk masuk ke skema va
 | `git diff --check origin/main...HEAD` sebelum perubahan | PASS | Tidak ada whitespace error pada branch tersinkron. |
 | Integration test MySQL lokal | SKIPPED | Database test disposable tidak diverifikasi; jangan menjalankan terhadap database production. Job integration CI PR harus dijadikan bukti. |
 | Visual QA lokal | SKIPPED | Visual QA diharapkan dijalankan CI; tidak diminta capture manual. |
-| CI GitHub PR #206 pasca-push | PENDING | Harus seluruh check PASS sebelum merge. |
+| CI GitHub PR #206 pasca-push | PENDING saat laporan disiapkan | Periksa status PR untuk hasil final; merge hanya bila semua check PASS. |
 
 ## Risiko tersisa dan rekomendasi
 
