@@ -22,12 +22,15 @@ function tanggalLokal(): string {
 }
 function tahunLokal(): number { return Number(tanggalLokal().slice(0, 4)); }
 function hitungHariKerja(mulai: string, selesai: string): number {
-  const start = new Date(`${mulai}T00:00:00+07:00`);
-  const end = new Date(`${selesai}T00:00:00+07:00`);
-  if (end < start) throw new Error("Tanggal selesai tidak boleh sebelum tanggal mulai.");
+  const [sy, sm, sd] = mulai.split("-").map(Number);
+  const [ey, em, ed] = selesai.split("-").map(Number);
+  const start = Date.UTC(sy, sm - 1, sd);
+  const end = Date.UTC(ey, em - 1, ed);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) throw new Error("Rentang tanggal tidak valid.");
   let total = 0;
-  for (const d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-    if (d.getDay() !== 0 && d.getDay() !== 6) total += 1;
+  for (let day = start; day <= end; day += 86400000) {
+    const weekday = new Date(day).getUTCDay();
+    if (weekday !== 0 && weekday !== 6) total += 1;
   }
   return Math.max(1, total);
 }
