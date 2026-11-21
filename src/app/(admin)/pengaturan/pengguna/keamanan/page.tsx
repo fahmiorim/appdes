@@ -5,15 +5,20 @@ import { RESOURCES } from "@/features/rbac/domain/resources";
 import { getSecuritySettings, listBlockedIps } from "@/features/pengguna/infrastructure/keamanan-repository";
 import { hapusBlokirIpAction, blokirIpAction, resetKeamananAction, simpanKeamananAction } from "../keamanan-actions";
 import styles from "./keamanan.module.css";
+import { TwoFactorSetup } from "./two-factor-setup";
+import { db } from "@/db";
+import { users } from "@/db/schema/auth";
+import { eq } from "drizzle-orm";
 
 export const metadata = { title: "Pengaturan Keamanan" };
 export default async function KeamananPage() {
   const user = await requirePermission(RESOURCES.pengguna, "read");
   const villageId = await resolveVillageId(user);
-  const [settings, blockedIps] = await Promise.all([getSecuritySettings(villageId), listBlockedIps(villageId)]);
+  const [settings, blockedIps, account] = await Promise.all([getSecuritySettings(villageId), listBlockedIps(villageId), db.select({twoFactorEnabled:users.twoFactorEnabled}).from(users).where(eq(users.id,user.id)).limit(1)]);
   return <main className={styles.page}>
     <header><div><small>Pengaturan Desa / Manajemen Pengguna</small><h1>Pengaturan Keamanan</h1><p>Kebijakan kata sandi, sesi login, dan pembatasan akses jaringan.</p></div></header>
     <nav className={styles.tabs}><Link href="/pengaturan/pengguna">Pengguna</Link><Link href="/pengaturan/grup-akses">Peran & Hak Akses</Link><Link href="/pengaturan/pengguna/aktivitas">Aktivitas Pengguna</Link><Link aria-current="page" href="/pengaturan/pengguna/keamanan">Pengaturan Keamanan</Link></nav>
+    <TwoFactorSetup enabled={account[0]?.twoFactorEnabled ?? false}/>
     <form action={simpanKeamananAction} className={styles.grid}>
       <section className={styles.card}><h2>🔐 Kebijakan Password</h2>
         <label>Minimal panjang password<input type="number" min="8" max="72" name="passwordMinLength" defaultValue={settings.passwordMinLength}/></label>
@@ -26,6 +31,7 @@ export default async function KeamananPage() {
         <label>Durasi sesi tidak aktif (menit)<input type="number" min="5" max="720" name="sessionTimeoutMinutes" defaultValue={settings.sessionTimeoutMinutes}/></label>
         <label className={styles.check}><input type="checkbox" name="autoLogoutInactive" defaultChecked={settings.autoLogoutInactive}/> Logout otomatis setelah tidak aktif</label>
         <label className={styles.check}><input type="checkbox" name="concurrentLogin" defaultChecked={settings.concurrentLogin}/> Batasi satu sesi per akun</label>
+        <label className={styles.check}><input type="checkbox" name="requireTwoFactorForAllUsers" defaultChecked={settings.requireTwoFactorForAllUsers}/> Wajibkan 2FA untuk semua akun desa</label>
         <label className={styles.check}><input type="checkbox" name="ipRestrictionEnabled" defaultChecked={settings.ipRestrictionEnabled}/> Aktifkan whitelist IP</label>
         <label>IP yang diizinkan (satu per baris)<textarea name="allowedIps" defaultValue={settings.allowedIps.join("\n")} placeholder="203.0.113.10&#10;2001:db8::1"/></label>
         <p className={styles.note}>Whitelist IP hanya mengandalkan alamat dari proxy tepercaya yang dikonfigurasi server. Pastikan IP administrator masuk daftar sebelum mengaktifkan.</p>
