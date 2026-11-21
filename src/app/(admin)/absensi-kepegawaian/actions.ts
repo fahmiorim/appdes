@@ -71,7 +71,8 @@ export async function absensiMandiriAction(fd: FormData) {
     fotoMasuk=await simpanBerkasMedia(villageId,{nama:file.name,mime:file.type,ukuran:file.size,isi:new Uint8Array(await file.arrayBuffer())},"kehadiran","foto-absensi");
   }
   try {
-    await catatAbsensiMandiri({latitude,longitude,fotoMasuk});
+    const hasil=await catatAbsensiMandiri({latitude,longitude,fotoMasuk});
+    if(hasil.aksi==="check_out" && fotoMasuk) await hapusMedia(fotoMasuk);
   } catch(error) {
     if(fotoMasuk) await hapusMedia(fotoMasuk);
     throw error;
