@@ -44,9 +44,17 @@ export default async function PengaduanPage() {
           <p className={styles.kicker}>ASPIRASI & TRANSPARANSI</p>
           <h1>Pengaduan {desa.namaDesa ?? "Desa"}</h1>
           <p>
-            Informasi tindak lanjut pengaduan masyarakat yang telah disetujui untuk ditampilkan
-            kepada publik.
+            Sampaikan laporan kepada pemerintah desa, pantau nomor tiket, atau lihat tindak lanjut
+            pengaduan yang telah disetujui untuk ditampilkan kepada publik.
           </p>
+          <div className="modul-form-actions">
+            <Link className="button button-primary" href="/pengaduan/baru">
+              Kirim Pengaduan
+            </Link>
+            <Link className="button button-secondary" href="/pengaduan/lacak">
+              Lacak Tiket
+            </Link>
+          </div>
         </div>
       </section>
       <section className={styles.content}>

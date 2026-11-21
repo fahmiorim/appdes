@@ -29,6 +29,7 @@ import {
   createSuratDraftData,
 } from "@/features/surat/application/surat-use-cases";
 import { parseNilaiIsian } from "@/features/surat/domain/isian";
+import { SURAT_RESOURCE } from "@/features/surat/domain/surat";
 import { requirePermission } from "@/lib/dal";
 import { conflict, notFound, validationError } from "@/lib/errors";
 
@@ -57,6 +58,25 @@ export async function getPermohonanAdminData(filter: FilterPermohonan = {}) {
       .map(([id, nama]) => ({ id, nama }))
       .sort((a, b) => a.nama.localeCompare(b.nama)),
     canManage: hasPermission(user.permissions, RESOURCES.permohonanSurat, "update"),
+  };
+}
+
+/** Detail permohonan satu tenant untuk panel pemeriksaan operator. */
+export async function getPermohonanAdminDetailData(id: number) {
+  const user = await requirePermission(RESOURCES.permohonanSurat, "read");
+  const villageId = await resolveVillageId(user);
+  const rows = await listPermohonan(villageId);
+  const permohonan = rows.find((row) => row.id === id);
+
+  if (!permohonan) throw notFound("Permohonan tidak ditemukan.");
+
+  return {
+    permohonan,
+    berkas: parseBerkasSyarat(permohonan.syarat),
+    canManage: hasPermission(user.permissions, RESOURCES.permohonanSurat, "update"),
+    canCreateLetter:
+      hasPermission(user.permissions, RESOURCES.permohonanSurat, "update") &&
+      hasPermission(user.permissions, SURAT_RESOURCE, "update"),
   };
 }
 

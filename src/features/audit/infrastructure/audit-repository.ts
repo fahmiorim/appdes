@@ -43,12 +43,20 @@ const columns = {
 
 export async function listAuditLogs(
   villageId: number,
-  input: { page?: number; pageSize?: number; search?: string } = {},
+  input: {
+    page?: number;
+    pageSize?: number;
+    search?: string;
+    resource?: string;
+    resourceId?: string;
+  } = {},
 ): Promise<AuditLogPage> {
   const pageSize = Math.min(Math.max(input.pageSize ?? 25, 1), 100);
   const page = Math.max(input.page ?? 1, 1);
   const search = input.search?.trim();
   const conditions = [eq(auditLogs.villageId, villageId)];
+  if (input.resource) conditions.push(eq(auditLogs.resource, input.resource));
+  if (input.resourceId) conditions.push(eq(auditLogs.resourceId, input.resourceId));
 
   if (search) {
     const pattern = `%${search}%`;

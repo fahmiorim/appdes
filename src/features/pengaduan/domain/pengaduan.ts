@@ -80,30 +80,41 @@ const POLA_TELEPON = /^[0-9+\-\s()]{6,30}$/;
  * Nomor tiket tidak diisi pengguna: dibuat server saat menyimpan agar tidak
  * dapat dipalsukan atau bentrok.
  */
-export const pengaduanFormSchema = z.object({
-  kategori: z.enum(KATEGORI_VALUES),
-  judul: z.string().trim().min(5, "Judul minimal 5 karakter.").max(JUDUL_MAX),
-  isi: z.string().trim().min(20, "Uraikan pengaduan minimal 20 karakter.").max(ISI_MAX),
-  namaPelapor: z.string().trim().min(1, "Nama wajib diisi.").max(NAMA_MAX),
-  nik: optionalDigits(16),
-  telepon: z
-    .string()
-    .trim()
-    .max(TELEPON_MAX)
-    .refine((value) => value === "" || POLA_TELEPON.test(value), "Nomor telepon tidak valid.")
-    .transform((value) => (value === "" ? null : value)),
-  email: z
-    .string()
-    .trim()
-    .max(EMAIL_MAX)
-    .refine((value) => value === "" || POLA_EMAIL.test(value), "Alamat email tidak valid.")
-    .transform((value) => (value === "" ? null : value)),
-  alamat: z
-    .string()
-    .trim()
-    .max(ALAMAT_MAX)
-    .transform((value) => (value === "" ? null : value)),
-});
+export const pengaduanFormSchema = z
+  .object({
+    kategori: z.enum(KATEGORI_VALUES),
+    judul: z.string().trim().min(5, "Judul minimal 5 karakter.").max(JUDUL_MAX),
+    isi: z.string().trim().min(20, "Uraikan pengaduan minimal 20 karakter.").max(ISI_MAX),
+    namaPelapor: z.string().trim().min(1, "Nama wajib diisi.").max(NAMA_MAX),
+    nik: optionalDigits(16),
+    telepon: z
+      .string()
+      .trim()
+      .max(TELEPON_MAX)
+      .refine((value) => value === "" || POLA_TELEPON.test(value), "Nomor telepon tidak valid.")
+      .transform((value) => (value === "" ? null : value)),
+    email: z
+      .string()
+      .trim()
+      .max(EMAIL_MAX)
+      .refine((value) => value === "" || POLA_EMAIL.test(value), "Alamat email tidak valid.")
+      .transform((value) => (value === "" ? null : value)),
+    alamat: z
+      .string()
+      .trim()
+      .max(ALAMAT_MAX)
+      .transform((value) => (value === "" ? null : value)),
+  })
+  .superRefine((value, ctx) => {
+    if (!value.nik && !value.telepon && !value.email) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["telepon"],
+        message:
+          "Isi minimal satu identitas pelapor: NIK, nomor telepon, atau email agar tiket dapat dilacak.",
+      });
+    }
+  });
 
 export type PengaduanInput = z.infer<typeof pengaduanFormSchema>;
 

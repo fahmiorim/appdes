@@ -11,6 +11,8 @@ import {
 } from "@/features/layanan-mandiri/application/warga-use-cases";
 import { labelJenisDokumen } from "@/features/layanan-mandiri/domain/dokumen-warga";
 import { labelPermohonanStatus } from "@/features/layanan-mandiri/domain/layanan-mandiri";
+import { listPengajuanLayananWargaData } from "@/features/pelayanan/application/pengajuan-warga-use-cases";
+import { getSurveiWargaPageData } from "@/features/pelayanan/application/survei-use-cases";
 import { verifyWargaPage } from "@/lib/dal";
 
 export const metadata: Metadata = {
@@ -35,11 +37,20 @@ function formatTanggal(value: Date | null): string {
  */
 export default async function BerandaWargaPage() {
   const user = await verifyWargaPage();
-  const [{ profil, mustChangePin }, permohonan, dokumen, jenisSurat] = await Promise.all([
+  const [
+    { profil, mustChangePin },
+    permohonan,
+    dokumen,
+    jenisSurat,
+    pengajuanLayanan,
+    surveiAktif,
+  ] = await Promise.all([
     ambilProfilWargaData(),
     listPermohonanWargaData(),
     daftarDokumenWargaData(),
     listJenisSuratWargaData(),
+    listPengajuanLayananWargaData(),
+    getSurveiWargaPageData(),
   ]);
 
   const permohonanAktif = permohonan.filter((row) => row.status !== 4 && row.status !== 5).length;
@@ -104,6 +115,73 @@ export default async function BerandaWargaPage() {
           </p>
         </section>
       ) : null}
+
+      <section className="dashboard-section">
+        <div className="page-heading">
+          <div>
+            <h2>Pengajuan layanan publik</h2>
+            <p>Pengajuan layanan administrasi dan layanan publik desa.</p>
+          </div>
+          <Link className="button button-primary" href="/layanan-mandiri/pengajuan/baru">
+            Ajukan Layanan
+          </Link>
+        </div>
+        {pengajuanLayanan.length === 0 ? (
+          <p>Belum ada pengajuan layanan publik.</p>
+        ) : (
+          <div className="tenant-table-scroll" style={{ marginTop: 14 }}>
+            <table className="tenant-table">
+              <thead>
+                <tr>
+                  <th>Tiket</th>
+                  <th>Layanan</th>
+                  <th>Status</th>
+                  <th>Tanggal</th>
+                  <th>Detail</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pengajuanLayanan.slice(0, 8).map((row) => (
+                  <tr key={row.id}>
+                    <td>{row.nomorTiket}</td>
+                    <td>{row.namaLayanan ?? "Layanan"}</td>
+                    <td>{row.status}</td>
+                    <td>{formatTanggal(row.createdAt)}</td>
+                    <td>
+                      <Link href={`/layanan-mandiri/pengajuan/${row.id}`}>Lihat</Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section className="dashboard-section">
+        <div className="page-heading">
+          <div>
+            <h2>Survei & Kepuasan Masyarakat</h2>
+            <p>Bantu desa meningkatkan kualitas pelayanan dengan mengisi survei yang tersedia.</p>
+          </div>
+          <Link className="button button-primary" href="/layanan-mandiri/survei">
+            Lihat Survei
+          </Link>
+        </div>
+        {surveiAktif.length === 0 ? (
+          <p>Belum ada survei yang sedang dibuka.</p>
+        ) : (
+          <ul>
+            {surveiAktif.slice(0, 5).map((item) => (
+              <li key={item.id}>
+                <strong>{item.judul}</strong>
+                {item.deskripsi ? " — " + item.deskripsi : ""}{" "}
+                <Link href={"/layanan-mandiri/survei/" + item.id}>Isi survei</Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section className="dashboard-section">
         <h2>Permohonan surat</h2>

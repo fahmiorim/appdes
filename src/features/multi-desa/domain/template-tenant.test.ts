@@ -89,6 +89,44 @@ describe("template bawaan yang dikirim", () => {
     expect([...pemegangManage]).toEqual([ROLE_ADMINISTRATOR]);
   });
 
+  it("menyediakan menu Administrasi Surat dengan akses sesuai role", () => {
+    const surat = template.modules.find((modul) => modul.slug === "surat");
+    expect(surat).toMatchObject({
+      name: "Administrasi Surat",
+      url: "/persuratan/dashboard",
+      isActive: true,
+    });
+    const akses = template.akses
+      .filter((grant) => grant.moduleSlug === "surat")
+      .map((grant) => `${grant.roleSlug}:${grant.access}`)
+      .sort();
+    expect(akses).toEqual([
+      "administrator:manage",
+      "kepala-desa:read",
+      "operator:read",
+      "sekretaris:read",
+    ]);
+  });
+
+  it("menyediakan modul Permohonan Surat dengan grant sesuai role", () => {
+    const modul = template.modules.find((item) => item.slug === "permohonan-surat");
+    expect(modul).toMatchObject({
+      name: "Permohonan Surat",
+      url: "/permohonan-surat",
+      isActive: true,
+    });
+    const akses = template.akses
+      .filter((grant) => grant.moduleSlug === "permohonan-surat")
+      .map((grant) => `${grant.roleSlug}:${grant.access}`)
+      .sort();
+    expect(akses).toEqual([
+      "administrator:manage",
+      "kepala-desa:read",
+      "operator:read",
+      "sekretaris:read",
+    ]);
+  });
+
   it("menyediakan lima modul Website Desa dengan hak kelola administrator", () => {
     const expected = [
       "website-dashboard",

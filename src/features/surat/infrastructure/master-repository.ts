@@ -11,6 +11,7 @@ import {
   letters,
   letterTypes,
   outgoingLetters,
+  permohonanSurat,
 } from "@/db/schema";
 import { parseSyaratIds, type SyaratSuratDTO } from "@/features/surat/domain/isian";
 import type { BarisKlasifikasiImpor } from "@/features/surat/domain/klasifikasi-berkas";
@@ -336,6 +337,16 @@ export async function countSuratByJenis(villageId: number, typeId: number): Prom
     .select({ value: count() })
     .from(letters)
     .where(and(eq(letters.villageId, villageId), eq(letters.typeId, typeId)));
+
+  return row?.value ?? 0;
+}
+
+/** Berapa permohonan warga yang masih merujuk jenis surat ini. */
+export async function countPermohonanByJenis(villageId: number, typeId: number): Promise<number> {
+  const [row] = await db
+    .select({ value: count() })
+    .from(permohonanSurat)
+    .where(and(eq(permohonanSurat.villageId, villageId), eq(permohonanSurat.letterTypeId, typeId)));
 
   return row?.value ?? 0;
 }
