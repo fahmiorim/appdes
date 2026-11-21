@@ -48,7 +48,7 @@ export async function validateApbdesFileAction(
     errorCount: number;
   }>
 > {
-  await requirePermission(KEUANGAN_RESOURCE, "update");
+  await requirePermission(KEUANGAN_RESOURCE, "create");
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
