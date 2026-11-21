@@ -41,6 +41,7 @@ export default async function CutiIzinPage() {
   return <div className="modul-page">
     <div className="page-heading"><div><span className="eyebrow">ABSENSI & KEPEGAWAIAN</span><h1>Cuti & Izin</h1><p>Kelola pengajuan, persetujuan, dan riwayat cuti serta izin perangkat desa.</p></div></div>
     <AbsensiKepegawaianNav active="/absensi-kepegawaian/cuti-izin"/>
+    <nav className={styles["ak-subnav"]} aria-label="Navigasi cuti dan izin"><a className={styles["selected"]} href="#daftar">☷ Daftar Pengajuan</a><a href="#ajukan">＋ Ajukan Cuti / Izin</a><a href="#kalender-cuti">◷ Riwayat & Rekap</a><a href="#kuota">⚙ Pengaturan Kuota</a></nav>
     <section className={styles["ak-kpi-grid"]}>
       <article className={styles["ak-kpi"] + " " + styles.primary}><span>Total Pengajuan</span><strong>{rows.length} pengajuan</strong></article>
       <article className={styles["ak-kpi"]}><span>Disetujui</span><strong>{disetujui} pengajuan</strong></article>
@@ -51,9 +52,9 @@ export default async function CutiIzinPage() {
     </section>
 
     <div className={styles["ak-grid"]}>
-      <section className={styles["ak-card"]}>
+      <section id="daftar" className={styles["ak-card"]}>
         <div className={styles["ak-card-heading-row"]}><div><h2>Daftar Pengajuan Cuti & Izin</h2><p>Riwayat dan status seluruh pengajuan pegawai.</p></div><span className={styles["ak-badge"]}>{rows.length} pengajuan</span></div>
-        {canManage ? <details className={styles["ak-add-panel"]}>
+        {canManage ? <details id="ajukan" className={styles["ak-add-panel"]}>
           <summary>＋ Ajukan Cuti / Izin</summary>
           <p>Pengajuan baru akan tercatat dengan status menunggu persetujuan.</p>
           <form action={ajukanCutiAction} className={styles["ak-form"]}>
@@ -86,7 +87,7 @@ export default async function CutiIzinPage() {
       </section>
 
       <div className={styles["ak-side-stack"]}>
-        <section className={styles["ak-card"]}>
+        <section id="kalender-cuti" className={styles["ak-card"]}>
           <div className={styles["ak-card-heading-row"]}><div><h2>Kalender Cuti & Izin</h2><p>{monthLabel}</p></div><span className={styles["ak-calendar-month-icon"]}>▦</span></div>
           <div className={styles["ak-calendar"]}>
             {["Min","Sen","Sel","Rab","Kam","Jum","Sab"].map((day) => <span className={styles["ak-calendar-head"]} key={day}>{day}</span>)}
@@ -95,7 +96,7 @@ export default async function CutiIzinPage() {
           </div>
           <div className={styles["ak-calendar-legend"]}><span><i className={styles.green}/>Cuti disetujui</span><span><i className={styles.amber}/>Menunggu</span><span><i className={styles.red}/>Ditolak</span></div>
         </section>
-        <section className={styles["ak-card"]}>
+        <section id="kuota" className={styles["ak-card"]}>
           <h2>Kuota Cuti Tahunan ({tahun})</h2><p>Default 12 hari per tahun. Kuota dapat disesuaikan per pegawai.</p>
           <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}>
             <thead><tr><th>Pegawai</th><th>Terpakai</th><th>Sisa</th><th>Kuota</th></tr></thead>
