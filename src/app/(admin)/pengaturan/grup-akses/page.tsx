@@ -125,7 +125,7 @@ export default async function GrupAksesPage({
                         aksi={hapusRoleAction}
                         id={String(role.id)}
                         judul="Hapus grup akses?"
-                        keterangan={`Grup ${role.name} akan dihapus. Pengguna yang masih memakai grup ini kehilangan akses modul sampai role baru dipilih.`}
+                        keterangan={`Grup ${role.name} hanya dapat dihapus jika tidak ada pengguna yang masih menggunakannya.`}
                       />
                     ) : null}
                   </div>
