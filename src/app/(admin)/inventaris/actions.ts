@@ -7,6 +7,9 @@ import {
   ajukanMutasi,
   hapusInventaris,
   hapusInventarisKategori,
+  buatJadwalPemeliharaan,
+  ubahStatusPemeliharaan,
+  hapusJadwalPemeliharaan,
   saveInventaris,
   saveInventarisKategori,
   setujuiMutasiData,
@@ -93,4 +96,36 @@ export async function tolakMutasiInventarisAction(fd: FormData) {
   await tolakMutasiData(positiveId(text(fd,"id")),text(fd,"catatanPenolakan"));
   refresh();
   redirect("/inventaris/mutasi?updated=1");
+}
+
+export async function buatJadwalPemeliharaanAction(fd:FormData) {
+  await buatJadwalPemeliharaan({
+    inventarisId:positiveId(text(fd,"inventarisId")),
+    jenis:text(fd,"jenis"),
+    tanggalRencana:text(fd,"tanggalRencana"),
+    biaya:Number(text(fd,"biaya")||0),
+    pelaksana:text(fd,"pelaksana"),
+    deskripsi:text(fd,"deskripsi"),
+  });
+  refresh();
+  redirect("/inventaris/mutasi?maintenanceSaved=1");
+}
+
+export async function ubahStatusPemeliharaanAction(fd:FormData) {
+  const status=text(fd,"status");
+  if(status!=="dalam_proses"&&status!=="selesai"&&status!=="dibatalkan") throw new Error("Status pemeliharaan tidak valid.");
+  await ubahStatusPemeliharaan({
+    id:positiveId(text(fd,"id")),
+    status,
+    tanggalSelesai:text(fd,"tanggalSelesai"),
+    hasil:text(fd,"hasil"),
+  });
+  refresh();
+  redirect("/inventaris/mutasi?maintenanceUpdated=1");
+}
+
+export async function hapusJadwalPemeliharaanAction(fd:FormData) {
+  await hapusJadwalPemeliharaan(positiveId(text(fd,"id")));
+  refresh();
+  redirect("/inventaris/mutasi?maintenanceDeleted=1");
 }
