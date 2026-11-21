@@ -8,7 +8,7 @@ function cell(value: unknown): string {
   const raw = String(value ?? "");
   const protectedValue = /^[\\s]*[=+@-]/.test(raw) ? "'" + raw : raw;
   const escaped = protectedValue.replace(/"/g, '""');
-  return /[",\\r\\n]/.test(escaped) ? '"' + escaped + '"' : escaped;
+  return /[",\r\n]/.test(escaped) ? '"' + escaped + '"' : escaped;
 }
 
 export async function GET() {
@@ -24,8 +24,8 @@ export async function GET() {
   const csv = [header, ...rows.map((row) => [
     row.createdAt.toISOString(), row.actorName ?? "Sistem", row.event, row.resource,
     row.resourceId ?? "", row.ipAddress ?? "", row.userAgent ?? "", row.details ?? "",
-  ])].map((row) => row.map(cell).join(",")).join("\\r\\n");
-  return new NextResponse("\\uFEFF" + csv, {
+  ])].map((row) => row.map(cell).join(",")).join("\r\n");
+  return new NextResponse("\uFEFF" + csv, {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
       "Content-Disposition": 'attachment; filename="aktivitas-pengguna.csv"',
