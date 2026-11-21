@@ -20,6 +20,7 @@ export * from "./bumindes-tanahkas";
 export * from "./bumindes-pembangunan";
 export * from "./bumindes-sekretariat";
 export * from "./content";
+export * from "./pemerintahan";
 export * from "./potensi";
 export * from "./gallery-video";
 export * from "./family";
