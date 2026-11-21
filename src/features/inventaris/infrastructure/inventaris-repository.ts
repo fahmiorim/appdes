@@ -153,6 +153,9 @@ export async function listInventaris(
         kondisi: inventaris.kondisi,
         lokasi: inventaris.lokasi,
         keterangan: inventaris.keterangan,
+        penanggungJawab: inventaris.penanggungJawab,
+        jabatanPenanggungJawab: inventaris.jabatanPenanggungJawab,
+        teleponPenanggungJawab: inventaris.teleponPenanggungJawab,
         kategoriNama: inventarisKategori.nama,
         kategoriKode: inventarisKategori.kode,
       })
@@ -219,6 +222,9 @@ function nilaiInventaris(input: InventarisInput) {
     kondisi: input.kondisi,
     lokasi: teksAtauNull(input.lokasi),
     keterangan: teksAtauNull(input.keterangan),
+    penanggungJawab: teksAtauNull(input.penanggungJawab),
+    jabatanPenanggungJawab: teksAtauNull(input.jabatanPenanggungJawab),
+    teleponPenanggungJawab: teksAtauNull(input.teleponPenanggungJawab),
   };
 }
 
