@@ -54,7 +54,7 @@ function handleError(error:unknown) {
 }
 export async function GET() {
   try {
-    const user=await requirePermission("pengaturan","read"), villageId=await resolveVillageId(user);
+    const user=await requirePermission("pengaturan-desa","read"), villageId=await resolveVillageId(user);
     const [[desa],[profil],layanan,settings,templates,[activeTheme],general]=await Promise.all([
       db.select({id:villages.id,namaDesa:villages.name,kodeDesa:villages.code,namaKecamatan:villages.district,namaKabupaten:villages.regency,namaPropinsi:villages.province,kodePos:villages.postalCode,alamat:villages.officeAddress,email:villages.email,telepon:villages.phone,website:villages.website,logo:villages.logo,namaKepalaDesa:villages.headName,nipKepalaDesa:villages.headNip,updatedAt:villages.updatedAt}).from(villages).where(eq(villages.id,villageId)).limit(1),
       db.select().from(profilDesa).where(eq(profilDesa.villageId,villageId)).limit(1),
@@ -69,7 +69,7 @@ export async function GET() {
 }
 export async function PUT(request:Request) {
   try {
-    const user=await requirePermission("pengaturan","update"), villageId=await resolveVillageId(user);
+    const user=await requirePermission("pengaturan-desa","update"), villageId=await resolveVillageId(user);
     const body=await request.json() as {section?:string;data?:unknown};
     if(body.section==="profil") {
       const s=z.object({namaDesa:z.string().trim().min(2).max(100),kodeDesa:z.string().trim().max(10),namaKecamatan:z.string().trim().max(100),namaKabupaten:z.string().trim().max(100),namaPropinsi:z.string().trim().max(100),kodePos:z.string().trim().max(5),namaKepalaDesa:z.string().trim().max(100),nipKepalaDesa:z.string().trim().max(25),visi:z.string().trim().max(5000),misi:z.string().trim().max(10000),sejarah:z.string().trim().max(10000),sambutan:z.string().trim().max(5000)}).safeParse(body.data);
