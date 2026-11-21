@@ -41,6 +41,7 @@ import {
   updateStatusPemeliharaan,
   deletePemeliharaan,
   listDokumenInventaris,
+  listRiwayatPenanggungJawab,
   getDokumenInventaris,
   createDokumenInventaris,
   deleteDokumenInventaris,
@@ -196,7 +197,7 @@ export async function saveInventaris(input: InventarisInput, id?: number) {
   if (id) {
     const existing = await getInventaris(villageId, id);
     if (!existing) throw notFound("Data inventaris tidak ditemukan.");
-    await updateInventaris(villageId, id, input);
+    await updateInventaris(villageId, id, input, namaPengguna(user));
     await recordAuditEvent({
       villageId,
       actorId: user.id,
@@ -207,7 +208,7 @@ export async function saveInventaris(input: InventarisInput, id?: number) {
     });
     return;
   }
-  const newId = await createInventaris(villageId, input);
+  const newId = await createInventaris(villageId, input, namaPengguna(user));
   if (!newId) throw conflict("Gagal menyimpan inventaris");
 
   await recordAuditEvent({
@@ -346,11 +347,12 @@ export async function getMutasiPageData(inventarisId?: number) {
 export async function getInventarisDetailPageData(id: number) {
   const user = await requirePermission(INVENTARIS_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
-  const [item, kategori, riwayat, dokumen] = await Promise.all([
+  const [item, kategori, riwayat, dokumen, riwayatPenanggungJawab] = await Promise.all([
     getInventaris(villageId, id),
     listInventarisKategori(villageId),
     listMutasi(villageId, id),
     listDokumenInventaris(villageId, id),
+    listRiwayatPenanggungJawab(villageId, id),
   ]);
   if (!item) throw notFound("Data inventaris tidak ditemukan.");
   return {
@@ -358,6 +360,7 @@ export async function getInventarisDetailPageData(id: number) {
     kategori,
     riwayat,
     dokumen,
+    riwayatPenanggungJawab,
     canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canDelete: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
   };
