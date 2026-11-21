@@ -36,7 +36,8 @@ function socialUrl(value: string, base: string): string | null {
     return base + encodeURIComponent(trimmed.replace(/^@/, ""));
   }
 }
-\nexport default async function KontakPage() {
+
+export default async function KontakPage() {
   const desa = await getIdentitasFromRequest();
   const settings = await pengaturanKontakPublik(desa.id);
   const location = locationLabel(desa);
@@ -48,7 +49,12 @@ function socialUrl(value: string, base: string): string | null {
   const whatsappNumber = whatsappDigits.startsWith("0") ? "62" + whatsappDigits.slice(1) : whatsappDigits;
   const email = settings.email || desa.emailDesa?.trim() || "";
   const address = settings.alamat || desa.alamatKantor?.trim() || "";
-  const mapQuery = [address, desa.namaDesa, location, settings.koordinat].filter(Boolean).join(", ");\n  const socialLinks = [\n    { label: "Instagram", href: socialUrl(settings.instagram, "https://instagram.com/") },\n    { label: "Facebook", href: socialUrl(settings.facebook, "https://facebook.com/") },\n    { label: "YouTube", href: socialUrl(settings.youtube, "https://youtube.com/") },\n  ].filter((item): item is { label: string; href: string } => Boolean(item.href));
+  const mapQuery = [address, desa.namaDesa, location, settings.koordinat].filter(Boolean).join(", ");
+  const socialLinks = [
+    { label: "Instagram", href: socialUrl(settings.instagram, "https://instagram.com/") },
+    { label: "Facebook", href: socialUrl(settings.facebook, "https://facebook.com/") },
+    { label: "YouTube", href: socialUrl(settings.youtube, "https://youtube.com/") },
+  ].filter((item): item is { label: string; href: string } => Boolean(item.href));
   return (
     <main className={styles.site}>
       <PublicSiteHeader desa={desa} location={location} logoUrl={logoUrl} activePath="/kontak" />
