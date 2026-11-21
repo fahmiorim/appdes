@@ -147,7 +147,7 @@ export async function getDashboardAbsensiData() {
     db.select({ status: cutiPegawai.status, total: count() }).from(cutiPegawai)
       .where(and(eq(cutiPegawai.villageId, villageId), lte(cutiPegawai.mulai, today), gte(cutiPegawai.selesai, today)))
       .groupBy(cutiPegawai.status),
-    db.select({ pegawai: kepegawaianPegawai.nama, jabatan: kepegawaianPegawai.jabatan, jamMasuk: kehadiranPerangkat.jamMasuk, jamKeluar: kehadiranPerangkat.jamKeluar, status: kehadiranPerangkat.status })
+    db.select({ pegawai: kepegawaianPegawai.nama, foto: kepegawaianPegawai.foto, jabatan: kepegawaianPegawai.jabatan, jamMasuk: kehadiranPerangkat.jamMasuk, jamKeluar: kehadiranPerangkat.jamKeluar, status: kehadiranPerangkat.status })
       .from(kepegawaianPegawai).leftJoin(kehadiranPerangkat, and(eq(kehadiranPerangkat.villageId, villageId), eq(kehadiranPerangkat.pegawaiId, kepegawaianPegawai.id), eq(kehadiranPerangkat.tanggal, today)))
       .where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.status, "aktif"))).orderBy(asc(kepegawaianPegawai.nama)).limit(8),
     db.select({ tanggal: kehadiranPerangkat.tanggal, total: count() }).from(kehadiranPerangkat)
@@ -159,7 +159,7 @@ export async function getDashboardAbsensiData() {
   const cuti = Number(attendance.find((x) => x.status === "cuti")?.total ?? 0);
   const tidakHadir = Math.max(0, employees.length - hadir - izin - cuti);
   return {
-    totalPegawai: employees.length, hadir, izin, cuti, tidakHadir,
+    villageId, totalPegawai: employees.length, hadir, izin, cuti, tidakHadir,
     tingkatKehadiran: employees.length ? Math.round((hadir / employees.length) * 1000) / 10 : 0,
     komposisi: { tetap: employees.filter((x) => x.statusPegawai === "tetap").length, kontrak: employees.filter((x) => x.statusPegawai === "kontrak").length, purnaTugas: employees.filter((x) => x.statusPegawai === "purna_tugas").length },
     jenisKelamin: { lakiLaki: employees.filter((x) => x.jenisKelamin === "male").length, perempuan: employees.filter((x) => x.jenisKelamin === "female").length },
