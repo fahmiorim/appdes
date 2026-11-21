@@ -5,7 +5,7 @@ import { hasPermission } from "@/features/rbac/application/authorization";
 import { getRoleDetail } from "@/features/rbac/application/grup-use-cases";
 import { GRUP_AKSES_RESOURCE } from "@/features/rbac/domain/grup";
 import { isPlatformRole } from "@/features/rbac/domain/role";
-import { listRoles, type RoleRecord } from "@/features/rbac/infrastructure/rbac-repository";
+import { listLevelsByRole, listModules, listRoles, type RoleRecord } from "@/features/rbac/infrastructure/rbac-repository";
 import { requirePermission } from "@/lib/dal";
 
 import { PENGGUNA_RESOURCE, type PenggunaDTO } from "../domain/pengguna";
@@ -50,6 +50,8 @@ export interface GrupAksesAdminData {
   selected: Awaited<ReturnType<typeof getRoleDetail>> | null;
   canUpdate: boolean;
   canDelete: boolean;
+  moduleCount: number;
+  totalHakAkses: number;
 }
 
 /**
@@ -62,13 +64,14 @@ export async function getGrupAksesAdminData(roleParam?: number): Promise<GrupAks
   const user = await requirePermission(GRUP_AKSES_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
 
-  const [roleRows, pengguna] = await Promise.all([listRoles(villageId), listPengguna(villageId)]);
+  const [roleRows, pengguna, modules] = await Promise.all([listRoles(villageId), listPengguna(villageId), listModules(villageId)]);
   const roles = roleRows.filter((role) => role.villageId === villageId && !isPlatformRole(role));
 
-  const dipilih =
-    roleParam !== undefined && roles.some((role) => role.id === roleParam)
-      ? await getRoleDetail(roleParam)
-      : null;
+  const [dipilih, permissionMaps] = await Promise.all([
+    roleParam !== undefined && roles.some((role) => role.id === roleParam) ? getRoleDetail(roleParam) : Promise.resolve(null),
+    Promise.all(roles.map((role) => listLevelsByRole(role.id, villageId))),
+  ]);
+  const totalHakAkses = permissionMaps.reduce((total, permissions) => total + permissions.size, 0);
 
   return {
     roles,
@@ -76,5 +79,7 @@ export async function getGrupAksesAdminData(roleParam?: number): Promise<GrupAks
     selected: dipilih,
     canUpdate: hasPermission(user.permissions, GRUP_AKSES_RESOURCE, "update"),
     canDelete: hasPermission(user.permissions, GRUP_AKSES_RESOURCE, "delete"),
+    moduleCount: modules.filter((module) => module.isActive && !module.isHidden && !module.isGroup).length,
+    totalHakAkses,
   };
 }
