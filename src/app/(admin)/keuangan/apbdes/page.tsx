@@ -8,7 +8,6 @@ export const metadata = { title: "APBDes" };
 
 export default async function ApbdesPage() {
   const data = await listKeuangan();
-  const inputRows = data.rows.filter((row) => isInputRow(row.templateUuid));
   const akun = new Map(data.rows.map((row) => [row.templateUuid, row]));
   const total = ["4", "5", "6"].reduce((sum, kode) => sum + toMinor(akun.get(kode)?.anggaran ?? "0"), 0n);
   return <main className={styles.page}>
