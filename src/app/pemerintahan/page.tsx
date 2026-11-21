@@ -121,8 +121,11 @@ export default async function PemerintahanPage() {
   const akarStruktur = perangkat
     .filter((item) => item.id === kepalaDesa?.id || !item.atasanId || !perangkat.some((parent) => parent.id === item.atasanId))
     .sort((a, b) => a.id === kepalaDesa?.id ? -1 : b.id === kepalaDesa?.id ? 1 : a.urut - b.urut);
-  const renderNode = (item: (typeof perangkat)[number], depth = 0): ReactNode => {
-    const children = anakPerangkat(item.id);
+  const renderNode = (item: (typeof perangkat)[number], depth = 0, visited = new Set<number>()): ReactNode => {
+    if (visited.has(item.id)) return null;
+    const nextVisited = new Set(visited);
+    nextVisited.add(item.id);
+    const children = anakPerangkat(item.id).filter((child) => !nextVisited.has(child.id));
     return (
       <article className={styles.orgChild} key={item.id} data-depth={depth}>
         <span className={styles.orgIcon}>♙</span>
@@ -130,7 +133,7 @@ export default async function PemerintahanPage() {
         <span>{namaLengkap(item)}</span>
         {children.length ? (
           <div className={styles.orgNestedChildren}>
-            {children.map((child) => renderNode(child, depth + 1))}
+            {children.map((child) => renderNode(child, depth + 1, nextVisited))}
           </div>
         ) : null}
       </article>
