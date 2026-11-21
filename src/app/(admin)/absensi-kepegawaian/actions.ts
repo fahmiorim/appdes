@@ -96,7 +96,7 @@ export async function ajukanCutiAction(fd: FormData) {
     if(!["application/pdf","image/jpeg","image/png","image/webp"].includes(file.type)) throw new Error("Lampiran harus berupa PDF, JPG, PNG, atau WEBP.");
     const user=await requireUser();
     const villageId=await resolveVillageId(user);
-    lampiran=await simpanBerkasMedia(villageId,{nama:file.name,mime:file.type,ukuran:file.size,isi:new Uint8Array(await file.arrayBuffer())},"umum","lampiran");
+    lampiran=await simpanBerkasMedia(villageId,{nama:file.name,mime:file.type,ukuran:file.size,isi:new Uint8Array(await file.arrayBuffer())},"kehadiran","lampiran");
   }
   try {
     await ajukanCuti({
@@ -143,7 +143,7 @@ export async function unggahDokumenPegawaiAction(fd: FormData) {
   if(!["application/pdf","image/jpeg","image/png","image/webp"].includes(file.type)) throw new Error("Dokumen harus berupa PDF, JPG, PNG, atau WEBP.");
   const user=await requirePermission("kepegawaian","update");
   const villageId=await resolveVillageId(user);
-  const berkas=await simpanBerkasMedia(villageId,{nama:file.name,mime:file.type,ukuran:file.size,isi:new Uint8Array(await file.arrayBuffer())},"umum","berkas");
+  const berkas=await simpanBerkasMedia(villageId,{nama:file.name,mime:file.type,ukuran:file.size,isi:new Uint8Array(await file.arrayBuffer())},"kepegawaian","berkas");
   await simpanDokumenPegawai({pegawaiId,judul,kategori:text(fd,"kategori")||"lainnya",nomor:nullable(fd,"nomor"),tanggal:nullable(fd,"tanggal"),berkas});
   refresh();
 }
