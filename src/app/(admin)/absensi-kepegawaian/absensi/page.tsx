@@ -66,7 +66,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
           <div className={styles["ak-calendar"]}>
             {["Min","Sen","Sel","Rab","Kam","Jum","Sab"].map(day=><span className={styles["ak-calendar-head"]} key={day}>{day}</span>)}
             {Array.from({length:monthStart},(_,i)=><span key={"blank-"+i}/>)}
-            {Array.from({length:daysInMonth},(_,i)=>{const day=i+1;const key=tahun+"-"+String(bulan).padStart(2,"0")+"-"+String(day).padStart(2,"0");const statuses=calendarMap.get(key)??[];const selectedDay=key===tanggal;return <div key={key} className={styles["ak-calendar-day"]+" "+(statuses.length?styles["has-data"]:"")+" "+(selectedDay?styles["selected-day"]:"")}><strong>{day}</strong>{statuses.length?<small>{statuses.length} catatan</small>:null}</div>;})}
+            {Array.from({length:daysInMonth},(_,i)=>{const day=i+1;const key=tahun+"-"+String(bulan).padStart(2,"0")+"-"+String(day).padStart(2,"0");const statuses=calendarMap.get(key)??[];const selectedDay=key===tanggal;return <div key={key} className={styles["ak-calendar-day"]+" "+(statuses.length?styles["has-data"]:"")+" "+(hariLibur.includes(new Date(Date.UTC(tahun,bulan-1,day)).getUTCDay())?styles.weekend:"")+" "+(selectedDay?styles["selected-day"]:"")}><strong>{day}</strong>{statuses.length?<small>{statuses.length} catatan</small>:null}</div>;})}
           </div>
           <div className={styles["ak-calendar-legend"]}><span><i className={styles.green}/>Hadir</span><span><i className={styles.amber}/>Izin</span><span><i className={styles.purple}/>Cuti</span><span><i className={styles.red}/>Tidak Hadir</span></div>
         </section>
