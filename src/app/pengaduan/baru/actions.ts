@@ -10,6 +10,7 @@ export async function kirimPengaduanAction(formData: FormData): Promise<never> {
   const desa = await getIdentitasFromRequest();
   const lampiran = formData.get("lampiran");
   let jalurLampiran: string | null = null;
+  let nomorTiket = "";
 
   try {
     if (lampiran instanceof File && lampiran.size > 0) {
@@ -32,8 +33,7 @@ export async function kirimPengaduanAction(formData: FormData): Promise<never> {
       email: String(formData.get("email") ?? ""),
       alamat: String(formData.get("alamat") ?? ""),
     }, jalurLampiran);
-
-    return hasil;
+    nomorTiket = hasil.nomorTiket;
   } catch (error) {
     if (jalurLampiran) await hapusMedia(jalurLampiran).catch(() => undefined);
     const message = error instanceof Error ? error.message : "Pengaduan gagal dikirim.";
@@ -42,5 +42,5 @@ export async function kirimPengaduanAction(formData: FormData): Promise<never> {
 
   // Redirect berada di luar blok try agar exception khusus Next tidak dianggap
   // sebagai kegagalan penyimpanan.
-  redirect(`/pengaduan/berhasil?tiket=${encodeURIComponent(hasil.nomorTiket)}`);
+  redirect(`/pengaduan/berhasil?tiket=${encodeURIComponent(nomorTiket)}`);
 }
