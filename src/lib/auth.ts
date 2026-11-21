@@ -124,6 +124,17 @@ export const auth = betterAuth({
 
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === "/two-factor/disable") {
+        const userId = ctx.context.session?.user?.id;
+        if (userId) {
+          const [account] = await db.select({ villageId: users.villageId, residentId: users.residentId }).from(users).where(eq(users.id, userId)).limit(1);
+          if (account?.villageId && account.residentId === null) {
+            const [policy] = await db.select({ required: villageSecuritySettings.requireTwoFactorForAllUsers }).from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
+            if (policy?.required) throw new APIError("FORBIDDEN", { message: "Kebijakan desa mewajibkan 2FA untuk akun staf." });
+          }
+        }
+        return;
+      }
       if (ctx.path === "/change-password") {
         const userId = ctx.context.session?.user?.id;
         const newPassword = typeof ctx.body?.newPassword === "string" ? ctx.body.newPassword : "";
