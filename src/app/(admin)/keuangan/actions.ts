@@ -61,6 +61,8 @@ function proyekInput(formData: FormData) {
     judul: formData.get("judul"),
     deskripsi: formData.get("deskripsi") ?? "",
     lokasi: formData.get("lokasi") ?? "",
+    latitude: formData.get("latitude") ?? "",
+    longitude: formData.get("longitude") ?? "",
     tahunAnggaran: formData.get("tahunAnggaran"),
     sumberDana: formData.get("sumberDana") ?? "",
     anggaran: formData.get("anggaran") ?? "",
