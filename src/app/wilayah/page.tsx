@@ -11,6 +11,7 @@ import {
   type KoordinatPeta,
 } from "@/features/gis/domain/peta-cetak";
 import { daftarWilayahPublik } from "@/features/wilayah/application/wilayah-publik";
+import { profilDesaPublik } from "@/features/publik/application/konten-publik";
 
 import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
 import styles from "./wilayah.module.css";
@@ -54,10 +55,11 @@ function formatNumber(value: number) {
 
 export default async function WilayahPage() {
   const desa = await getIdentitasFromRequest();
-  const [rows, mapData, statistik] = await Promise.all([
+  const [rows, mapData, statistik, profil] = await Promise.all([
     daftarWilayahPublik(desa.id),
     getPetaPublik(),
     getStatistikDesa(desa.id),
+    profilDesaPublik(desa.id),
   ]);
   const location = [desa.namaKecamatan, desa.namaKabupaten, desa.namaPropinsi]
     .filter(Boolean)
@@ -83,6 +85,10 @@ export default async function WilayahPage() {
     ["Kecamatan", desa.namaKecamatan],
     ["Kabupaten", desa.namaKabupaten],
     ["Provinsi", desa.namaPropinsi],
+    ["Utara", profil?.batasUtara],
+    ["Selatan", profil?.batasSelatan],
+    ["Timur", profil?.batasTimur],
+    ["Barat", profil?.batasBarat],
   ].filter((row) => row[1]);
 
   return (
@@ -230,7 +236,7 @@ export default async function WilayahPage() {
               <dl>
                 <div>
                   <dt>⌖ Luas Wilayah</dt>
-                  <dd>Belum tersedia</dd>
+                  <dd>{profil?.luasWilayah ? `${formatNumber(Number(profil.luasWilayah))} Ha` : "Belum tersedia"}</dd>
                 </div>
                 <div>
                   <dt>▧ Jumlah Dusun</dt>
@@ -254,19 +260,19 @@ export default async function WilayahPage() {
                 </div>
                 <div>
                   <dt>⌁ Ketinggian</dt>
-                  <dd>Belum tersedia</dd>
+                  <dd>{profil?.ketinggian ?? "Belum tersedia"}</dd>
                 </div>
                 <div>
                   <dt>♨ Suhu Rata-rata</dt>
-                  <dd>Belum tersedia</dd>
+                  <dd>{profil?.suhuRataRata ?? "Belum tersedia"}</dd>
                 </div>
                 <div>
                   <dt>≋ Curah Hujan</dt>
-                  <dd>Belum tersedia</dd>
+                  <dd>{profil?.curahHujan ?? "Belum tersedia"}</dd>
                 </div>
                 <div>
                   <dt>▱ Topografi</dt>
-                  <dd>Belum tersedia</dd>
+                  <dd>{profil?.topografi ?? "Belum tersedia"}</dd>
                 </div>
               </dl>
             </section>
