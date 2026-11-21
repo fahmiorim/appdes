@@ -162,7 +162,7 @@ export async function simpanRiwayatAction(fd: FormData) {
   await simpanRiwayatJabatan(id, {
     perangkatId, jabatan, nomorSk: value(fd, "nomorSk") || null,
     mulai: value(fd, "mulai") || null, selesai: value(fd, "selesai") || null,
-    keterangan: value(fd, "keterangan") || null,
+    keterangan: value(fd, "keterangan") || null, tampilPublik: value(fd, "tampilPublik") === "on",
   });
   refresh();
 }
