@@ -84,6 +84,9 @@ export const inventaris = mysqlTable(
     hargaSatuan: decimal("harga_satuan", { precision: 15, scale: 2 }),
     nilaiAkhir: decimal("nilai_akhir", { precision: 15, scale: 2 }),
     akumulasiPenyusutan: decimal("akumulasi_penyusutan", { precision: 15, scale: 2 }).notNull().default("0"),
+    umurManfaatBulan: int("umur_manfaat_bulan"),
+    nilaiResidu: decimal("nilai_residu", { precision: 15, scale: 2 }).notNull().default("0"),
+    tanggalMulaiPenyusutan: date("tanggal_mulai_penyusutan", { mode: "string" }),
     tahunPembelian: int("tahun_pembelian"),
     tanggalPembelian: date("tanggal_pembelian", { mode: "string" }),
     asal: mysqlEnum("asal", INVENTARIS_ASAL),
@@ -223,3 +226,29 @@ export const inventarisDokumen = mysqlTable(
     }).onDelete("cascade"),
   ],
 );
+
+export const inventarisPenanggungJawabRiwayat = mysqlTable(
+  "inventaris_penanggung_jawab_riwayat",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    inventarisId: int("inventaris_id").notNull(),
+    namaSebelum: varchar("nama_sebelum", { length: 150 }),
+    jabatanSebelum: varchar("jabatan_sebelum", { length: 100 }),
+    teleponSebelum: varchar("telepon_sebelum", { length: 30 }),
+    namaSesudah: varchar("nama_sesudah", { length: 150 }),
+    jabatanSesudah: varchar("jabatan_sesudah", { length: 100 }),
+    teleponSesudah: varchar("telepon_sesudah", { length: 30 }),
+    diubahOleh: varchar("diubah_oleh", { length: 150 }).notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("inv_pj_village_asset_date").on(table.villageId, table.inventarisId, table.createdAt),
+    foreignKey({
+      name: "inventaris_pj_history_asset_tenant_fk",
+      columns: [table.villageId, table.inventarisId],
+      foreignColumns: [inventaris.villageId, inventaris.id],
+    }).onDelete("cascade"),
+  ],
+);
+export type InventarisPenanggungJawabRiwayat = typeof inventarisPenanggungJawabRiwayat.$inferSelect;
