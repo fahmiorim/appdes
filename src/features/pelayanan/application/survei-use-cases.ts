@@ -137,6 +137,9 @@ export async function simpanSoalSurveiData(surveyId: number, questionId: number 
   const [existing] = await db.select({ id: surveySoal.id }).from(surveySoal)
     .where(and(eq(surveySoal.villageId, villageId), eq(surveySoal.surveyId, surveyId), eq(surveySoal.id, questionId))).limit(1);
   if (!existing) throw notFound("Pertanyaan tidak ditemukan.");
+  const [hasAnswers] = await db.select({ total: count() }).from(surveyJawaban)
+    .where(and(eq(surveyJawaban.villageId, villageId), eq(surveyJawaban.soalId, questionId)));
+  if (Number(hasAnswers?.total ?? 0) > 0) throw conflict("Pertanyaan sudah memiliki jawaban. Duplikasi survei untuk mengubah pertanyaan tanpa mengubah hasil historis.");
   await db.update(surveySoal).set(values)
     .where(and(eq(surveySoal.villageId, villageId), eq(surveySoal.surveyId, surveyId), eq(surveySoal.id, questionId)));
   return questionId;
