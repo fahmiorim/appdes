@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, count, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { areas, lembagaAnggota, lembagaDesa, perangkatDesa, jabatanPerangkat, regions, perangkatRiwayatJabatan } from "@/db/schema";
+import { areas, lembagaAnggota, lembagaDesa, perangkatDesa, jabatanPerangkat, regions, perangkatRiwayatJabatan, polygons } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { requirePermission } from "@/lib/dal";
 
@@ -142,18 +142,20 @@ export async function hapusAnggotaLembaga(id: number) {
 
 export async function getWilayahPemerintahanData() {
   const villageId = await tenant("wilayah");
-  const [rows, shapes] = await Promise.all([
+  const [rows, shapes, layers] = await Promise.all([
     db.select().from(regions).where(eq(regions.villageId, villageId)).orderBy(asc(regions.sortOrder), asc(regions.dusun), asc(regions.rw), asc(regions.rt)),
     db.select({ id: areas.id, nama: areas.nama, enabled: areas.enabled, path: areas.path, refPolygon: areas.refPolygon }).from(areas)
       .where(eq(areas.villageId, villageId)).orderBy(asc(areas.sortOrder)),
+    db.select({ id: polygons.id, nama: polygons.nama, color: polygons.color }).from(polygons)
+      .where(and(eq(polygons.villageId, villageId), eq(polygons.enabled, 1))).orderBy(asc(polygons.sortOrder)),
   ]);
-  return { rows, shapes };
+  return { rows, shapes, layers };
 }
 
 
-export async function simpanAreaPeta(id: number | null, input: { nama: string; path: string | null; enabled: number; sortOrder: number }) {
+export async function simpanAreaPeta(id: number | null, input: { nama: string; path: string | null; enabled: number; sortOrder: number; refPolygon: number | null }) {
   const villageId = await tenant("wilayah", id ? "update" : "create");
-  if (input.path) {
+  if (input.refPolygon) {\n    const [layer] = await db.select({ id: polygons.id }).from(polygons).where(and(eq(polygons.villageId, villageId), eq(polygons.id, input.refPolygon))).limit(1);\n    if (!layer) throw new Error("Layer polygon tidak ditemukan pada desa aktif.");\n  }\n  if (input.path) {
     const geo = JSON.parse(input.path) as { type?: string; coordinates?: unknown };
     if (!geo || geo.type !== "Polygon" || !Array.isArray(geo.coordinates)) throw new Error("Geometri harus berupa GeoJSON Polygon yang valid.");
   }
