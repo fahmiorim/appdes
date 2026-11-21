@@ -26,7 +26,8 @@ export function FormIzin({ roleId, permissions, readOnly, aksi, resetAction }: P
             <tr>
               <th scope="col">Modul</th>
               <th scope="col">Lihat</th>
-              <th scope="col">Tambah / Ubah</th>
+              <th scope="col">Tambah</th>
+              <th scope="col">Ubah</th>
               <th scope="col">Hapus</th>
             </tr>
           </thead>
@@ -37,7 +38,7 @@ export function FormIzin({ roleId, permissions, readOnly, aksi, resetAction }: P
                   <span className={modul.isGroup ? "modul-strong" : undefined}>{modul.name}</span>
                   <span className="tenant-secondary">{modul.slug}</span>
                 </td>
-                {(["read", "write", "manage"] as const).map((akses) => (
+                {(["read", "create", "update", "delete"] as const).map((akses) => (
                   <td key={akses}>
                     <input
                       aria-label={`${modul.name}: ${akses}`}
@@ -57,7 +58,7 @@ export function FormIzin({ roleId, permissions, readOnly, aksi, resetAction }: P
 
       <div className="pengguna-izin-footer">
         <p>
-          Tambah/Ubah mencakup Lihat; Hapus mencakup seluruh izin sebelumnya. Reset menghapus semua izin (default-deny).
+          Setiap izin CRUD dapat diatur terpisah. Reset menghapus semua izin (default-deny).
         </p>
         {readOnly ? (
           <span className="pengguna-rail-note">Grup sistem tidak dapat diubah.</span>
