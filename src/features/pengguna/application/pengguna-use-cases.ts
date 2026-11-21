@@ -21,7 +21,7 @@ import {
   updatePengguna,
 } from "@/features/pengguna/infrastructure/pengguna-repository";
 import { isPlatformRole } from "@/features/rbac/domain/role";
-import { getSecuritySettings } from "@/features/pengguna/infrastructure/keamanan-repository";
+import { assertPasswordNotReused, getSecuritySettings } from "@/features/pengguna/infrastructure/keamanan-repository";
 import { validasiKataSandi } from "@/features/pengguna/domain/keamanan";
 import { getRoleById, listRoles } from "@/features/rbac/infrastructure/rbac-repository";
 import { requirePermission, requireUser } from "@/lib/dal";
@@ -145,6 +145,7 @@ export async function updatePenggunaData(id: string, input: PenggunaUpdateInput)
     const policy = await getSecuritySettings(villageId);
     const passwordError = validasiKataSandi(input.password, policy);
     if (passwordError) throw conflict(passwordError);
+    await assertPasswordNotReused(id, input.password, policy.passwordReuseCount);
   }
 
   await ensureRoleExists(input.roleId, villageId);
