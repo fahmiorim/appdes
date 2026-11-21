@@ -359,18 +359,22 @@ export async function getInventarisDetailPageData(id: number) {
 export async function getPemeliharaanPageData() {
   const user=await requirePermission(INVENTARIS_RESOURCE,"read");
   const villageId=await resolveVillageId(user);
-  const [mutasi,inventarisData,pemeliharaan]=await Promise.all([
-    listMutasi(villageId),
+  const [inventarisData,pemeliharaan]=await Promise.all([
     listInventaris(villageId),
     listPemeliharaan(villageId),
   ]);
+  const canReadMutation=hasPermission(user.permissions,MUTASI_RESOURCE,"read");
+  const canMutate=hasPermission(user.permissions,MUTASI_RESOURCE,"update");
+  const mutasi=canReadMutation?await listMutasi(villageId):[];
   const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
-  const approverSteps = MUTASI_STEPS.filter((step) => roleCanApproveMutasiStep(step, role?.slug ?? null, user.permissions.isSuperadmin));
+  const approverSteps = canMutate?MUTASI_STEPS.filter((step) => roleCanApproveMutasiStep(step, role?.slug ?? null, user.permissions.isSuperadmin)):[];
   return {
     mutasi,
     inventaris:inventarisData.rows.map(x=>({id:x.id,namaBarang:x.namaBarang,nomorInventaris:x.nomorInventaris,jumlah:x.jumlah,satuan:x.satuan})),
     pemeliharaan,
     canWrite:hasPermission(user.permissions,INVENTARIS_RESOURCE,"update"),
+    canMutate,
+    canReadMutation,
     approverSteps:approverSteps as MutasiStep[],
   };
 }
