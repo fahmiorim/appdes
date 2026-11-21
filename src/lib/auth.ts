@@ -160,7 +160,7 @@ export const auth = betterAuth({
       }
     }),
     after: createAuthMiddleware(async (ctx) => {
-      if (ctx.path !== "/sign-in/username" && ctx.path !== "/two-factor/verify-totp") return;
+      if (ctx.path !== "/sign-in/username" && ctx.path !== "/two-factor/verify-totp" && ctx.path !== "/two-factor/verify-otp") return;
       const current = ctx.context.newSession;
       if (!current) {
         const returned = ctx.context.returned as { twoFactorRedirect?: boolean } | undefined;
