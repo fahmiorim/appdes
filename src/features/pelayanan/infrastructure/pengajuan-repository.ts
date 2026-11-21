@@ -133,3 +133,11 @@ export async function getBerkasPengajuan(villageId: number, pengajuanId: number,
   const [row] = await db.select().from(pengajuanLayananBerkas).where(and(eq(pengajuanLayananBerkas.villageId, villageId), eq(pengajuanLayananBerkas.pengajuanId, pengajuanId), eq(pengajuanLayananBerkas.id, berkasId))).limit(1);
   return row ?? null;
 }
+
+
+export async function getRingkasanStatusPengajuan(villageId: number) {
+  const rows = await db.select({ status: pengajuanLayanan.status, total: count() })
+    .from(pengajuanLayanan).where(eq(pengajuanLayanan.villageId, villageId))
+    .groupBy(pengajuanLayanan.status);
+  return rows.map((row) => ({ status: row.status, total: Number(row.total) }));
+}
