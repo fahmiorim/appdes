@@ -10903,14 +10903,6 @@
           "autoincrement": false,
           "default": "(now())"
         },
-        "akumulasi_penyusutan": {
-          "name": "akumulasi_penyusutan",
-          "type": "decimal(15,2)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'0.00'"
-        },
         "penanggung_jawab": {
           "name": "penanggung_jawab",
           "type": "varchar(150)",
@@ -10931,6 +10923,14 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "akumulasi_penyusutan": {
+          "name": "akumulasi_penyusutan",
+          "type": "decimal(15,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'0.00'"
         },
         "umur_manfaat_bulan": {
           "name": "umur_manfaat_bulan",
@@ -22202,7 +22202,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'0'"
+          "default": "'0.00'"
         },
         "pelaksana": {
           "name": "pelaksana",
@@ -22537,8 +22537,8 @@
         }
       },
       "foreignKeys": {
-        "inventaris_pj_history_village_fk": {
-          "name": "inventaris_pj_history_village_fk",
+        "inventaris_penanggung_jawab_riwayat_village_id_villages_id_fk": {
+          "name": "inventaris_penanggung_jawab_riwayat_village_id_villages_id_fk",
           "tableFrom": "inventaris_penanggung_jawab_riwayat",
           "tableTo": "villages",
           "columnsFrom": [
@@ -22671,6 +22671,19 @@
         }
       },
       "foreignKeys": {
+        "inventaris_pemeliharaan_riwayat_village_id_villages_id_fk": {
+          "name": "inventaris_pemeliharaan_riwayat_village_id_villages_id_fk",
+          "tableFrom": "inventaris_pemeliharaan_riwayat",
+          "tableTo": "villages",
+          "columnsFrom": [
+            "village_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
         "inventaris_pemeliharaan_history_schedule_tenant_fk": {
           "name": "inventaris_pemeliharaan_history_schedule_tenant_fk",
           "tableFrom": "inventaris_pemeliharaan_riwayat",
@@ -22696,19 +22709,6 @@
           ],
           "columnsTo": [
             "village_id",
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "inventaris_pemeliharaan_riwayat_village_id_villages_id_fk": {
-          "name": "inventaris_pemeliharaan_riwayat_village_id_villages_id_fk",
-          "tableFrom": "inventaris_pemeliharaan_riwayat",
-          "tableTo": "villages",
-          "columnsFrom": [
-            "village_id"
-          ],
-          "columnsTo": [
             "id"
           ],
           "onDelete": "cascade",
