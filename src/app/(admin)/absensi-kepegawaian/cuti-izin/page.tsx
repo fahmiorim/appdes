@@ -15,6 +15,8 @@ export default async function CutiIzinPage({searchParams}:{searchParams:Promise<
   const statusFilter=Array.isArray(params.status)?params.status[0]??"":params.status??"";
   const [rows, pegawai, kuota, user] = await Promise.all([daftarCuti(), daftarPegawai(), ringkasanKuotaCuti(), verifySession()]);
   const canManage = hasPermission(user.permissions, "cuti-izin", "update");
+  const pegawaiAkun = pegawai.find((x) => x.status === "aktif" && x.email?.toLowerCase() === user.email.toLowerCase());
+  const canRequest = canManage || Boolean(pegawaiAkun);
   const disetujui = rows.filter((x) => x.status === "disetujui").length;
   const menunggu = rows.filter((x) => x.status === "menunggu").length;
   const ditolak = rows.filter((x) => x.status === "ditolak").length;
@@ -63,11 +65,11 @@ export default async function CutiIzinPage({searchParams}:{searchParams:Promise<
     <div className={styles["ak-grid"]}>
       <section id="daftar" className={styles["ak-card"]}>
         <div className={styles["ak-card-heading-row"]}><div><h2>Daftar Pengajuan Cuti & Izin</h2><p>Riwayat dan status seluruh pengajuan pegawai.</p></div><span className={styles["ak-badge"]}>{rows.length} pengajuan</span></div>
-        {canManage ? <details id="ajukan" className={styles["ak-add-panel"]}>
+        {canRequest ? <details id="ajukan" className={styles["ak-add-panel"]}>
           <summary>＋ Ajukan Cuti / Izin</summary>
           <p>Pengajuan baru akan tercatat dengan status menunggu persetujuan.</p>
           <form action={ajukanCutiAction} className={styles["ak-form"]}>
-            <label className={styles.wide}>Nama Pegawai<select name="pegawaiId" required>{pegawai.filter((x) => x.status === "aktif").map((x) => <option key={x.id} value={x.id}>{x.nama}</option>)}</select></label>
+            <label className={styles.wide}>Nama Pegawai{canManage?<select name="pegawaiId" required>{pegawai.filter((x) => x.status === "aktif").map((x) => <option key={x.id} value={x.id}>{x.nama}</option>)}</select>:<><input type="hidden" name="pegawaiId" value={pegawaiAkun?.id}/><span>{pegawaiAkun?.nama}</span></>}</label>
             <label>Jenis<select name="jenis"><option value="cuti_tahunan">Cuti Tahunan</option><option value="cuti_sakit">Cuti Sakit</option><option value="izin">Izin</option><option value="cuti_penting">Cuti Penting</option></select></label>
             <label>Tanggal Mulai<input type="date" name="mulai" min={hariIni} required/></label>
             <label>Tanggal Selesai<input type="date" name="selesai" min={hariIni} required/></label>
