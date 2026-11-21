@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { listKeuangan, saveKeuanganData, saveKeuanganTriwulanData } from "@/features/keuangan/application/keuangan-use-cases";
+import { simpanKeuanganBulanan } from "@/features/keuangan/application/keuangan-bulanan-use-cases";
 import { isInputRow } from "@/features/keuangan/domain/keuangan";
 import { deleteLaporanKeuanganDokumen, saveLaporanKeuanganDokumen, setLaporanKeuanganDiserahkan } from "@/features/keuangan/application/laporan-dokumen-use-cases";
 import { addDokumentasi, createPembangunan, deleteDokumentasi, deletePembangunan, updatePembangunan } from "@/features/pembangunan/application/use-cases";
@@ -169,4 +170,12 @@ export async function hapusDokumenLaporanAction(formData: FormData): Promise<voi
   await deleteLaporanKeuanganDokumen(id);
   revalidatePath("/keuangan/dokumen");
   redirect("/keuangan/dokumen?dihapus=1");
+}
+
+export async function simpanTargetRealisasiBulananAction(formData: FormData): Promise<void> {
+  const tahun=Number(formData.get("tahun"));
+  const rows=Array.from({length:12},(_,index)=>({bulan:index+1,target:Number(formData.get("target:"+(index+1))??0),realisasi:Number(formData.get("realisasi:"+(index+1))??0)}));
+  await simpanKeuanganBulanan(tahun,rows);
+  revalidatePath("/keuangan");
+  redirect("/keuangan?bulanan=1");
 }
