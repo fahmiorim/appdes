@@ -287,6 +287,7 @@ export interface MutasiAssetSnapshot {
   hargaSatuan: string | null;
   nilaiAkhir: string | null;
   akumulasiPenyusutan?: string | null;
+  nilaiResidu?: string | null;
   kondisi: InventarisKondisi;
   lokasi: string | null;
   isDeleted: boolean;
@@ -303,6 +304,7 @@ export interface InventarisAssetPatch {
   jumlah?: string;
   nilaiAkhir?: string | null;
   akumulasiPenyusutan?: string;
+  nilaiResidu?: string;
   kondisi?: InventarisKondisi;
   lokasi?: string | null;
   isDeleted?: boolean;
@@ -351,6 +353,7 @@ export function hitungPerubahanAset(
         jumlah: "0.00",
         nilaiAkhir: "0.00",
         akumulasiPenyusutan: "0.00",
+        nilaiResidu: "0.00",
         isDeleted: true,
         deletedAt: new Date(),
       };
@@ -360,6 +363,9 @@ export function hitungPerubahanAset(
       jumlah: sisa.toFixed(2),
       nilaiAkhir: nilaiAkhirBaru(aset.hargaSatuan, sisa),
     };
+    if (aset.nilaiResidu !== undefined && aset.nilaiResidu !== null) {
+      patch.nilaiResidu = jumlahAset > 0 ? (Number(aset.nilaiResidu) * sisa / jumlahAset).toFixed(2) : "0.00";
+    }
     if (aset.akumulasiPenyusutan !== undefined && aset.akumulasiPenyusutan !== null) {
       patch.akumulasiPenyusutan = jumlahAset > 0
         ? (Number(aset.akumulasiPenyusutan) * sisa / jumlahAset).toFixed(2)
