@@ -29,7 +29,7 @@ export async function daftarLembagaPublik(villageId: number) {
 export async function detailPerangkatPemerintahanPublik(villageId: number, perangkatId: number) {
   const [riwayat, dokumen] = await Promise.all([
     db.select({ id: perangkatRiwayatJabatan.id, jabatan: perangkatRiwayatJabatan.jabatan, nomorSk: perangkatRiwayatJabatan.nomorSk, mulai: perangkatRiwayatJabatan.mulai, selesai: perangkatRiwayatJabatan.selesai, keterangan: perangkatRiwayatJabatan.keterangan })
-      .from(perangkatRiwayatJabatan).where(and(eq(perangkatRiwayatJabatan.villageId, villageId), eq(perangkatRiwayatJabatan.perangkatId, perangkatId))),
+      .from(perangkatRiwayatJabatan).where(and(eq(perangkatRiwayatJabatan.villageId, villageId), eq(perangkatRiwayatJabatan.perangkatId, perangkatId), eq(perangkatRiwayatJabatan.tampilPublik, true))),
     db.select({ id: pemerintahanDokumen.id, judul: pemerintahanDokumen.judul, nomor: pemerintahanDokumen.nomor, tanggal: pemerintahanDokumen.tanggal })
       .from(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.perangkatId, perangkatId), eq(pemerintahanDokumen.tampilPublik, true))),
   ]);
