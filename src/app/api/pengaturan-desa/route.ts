@@ -13,7 +13,11 @@ export const runtime = "nodejs";
 const json = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { "Cache-Control": "private, no-store" } });
 const settingsSchema = z.object({
   kontak: z.object({
-    whatsapp: z.string().trim().max(30).default(""),\n    telepon: z.string().trim().max(30).default(""),\n    email: z.string().trim().max(100).default(""),\n    alamat: z.string().trim().max(255).default(""),\n    website: z.string().trim().max(255).default(""),
+    whatsapp: z.string().trim().max(30).default(""),
+    telepon: z.string().trim().max(30).default(""),
+    email: z.string().trim().max(100).default(""),
+    alamat: z.string().trim().max(255).default(""),
+    website: z.string().trim().max(255).default(""),
     instagram: z.string().trim().max(150).default(""),
     facebook: z.string().trim().max(255).default(""),
     youtube: z.string().trim().max(255).default(""),
@@ -44,7 +48,7 @@ async function bacaNilai(villageId:number,key:string) {
   try{return JSON.parse(row.nilai) as unknown;}catch{return null;}
 }
 function handleError(error:unknown) {
-  if(isAppError(error)) return json({error:error.message},{status:appErrorStatus(error.code)} as never);
+  if(isAppError(error)) return json({error:error.message},appErrorStatus(error.code));
   console.error("Pengaturan desa gagal diproses:",error);
   return json({error:"Pengaturan desa gagal diproses."},500);
 }
