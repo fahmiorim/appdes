@@ -199,3 +199,26 @@ export const inventarisPemeliharaan = mysqlTable(
   ],
 );
 export type InventarisPemeliharaan = typeof inventarisPemeliharaan.$inferSelect;
+
+export const inventarisDokumen = mysqlTable(
+  "inventaris_dokumen",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
+    inventarisId: int("inventaris_id").notNull(),
+    nama: varchar("nama", { length: 200 }).notNull(),
+    namaFile: varchar("nama_file", { length: 255 }).notNull(),
+    mime: varchar("mime", { length: 100 }).notNull(),
+    ukuran: int("ukuran").notNull(),
+    jalurMedia: varchar("jalur_media", { length: 500 }).notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("inv_doc_village_asset").on(table.villageId, table.inventarisId),
+    foreignKey({
+      name: "inventaris_dokumen_asset_tenant_fk",
+      columns: [table.villageId, table.inventarisId],
+      foreignColumns: [inventaris.villageId, inventaris.id],
+    }).onDelete("cascade"),
+  ],
+);
