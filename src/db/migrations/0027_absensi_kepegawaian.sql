@@ -122,6 +122,10 @@ INNER JOIN `kepegawaian_pegawai` p
 SET h.`pegawai_id`=p.`id`
 WHERE h.`pegawai_id` IS NULL AND h.`perangkat_id` IS NOT NULL;
 --> statement-breakpoint
+ALTER TABLE `kehadiran_perangkat`
+  ADD CONSTRAINT `kehadiran_perangkat_pegawai_tenant_fk`
+  FOREIGN KEY (`village_id`,`pegawai_id`) REFERENCES `kepegawaian_pegawai`(`village_id`,`id`) ON DELETE CASCADE;
+--> statement-breakpoint
 
 -- Menu grup + tiga halaman modul; tidak menimpa menu tenant yang telah ada.
 INSERT INTO `modules` (`village_id`,`slug`,`name`,`url`,`icon`,`is_group`,`is_hidden`,`is_active`,`sort_order`,`parent_id`)
