@@ -5,6 +5,7 @@ import { and, asc, count, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { areas, lembagaAnggota, lembagaDesa, perangkatDesa, jabatanPerangkat, regions, perangkatRiwayatJabatan, polygons, pemerintahanDokumen } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
+import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import { requirePermission } from "@/lib/dal";
 
 async function tenant(resource: string, action: "read" | "create" | "update" | "delete" = "read") {
@@ -223,5 +224,5 @@ export async function unggahDokumenPemerintahan(input: {
 export async function hapusDokumenPemerintahan(id: number) {
   const user = await requirePermission("perangkat-desa", "delete");
   const villageId = await resolveVillageId(user);
-  await db.delete(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id)));
+  const [document] = await db.select({ berkas: pemerintahanDokumen.berkas }).from(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id))).limit(1);\n  if (!document) return;\n  await db.delete(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id)));\n  await hapusMedia(document.berkas);
 }
