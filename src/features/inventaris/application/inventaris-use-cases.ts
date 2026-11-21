@@ -73,7 +73,7 @@ function namaPengguna(user: { name: string; username: string | null; email: stri
 
 function denganPenyusutan<T extends {
   hargaSatuan:string|null;jumlah:string;akumulasiPenyusutan?:string|null;
-  umurManfaatBulan?:number|null;nilaiResidu?:string|null;tanggalMulaiPenyusutan?:string|null;
+  umurManfaatBulan?:number|null;nilaiResidu?:string|null;tanggalMulaiPenyusutan?:string|null;tanggalPembelian?:string|null;
 }>(rows:T[]) {
   return rows.map(row=>{const p=hitungPenyusutanAset(row);return {...row,akumulasiPenyusutan:p.akumulasiPenyusutan.toFixed(2),nilaiBuku:p.nilaiBuku.toFixed(2),penyusutanBulanan:p.penyusutanBulanan.toFixed(2)};});
 }
