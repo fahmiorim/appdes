@@ -441,7 +441,7 @@ export async function catatAbsensiMandiri(input:{latitude:number|null;longitude:
   const user=await requireUser();
   const villageId=await resolveVillageId(user);
   if((input.latitude===null)!==(input.longitude===null)) throw new Error("Koordinat GPS harus diisi berpasangan.");
-  if(input.latitude!==null&&(!Number.isFinite(input.latitude)||input.latitude < -90||input.latitude > 90||!Number.isFinite(input.longitude)||input.longitude! < -180||input.longitude! > 180)) throw new Error("Koordinat GPS tidak valid.");
+  if(input.latitude!==null&&input.longitude!==null&&(!Number.isFinite(input.latitude)||input.latitude < -90||input.latitude > 90||!Number.isFinite(input.longitude)||input.longitude < -180||input.longitude > 180)) throw new Error("Koordinat GPS tidak valid.");
   const [pegawai]=await db.select({id:kepegawaianPegawai.id,nama:kepegawaianPegawai.nama}).from(kepegawaianPegawai)
     .where(and(eq(kepegawaianPegawai.villageId,villageId),eq(kepegawaianPegawai.status,"aktif"),eq(kepegawaianPegawai.email,user.email))).limit(1);
   if(!pegawai) throw new Error("Akun belum ditautkan ke data pegawai. Hubungi administrator desa untuk mengisi email akun pada profil pegawai.");
