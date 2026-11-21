@@ -8,7 +8,7 @@ import { requirePermission } from "@/lib/dal";
 
 import {
   hapusAnggotaLembaga, hapusAreaPeta, hapusLayerPeta, hapusJabatanPerangkat, hapusLembagaDesa, hapusPerangkatDesa,
-  simpanAnggotaLembaga, simpanAreaPeta, simpanLayerPeta, simpanJabatanPerangkat, simpanLembagaDesa, simpanPerangkatDesa, simpanRiwayatJabatan, hapusRiwayatJabatan, unggahDokumenPemerintahan, hapusDokumenPemerintahan,
+  simpanAnggotaLembaga, simpanAreaPeta, simpanLayerPeta, simpanJabatanPerangkat, simpanLembagaDesa, simpanPerangkatDesa, simpanRiwayatJabatan, hapusRiwayatJabatan, unggahDokumenPemerintahan, hapusDokumenPemerintahan, ubahMetadataDokumenPemerintahan,
 } from "@/features/pemerintahan/application/use-cases";
 import { hapusWilayah, simpanWilayah } from "@/features/wilayah/application/use-cases";
 
@@ -216,5 +216,16 @@ export async function hapusLayerPetaAction(fd: FormData) {
   const id = numberOrNull(value(fd, "id"));
   if (!id) throw new Error("ID layer tidak valid.");
   await hapusLayerPeta(id);
+  refresh();
+}
+
+export async function ubahDokumenPemerintahanAction(fd: FormData) {
+  const id = numberOrNull(value(fd, "id"));
+  const judul = value(fd, "judul");
+  if (!id || !judul) throw new Error("Dokumen dan judul wajib dipilih.");
+  await ubahMetadataDokumenPemerintahan(id, {
+    judul, nomor: value(fd, "nomor") || null, tanggal: value(fd, "tanggal") || null,
+    tampilPublik: value(fd, "tampilPublik") === "on",
+  });
   refresh();
 }
