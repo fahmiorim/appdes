@@ -19,7 +19,7 @@ export default async function Page({searchParams}:{searchParams:Promise<{jenis?:
    const data=await getLaporanDesa(option.value,year);
    return {key:option.value,title: "Laporan "+option.label,category:option.label,period:"Tahun "+year,rows:data.rows.length,href:"/laporan-statistik/laporan-desa?jenis="+option.value+"&tahun="+year,exportHref:"/api/laporan-statistik/ekspor?jenis="+option.value+"&tahun="+year};
  }));
- const selected=options.some(o=>o.value===q.jenis)?q.jenis as JenisLaporan:"penduduk";
+ const selected=options.some(o=>o.value===q.jenis)?q.jenis as JenisLaporan:"penduduk";\n const detail=await getLaporanDesa(selected,year), selectedLabel=options.find(o=>o.value===selected)!.label;
  return <div className={styles["ls-page"]}>
   <header className={styles["ls-heading"]}><div><span className={styles["ls-eyebrow"]}>DOKUMEN DAN REKAP DATA</span><h1>Laporan Desa</h1><p>Buat, kelola, dan unduh laporan kegiatan, keuangan, aset, kependudukan, dan layanan desa.</p></div><PrintButton/></header>
   <section className={styles["ls-kpis"]}>
@@ -29,7 +29,7 @@ export default async function Page({searchParams}:{searchParams:Promise<{jenis?:
   </section>
   <LaporanStatistikNav active="/laporan-statistik/laporan-desa"/>
   <ReportExplorer items={reports}/>
-  <section className={styles["ls-card"]}><header><div><h2>Buat Laporan</h2><p>Pilih kategori untuk membuka laporan operasional sesuai periode.</p></div></header><div className={styles["ls-grid"]}>{options.map(o=><article className={styles["ls-template"]} key={o.value}><h3>{o.label}</h3><p>{o.description}</p><Link href={"/laporan-statistik/laporan-desa?jenis="+o.value+"&tahun="+year}>Buat / Buka Laporan →</Link></article>)}</div></section>
+  <section className={styles["ls-card"]}><header><div><h2>Pratinjau Laporan · {selectedLabel} {year}</h2><p>{detail.rows.length.toLocaleString("id-ID")} baris data dari modul operasional.</p></div><a href={"/api/laporan-statistik/ekspor?jenis="+selected+"&tahun="+year}>Unduh CSV</a></header>{detail.rows.length?<div className={styles["ls-table"]}><table><thead><tr>{detail.columns.map(column=><th key={column}>{column}</th>)}</tr></thead><tbody>{detail.rows.slice(0,100).map((row,index)=><tr key={index}>{row.map((cell,j)=><td key={j}>{typeof cell==="number"?new Intl.NumberFormat("id-ID").format(cell):String(cell??"")}</td>)}</tr>)}</tbody></table></div>:<p className={styles["ls-empty"]}>Belum ada data untuk laporan ini.</p>}{detail.rows.length>100&&<p className={styles["ls-muted"]}>Pratinjau dibatasi 100 baris. Unduh CSV untuk seluruh data.</p>}</section>\n  <section className={styles["ls-card"]}><header><div><h2>Buat Laporan</h2><p>Pilih kategori untuk membuka laporan operasional sesuai periode.</p></div></header><div className={styles["ls-grid"]}>{options.map(o=><article className={styles["ls-template"]} key={o.value}><h3>{o.label}</h3><p>{o.description}</p><Link href={"/laporan-statistik/laporan-desa?jenis="+o.value+"&tahun="+year}>Buat / Buka Laporan →</Link></article>)}</div></section>
   <SavedReports jenis={selected} tahun={year}/>
  </div>;
 }
