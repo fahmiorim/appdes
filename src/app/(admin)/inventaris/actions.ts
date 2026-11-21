@@ -118,6 +118,7 @@ export async function ubahStatusPemeliharaanAction(fd:FormData) {
     id:positiveId(text(fd,"id")),
     status,
     jenis:text(fd,"jenis"),tanggalRencana:text(fd,"tanggalRencana"),biaya:Number(text(fd,"biaya")||0),
+    kondisiSetelah:(text(fd,"kondisiSetelah")||undefined) as "baik"|"rusak_ringan"|"rusak_berat"|"dalam_perbaikan"|undefined,
     pelaksana:text(fd,"pelaksana"),deskripsi:text(fd,"deskripsi"),
     tanggalSelesai:text(fd,"tanggalSelesai"),
     hasil:text(fd,"hasil"),
