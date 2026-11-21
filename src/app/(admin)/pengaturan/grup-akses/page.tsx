@@ -68,7 +68,7 @@ export default async function GrupAksesPage({
       <nav aria-label="Bagian manajemen pengguna" className="pengguna-tabs">
         <Link className="pengguna-tab" href="/pengaturan/pengguna">Pengguna</Link>
         <Link aria-current="page" className="pengguna-tab" href="/pengaturan/grup-akses">Peran &amp; Hak Akses</Link>
-        <Link className="pengguna-tab" href="/pengaturan/pengguna/aktivitas">Aktivitas Pengguna</Link>
+        {data.canAudit ? <Link className="pengguna-tab" href="/pengaturan/pengguna/aktivitas">Aktivitas Pengguna</Link> : null}
         <Link className="pengguna-tab" href="/pengaturan/pengguna/keamanan">Pengaturan Keamanan</Link>
       </nav>
 
