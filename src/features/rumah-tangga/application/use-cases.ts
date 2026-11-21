@@ -176,7 +176,7 @@ async function nomorBerikutnya(villageId: number): Promise<string> {
 }
 
 export async function createRumahTangga(input: RumahTanggaFormInput): Promise<{ id: number }> {
-  const user = await requirePermission(RUMAH_TANGGA_RESOURCE, "update");
+  const user = await requirePermission(RUMAH_TANGGA_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   await validateRumahTanggaRegion(villageId, input.regionId);
