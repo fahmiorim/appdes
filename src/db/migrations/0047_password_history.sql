@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS `password_history` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `password_history_user_created_idx` (`user_id`, `created_at`),
+  UNIQUE KEY `password_history_user_hash_unique` (`user_id`, `password_hash`),
   CONSTRAINT `password_history_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 );
