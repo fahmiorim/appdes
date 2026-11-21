@@ -43,6 +43,8 @@ export async function simpanPerangkatAction(fd: FormData) {
     email: value(fd, "email") || null, alamat: value(fd, "alamat") || null,
     nomorSkPengangkatan: value(fd, "nomorSkPengangkatan") || null,
     tanggalPengangkatan: dateOrNull(value(fd, "tanggalPengangkatan")),
+    nomorSkPemberhentian: value(fd, "nomorSkPemberhentian") || null,
+    tanggalPemberhentian: dateOrNull(value(fd, "tanggalPemberhentian")),
     atasanId: numberOrNull(value(fd, "atasanId")), urut: Number(value(fd, "urut") || 0),
   });
   refresh();
