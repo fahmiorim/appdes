@@ -2,6 +2,8 @@ ALTER TABLE `inventaris_pemeliharaan`
   ADD COLUMN `is_deleted` tinyint(1) NOT NULL DEFAULT 0,
   ADD COLUMN `deleted_at` timestamp NULL;
 --> statement-breakpoint
+ALTER TABLE `inventaris_pemeliharaan` ADD UNIQUE KEY `inventaris_pemeliharaan_village_id_uq` (`village_id`,`id`);
+--> statement-breakpoint
 CREATE TABLE `inventaris_pemeliharaan_riwayat` (
   `id` int NOT NULL AUTO_INCREMENT,
   `village_id` int NOT NULL,
