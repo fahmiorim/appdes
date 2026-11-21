@@ -34,6 +34,7 @@ Gunakan laporan sesuai cakupannya; tidak ada satu laporan yang mewakili seluruh 
 | [Rebuild website publik dari mockup](./02-public-website/PUBLIC-MOCKUP-REBUILD-2026-11-20.md) | Rangkaian 21 halaman publik, perbaikan format/type/lint, dan renumber migration komentar | Catatan pekerjaan stack PR publik dan risiko merge berurutan |
 | [Perbaikan migration Galeri dan Potensi](./02-public-website/MIGRASI-GALERI-POTENSI-2026-11-20.md) | Migration `0022` idempotent untuk kolom/tabel yang dilewati akibat urutan timestamp journal | Bukti analisis dan batas validasi database |
 | [Merge rangkaian website publik](./02-public-website/PUBLIC-MOCKUP-MERGE-2026-11-20.md) | Penyelesaian #189–#194, penutupan PR duplikat, dan verifikasi Galeri pada database lokal | Bukti check CI per PR dan status merge |
+| [Sinkronisasi `main` PR #209](./03-core-sid/ADMIN-SURAT-PR-209-2026-11-21.md) | Dashboard surat/pelayanan: renumber migrasi 0027–0031, paritas skema, dan pemindahan akses data keluar dari route/application layer | Bukti check lokal (typecheck, lint, format, 2.078 unit test, build) dan risiko yang tersisa |
 
 Dokumen di `archive/` dipertahankan untuk jejak audit. Jangan mengutipnya sebagai status terbaru tanpa memeriksa laporan penggantinya.
 
