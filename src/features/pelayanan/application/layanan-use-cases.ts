@@ -41,7 +41,7 @@ export async function getLayananEditorData(id?: number) {
   return row;
 }
 export async function simpanLayananData(id: number | null, raw: unknown) {
-  const user = await requirePermission(LAYANAN_RESOURCE, id ? "update" : "update");
+  const user = await requirePermission(LAYANAN_RESOURCE, id === null ? "create" : "update");
   const villageId = await resolveVillageId(user);
   const parsed = layananSchema.safeParse(raw);
   if (!parsed.success)
