@@ -509,8 +509,12 @@ export async function createPemeliharaan(villageId:number,input:{
   return row?.id;
 }
 
-export async function updateStatusPemeliharaan(villageId:number,id:number,status:"dalam_proses"|"selesai"|"dibatalkan",tanggalSelesai:string|null,hasil:string|null) {
-  const [result]=await db.update(inventarisPemeliharaan).set({status,tanggalSelesai,hasil})
+export async function updateStatusPemeliharaan(villageId:number,id:number,input:{
+  status:"terjadwal"|"dalam_proses"|"selesai"|"dibatalkan";
+  jenis?:string;tanggalRencana?:string;biaya?:string;pelaksana?:string|null;deskripsi?:string|null;
+  tanggalSelesai:string|null;hasil:string|null;
+}) {
+  const [result]=await db.update(inventarisPemeliharaan).set(input)
     .where(and(eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id)));
   if(result.affectedRows===0) throw notFound("Jadwal pemeliharaan tidak ditemukan.");
 }
