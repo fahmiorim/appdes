@@ -66,15 +66,10 @@ export default async function GrupAksesPage({
       </div>
 
       <nav aria-label="Bagian manajemen pengguna" className="pengguna-tabs">
-        <Link className="pengguna-tab" href="/pengaturan/pengguna">
-          Daftar Pengguna
-        </Link>
-        <Link aria-current="page" className="pengguna-tab" href="/pengaturan/grup-akses">
-          Hak Akses (Role)
-        </Link>
-        <a className="pengguna-tab" href="#izin">
-          Grup &amp; Permission
-        </a>
+        <Link className="pengguna-tab" href="/pengaturan/pengguna">Pengguna</Link>
+        <Link aria-current="page" className="pengguna-tab" href="/pengaturan/grup-akses">Peran &amp; Hak Akses</Link>
+        <Link className="pengguna-tab" href="/pengaturan/pengguna/aktivitas">Aktivitas Pengguna</Link>
+        <Link className="pengguna-tab" href="/pengaturan/pengguna/keamanan">Pengaturan Keamanan</Link>
       </nav>
 
       <div className="pengguna-role-layout">
