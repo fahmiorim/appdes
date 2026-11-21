@@ -28,7 +28,8 @@ export default async function PegawaiPage({searchParams}:{searchParams:Promise<R
   const canManage=hasPermission(user.permissions,"kepegawaian","update");
   const selected=pegawai.find(x=>x.id===Number(selectedRaw))??pegawai[0]??null;
   const [riwayat,dokumen]=selected?await Promise.all([daftarRiwayatPegawai(selected.id),daftarDokumenPegawai(selected.id)]):[[],[]];
-  const tetap=pegawai.filter(x=>x.statusPegawai==="tetap").length;
+  const perangkatCount=pegawai.filter(x=>x.perangkatId!==null).length;
+  const stafCount=pegawai.filter(x=>x.perangkatId===null).length;
   const kontrak=pegawai.filter(x=>x.statusPegawai==="kontrak").length;
   const purna=pegawai.filter(x=>x.statusPegawai==="purna_tugas").length;
   const filteredPegawai=pegawai.filter((x)=>
@@ -51,8 +52,9 @@ export default async function PegawaiPage({searchParams}:{searchParams:Promise<R
     <nav className={styles["ak-subnav"]} aria-label="Navigasi data pegawai"><a className={styles["selected"]} href="#daftar-pegawai">☷ Daftar Pegawai</a><a href="#detail-pegawai">♧ Struktur Jabatan</a><a href="#masa-kerja">▦ Masa Kerja</a><a href="#dokumen">▤ Dokumen</a><a href="#riwayat">◷ Riwayat Jabatan</a></nav>
     <section className={styles["ak-kpi-grid"]}>
       <article className={styles["ak-kpi"]}><span>Total Pegawai</span><strong>{pegawai.length} orang</strong></article>
-      <article className={styles["ak-kpi"]}><span>Pegawai Tetap</span><strong>{tetap} orang</strong></article>
-      <article className={styles["ak-kpi"]}><span>Staf Kontrak</span><strong>{kontrak} orang</strong></article>
+      <article className={styles["ak-kpi"]}><span>Perangkat Desa</span><strong>{perangkatCount} orang</strong></article>
+      <article className={styles["ak-kpi"]}><span>Staf Desa</span><strong>{stafCount} orang</strong></article>
+      <article className={styles["ak-kpi"]}><span>Pegawai Kontrak</span><strong>{kontrak} orang</strong></article>
       <article className={styles["ak-kpi"]}><span>Purna Tugas</span><strong>{purna} orang</strong></article>
     </section>
     <section className={styles["ak-card"]}>
@@ -73,6 +75,7 @@ export default async function PegawaiPage({searchParams}:{searchParams:Promise<R
     <div id="daftar-pegawai" className={styles["ak-grid"]} style={{marginTop:16}}>
       <section className={styles["ak-card"]}><h2>Daftar Data Pegawai</h2><p>{pegawai.length} pegawai terdaftar.</p>
         <form className={styles["ak-filter"]} method="get">
+          <input type="hidden" name="id" value={selected?.id??""}/>
           <label>Cari nama, NIK, atau jabatan<input type="search" name="q" placeholder="Cari pegawai..." defaultValue={query}/></label>
           <label>Jabatan<select name="jabatan" defaultValue={jabatanFilter}><option value="">Semua Jabatan</option>{jabatanOptions.map((name)=><option key={name} value={name}>{name}</option>)}</select></label>
           <label>Status<select name="status" defaultValue={statusFilter}><option value="">Semua Status</option><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option></select></label>
