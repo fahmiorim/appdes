@@ -7,7 +7,7 @@ import styles from "../inventaris.module.css";
 import { simpanInventarisAction, hapusInventarisAction, unggahDokumenInventarisAction, hapusDokumenInventarisAction } from "../actions";
 
 export const metadata={title:"Pengelolaan Aset"};
-type Props={params:Promise<{id:string}>;searchParams:Promise<{edit?:string;saved?:string}>};
+type Props={params:Promise<{id:string}>;searchParams:Promise<{edit?:string;saved?:string;documentSaved?:string}>};
 const dateLabel=(value:string|null)=>value?new Intl.DateTimeFormat("id-ID",{dateStyle:"long",timeZone:"UTC"}).format(new Date(value+"T00:00:00Z")):"—";
 const asalLabel=(value:string|null)=>value?({pembelian:"Pembelian",hibah:"Hibah",bantuan_pemerintah:"Bantuan Pemerintah",sumbangan:"Sumbangan",lainnya:"Lainnya"} as Record<string,string>)[value]??value:"—";
 
