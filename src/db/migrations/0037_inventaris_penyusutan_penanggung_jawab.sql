@@ -17,6 +17,6 @@ CREATE TABLE `inventaris_penanggung_jawab_riwayat` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `inv_pj_village_asset_date` (`village_id`,`inventaris_id`,`created_at`),
-  CONSTRAINT `inventaris_pj_history_village_fk` FOREIGN KEY (`village_id`) REFERENCES `villages` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `inventaris_penanggung_jawab_riwayat_village_id_villages_id_fk` FOREIGN KEY (`village_id`) REFERENCES `villages` (`id`) ON DELETE CASCADE,
   CONSTRAINT `inventaris_pj_history_asset_tenant_fk` FOREIGN KEY (`village_id`,`inventaris_id`) REFERENCES `inventaris` (`village_id`,`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
