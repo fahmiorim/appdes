@@ -123,10 +123,10 @@ export const auth = betterAuth({
       if (ctx.path !== "/sign-in/username") return;
       const username = typeof ctx.body?.username === "string" ? ctx.body.username.trim().toLowerCase() : "";
       if (!username) return;
-      const [account] = await db.select({ villageId: users.villageId, twoFactorEnabled: users.twoFactorEnabled }).from(users).where(eq(users.username, username)).limit(1);
+      const [account] = await db.select({ villageId: users.villageId, residentId: users.residentId, twoFactorEnabled: users.twoFactorEnabled }).from(users).where(eq(users.username, username)).limit(1);
       if (!account?.villageId) return;
       const [tenantPolicy] = await db.select({ requireTwoFactor: villageSecuritySettings.requireTwoFactorForAllUsers }).from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
-      if (tenantPolicy?.requireTwoFactor && !account.twoFactorEnabled) throw new APIError("FORBIDDEN", { message: "Administrator mewajibkan autentikasi dua faktor. Hubungi administrator desa untuk aktivasi." });
+      if (tenantPolicy?.requireTwoFactor && account.residentId === null && !account.twoFactorEnabled) throw new APIError("FORBIDDEN", { message: "Administrator mewajibkan autentikasi dua faktor. Hubungi administrator desa untuk aktivasi." });
       const ip = alamatIpDariHeader(ctx.headers, env.TRUST_PROXY);
       const [blocked] = await db.select({ id: villageBlockedIps.id }).from(villageBlockedIps).where(and(
         eq(villageBlockedIps.villageId, account.villageId), eq(villageBlockedIps.ipAddress, ip),
