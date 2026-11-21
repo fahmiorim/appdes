@@ -9,7 +9,6 @@ export const keamananSchema = z.object({
   requireSymbol: z.boolean(),
   sessionTimeoutMinutes: z.coerce.number().int().min(5).max(720),
   autoLogoutInactive: z.boolean(),
-  warnBeforeSessionEnd: z.boolean(),
   concurrentLogin: z.boolean(),
   ipRestrictionEnabled: z.boolean(),
   allowedIps: z.array(z.string().refine((ip) => isIP(ip) !== 0, "Alamat IP tidak valid.")).max(50),
