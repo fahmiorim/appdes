@@ -1,6 +1,5 @@
 import "server-only";
 import { and, asc, eq, isNull, or, gt } from "drizzle-orm";
-import { users } from "@/db/schema/auth";
 import { db } from "@/db";
 import { villageBlockedIps, villageSecuritySettings } from "@/db/schema";
 import type { BlockedIpDTO, KeamananInput } from "../domain/keamanan";
