@@ -13,6 +13,7 @@ export const villageSecuritySettings = mysqlTable("village_security_settings", {
   sessionTimeoutMinutes: int("session_timeout_minutes").notNull().default(30),
   autoLogoutInactive: boolean("auto_logout_inactive").notNull().default(true),
   concurrentLogin: boolean("concurrent_login").notNull().default(false),
+  requireTwoFactorForAllUsers: boolean("require_two_factor_for_all_users").notNull().default(false),
   ipRestrictionEnabled: boolean("ip_restriction_enabled").notNull().default(false),
   allowedIps: text("allowed_ips"),
   updatedBy: varchar("updated_by", { length: 36 }).references(() => users.id, { onDelete: "set null" }),
