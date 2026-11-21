@@ -117,16 +117,27 @@ export default async function PemerintahanPage() {
   const sekretaris = perangkat.find((item) =>
     item.jabatan?.toLocaleLowerCase("id-ID").includes("sekretaris"),
   );
-  const lainnya = perangkat.filter(
-    (item) => item.id !== kepalaDesa?.id && item.id !== sekretaris?.id,
-  ).sort((a, b) => {
-    const aParent = a.atasanId ?? 0;
-    const bParent = b.atasanId ?? 0;
-    return aParent - bParent || a.urut - b.urut;
-  });
-  const struktur = [kepalaDesa, sekretaris, ...lainnya].filter(
-    (item): item is (typeof perangkat)[number] => Boolean(item),
-  );
+  const struktur = perangkat;
+  const anakPerangkat = (atasanId: number) =>
+    perangkat.filter((item) => item.atasanId === atasanId).sort((a, b) => a.urut - b.urut || a.nama.localeCompare(b.nama, "id"));
+  const akarStruktur = kepalaDesa
+    ? [kepalaDesa]
+    : perangkat.filter((item) => !item.atasanId || !perangkat.some((parent) => parent.id === item.atasanId));
+  const renderNode = (item: (typeof perangkat)[number], depth = 0): React.ReactNode => {
+    const children = anakPerangkat(item.id);
+    return (
+      <article className={styles.orgChild} key={item.id} data-depth={depth}>
+        <span className={styles.orgIcon}>♙</span>
+        <strong>{item.jabatan ?? "Perangkat Desa"}</strong>
+        <span>{namaLengkap(item)}</span>
+        {children.length ? (
+          <div className={styles.orgNestedChildren}>
+            {children.map((child) => renderNode(child, depth + 1))}
+          </div>
+        ) : null}
+      </article>
+    );
+  };
 
   function fotoPerangkat(item: (typeof perangkat)[number], className: string | undefined) {
     const src = mediaUrl(item.foto, desa.id);
@@ -225,30 +236,13 @@ export default async function PemerintahanPage() {
                     Kepala Desa belum tercatat sebagai perangkat aktif.
                   </div>
                 )}
-                {sekretaris ? (
-                  <div className={styles.secretaryNode}>
-                    {fotoPerangkat(sekretaris, styles.smallPhoto)}
-                    <div>
-                      <strong>{sekretaris.jabatan}</strong>
-                      <span>{namaLengkap(sekretaris)}</span>
-                    </div>
-                  </div>
+                {akarStruktur.some((item) => item.id !== kepalaDesa?.id) ? (
+                  <div className={styles.orgLine} aria-hidden="true" />
                 ) : null}
-                {lainnya.length ? <div className={styles.orgLine} aria-hidden="true" /> : null}
                 <div className={styles.orgChildren}>
-                  {lainnya.map((item) => (
-                    <article className={styles.orgChild} key={item.id}>
-                      <span className={styles.orgIcon}>♙</span>
-                      <strong>{item.jabatan ?? "Perangkat Desa"}</strong>
-                      <span>{namaLengkap(item)}</span>
-                      {item.atasanId ? (
-                        <small>
-                          Atasan: {perangkat.find((parent) => parent.id === item.atasanId)?.nama ?? "Tidak tersedia"}
-                        </small>
-                      ) : null}
-                    </article>
-                  ))}
+                  {(kepalaDesa ? anakPerangkat(kepalaDesa.id) : akarStruktur).map((item) => renderNode(item))}
                 </div>
+                {kepalaDesa ? perangkat.filter((item) => item.id !== kepalaDesa.id && !item.atasanId).map((item) => renderNode(item)) : null}
               </div>
             ) : (
               <div className={styles.emptyState}>
