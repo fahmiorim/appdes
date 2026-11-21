@@ -225,7 +225,22 @@ export const auth = betterAuth({
       maxUsernameLength: 100,
       usernameValidator: (value) => /^[a-zA-Z0-9._-]+$/.test(value),
     }),
-    twoFactor({ issuer: APP_NAME, twoFactorTable: "two_factor", accountLockout: { enabled: true, maxFailedAttempts: 5, durationSeconds: 900 } }),
+    twoFactor({
+      issuer: APP_NAME,
+      twoFactorTable: "two_factor",
+      otpOptions: {
+        async sendOTP({ user, otp }) {
+          if (!user.email || !env.RESEND_API_KEY || !env.RESEND_FROM) throw new Error("Email OTP belum dikonfigurasi untuk akun ini.");
+          const { Resend } = await import("resend");
+          const { error } = await new Resend(env.RESEND_API_KEY).emails.send({
+            from: env.RESEND_FROM, to: user.email, subject: `[${APP_NAME}] Kode verifikasi`,
+            text: `Kode verifikasi Anda: ${otp}. Kode ini hanya berlaku singkat. Jangan bagikan kepada siapa pun.`,
+          });
+          if (error) throw new Error("Gagal mengirim kode verifikasi email.");
+        },
+      },
+      accountLockout: { enabled: true, maxFailedAttempts: 5, durationSeconds: 900 },
+    }),
     // WAJIB paling akhir.
     nextCookies(),
   ],
