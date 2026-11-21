@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, count, eq } from "drizzle-orm";
+import { and, asc, count, eq, ne } from "drizzle-orm";
 
 import { db } from "@/db";
 import { areas, lembagaAnggota, lembagaDesa, perangkatDesa, jabatanPerangkat, regions, perangkatRiwayatJabatan, polygons, pemerintahanDokumen, profilDesa } from "@/db/schema";
@@ -83,6 +83,16 @@ export async function simpanPerangkatDesa(id: number | null, input: {
   if (!input.nama.trim()) throw new Error("Nama perangkat wajib diisi.");
   if (!["aktif", "nonaktif"].includes(input.status)) throw new Error("Status perangkat tidak valid.");
   if (input.nik && !/^\\d{16}$/.test(input.nik)) throw new Error("NIK harus terdiri dari 16 digit.");
+  if (input.nik) {
+    const [duplicateNik] = await db.select({ id: perangkatDesa.id }).from(perangkatDesa)
+      .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.nik, input.nik), ...(id ? [ne(perangkatDesa.id, id)] : []))).limit(1);
+    if (duplicateNik) throw new Error("NIK sudah digunakan oleh perangkat desa lain.");
+  }
+  if (input.nip) {
+    const [duplicateNip] = await db.select({ id: perangkatDesa.id }).from(perangkatDesa)
+      .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.nip, input.nip), ...(id ? [ne(perangkatDesa.id, id)] : []))).limit(1);
+    if (duplicateNip) throw new Error("NIP sudah digunakan oleh perangkat desa lain.");
+  }
   if (input.tanggalPengangkatan && input.tanggalPemberhentian && input.tanggalPemberhentian < input.tanggalPengangkatan) {
     throw new Error("Tanggal pemberhentian tidak boleh sebelum tanggal pengangkatan.");
   }
