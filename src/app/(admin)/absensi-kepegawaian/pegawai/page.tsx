@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { daftarDokumenPegawai, daftarPegawai, daftarRiwayatPegawai, opsiPerangkatBelumTerhubung } from "@/features/kepegawaian/application/use-cases";
 import { simpanPegawaiAction, tambahRiwayatPegawaiAction, unggahDokumenPegawaiAction, hapusRiwayatPegawaiAction, hapusDokumenPegawaiAction, ubahRiwayatPegawaiAction } from "../actions";
 import { AbsensiKepegawaianNav } from "../nav";
@@ -8,6 +9,14 @@ import { hasPermission } from "@/features/rbac/application/authorization";
 import { verifySession } from "@/lib/dal";
 
 export const metadata: Metadata = { title: "Data Pegawai" };
+
+function mediaUrl(value: string | null | undefined, villageId: number): string | null {
+  if (!value) return null;
+  const segments = value.split(/[\\\\/]/).filter(Boolean);
+  if (!segments.length || segments.some((part) => part === "." || part === ".." || part.includes(".."))) return null;
+  const path = segments[0] === String(villageId) ? segments : [String(villageId), ...segments];
+  return "/api/publik/media/" + path.map(encodeURIComponent).join("/");
+}
 
 export default async function PegawaiPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
   const params=await searchParams;
@@ -19,6 +28,7 @@ export default async function PegawaiPage({searchParams}:{searchParams:Promise<R
   const tetap=pegawai.filter(x=>x.statusPegawai==="tetap").length;
   const kontrak=pegawai.filter(x=>x.statusPegawai==="kontrak").length;
   const purna=pegawai.filter(x=>x.statusPegawai==="purna_tugas").length;
+  const selectedPhoto=selected?mediaUrl(selected.foto,selected.villageId):null;
   const hitungMasaKerja=(mulai:string|null,selesai:string|null)=>{
     if(!mulai) return "—";
     const start=new Date(mulai+"T00:00:00Z");
@@ -54,11 +64,11 @@ export default async function PegawaiPage({searchParams}:{searchParams:Promise<R
     <div id="daftar-pegawai" className={styles["ak-grid"]} style={{marginTop:16}}>
       <section className={styles["ak-card"]}><h2>Daftar Data Pegawai</h2><p>{pegawai.length} pegawai terdaftar.</p>
         <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}><thead><tr><th>No.</th><th>Nama</th><th>Jabatan</th><th>Status</th><th>Masa Kerja</th><th>Detail</th></tr></thead><tbody>
-          {pegawai.map((x,i)=><tr key={x.id}><td>{i+1}</td><td><strong>{x.nama}</strong><br/><small>{x.nip??"NIP belum diisi"}</small></td><td>{x.jabatan??"—"}</td><td><span className={styles["ak-badge"]}>{x.statusPegawai}</span></td><td>{hitungMasaKerja(x.tanggalMasuk,x.tanggalKeluar)}</td><td><Link className={styles["ak-button"]} href={"/absensi-kepegawaian/pegawai?id="+x.id}>Lihat</Link></td></tr>)}
+          {pegawai.map((x,i)=><tr key={x.id}><td>{i+1}</td><td><span className={styles["ak-person"]}><span>{mediaUrl(x.foto,x.villageId)?<Image src={mediaUrl(x.foto,x.villageId)!} alt="" width={32} height={32} unoptimized/>:x.nama.split(" ").slice(0,2).map((part)=>part[0]).join("").toUpperCase()}</span><b>{x.nama}</b></span><br/><small>{x.nip??"NIP belum diisi"}</small></td><td>{x.jabatan??"—"}</td><td><span className={styles["ak-badge"]}>{x.statusPegawai}</span></td><td>{hitungMasaKerja(x.tanggalMasuk,x.tanggalKeluar)}</td><td><Link className={styles["ak-button"]} href={"/absensi-kepegawaian/pegawai?id="+x.id}>Lihat</Link></td></tr>)}
         </tbody></table></div>
       </section>
       <section id="detail-pegawai" className={styles["ak-card"]}>
-        {selected?<><div className={styles["ak-profile-head"]}><div className={styles["ak-profile-avatar"]}>{selected.nama.split(" ").slice(0,2).map((part)=>part[0]).join("").toUpperCase()}</div><div><h2>{selected.nama}</h2><p>{selected.jabatan??"Jabatan belum ditentukan"}</p><span className={`${styles["ak-badge"]} ${selected.status==="aktif"?styles.aktif:styles.nonaktif}`}>{selected.status==="aktif"?"Aktif":"Nonaktif"} · {selected.statusPegawai.replaceAll("_"," ")}</span></div></div>
+        {selected?<><div className={styles["ak-profile-head"]}><div className={styles["ak-profile-avatar"]}>{selectedPhoto?<Image src={selectedPhoto} alt={"Foto "+selected.nama} fill unoptimized sizes="84px"/>:selected.nama.split(" ").slice(0,2).map((part)=>part[0]).join("").toUpperCase()}</div><div><h2>{selected.nama}</h2><p>{selected.jabatan??"Jabatan belum ditentukan"}</p><span className={`${styles["ak-badge"]} ${selected.status==="aktif"?styles.aktif:styles.nonaktif}`}>{selected.status==="aktif"?"Aktif":"Nonaktif"} · {selected.statusPegawai.replaceAll("_"," ")}</span></div></div>
           <nav className={styles["ak-profile-tabs"]}><a href="#biodata">Biodata</a><a href="#jabatan">Jabatan</a><a href="#dokumen">Dokumen</a><a href="#riwayat">Riwayat</a></nav>
           <h3 id="biodata">Informasi Pribadi</h3><dl><div><dt>NIK</dt><dd>{selected.nik??"—"}</dd></div><div><dt>NIP</dt><dd>{selected.nip??"—"}</dd></div><div><dt>Tempat/Tanggal Lahir</dt><dd>{selected.tempatLahir??"—"}, {selected.tanggalLahir??"—"}</dd></div><div><dt>Telepon</dt><dd>{selected.telepon??"—"}</dd></div><div><dt>Email</dt><dd>{selected.email??"—"}</dd></div><div><dt>Pendidikan</dt><dd>{selected.pendidikan??"—"}</dd></div><div id="masa-kerja"><dt>Masa Kerja</dt><dd>{hitungMasaKerja(selected.tanggalMasuk,selected.tanggalKeluar)}</dd></div></dl>
           {canManage?<details><summary>Edit Data Pegawai</summary><form action={simpanPegawaiAction} className={styles["ak-form"]}>
