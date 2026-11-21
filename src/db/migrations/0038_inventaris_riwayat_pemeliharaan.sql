@@ -18,6 +18,7 @@ CREATE TABLE `inventaris_pemeliharaan_riwayat` (
   PRIMARY KEY (`id`),
   KEY `inv_pem_hist_village_date` (`village_id`,`created_at`),
   KEY `inv_pem_hist_village_asset` (`village_id`,`inventaris_id`),
+  CONSTRAINT `inventaris_pemeliharaan_riwayat_village_id_villages_id_fk` FOREIGN KEY (`village_id`) REFERENCES `villages` (`id`) ON DELETE CASCADE,
   CONSTRAINT `inventaris_pemeliharaan_history_schedule_tenant_fk` FOREIGN KEY (`village_id`,`pemeliharaan_id`) REFERENCES `inventaris_pemeliharaan` (`village_id`,`id`) ON DELETE CASCADE,
   CONSTRAINT `inventaris_pemeliharaan_history_asset_tenant_fk` FOREIGN KEY (`village_id`,`inventaris_id`) REFERENCES `inventaris` (`village_id`,`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
