@@ -123,6 +123,13 @@ describe("hitungPerubahanAset", () => {
       hitungPerubahanAset(asetDasar, mutasi({ jenis: "hapus", jumlahMutasi: "4.00" })),
     ).toEqual({ jumlah: "6.00", nilaiAkhir: "9000.00" });
   });
+  it("membagi akumulasi penyusutan dan nilai residu secara proporsional saat aset dihapus sebagian",()=>{
+    expect(hitungPerubahanAset({
+      ...asetDasar,akumulasiPenyusutan:"3000.00",nilaiResidu:"1000.00",
+    },mutasi({jenis:"hapus",jumlahMutasi:"4.00"}))).toEqual({
+      jumlah:"6.00",nilaiAkhir:"9000.00",akumulasiPenyusutan:"1800.00",nilaiResidu:"600.00",
+    });
+  });
 
   it("menonaktifkan barang saat seluruh jumlah dihapus", () => {
     const patch = hitungPerubahanAset(asetDasar, mutasi({ jenis: "hapus", jumlahMutasi: "10.00" }));
