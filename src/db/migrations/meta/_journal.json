@@ -157,6 +157,13 @@
       "breakpoints": true
     },
     {
+      "idx": 21,
+      "version": "5",
+      "when": 1795624563264,
+      "tag": "0021_data_kependudukan_menu",
+      "breakpoints": true
+    },
+    {
       "idx": 22,
       "version": "5",
       "when": 1795452000001,
@@ -189,13 +196,6 @@
       "version": "5",
       "when": 1795538163264,
       "tag": "0026_website_desa_menu",
-      "breakpoints": true
-    },
-    {
-      "idx": 21,
-      "version": "5",
-      "when": 1795624563264,
-      "tag": "0021_data_kependudukan_menu",
       "breakpoints": true
     },
     {
@@ -238,6 +238,13 @@
       "version": "5",
       "when": 1795630000000,
       "tag": "0032_pemerintahan_desa",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1795700000000,
+      "tag": "0033_absensi_kepegawaian",
       "breakpoints": true
     },
     {
