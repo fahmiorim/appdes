@@ -40,6 +40,7 @@ import {
   listMutasi,
   inventarisNomorExists,
   listPemeliharaan,
+  listRiwayatPemeliharaan,
   createPemeliharaan,
   updateStatusPemeliharaan,
   deletePemeliharaan,
@@ -406,9 +407,10 @@ export async function getInventarisDetailPageData(id: number) {
 export async function getPemeliharaanPageData() {
   const user=await requirePermission(INVENTARIS_RESOURCE,"read");
   const villageId=await resolveVillageId(user);
-  const [inventarisData,pemeliharaan]=await Promise.all([
+  const [inventarisData,pemeliharaan,riwayatPemeliharaan]=await Promise.all([
     listInventaris(villageId),
     listPemeliharaan(villageId),
+    listRiwayatPemeliharaan(villageId),
   ]);
   const canReadMutation=hasPermission(user.permissions,MUTASI_RESOURCE,"read");
   const canMutate=hasPermission(user.permissions,MUTASI_RESOURCE,"update");
@@ -419,6 +421,7 @@ export async function getPemeliharaanPageData() {
     mutasi,
     inventaris:inventarisData.rows.map(x=>({id:x.id,namaBarang:x.namaBarang,nomorInventaris:x.nomorInventaris,jumlah:x.jumlah,satuan:x.satuan})),
     pemeliharaan,
+    riwayatPemeliharaan,
     canWrite:hasPermission(user.permissions,INVENTARIS_RESOURCE,"update"),
     canMutate,
     canReadMutation,
@@ -438,7 +441,7 @@ export async function buatJadwalPemeliharaan(input:{
   await createPemeliharaan(villageId,{
     inventarisId:input.inventarisId,jenis:input.jenis.trim(),tanggalRencana:input.tanggalRencana,
     biaya:input.biaya.toFixed(2),pelaksana:input.pelaksana?.trim()||null,deskripsi:input.deskripsi?.trim()||null,
-  });
+  },namaPengguna(user));
 }
 
 export async function ubahStatusPemeliharaan(input:{
@@ -453,13 +456,13 @@ export async function ubahStatusPemeliharaan(input:{
     status:input.status,jenis:input.jenis?.trim(),tanggalRencana:input.tanggalRencana,
     biaya:input.biaya?.toFixed(2),pelaksana:input.pelaksana?.trim()||null,
     deskripsi:input.deskripsi?.trim()||null,tanggalSelesai:input.tanggalSelesai||null,hasil:input.hasil?.trim()||null,
-  });
+  },namaPengguna(user));
 }
 
 export async function hapusJadwalPemeliharaan(id:number) {
   const user=await requirePermission(INVENTARIS_RESOURCE,"delete");
   const villageId=await resolveVillageId(user);
-  await deletePemeliharaan(villageId,id);
+  await deletePemeliharaan(villageId,id,namaPengguna(user));
 }
 
 export async function unggahDokumenInventaris(input:{
