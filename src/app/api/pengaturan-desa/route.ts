@@ -38,7 +38,6 @@ const settingsSchema = z.object({
     penomoranSurat: z.coerce.number().int().min(1).max(4),
   }).optional(),
 });
-type PengaturanTambahan = { kontak?: z.infer<typeof settingsSchema>["kontak"]; integrasi?: z.infer<typeof settingsSchema>["integrasi"] };
 async function simpanNilai(villageId:number,key:string,value:unknown) {
   await db.insert(pengaturanDesa).values({villageId,kunci:key,nilai:JSON.stringify(value)}).onDuplicateKeyUpdate({set:{nilai:JSON.stringify(value)}});
 }
