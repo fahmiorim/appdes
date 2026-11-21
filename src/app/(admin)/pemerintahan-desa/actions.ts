@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import {
   hapusAnggotaLembaga, hapusAreaPeta, hapusJabatanPerangkat, hapusLembagaDesa, hapusPerangkatDesa,
-  simpanAnggotaLembaga, simpanAreaPeta, simpanJabatanPerangkat, simpanLembagaDesa, simpanPerangkatDesa,
+  simpanAnggotaLembaga, simpanAreaPeta, simpanJabatanPerangkat, simpanLembagaDesa, simpanPerangkatDesa, simpanRiwayatJabatan, hapusRiwayatJabatan,
 } from "@/features/pemerintahan/application/use-cases";
 import { hapusWilayah, simpanWilayah } from "@/features/wilayah/application/use-cases";
 
@@ -133,5 +133,25 @@ export async function hapusJabatanAction(fd: FormData) {
   const id = numberOrNull(value(fd, "id"));
   if (!id) throw new Error("ID jabatan tidak valid.");
   await hapusJabatanPerangkat(id);
+  refresh();
+}
+
+export async function simpanRiwayatAction(fd: FormData) {
+  const id = numberOrNull(value(fd, "id"));
+  const perangkatId = numberOrNull(value(fd, "perangkatId"));
+  const jabatan = value(fd, "jabatan");
+  if (!perangkatId || !jabatan) throw new Error("Perangkat dan jabatan wajib diisi.");
+  await simpanRiwayatJabatan(id, {
+    perangkatId, jabatan, nomorSk: value(fd, "nomorSk") || null,
+    mulai: value(fd, "mulai") || null, selesai: value(fd, "selesai") || null,
+    keterangan: value(fd, "keterangan") || null,
+  });
+  refresh();
+}
+
+export async function hapusRiwayatAction(fd: FormData) {
+  const id = numberOrNull(value(fd, "id"));
+  if (!id) throw new Error("ID riwayat tidak valid.");
+  await hapusRiwayatJabatan(id);
   refresh();
 }
