@@ -17,7 +17,7 @@
 .header {
   position: relative;
   z-index: 20;
-  background: #fff;
+  background: var(--public-surface, #fff);
   border-bottom: 1px solid #e5ebf6;
   box-shadow: 0 3px 12px #142b4b08;
 }
@@ -125,7 +125,7 @@
   padding: 8px;
   border: 1px solid #e3eaf6;
   border-radius: 12px;
-  background: white;
+  background: var(--public-surface, white);
   box-shadow: 0 14px 32px #10234a20;
 }
 .dropdownMenu a {
