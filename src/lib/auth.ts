@@ -1,15 +1,17 @@
 import { betterAuth } from "better-auth";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { username } from "better-auth/plugins";
-import { eq } from "drizzle-orm";
+import { and, eq, ne, or, isNull, gt } from "drizzle-orm";
 
 import { db } from "@/db";
-import { users } from "@/db/schema/auth";
+import { sessions, users } from "@/db/schema/auth";
+import { villageBlockedIps, villageSecuritySettings } from "@/db/schema/village-security";
 import { AUDIT_EVENTS, type AuditEventInput } from "@/features/audit/domain/audit";
 import { appendAuditLog } from "@/features/audit/infrastructure/audit-repository";
 import { APP_NAME } from "@/lib/app-config";
-import { alamatIp } from "@/lib/client-ip";
+import { alamatIp, alamatIpDariHeader } from "@/lib/client-ip";
 import { env } from "@/lib/env";
 
 /** Audit reset sandi tidak boleh menggagalkan alur pemulihan akun. */
@@ -114,6 +116,43 @@ export const auth = betterAuth({
         request,
       );
     },
+  },
+
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/sign-in/username") return;
+      const username = typeof ctx.body?.username === "string" ? ctx.body.username.trim().toLowerCase() : "";
+      if (!username) return;
+      const [account] = await db.select({ villageId: users.villageId }).from(users).where(eq(users.username, username)).limit(1);
+      if (!account?.villageId) return;
+      const ip = alamatIpDariHeader(ctx.headers, env.TRUST_PROXY);
+      const [blocked] = await db.select({ id: villageBlockedIps.id }).from(villageBlockedIps).where(and(
+        eq(villageBlockedIps.villageId, account.villageId), eq(villageBlockedIps.ipAddress, ip),
+        or(isNull(villageBlockedIps.expiresAt), gt(villageBlockedIps.expiresAt, new Date())),
+      )).limit(1);
+      if (blocked) throw new APIError("FORBIDDEN", { message: "Alamat IP ini diblokir oleh administrator desa." });
+      const [policy] = await db.select({ enabled: villageSecuritySettings.ipRestrictionEnabled, allowedIps: villageSecuritySettings.allowedIps })
+        .from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
+      if (policy?.enabled) {
+        let allowed: string[] = [];
+        try { const parsed: unknown = policy.allowedIps ? JSON.parse(policy.allowedIps) : []; if (Array.isArray(parsed)) allowed = parsed.filter((v): v is string => typeof v === "string"); } catch {}
+        if (ip === "tidak-diketahui" || !allowed.includes(ip)) throw new APIError("FORBIDDEN", { message: "Login hanya diizinkan dari alamat IP yang terdaftar." });
+      }
+    }),
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/sign-in/username") return;
+      const current = ctx.context.newSession;
+      if (!current) return;
+      const userId = current.user.id;
+      const [account] = await db.select({ villageId: users.villageId }).from(users).where(eq(users.id, userId)).limit(1);
+      if (!account?.villageId) return;
+      const now = new Date();
+      await db.update(users).set({ lastLoginAt: now }).where(eq(users.id, userId));
+      const [policy] = await db.select({ concurrentLogin: villageSecuritySettings.concurrentLogin }).from(villageSecuritySettings)
+        .where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
+      if (policy?.concurrentLogin) await db.delete(sessions).where(and(eq(sessions.userId, userId), ne(sessions.id, current.session.id)));
+      try { await appendAuditLog({ villageId: account.villageId, actorId: userId, event: AUDIT_EVENTS.loginSuccess, resource: "auth", resourceId: userId, ipAddress: alamatIpDariHeader(ctx.headers, env.TRUST_PROXY), userAgent: ctx.headers.get("user-agent") }); } catch (error) { console.error("[auth] gagal mencatat login:", error); }
+    }),
   },
 
   session: {
