@@ -134,3 +134,15 @@
 .ak-quick-grid a:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(81,34,190,.12)}
 .ak-quick-grid a>span{font-size:23px;line-height:1}
 @media(max-width:760px){.ak-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ak-chart-heading>strong{font-size:16px}.ak-info-list>div{grid-template-columns:24px minmax(0,1fr) auto}}
+
+.ak-side-stack{display:grid;align-content:start;gap:14px;min-width:0}
+.ak-calendar-legend{display:flex;flex-wrap:wrap;gap:9px 13px;margin-top:13px;padding-top:10px;border-top:1px solid #f0edf7}
+.ak-calendar-legend span{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#625b75}
+.ak-calendar-legend i{display:inline-block;width:8px;height:8px;border-radius:50%}
+.ak-calendar-day.selected-day{background:linear-gradient(140deg,#8f24f4,#4c15dc)!important;border-color:#7021e7!important;box-shadow:0 4px 10px rgba(83,26,210,.2)}
+.ak-calendar-day.selected-day strong,.ak-calendar-day.selected-day small{color:#fff}
+.ak-calendar-day.weekend strong{color:#dc4557}
+.ak-side-stack .ak-card{padding:15px}
+.ak-side-stack .ak-calendar-day{min-height:43px}
+@media(max-width:1250px){.ak-side-stack{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){.ak-side-stack{grid-template-columns:1fr}}
