@@ -90,7 +90,7 @@ async function getScopedPengguna(id: string, villageId: number) {
 }
 
 export async function createPenggunaData(input: PenggunaCreateInput): Promise<{ id: string }> {
-  const user = await requirePermission(PENGGUNA_RESOURCE, "update");
+  const user = await requirePermission(PENGGUNA_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const username = normalizeUsername(input.username);
