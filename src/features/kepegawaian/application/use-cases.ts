@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, count, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, lte, ne, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -89,6 +89,9 @@ export async function simpanPegawai(input: {
     const [official] = await db.select({ id: perangkatDesa.id }).from(perangkatDesa)
       .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, input.perangkatId))).limit(1);
     if (!official) throw new Error("Perangkat desa tidak ditemukan pada tenant ini.");
+    const [linked] = await db.select({ id: kepegawaianPegawai.id }).from(kepegawaianPegawai)
+      .where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.perangkatId, input.perangkatId), ...(input.id ? [ne(kepegawaianPegawai.id, input.id)] : []))).limit(1);
+    if (linked) throw new Error("Perangkat desa tersebut sudah terhubung ke data pegawai lain.");
   }
   const values = {
     perangkatId: input.perangkatId ?? null, nama: input.nama.trim(), nip: input.nip || null,
@@ -261,10 +264,16 @@ export async function daftarRiwayatPegawai(pegawaiId: number) {
 
 export async function opsiPerangkatBelumTerhubung() {
   const { villageId } = await village("kepegawaian", "update");
-  return db.select({ id: perangkatDesa.id, nama: perangkatDesa.nama, jabatan: jabatanPerangkat.nama })
-    .from(perangkatDesa)
-    .leftJoin(jabatanPerangkat, and(eq(perangkatDesa.jabatanId, jabatanPerangkat.id), eq(jabatanPerangkat.villageId, villageId)))
-    .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.status, "aktif")));
+  const [officials, linked] = await Promise.all([
+    db.select({ id: perangkatDesa.id, nama: perangkatDesa.nama, jabatan: jabatanPerangkat.nama })
+      .from(perangkatDesa)
+      .leftJoin(jabatanPerangkat, and(eq(perangkatDesa.jabatanId, jabatanPerangkat.id), eq(jabatanPerangkat.villageId, villageId)))
+      .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.status, "aktif"))),
+    db.select({ perangkatId: kepegawaianPegawai.perangkatId }).from(kepegawaianPegawai)
+      .where(eq(kepegawaianPegawai.villageId, villageId)),
+  ]);
+  const linkedIds = new Set(linked.map((x) => x.perangkatId).filter((x): x is number => x !== null));
+  return officials.filter((x) => !linkedIds.has(x.id));
 }
 
 export async function tambahRiwayatPegawai(input: { pegawaiId:number; jabatan:string; unitKerja?:string|null; nomorSk?:string|null; mulai:string; selesai?:string|null; keterangan?:string|null }) {
