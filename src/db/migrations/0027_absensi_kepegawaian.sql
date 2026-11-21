@@ -113,6 +113,12 @@ SELECT `village_id`,`id`,`nama`,`nip`,`nik`,`jenis_kelamin`,`tempat_lahir`,`tang
 FROM `perangkat_desa`
 WHERE `status` = 'aktif';
 --> statement-breakpoint
+UPDATE `kehadiran_perangkat` h
+INNER JOIN `kepegawaian_pegawai` p
+  ON p.`village_id`=h.`village_id` AND p.`perangkat_id`=h.`perangkat_id`
+SET h.`pegawai_id`=p.`id`
+WHERE h.`pegawai_id` IS NULL AND h.`perangkat_id` IS NOT NULL;
+--> statement-breakpoint
 
 -- Menu grup + tiga halaman modul; tidak menimpa menu tenant yang telah ada.
 INSERT INTO `modules` (`village_id`,`slug`,`name`,`url`,`icon`,`is_group`,`is_hidden`,`is_active`,`sort_order`,`parent_id`)
