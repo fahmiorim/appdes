@@ -16,7 +16,7 @@ async function setting(villageId:number,key:string,value:string|null){if(value==
 function handle(e:unknown){if(isAppError(e))return response({error:e.message},appErrorStatus(e.code));console.error("Unggah identitas desa gagal:",e);return response({error:e instanceof Error?e.message:"Unggah media gagal."},500);}
 export async function POST(request:Request){
  try{
-  const user=await requirePermission("pengaturan","update"),villageId=await resolveVillageId(user),form=await request.formData();
+  const user=await requirePermission("pengaturan-desa","update"),villageId=await resolveVillageId(user),form=await request.formData();
   const field=form.get("field"),file=form.get("file");
   if(field!=="logo"&&field!=="favicon")return response({error:"Jenis media tidak valid."},400);
   if(!(file instanceof File)||file.size===0)return response({error:"Pilih berkas gambar terlebih dahulu."},400);
@@ -41,7 +41,7 @@ export async function POST(request:Request){
 }
 export async function DELETE(request:Request){
  try{
-  const user=await requirePermission("pengaturan","update"),villageId=await resolveVillageId(user),field=new URL(request.url).searchParams.get("field");
+  const user=await requirePermission("pengaturan-desa","update"),villageId=await resolveVillageId(user),field=new URL(request.url).searchParams.get("field");
   if(field==="logo"){
     const [v]=await db.select({logo:villages.logo}).from(villages).where(eq(villages.id,villageId)).limit(1);
     await db.update(villages).set({logo:null}).where(eq(villages.id,villageId));
