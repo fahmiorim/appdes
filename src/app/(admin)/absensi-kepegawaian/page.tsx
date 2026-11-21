@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 
 import { getDashboardAbsensiData } from "@/features/kepegawaian/application/use-cases";
 
@@ -8,6 +9,14 @@ import styles from "./absensi-kepegawaian.module.css";
 
 export const metadata: Metadata = { title: "Absensi & Kepegawaian" };
 const angka = new Intl.NumberFormat("id-ID");
+
+function mediaUrl(value: string | null | undefined, villageId: number): string | null {
+  if (!value) return null;
+  const segments = value.split(/[\\\\/]/).filter(Boolean);
+  if (!segments.length || segments.some((part) => part === "." || part === ".." || part.includes(".."))) return null;
+  const path = segments[0] === String(villageId) ? segments : [String(villageId), ...segments];
+  return "/api/publik/media/" + path.map(encodeURIComponent).join("/");
+}
 
 export default async function DashboardAbsensiPage() {
   const data = await getDashboardAbsensiData();
@@ -63,7 +72,7 @@ export default async function DashboardAbsensiPage() {
       <section className={styles["ak-card"]}>
         <div className={styles["ak-card-heading-row"]}><div><h2>Daftar Kehadiran Hari Ini</h2><p>Ringkasan status kehadiran seluruh pegawai aktif.</p></div><Link href="/absensi-kepegawaian/absensi">Lihat Semua →</Link></div>
         <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}><thead><tr><th>Nama</th><th>Jabatan</th><th>Masuk</th><th>Pulang</th><th>Status</th></tr></thead><tbody>
-          {data.todayRows.slice(0,5).map((row,i)=><tr key={i}><td><span className={styles["ak-person"]}><span>{row.pegawai.split(" ").slice(0,2).map((part)=>part[0]).join("").toUpperCase()}</span><b>{row.pegawai}</b></span></td><td>{row.jabatan ?? "—"}</td><td>{row.jamMasuk ?? "—"}</td><td>{row.jamKeluar ?? "—"}</td><td><span className={`${styles["ak-badge"]} ${styles[row.status] ?? ""}`}>{statusLabel[row.status] ?? row.status}</span></td></tr>)}
+          {data.todayRows.slice(0,5).map((row,i)=><tr key={i}><td><span className={styles["ak-person"]}><span>{mediaUrl(row.foto,data.villageId)?<Image src={mediaUrl(row.foto,data.villageId)!} alt="" width={32} height={32} unoptimized/>:row.pegawai.split(" ").slice(0,2).map((part)=>part[0]).join("").toUpperCase()}</span><b>{row.pegawai}</b></span></td><td>{row.jabatan ?? "—"}</td><td>{row.jamMasuk ?? "—"}</td><td>{row.jamKeluar ?? "—"}</td><td><span className={`${styles["ak-badge"]} ${styles[row.status] ?? ""}`}>{statusLabel[row.status] ?? row.status}</span></td></tr>)}
         </tbody></table></div>
         <div className={styles["ak-actions"]}><Link className={styles["ak-button"]} href="/absensi-kepegawaian/absensi">Lihat Rekap Absensi</Link></div>
       </section>
