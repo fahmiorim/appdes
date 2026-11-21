@@ -6,6 +6,7 @@ import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 export type ExportFormat = "csv" | "xlsx" | "pdf";
 type ExportData = { title: string; filename: string; columns: string[]; rows: (string | number)[][] };
 
+const safePdfText = (value: unknown) => String(value ?? "").replace(/[–—]/g, "-").replace(/[·•]/g, "-").replace(/[“”]/g, '"' ).replace(/[’‘]/g, "'").replace(/[^\x20-\x7E\xA0-\xFF]/g, "?");
 const csvCell = (value: unknown) => '"' + String(value ?? "").replace(/"/g, '""') + '"';
 
 export async function exportLaporan(data: ExportData, format: ExportFormat): Promise<Response> {
@@ -37,20 +38,20 @@ export async function exportLaporan(data: ExportData, format: ExportFormat): Pro
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
   const pageWidth = 842, pageHeight = 595, margin = 34, rowHeight = 18;
-  const pageTitle = data.title.slice(0, 100);
+  const pageTitle = safePdfText(data.title).slice(0, 100);
   let page = pdf.addPage([pageWidth, pageHeight]), y = pageHeight - margin;
   const drawHeader = () => {
     page.drawText(pageTitle, { x: margin, y, size: 15, font: bold, color: rgb(0.16, 0.13, 0.35) });
     y -= 28;
     const colWidth = (pageWidth - margin * 2) / Math.max(1, data.columns.length);
-    data.columns.forEach((column, i) => page.drawText(column.slice(0, 24), { x: margin + i * colWidth, y, size: 8, font: bold, color: rgb(0.3, 0.25, 0.55), maxWidth: colWidth - 4 }));
+    data.columns.forEach((column, i) => page.drawText(safePdfText(column).slice(0, 24), { x: margin + i * colWidth, y, size: 8, font: bold, color: rgb(0.3, 0.25, 0.55), maxWidth: colWidth - 4 }));
     y -= rowHeight;
   };
   drawHeader();
   const colWidth = (pageWidth - margin * 2) / Math.max(1, data.columns.length);
   for (const row of data.rows) {
     if (y < margin + rowHeight) { page = pdf.addPage([pageWidth, pageHeight]); y = pageHeight - margin; drawHeader(); }
-    row.forEach((value, i) => page.drawText(String(value ?? "").replace(/[\r\n]+/g, " ").slice(0, 48), { x: margin + i * colWidth, y, size: 7.5, font, color: rgb(0.12, 0.12, 0.18), maxWidth: colWidth - 5 }));
+    row.forEach((value, i) => page.drawText(safePdfText(value).replace(/[\r\n]+/g, " ").slice(0, 48), { x: margin + i * colWidth, y, size: 7.5, font, color: rgb(0.12, 0.12, 0.18), maxWidth: colWidth - 5 }));
     y -= rowHeight;
   }
   const bytes = await pdf.save();
