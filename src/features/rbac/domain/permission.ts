@@ -57,6 +57,7 @@ export function levelToActions(level: AccessLevel | null | undefined): Action[] 
   const actions: Action[] = [];
   if (!level) return actions;
   if (levelAllows(level, "read")) actions.push("read");
+  if (levelAllows(level, "create")) actions.push("create");
   if (levelAllows(level, "update")) actions.push("update");
   if (levelAllows(level, "delete")) actions.push("delete");
   return actions;
