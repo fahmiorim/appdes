@@ -71,6 +71,7 @@ const restoreSchema = z.object({
     ketinggian: z.string().nullable(), suhuRataRata: z.string().nullable(), curahHujan: z.string().nullable(),
     topografi: z.string().nullable(),
   }).nullable(),
+  tema: z.object({slug:z.string().max(50),nama:z.string().max(100),versi:z.string().max(20),opsi:z.string().nullable()}).nullable(),
   layanan: z.array(z.object({
     nama: z.string().min(2).max(180), kategori: z.string().max(60), deskripsi: z.string().nullable(),
     persyaratan: z.string().nullable(), estimasiHari: z.number().int().min(0), biaya: z.number().int().min(0),
@@ -107,6 +108,12 @@ export async function POST(request: Request) {
       if (backup.profil) {
         await tx.insert(profilDesa).values({ villageId, ...backup.profil })
           .onDuplicateKeyUpdate({ set: { ...backup.profil } });
+      }
+      await tx.update(theme).set({aktif:false}).where(eq(theme.villageId,villageId));
+      if (backup.tema) {
+        const [sameTheme] = await tx.select({id:theme.id}).from(theme).where(and(eq(theme.villageId,villageId),eq(theme.slug,backup.tema.slug))).limit(1);
+        if (sameTheme) await tx.update(theme).set({...backup.tema,aktif:true}).where(and(eq(theme.id,sameTheme.id),eq(theme.villageId,villageId)));
+        else await tx.insert(theme).values({villageId,...backup.tema,aktif:true});
       }
       await tx.delete(layananPublik).where(eq(layananPublik.villageId, villageId));
       if (backup.layanan.length) {
