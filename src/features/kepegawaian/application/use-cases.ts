@@ -449,6 +449,18 @@ export async function simpanPengaturanKehadiran(input:{jamMasuk:string;jamKeluar
 
 
 
+export async function getStatusAbsensiMandiri() {
+  const user=await requireUser();
+  const villageId=await resolveVillageId(user);
+  const [pegawai]=await db.select({id:kepegawaianPegawai.id,nama:kepegawaianPegawai.nama}).from(kepegawaianPegawai)
+    .where(and(eq(kepegawaianPegawai.villageId,villageId),eq(kepegawaianPegawai.status,"aktif"),eq(kepegawaianPegawai.email,user.email))).limit(1);
+  if(!pegawai) return null;
+  const [record]=await db.select({jamMasuk:kehadiranPerangkat.jamMasuk,jamKeluar:kehadiranPerangkat.jamKeluar})
+    .from(kehadiranPerangkat)
+    .where(and(eq(kehadiranPerangkat.villageId,villageId),eq(kehadiranPerangkat.pegawaiId,pegawai.id),eq(kehadiranPerangkat.tanggal,tanggalLokal()))).limit(1);
+  return {nama:pegawai.nama,jamMasuk:record?.jamMasuk??null,jamKeluar:record?.jamKeluar??null};
+}
+
 function jarakMeter(lat1:number, lon1:number, lat2:number, lon2:number):number {
   const rad=(value:number)=>value*Math.PI/180;
   const dLat=rad(lat2-lat1), dLon=rad(lon2-lon1);
