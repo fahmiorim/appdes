@@ -92,6 +92,10 @@ export default async function PenggunaPage() {
             <small>Role milik desa ini</small>
           </div>
         </article>
+        <article className="pengguna-kpi" data-tone="ungu">
+          <StatIcon><path d="M4 5h16M4 12h16M4 19h16"/><path d="M8 5v14M16 5v14"/></StatIcon>
+          <div><span>Total Hak Akses</span><strong>{angka.format(data.totalHakAkses)}</strong><small>{angka.format(data.moduleCount)} modul tersedia</small></div>
+        </article>
       </div>
 
       <nav aria-label="Bagian manajemen pengguna" className="pengguna-tabs">
