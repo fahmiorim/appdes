@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, count, desc, eq, isNull, like, ne, or } from "drizzle-orm";
 
 import { db } from "@/db";
-import { inventaris, inventarisKategori, inventarisMutasi, inventarisPemeliharaan, inventarisDokumen, inventarisPenanggungJawabRiwayat } from "@/db/schema";
+import { inventaris, inventarisKategori, inventarisMutasi, inventarisPemeliharaan, inventarisDokumen, inventarisPenanggungJawabRiwayat, inventarisPemeliharaanRiwayat } from "@/db/schema";
 import {
   hitungPerubahanAset,
   mutasiLogBeforeStep,
@@ -570,32 +570,73 @@ export async function listPemeliharaan(villageId: number) {
       eq(inventaris.id,inventarisPemeliharaan.inventarisId),
       eq(inventaris.villageId,inventarisPemeliharaan.villageId),
     ))
-    .where(eq(inventarisPemeliharaan.villageId,villageId))
+    .where(and(eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.isDeleted,false)))
     .orderBy(desc(inventarisPemeliharaan.tanggalRencana));
 }
 
 export async function createPemeliharaan(villageId:number,input:{
   inventarisId:number;jenis:string;tanggalRencana:string;biaya:string;pelaksana:string|null;deskripsi:string|null;
-}) {
-  const [row]=await db.insert(inventarisPemeliharaan).values({
-    villageId,...input,status:"terjadwal",
-  }).$returningId();
-  return row?.id;
+},actorName:string) {
+  return db.transaction(async(tx)=>{
+    const [row]=await tx.insert(inventarisPemeliharaan).values({villageId,...input,status:"terjadwal"}).$returningId();
+    if(row?.id) await tx.insert(inventarisPemeliharaanRiwayat).values({
+      villageId,pemeliharaanId:row.id,inventarisId:input.inventarisId,aksi:"dibuat",
+      statusSebelum:null,statusSesudah:"terjadwal",ringkasan:input.jenis,dilakukanOleh:actorName,
+    });
+    return row?.id;
+  });
 }
 
 export async function updateStatusPemeliharaan(villageId:number,id:number,input:{
   status:"terjadwal"|"dalam_proses"|"selesai"|"dibatalkan";
   jenis?:string;tanggalRencana?:string;biaya?:string;pelaksana?:string|null;deskripsi?:string|null;
   tanggalSelesai:string|null;hasil:string|null;
-}) {
-  const [result]=await db.update(inventarisPemeliharaan).set(input)
-    .where(and(eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id)));
-  if(result.affectedRows===0) throw notFound("Jadwal pemeliharaan tidak ditemukan.");
+},actorName:string) {
+  await db.transaction(async(tx)=>{
+    const [before]=await tx.select().from(inventarisPemeliharaan).where(and(
+      eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id),eq(inventarisPemeliharaan.isDeleted,false),
+    )).limit(1);
+    if(!before) throw notFound("Jadwal pemeliharaan tidak ditemukan.");
+    await tx.update(inventarisPemeliharaan).set(input).where(and(
+      eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id),
+    ));
+    await tx.insert(inventarisPemeliharaanRiwayat).values({
+      villageId,pemeliharaanId:id,inventarisId:before.inventarisId,aksi:"diperbarui",
+      statusSebelum:before.status,statusSesudah:input.status,
+      ringkasan:input.hasil??input.deskripsi??input.jenis??"Data pemeliharaan diperbarui",
+      dilakukanOleh:actorName,
+    });
+  });
 }
 
-export async function deletePemeliharaan(villageId:number,id:number) {
-  const [result]=await db.delete(inventarisPemeliharaan).where(and(eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id)));
-  if(result.affectedRows===0) throw notFound("Jadwal pemeliharaan tidak ditemukan.");
+export async function deletePemeliharaan(villageId:number,id:number,actorName:string) {
+  await db.transaction(async(tx)=>{
+    const [before]=await tx.select().from(inventarisPemeliharaan).where(and(
+      eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id),eq(inventarisPemeliharaan.isDeleted,false),
+    )).limit(1);
+    if(!before) throw notFound("Jadwal pemeliharaan tidak ditemukan.");
+    await tx.update(inventarisPemeliharaan).set({isDeleted:true,deletedAt:new Date()}).where(and(
+      eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id),
+    ));
+    await tx.insert(inventarisPemeliharaanRiwayat).values({
+      villageId,pemeliharaanId:id,inventarisId:before.inventarisId,aksi:"dihapus",
+      statusSebelum:before.status,statusSesudah:before.status,ringkasan:before.jenis,dilakukanOleh:actorName,
+    });
+  });
+}
+
+export async function listRiwayatPemeliharaan(villageId:number) {
+  return db.select({
+    id:inventarisPemeliharaanRiwayat.id,aksi:inventarisPemeliharaanRiwayat.aksi,
+    statusSebelum:inventarisPemeliharaanRiwayat.statusSebelum,statusSesudah:inventarisPemeliharaanRiwayat.statusSesudah,
+    ringkasan:inventarisPemeliharaanRiwayat.ringkasan,dilakukanOleh:inventarisPemeliharaanRiwayat.dilakukanOleh,
+    createdAt:inventarisPemeliharaanRiwayat.createdAt,namaBarang:inventaris.namaBarang,
+    jenis:inventarisPemeliharaan.jenis,
+  }).from(inventarisPemeliharaanRiwayat)
+    .leftJoin(inventaris,and(eq(inventaris.id,inventarisPemeliharaanRiwayat.inventarisId),eq(inventaris.villageId,inventarisPemeliharaanRiwayat.villageId)))
+    .leftJoin(inventarisPemeliharaan,and(eq(inventarisPemeliharaan.id,inventarisPemeliharaanRiwayat.pemeliharaanId),eq(inventarisPemeliharaan.villageId,inventarisPemeliharaanRiwayat.villageId)))
+    .where(eq(inventarisPemeliharaanRiwayat.villageId,villageId))
+    .orderBy(desc(inventarisPemeliharaanRiwayat.createdAt));
 }
 
 export async function listDokumenInventaris(villageId:number,inventarisId:number) {
