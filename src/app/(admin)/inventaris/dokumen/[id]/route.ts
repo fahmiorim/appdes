@@ -1,7 +1,7 @@
 import { getDokumenInventarisDownload } from "@/features/inventaris/application/inventaris-use-cases";
 import { bacaMedia } from "@/features/publik/infrastructure/media-storage";
 
-export async function GET(_request:Request,{params}:RouteContext<"/inventaris/dokumen/[id]">) {
+export async function GET(request:Request,{params}:RouteContext<"/inventaris/dokumen/[id]">) {
   const {id:raw}=await params; const id=Number(raw);
   if(!Number.isSafeInteger(id)||id<1) return new Response("Dokumen tidak ditemukan.",{status:404});
   try {
@@ -10,7 +10,7 @@ export async function GET(_request:Request,{params}:RouteContext<"/inventaris/do
     return new Response(bytes,{
       headers:{
         "Content-Type":doc.mime,
-        "Content-Disposition":`attachment; filename="${doc.namaFile.replace(/["\\\\\r\n]/g,"_")}"`,
+        "Content-Disposition":`${new URL(request.url).searchParams.get("inline")==="1" && doc.mime.startsWith("image/") ? "inline" : "attachment"}; filename="${doc.namaFile.replace(/["\\\\\r\n]/g,"_")}"`,
         "Content-Length":String(doc.ukuran),
         "Cache-Control":"private, no-store",
         "X-Content-Type-Options":"nosniff",
