@@ -33,8 +33,6 @@ CREATE TABLE `kepegawaian_pegawai` (
   CONSTRAINT `kepegawaian_pegawai_id` PRIMARY KEY(`id`),
   CONSTRAINT `kepegawaian_pegawai_village_id_uq` UNIQUE(`village_id`,`id`),
   CONSTRAINT `kepegawaian_pegawai_village_perangkat_uq` UNIQUE(`village_id`,`perangkat_id`),
-  CONSTRAINT `kepegawaian_pegawai_village_nip_uq` UNIQUE(`village_id`,`nip`),
-  CONSTRAINT `kepegawaian_pegawai_village_nik_uq` UNIQUE(`village_id`,`nik`),
   INDEX `kepegawaian_pegawai_village_status_idx` (`village_id`,`status`),
   INDEX `kepegawaian_pegawai_village_jabatan_idx` (`village_id`,`jabatan`)
 );
