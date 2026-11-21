@@ -19,7 +19,8 @@ export default async function Page({searchParams}:{searchParams:Promise<{jenis?:
    const data=await getLaporanDesa(option.value,year);
    return {key:option.value,title: "Laporan "+option.label,category:option.label,period:"Tahun "+year,rows:data.rows.length,href:"/laporan-statistik/laporan-desa?jenis="+option.value+"&tahun="+year,exportHref:"/api/laporan-statistik/ekspor?jenis="+option.value+"&tahun="+year};
  }));
- const selected=options.some(o=>o.value===q.jenis)?q.jenis as JenisLaporan:"penduduk";\n const detail=await getLaporanDesa(selected,year), selectedLabel=options.find(o=>o.value===selected)!.label;
+ const selected=options.some(o=>o.value===q.jenis)?q.jenis as JenisLaporan:"penduduk";
+ const detail=await getLaporanDesa(selected,year), selectedLabel=options.find(o=>o.value===selected)!.label;
  return <div className={styles["ls-page"]}>
   <header className={styles["ls-heading"]}><div><span className={styles["ls-eyebrow"]}>DOKUMEN DAN REKAP DATA</span><h1>Laporan Desa</h1><p>Buat, kelola, dan unduh laporan kegiatan, keuangan, aset, kependudukan, dan layanan desa.</p></div><PrintButton/></header>
   <section className={styles["ls-kpis"]}>
