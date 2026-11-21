@@ -1,4 +1,4 @@
-import { date, index, int, mysqlTable, time, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { date, index, int, mysqlTable, time, varchar } from "drizzle-orm/mysql-core";
 
 import { villages } from "./village";
 
@@ -17,7 +17,6 @@ export const kehadiranPerangkat = mysqlTable("kehadiran_perangkat", {
   fotoMasuk: varchar("foto_masuk", { length: 255 }),
   catatan: varchar("catatan", { length: 500 }),
 }, (table) => [
-  uniqueIndex("kehadiran_perangkat_village_pegawai_tanggal_uq").on(table.villageId, table.pegawaiId, table.tanggal),
   index("kehadiran_perangkat_village_tanggal_idx").on(table.villageId, table.tanggal),
   index("kehadiran_perangkat_village_status_idx").on(table.villageId, table.status),
 ]);
