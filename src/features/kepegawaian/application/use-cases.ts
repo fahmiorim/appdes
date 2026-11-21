@@ -201,7 +201,7 @@ export async function daftarCuti(tahun = tahunLokal()) {
     .orderBy(desc(cutiPegawai.createdAt));
 }
 
-export async function ajukanCuti(input: { pegawaiId: number; jenis: string; mulai: string; selesai: string; alasan: string }) {
+export async function ajukanCuti(input: { pegawaiId: number; jenis: string; mulai: string; selesai: string; alasan: string; lampiran?: string | null }) {
   const { villageId } = await village("cuti-izin", "update");
   if (!input.alasan.trim()) throw new Error("Alasan cuti/izin wajib diisi.");
   if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(input.mulai) || !/^\\d{4}-\\d{2}-\\d{2}$/.test(input.selesai)) throw new Error("Tanggal cuti/izin tidak valid.");
@@ -224,7 +224,7 @@ export async function ajukanCuti(input: { pegawaiId: number; jenis: string; mula
       .where(and(eq(cutiPegawai.villageId, villageId), eq(cutiPegawai.pegawaiId, input.pegawaiId), eq(cutiPegawai.jenis, "cuti_tahunan"), eq(cutiPegawai.status, "disetujui"), gte(cutiPegawai.mulai, `${input.mulai.slice(0,4)}-01-01`), lte(cutiPegawai.selesai, `${input.mulai.slice(0,4)}-12-31`)));
     if (Number(used?.total ?? 0) + durasi > total) throw new Error("Pengajuan melebihi sisa kuota cuti tahunan.");
   }
-  await db.insert(cutiPegawai).values({ villageId, pegawaiId: input.pegawaiId, jenis: input.jenis, mulai: input.mulai, selesai: input.selesai, durasi, alasan: input.alasan.trim() });
+  await db.insert(cutiPegawai).values({ villageId, pegawaiId: input.pegawaiId, jenis: input.jenis, mulai: input.mulai, selesai: input.selesai, durasi, alasan: input.alasan.trim(), lampiran: input.lampiran ?? null });
 }
 
 export async function putuskanCuti(id: number, status: "disetujui" | "ditolak", catatan: string) {
