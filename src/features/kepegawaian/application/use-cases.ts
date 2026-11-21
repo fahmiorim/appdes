@@ -1,11 +1,12 @@
 import "server-only";
 
-import { and, asc, count, desc, eq, gte, lte, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, lte, ne, sql } from "drizzle-orm";
 
 import { db } from "@/db";
 import {
   cutiKuota,
   cutiPegawai,
+  kehadiranPengaturan,
   kehadiranPerangkat,
   kepegawaianPegawai,
   kepegawaianRiwayat,
@@ -300,4 +301,24 @@ export async function daftarDokumenPegawai(pegawaiId:number) {
   return db.select().from(kepegawaianDokumen)
     .where(and(eq(kepegawaianDokumen.villageId,villageId),eq(kepegawaianDokumen.pegawaiId,pegawaiId)))
     .orderBy(desc(kepegawaianDokumen.createdAt));
+}
+
+
+export async function getPengaturanKehadiran() {
+  const { villageId } = await village("kehadiran");
+  const [setting] = await db.select().from(kehadiranPengaturan)
+    .where(eq(kehadiranPengaturan.villageId, villageId)).limit(1);
+  return setting ?? { jamMasuk:"08:00", jamKeluar:"16:00", hariLibur:"[0,6]" };
+}
+
+export async function simpanPengaturanKehadiran(input:{jamMasuk:string;jamKeluar:string;hariLibur:number[]}) {
+  const { user, villageId } = await village("kehadiran","update");
+  if(!/^([01]\d|2[0-3]):[0-5]\d$/.test(input.jamMasuk)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(input.jamKeluar)) throw new Error("Format jam kerja harus HH:MM.");
+  if(input.jamKeluar<=input.jamMasuk) throw new Error("Jam pulang harus setelah jam masuk.");
+  if(!Array.isArray(input.hariLibur)||input.hariLibur.some(x=>!Number.isInteger(x)||x<0||x>6)) throw new Error("Hari libur tidak valid.");
+  const [existing]=await db.select({id:kehadiranPengaturan.id}).from(kehadiranPengaturan)
+    .where(eq(kehadiranPengaturan.villageId,villageId)).limit(1);
+  const values={jamMasuk:input.jamMasuk,jamKeluar:input.jamKeluar,hariLibur:JSON.stringify([...new Set(input.hariLibur)]),diperbaruiOleh:user.id};
+  if(existing) await db.update(kehadiranPengaturan).set(values).where(eq(kehadiranPengaturan.id,existing.id));
+  else await db.insert(kehadiranPengaturan).values({...values,villageId});
 }
