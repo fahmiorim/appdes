@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, count, desc, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, isNull, lte, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { bantuanPeserta, bantuanProgram, educations, keuangan, keuanganTemplate, occupations, pembangunanProyek, regions, residents } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
@@ -20,8 +20,18 @@ export async function getDashboardLaporan(tahun?: number) {
     db.select({ total: count(), male: sql<number>`SUM(CASE WHEN ${residents.gender}='male' THEN 1 ELSE 0 END)`, female: sql<number>`SUM(CASE WHEN ${residents.gender}='female' THEN 1 ELSE 0 END)` }).from(residents).where(and(eq(residents.villageId, villageId), eq(residents.lifeStatus, "alive"))),
     db.select({ budget: sql<string>`COALESCE(SUM(${keuangan.anggaran}),0)`, actual: sql<string>`COALESCE(SUM(${keuangan.realisasi}),0)` }).from(keuangan).where(and(eq(keuangan.villageId, villageId), eq(keuangan.tahun, year), eq(keuangan.templateUuid, "5"))),
     db.select({ total: count(), done: sql<number>`SUM(CASE WHEN ${pembangunanProyek.status}='selesai' THEN 1 ELSE 0 END)`, active: sql<number>`SUM(CASE WHEN ${pembangunanProyek.status}='berjalan' THEN 1 ELSE 0 END)`, avg: sql<number>`COALESCE(AVG(${pembangunanProyek.progres}),0)` }).from(pembangunanProyek).where(and(eq(pembangunanProyek.villageId, villageId), eq(pembangunanProyek.tahunAnggaran, year))),
-    db.select({ total: count() }).from(bantuanProgram).where(eq(bantuanProgram.villageId, villageId)),
-    db.select({ total: count() }).from(bantuanPeserta).where(eq(bantuanPeserta.villageId, villageId)),
+    db.select({ total: count() }).from(bantuanProgram).where(and(
+      eq(bantuanProgram.villageId, villageId),
+      or(isNull(bantuanProgram.startDate), lte(bantuanProgram.startDate, `${year}-12-31`)),
+      or(isNull(bantuanProgram.endDate), gte(bantuanProgram.endDate, `${year}-01-01`)),
+    )),
+    db.select({ total: count(bantuanPeserta.id) }).from(bantuanPeserta)
+      .innerJoin(bantuanProgram, and(eq(bantuanPeserta.programId, bantuanProgram.id), eq(bantuanPeserta.villageId, bantuanProgram.villageId)))
+      .where(and(
+        eq(bantuanPeserta.villageId, villageId),
+        or(isNull(bantuanProgram.startDate), lte(bantuanProgram.startDate, `${year}-12-31`)),
+        or(isNull(bantuanProgram.endDate), gte(bantuanProgram.endDate, `${year}-01-01`)),
+      )),
     db.select({ id: pembangunanProyek.id, title: pembangunanProyek.judul, status: pembangunanProyek.status, progress: pembangunanProyek.progres, budget: pembangunanProyek.anggaran }).from(pembangunanProyek).where(and(eq(pembangunanProyek.villageId, villageId), eq(pembangunanProyek.tahunAnggaran, year))).orderBy(desc(pembangunanProyek.updatedAt)).limit(5),
   ]);
   const p = pop[0] ?? { total: 0, male: 0, female: 0 }, f = finance[0] ?? { budget: "0", actual: "0" }, b = project[0] ?? { total: 0, done: 0, active: 0, avg: 0 };
@@ -51,7 +61,11 @@ export async function getLaporanDesa(jenis: JenisLaporan, tahun?: number) {
   }
   const rows = await db.select({ name: bantuanProgram.name, target: bantuanProgram.sasaran, start: bantuanProgram.startDate, end: bantuanProgram.endDate, participants: count(bantuanPeserta.id) }).from(bantuanProgram)
     .leftJoin(bantuanPeserta, and(eq(bantuanPeserta.programId, bantuanProgram.id), eq(bantuanPeserta.villageId, villageId)))
-    .where(eq(bantuanProgram.villageId, villageId)).groupBy(bantuanProgram.id, bantuanProgram.name, bantuanProgram.sasaran, bantuanProgram.startDate, bantuanProgram.endDate).orderBy(asc(bantuanProgram.name));
+    .where(and(
+      eq(bantuanProgram.villageId, villageId),
+      or(isNull(bantuanProgram.startDate), lte(bantuanProgram.startDate, `${year}-12-31`)),
+      or(isNull(bantuanProgram.endDate), gte(bantuanProgram.endDate, `${year}-01-01`)),
+    )).groupBy(bantuanProgram.id, bantuanProgram.name, bantuanProgram.sasaran, bantuanProgram.startDate, bantuanProgram.endDate).orderBy(asc(bantuanProgram.name));
   return { year, columns: ["Program", "Sasaran", "Mulai", "Selesai", "Peserta"], rows: rows.map(r => [r.name, r.target, r.start ?? "", r.end ?? "", Number(r.participants)]) };
 }
 
