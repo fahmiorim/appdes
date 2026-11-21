@@ -46,7 +46,7 @@ export default async function DetailInventarisPage({params,searchParams}:Props){
     </section>
     <section className={styles.grid}>
       <article className={styles.panel}><h2>Informasi Perolehan</h2><div className={styles.statLine}><span>Tanggal Perolehan</span><strong>{dateLabel(x.tanggalPembelian)}</strong></div><div className={styles.statLine}><span>Tahun Perolehan</span><strong>{x.tahunPembelian??"—"}</strong></div><div className={styles.statLine}><span>Sumber Dana / Asal</span><strong>{asalLabel(x.asal)}</strong></div><div className={styles.statLine}><span>Penyedia / Donatur</span><strong>{x.donatur??"—"}</strong></div></article>
-      <article className={styles.panel}><h2>Riwayat Aset</h2><p style={{marginBottom:12}}>Riwayat perpindahan dan perubahan kondisi yang telah disetujui.</p>
+      <article className={styles.panel}><h2>Riwayat Aset</h2><p style={{marginBottom:12}}>Riwayat pengajuan, perpindahan, perubahan kondisi, dan hasil verifikasi aset.</p>
         {data.riwayat.length?<div className={styles.timeline}>{data.riwayat.map(m=><article key={m.id}><strong>{MUTASI_JENIS_LABELS[m.jenis]} · {MUTASI_STATUS_LABELS[m.status]}</strong><small>{dateLabel(m.tanggalMutasi)} · {m.diajukanOleh??"Pengguna"}</small><small>{m.alasan??"Tidak ada catatan"} {m.lokasiBaru?"· Lokasi baru: "+m.lokasiBaru:""}</small></article>)}</div>:<p className={styles.empty}>Belum ada riwayat mutasi aset.</p>}
       </article>
     </section>
