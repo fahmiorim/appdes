@@ -20,6 +20,6 @@ CREATE TABLE `inventaris_pemeliharaan` (
   PRIMARY KEY (`id`),
   KEY `inv_pem_village_date` (`village_id`,`tanggal_rencana`),
   KEY `inv_pem_village_status` (`village_id`,`status`),
-  CONSTRAINT `inventaris_pemeliharaan_village_fk` FOREIGN KEY (`village_id`) REFERENCES `villages` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `inventaris_pemeliharaan_village_id_villages_id_fk` FOREIGN KEY (`village_id`) REFERENCES `villages` (`id`) ON DELETE CASCADE,
   CONSTRAINT `inventaris_pemeliharaan_asset_tenant_fk` FOREIGN KEY (`village_id`,`inventaris_id`) REFERENCES `inventaris` (`village_id`,`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
