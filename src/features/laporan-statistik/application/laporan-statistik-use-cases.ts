@@ -1,11 +1,11 @@
 import "server-only";
 import { and, asc, count, desc, eq, gte, isNull, lte, or, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { bantuanPeserta, bantuanProgram, educations, keuangan, keuanganTemplate, occupations, pembangunanProyek, regions, residents } from "@/db/schema";
+import { bantuanPeserta, bantuanProgram, educations, incomingLetters, inventaris, keuangan, keuanganTemplate, layananPublik, occupations, outgoingLetters, pengajuanLayanan, pembangunanProyek, regions, residents } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { requirePermission } from "@/lib/dal";
 
-export type JenisLaporan = "penduduk" | "keuangan" | "pembangunan" | "bantuan";
+export type JenisLaporan = "penduduk" | "keuangan" | "pembangunan" | "bantuan" | "aset" | "layanan" | "surat-masuk" | "surat-keluar";
 export type KategoriStatistik = "gender" | "umur" | "pendidikan" | "pekerjaan" | "dusun";
 export type Baris = (string | number)[];
 const yearOf = (value?: number) => Number.isInteger(value) && value! >= 2000 && value! <= 2100 ? value! : new Date().getFullYear();
@@ -53,6 +53,32 @@ export async function getLaporanDesa(jenis: JenisLaporan, tahun?: number) {
     const rows = await db.select({ code: keuangan.templateUuid, name: keuanganTemplate.uraian, budget: keuangan.anggaran, actual: keuangan.realisasi }).from(keuangan)
       .innerJoin(keuanganTemplate, eq(keuangan.templateUuid, keuanganTemplate.uuid)).where(and(eq(keuangan.villageId, villageId), eq(keuangan.tahun, year))).orderBy(asc(keuangan.templateUuid));
     return { year, columns: ["Kode Rekening", "Uraian", "Anggaran", "Realisasi", "Sisa"], rows: rows.map(r => [r.code, r.name, Number(r.budget), Number(r.actual), Number(r.budget) - Number(r.actual)]) };
+  }
+  if (jenis === "aset") {
+    const rows = await db.select({ code: inventaris.nomorInventaris, name: inventaris.namaBarang, category: inventaris.kategoriId, quantity: inventaris.jumlah, unit: inventaris.satuan, condition: inventaris.kondisi, location: inventaris.lokasi, value: inventaris.nilaiAkhir, year: inventaris.tahunPembelian }).from(inventaris)
+      .where(and(eq(inventaris.villageId, villageId), eq(inventaris.isDeleted, false), or(isNull(inventaris.tahunPembelian), eq(inventaris.tahunPembelian, year))))
+      .orderBy(asc(inventaris.namaBarang));
+    return { year, columns: ["Nomor Inventaris", "Nama Aset", "ID Kategori", "Jumlah", "Satuan", "Kondisi", "Lokasi", "Nilai Aset", "Tahun Pembelian"], rows: rows.map(r => [r.code ?? "", r.name, r.category ?? "", Number(r.quantity), r.unit ?? "", r.condition, r.location ?? "", Number(r.value ?? 0), r.year ?? ""]) };
+  }
+  if (jenis === "layanan") {
+    const start = `${year}-01-01 00:00:00`, end = `${year}-12-31 23:59:59`;
+    const rows = await db.select({ ticket: pengajuanLayanan.nomorTiket, service: layananPublik.nama, applicant: pengajuanLayanan.namaPemohon, status: pengajuanLayanan.status, createdAt: pengajuanLayanan.createdAt, processedAt: pengajuanLayanan.selesaiPada }).from(pengajuanLayanan)
+      .innerJoin(layananPublik, and(eq(pengajuanLayanan.layananId, layananPublik.id), eq(pengajuanLayanan.villageId, layananPublik.villageId)))
+      .where(and(eq(pengajuanLayanan.villageId, villageId), gte(pengajuanLayanan.createdAt, new Date(start)), lte(pengajuanLayanan.createdAt, new Date(end))))
+      .orderBy(desc(pengajuanLayanan.createdAt));
+    return { year, columns: ["Nomor Tiket", "Jenis Layanan", "Nama Pemohon", "Status", "Tanggal Pengajuan", "Tanggal Selesai"], rows: rows.map(r => [r.ticket, r.service, r.applicant, r.status, r.createdAt.toISOString(), r.processedAt?.toISOString() ?? ""]) };
+  }
+  if (jenis === "surat-masuk") {
+    const rows = await db.select({ agenda: incomingLetters.agendaNumber, date: incomingLetters.receivedDate, number: incomingLetters.letterNumber, sender: incomingLetters.sender, summary: incomingLetters.summary, disposition: incomingLetters.disposition, archive: incomingLetters.archiveLocation }).from(incomingLetters)
+      .where(and(eq(incomingLetters.villageId, villageId), gte(incomingLetters.receivedDate, `${year}-01-01`), lte(incomingLetters.receivedDate, `${year}-12-31`)))
+      .orderBy(desc(incomingLetters.receivedDate));
+    return { year, columns: ["Nomor Agenda", "Tanggal Terima", "Nomor Surat", "Pengirim", "Ringkasan", "Disposisi", "Lokasi Arsip"], rows: rows.map(r => [r.agenda, r.date, r.number, r.sender ?? "", r.summary ?? "", r.disposition ?? "", r.archive ?? ""]) };
+  }
+  if (jenis === "surat-keluar") {
+    const rows = await db.select({ agenda: outgoingLetters.agendaNumber, date: outgoingLetters.letterDate, number: outgoingLetters.letterNumber, recipient: outgoingLetters.recipient, summary: outgoingLetters.summary, sent: outgoingLetters.sentDate, archive: outgoingLetters.archiveLocation }).from(outgoingLetters)
+      .where(and(eq(outgoingLetters.villageId, villageId), gte(outgoingLetters.letterDate, `${year}-01-01`), lte(outgoingLetters.letterDate, `${year}-12-31`)))
+      .orderBy(desc(outgoingLetters.letterDate));
+    return { year, columns: ["Nomor Agenda", "Tanggal Surat", "Nomor Surat", "Penerima", "Ringkasan", "Tanggal Kirim", "Lokasi Arsip"], rows: rows.map(r => [r.agenda, r.date, r.number, r.recipient ?? "", r.summary ?? "", r.sent ?? "", r.archive ?? ""]) };
   }
   if (jenis === "pembangunan") {
     const rows = await db.select({ title: pembangunanProyek.judul, location: pembangunanProyek.lokasi, source: pembangunanProyek.sumberDana, status: pembangunanProyek.status, progress: pembangunanProyek.progres, budget: pembangunanProyek.anggaran, start: pembangunanProyek.mulai, end: pembangunanProyek.selesai }).from(pembangunanProyek)
