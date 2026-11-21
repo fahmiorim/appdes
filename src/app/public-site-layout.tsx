@@ -59,6 +59,7 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
       { href: "/pengumuman", label: "Pengumuman" },
       { href: "/agenda", label: "Agenda Kegiatan" },
       { href: "/statistik", label: "Statistik Desa" },
+      { href: "/pembangunan", label: "Pembangunan Desa" },
       { href: "/transparansi/apbdes", label: "APBDes & Transparansi Anggaran" },
       { href: "/transparansi/laporan-keuangan", label: "Laporan Keuangan Desa" },
     ],
@@ -186,6 +187,7 @@ export function PublicSiteFooter({ desa, location, logoUrl }: Props) {
           <Link href="/berita">Berita Desa</Link>
           <Link href="/pengumuman">Pengumuman</Link>
           <Link href="/agenda">Agenda Kegiatan</Link>
+          <Link href="/pembangunan">Pembangunan Desa</Link>
           <Link href="/galeri">Galeri</Link>
           <Link href="/transparansi/laporan-keuangan">Laporan Keuangan</Link>
         </div>
