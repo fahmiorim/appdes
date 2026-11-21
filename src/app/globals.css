@@ -5208,7 +5208,7 @@ a.beranda-quick-tile:hover {
 
 .pengguna-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
 }
 
@@ -5862,6 +5862,7 @@ a.beranda-quick-tile:hover {
 }
 
 @media (max-width: 1180px) {
+  .pengguna-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .pengguna-layout,
   .pengguna-role-layout {
     grid-template-columns: minmax(0, 1fr);
