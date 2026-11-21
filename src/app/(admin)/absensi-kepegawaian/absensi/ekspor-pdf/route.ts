@@ -72,7 +72,7 @@ export async function GET(request: Request) {
     page.drawText("FlexiDesa - Sistem Informasi Desa", { x: 30, y: 22, size: 7, font, color: rgb(0.45, 0.42, 0.5) });
   }
   const bytes = await pdf.save();
-  return new Response(bytes, {
+  return new Response(Buffer.from(bytes), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="laporan-absensi-${tahun}-${bulan.padStart(2, "0")}.pdf"`,
