@@ -17,3 +17,13 @@
 .ak-empty{padding:22px;text-align:center;color:#77718b;background:#faf9ff;border-radius:12px}
 @media(max-width:1100px){.ak-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.ak-grid{grid-template-columns:1fr}}
 @media(max-width:650px){.ak-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.ak-form{grid-template-columns:1fr}.ak-form .wide{grid-column:auto}.ak-card{padding:13px}}
+
+.ak-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-top:12px}
+.ak-calendar-day{min-height:48px;padding:6px 3px;border-radius:9px;background:#faf9ff;text-align:center;font-size:11px;color:#534b6d}
+.ak-calendar-day strong{display:block;font-size:12px;color:#211b3f}
+.ak-calendar-day small{display:block;color:#6d28d9;font-size:9px;margin-top:3px}
+.ak-calendar-day.has-data{background:#eee7ff;border:1px solid #d8c7ff}
+.ak-calendar-head{font-size:10px;font-weight:800;text-align:center;color:#817991}
+.ak-card dl{display:grid;gap:7px;margin:12px 0}
+.ak-card dl>div{display:grid;grid-template-columns:minmax(100px,.7fr) 1fr;gap:8px;font-size:12px}
+.ak-card dt{color:#817991}.ak-card dd{margin:0;font-weight:650;color:#28213f}
