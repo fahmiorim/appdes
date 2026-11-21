@@ -10,7 +10,8 @@ export const metadata: Metadata = {
     default: APP_NAME,
     template: `%s | ${APP_NAME}`,
   },
-  description: APP_DESCRIPTION,\n  icons: { icon: "/api/publik/favicon" },
+  description: APP_DESCRIPTION,
+  icons: { icon: "/api/publik/favicon" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
