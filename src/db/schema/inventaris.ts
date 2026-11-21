@@ -195,6 +195,7 @@ export const inventarisPemeliharaan = mysqlTable(
     updatedAt: timestamp("updated_at").notNull().defaultNow().$onUpdate(() => new Date()),
   },
   (table) => [
+    uniqueIndex("inventaris_pemeliharaan_village_id_uq").on(table.villageId, table.id),
     index("inv_pem_village_date").on(table.villageId, table.tanggalRencana),
     index("inv_pem_village_status").on(table.villageId, table.status),
     foreignKey({
