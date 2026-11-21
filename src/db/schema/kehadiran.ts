@@ -1,5 +1,6 @@
-import { date, index, int, mysqlTable, time, varchar } from "drizzle-orm/mysql-core";
+import { date, foreignKey, index, int, mysqlTable, time, varchar } from "drizzle-orm/mysql-core";
 
+import { kepegawaianPegawai } from "./kepegawaian";
 import { villages } from "./village";
 
 /** Catatan kehadiran pegawai desa; pegawaiId merujuk kepegawaian_pegawai. */
@@ -19,6 +20,7 @@ export const kehadiranPerangkat = mysqlTable("kehadiran_perangkat", {
 }, (table) => [
   index("kehadiran_perangkat_village_tanggal_idx").on(table.villageId, table.tanggal),
   index("kehadiran_perangkat_village_status_idx").on(table.villageId, table.status),
+  foreignKey({ name: "kehadiran_perangkat_pegawai_tenant_fk", columns: [table.villageId, table.pegawaiId], foreignColumns: [kepegawaianPegawai.villageId, kepegawaianPegawai.id] }).onDelete("cascade"),
 ]);
 
 export type KehadiranPerangkat = typeof kehadiranPerangkat.$inferSelect;
