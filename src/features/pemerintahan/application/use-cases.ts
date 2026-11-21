@@ -89,9 +89,17 @@ export async function simpanPerangkatDesa(id: number | null, input: {
   }
   if (input.atasanId === id) throw new Error("Perangkat tidak dapat menjadi atasan dirinya sendiri.");
   if (input.atasanId) {
-    const [parent] = await db.select({ id: perangkatDesa.id }).from(perangkatDesa)
-      .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, input.atasanId))).limit(1);
-    if (!parent) throw new Error("Atasan tidak ditemukan pada desa aktif.");
+    let currentId: number | null = input.atasanId;
+    const visited = new Set<number>();
+    while (currentId !== null) {
+      if (currentId === id) throw new Error("Relasi atasan membentuk siklus pada struktur organisasi.");
+      if (visited.has(currentId)) throw new Error("Struktur organisasi yang dipilih sudah memiliki relasi melingkar.");
+      visited.add(currentId);
+      const [parent] = await db.select({ id: perangkatDesa.id, atasanId: perangkatDesa.atasanId }).from(perangkatDesa)
+        .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, currentId))).limit(1);
+      if (!parent) throw new Error("Atasan tidak ditemukan pada desa aktif.");
+      currentId = parent.atasanId;
+    }
   }
   const data = { ...input, foto: input.foto || null };
   if (id) await db.update(perangkatDesa).set(data).where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, id)));
