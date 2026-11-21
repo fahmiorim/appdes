@@ -148,3 +148,19 @@ export async function getWilayahPemerintahanData() {
   ]);
   return { rows, shapes };
 }
+
+
+export async function simpanAreaPeta(id: number | null, input: { nama: string; path: string | null; enabled: number; sortOrder: number }) {
+  const villageId = await tenant("wilayah", id ? "update" : "create");
+  if (input.path) {
+    const geo = JSON.parse(input.path) as { type?: string; coordinates?: unknown };
+    if (!geo || geo.type !== "Polygon" || !Array.isArray(geo.coordinates)) throw new Error("Geometri harus berupa GeoJSON Polygon yang valid.");
+  }
+  if (id) await db.update(areas).set(input).where(and(eq(areas.villageId, villageId), eq(areas.id, id)));
+  else await db.insert(areas).values({ ...input, villageId });
+}
+
+export async function hapusAreaPeta(id: number) {
+  const villageId = await tenant("wilayah", "delete");
+  await db.delete(areas).where(and(eq(areas.villageId, villageId), eq(areas.id, id)));
+}
