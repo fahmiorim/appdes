@@ -11,10 +11,9 @@ import {
 /**
  * Katalog template tampilan website platform.
  *
- * Template di sini adalah metadata tampilan yang dapat dipilih tenant, bukan
- * paket kode yang diunggah saat runtime. Token warna/font disimpan sebagai JSON
- * tervalidasi dan dipakai konsol untuk pratinjau; rendering situs publik tetap
- * memakai komponen aplikasi yang sudah ada.
+ * Template adalah metadata tampilan yang dapat dipilih tenant, bukan paket kode
+ * yang diunggah saat runtime. Token warna/font divalidasi lalu dipakai oleh
+ * komponen situs publik yang sudah ada untuk menyesuaikan identitas visual.
  */
 export const websiteTemplates = mysqlTable(
   "website_templates",
