@@ -445,7 +445,9 @@ export async function catatAbsensiMandiri(input:{latitude:number;longitude:numbe
     .where(and(eq(kepegawaianPegawai.villageId,villageId),eq(kepegawaianPegawai.status,"aktif"),eq(kepegawaianPegawai.email,user.email))).limit(1);
   if(!pegawai) throw new Error("Akun belum ditautkan ke data pegawai. Hubungi administrator desa untuk mengisi email akun pada profil pegawai.");
   const [setting]=await db.select().from(kehadiranPengaturan).where(eq(kehadiranPengaturan.villageId,villageId)).limit(1);
-  const wajibGps=setting?.wajibGps??true;\n  const wajibFoto=setting?.wajibFoto??true;\n  if(wajibGps && (!setting?.latitudeKantor||!setting?.longitudeKantor)) throw new Error("Lokasi kantor belum dikonfigurasi administrator.");
+  const wajibGps=setting?.wajibGps??true;
+  const wajibFoto=setting?.wajibFoto??true;
+  if(wajibGps && (!setting?.latitudeKantor||!setting?.longitudeKantor)) throw new Error("Lokasi kantor belum dikonfigurasi administrator.");
   if(wajibGps && setting?.latitudeKantor && setting.longitudeKantor) {
     const distance=jarakMeter(input.latitude,input.longitude,Number(setting.latitudeKantor),Number(setting.longitudeKantor));
     if(distance>(setting.radiusMeter??100)) throw new Error(`Anda berada di luar area absensi kantor (jarak sekitar ${Math.round(distance)} meter).`);
