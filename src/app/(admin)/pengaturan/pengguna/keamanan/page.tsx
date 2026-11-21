@@ -10,7 +10,6 @@ import { db } from "@/db";
 import { users } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 import { hasPermission } from "@/features/rbac/application/authorization";
-import { RESOURCES } from "@/features/rbac/domain/resources";
 
 export const metadata = { title: "Pengaturan Keamanan" };
 export default async function KeamananPage() {
