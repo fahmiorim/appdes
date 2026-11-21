@@ -190,7 +190,7 @@ export async function getDashboardAbsensiData() {
 
 export async function daftarAbsensi(tanggal = tanggalLokal()) {
   const { villageId } = await village("kehadiran");
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(tanggal)||new Date(tanggal+"T00:00:00Z").toISOString().slice(0,10)!==tanggal) throw new Error("Tanggal absensi tidak valid.");
+  if(!tanggalValid(tanggal)) throw new Error("Tanggal absensi tidak valid.");
   await sinkronkanPegawaiPerangkat(villageId);
   return db.select({
     id: kehadiranPerangkat.id, pegawaiId: kepegawaianPegawai.id, nama: kepegawaianPegawai.nama,
