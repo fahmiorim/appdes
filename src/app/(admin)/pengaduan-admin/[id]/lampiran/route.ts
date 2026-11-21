@@ -18,10 +18,11 @@ export async function GET(
   }
 
   const isi = await bacaLampiranPengaduan(row.lampiran);
+  const ekstensi = row.lampiran.split(".").pop()?.replace(/[^a-z0-9]/gi, "").toLowerCase() || "bin";
   return new Response(new Uint8Array(isi), {
     headers: {
       "Content-Type": "application/octet-stream",
-      "Content-Disposition": `attachment; filename="lampiran-${row.nomorTiket}.bin"`,
+      "Content-Disposition": `attachment; filename="lampiran-${row.nomorTiket}.${ekstensi}"`,
       "Cache-Control": "private, no-store",
       "X-Content-Type-Options": "nosniff",
     },
