@@ -6,6 +6,8 @@ import { villages } from "./village";
 export const villageSecuritySettings = mysqlTable("village_security_settings", {
   villageId: int("village_id").notNull().references(() => villages.id, { onDelete: "cascade" }),
   passwordMinLength: int("password_min_length").notNull().default(8),
+  passwordExpiryDays: int("password_expiry_days").notNull().default(90),
+  passwordReuseCount: int("password_reuse_count").notNull().default(3),
   requireUppercase: boolean("require_uppercase").notNull().default(true),
   requireLowercase: boolean("require_lowercase").notNull().default(true),
   requireNumber: boolean("require_number").notNull().default(true),
