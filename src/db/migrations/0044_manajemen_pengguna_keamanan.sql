@@ -18,6 +18,10 @@ CREATE TABLE IF NOT EXISTS `village_security_settings` (
   CONSTRAINT `village_security_settings_user_fk` FOREIGN KEY (`updated_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
 );
 --> statement-breakpoint
+INSERT INTO `village_security_settings` (`village_id`)
+SELECT v.`id` FROM `villages` v
+WHERE NOT EXISTS (SELECT 1 FROM `village_security_settings` s WHERE s.`village_id`=v.`id`);
+--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS `village_blocked_ips` (
   `id` int NOT NULL AUTO_INCREMENT,
   `village_id` int NOT NULL,
