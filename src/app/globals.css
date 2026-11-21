@@ -6231,3 +6231,20 @@ a.beranda-quick-tile:hover {
  .page-heading-actions .button, .page-actions .button { width: 100%; }
  .template-field-row { align-items: flex-start; }
 }
+
+
+/* --- Pelayanan Publik dashboard ----------------------------------------- */
+.dashboard-stats { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:14px; }
+.dashboard-stats > .modul-card { display:grid; gap:7px; padding:16px; }
+.dashboard-stats span { color:#66718d; font-size:11px; font-weight:700; }
+.dashboard-stats strong { color:#192544; font-size:27px; line-height:1.15; }
+.dashboard-stats small { color:#8992a8; font-size:10px; }
+.dashboard-grid { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(300px,.9fr); gap:14px; }
+.dashboard-grid > .modul-card { min-width:0; }
+.dashboard-grid .page-heading { align-items:center; margin-bottom:12px; }
+.dashboard-grid .page-heading h2, .dashboard-grid h2 { margin:0; font-size:15px; }
+.dashboard-grid .page-heading p { margin:4px 0 0; color:#7b859d; font-size:11px; }
+.dashboard-grid .page-heading a { color:#7026d1; font-size:11px; font-weight:800; white-space:nowrap; }
+.quick-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+@media(max-width:900px) { .dashboard-stats { grid-template-columns:repeat(2,minmax(0,1fr)); } .dashboard-grid { grid-template-columns:1fr; } }
+@media(max-width:520px) { .dashboard-stats { grid-template-columns:1fr 1fr; gap:8px; } .dashboard-stats strong { font-size:21px; } }
