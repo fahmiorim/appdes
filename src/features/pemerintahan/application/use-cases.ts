@@ -104,9 +104,14 @@ export async function simpanPerangkatDesa(id: number | null, input: {
       if (currentId === id) throw new Error("Relasi atasan membentuk siklus pada struktur organisasi.");
       if (visited.has(currentId)) throw new Error("Struktur organisasi yang dipilih sudah memiliki relasi melingkar.");
       visited.add(currentId);
-      const [parent] = await db.select({ id: perangkatDesa.id, atasanId: perangkatDesa.atasanId }).from(perangkatDesa)
+      const [parent] = await db.select({
+        id: perangkatDesa.id,
+        atasanId: perangkatDesa.atasanId,
+        status: perangkatDesa.status,
+      }).from(perangkatDesa)
         .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, currentId))).limit(1);
       if (!parent) throw new Error("Atasan tidak ditemukan pada desa aktif.");
+      if (parent.status !== "aktif") throw new Error("Atasan langsung harus merupakan perangkat yang berstatus aktif.");
       currentId = parent.atasanId;
     }
   }
