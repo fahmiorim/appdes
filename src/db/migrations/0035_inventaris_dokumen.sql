@@ -10,6 +10,6 @@ CREATE TABLE `inventaris_dokumen` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `inv_doc_village_asset` (`village_id`,`inventaris_id`),
-  CONSTRAINT `inventaris_dokumen_village_fk` FOREIGN KEY (`village_id`) REFERENCES `villages` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `inventaris_dokumen_village_id_villages_id_fk` FOREIGN KEY (`village_id`) REFERENCES `villages` (`id`) ON DELETE CASCADE,
   CONSTRAINT `inventaris_dokumen_asset_tenant_fk` FOREIGN KEY (`village_id`,`inventaris_id`) REFERENCES `inventaris` (`village_id`,`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB;
