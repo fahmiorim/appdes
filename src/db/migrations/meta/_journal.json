@@ -253,6 +253,13 @@
       "when": 1795700000001,
       "tag": "0034_inventaris_dokumen",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "5",
+      "when": 1795700000002,
+      "tag": "0035_inventaris_kondisi_perbaikan",
+      "breakpoints": true
     }
   ]
 }
