@@ -64,7 +64,9 @@ export async function getKeluargaFormReference(): Promise<KeluargaReferenceData>
   const user = await requirePermission(KELUARGA_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
   const regions = await listWilayahOptions(villageId);
-  return { regions: regions.map((region) => ({ id: region.id, label: formatWilayahLabel(region) })) };
+  return {
+    regions: regions.map((region) => ({ id: region.id, label: formatWilayahLabel(region) })),
+  };
 }
 
 export async function getKeluargaReference(): Promise<KeluargaReferenceData> {
@@ -222,13 +224,17 @@ export async function updateKeluarga(id: number, input: KeluargaFormInput): Prom
 }
 
 export async function deleteKeluarga(id: number): Promise<void> {
-  const members = await listKeluargaMembersRows(villageId, id);
-  if (members.length > 0) throw conflict("Kartu Keluarga masih memiliki anggota. Pindahkan atau lepaskan seluruh anggota terlebih dahulu.");
   const user = await requirePermission(KELUARGA_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
 
   const existing = await findKeluargaById(villageId, id);
   if (!existing) throw notFound("Kartu Keluarga tidak ditemukan.");
+
+  const members = await listKeluargaMembersRows(villageId, id);
+  if (members.length > 0)
+    throw conflict(
+      "Kartu Keluarga masih memiliki anggota. Pindahkan atau lepaskan seluruh anggota terlebih dahulu.",
+    );
 
   await deleteKeluargaRow(villageId, id);
 

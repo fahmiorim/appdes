@@ -239,7 +239,10 @@ export async function deletePenduduk(id: number): Promise<void> {
   if (!existing) throw notFound("Data penduduk tidak ditemukan.");
   if (existing.familyId !== null && existing.familyRelationId === HEAD_OF_FAMILY_RELATION_ID) {
     const members = await listFamilyMembersRows(villageId, existing.familyId);
-    if (members.length > 1) throw conflict("Tetapkan anggota lain sebagai kepala keluarga sebelum menghapus kepala keluarga saat ini.");
+    if (members.length > 1)
+      throw conflict(
+        "Tetapkan anggota lain sebagai kepala keluarga sebelum menghapus kepala keluarga saat ini.",
+      );
   }
 
   await deletePendudukRow(villageId, id);

@@ -79,7 +79,6 @@ export async function catatKelahiran(input: CatatKelahiranInput) {
       motherNationalId: null,
       lifeStatus: "alive",
       residenceStatus: "permanent",
-      familyRelationId: parsed.familyRelationId ?? null,
       religionId: null,
       maritalStatusId: null,
       educationId: null,
@@ -203,6 +202,7 @@ export async function catatDatang(input: CatatDatangInput) {
     {
       villageId,
       familyId: parsed.familyId ?? null,
+      familyRelationId: parsed.familyRelationId ?? null,
       regionId: parsed.regionId ?? null,
       nationalId: nid,
       name: parsed.name.trim(),
@@ -217,7 +217,6 @@ export async function catatDatang(input: CatatDatangInput) {
       motherNationalId: null,
       lifeStatus: "alive",
       residenceStatus: "permanent",
-      familyRelationId: null,
       religionId: null,
       maritalStatusId: null,
       educationId: null,

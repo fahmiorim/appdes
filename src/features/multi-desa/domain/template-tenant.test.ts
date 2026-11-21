@@ -90,18 +90,44 @@ describe("template bawaan yang dikirim", () => {
   });
 
   it("menyediakan lima modul Website Desa dengan hak kelola administrator", () => {
-    const expected = ["website-dashboard", "website-pengaturan", "website-halaman", "website-konten", "website-dokumen"];
+    const expected = [
+      "website-dashboard",
+      "website-pengaturan",
+      "website-halaman",
+      "website-konten",
+      "website-dokumen",
+    ];
     for (const slug of expected) {
       expect(template.modules.some((module) => module.slug === slug)).toBe(true);
-      expect(template.akses).toContainEqual({ roleSlug: ROLE_ADMINISTRATOR, moduleSlug: slug, access: "manage" });
+      expect(template.akses).toContainEqual({
+        roleSlug: ROLE_ADMINISTRATOR,
+        moduleSlug: slug,
+        access: "manage",
+      });
     }
-    expect(template.modules.find((module) => module.slug === "website-desa")).toMatchObject({ isGroup: true, url: null });
+    expect(template.modules.find((module) => module.slug === "website-desa")).toMatchObject({
+      isGroup: true,
+      url: null,
+    });
   });
 
   it("menyediakan grup Data Kependudukan dan lima halaman dengan akses role yang sesuai", () => {
-    expect(template.modules.find((modul) => modul.slug === "data-kependudukan")).toMatchObject({ isGroup: true, url: null, parentSlug: null });
-    for (const [slug, url] of [["dashboard-kependudukan", "/penduduk/dashboard"], ["penduduk", "/penduduk"], ["keluarga", "/keluarga"], ["mutasi-penduduk", "/mutasi-penduduk"], ["laporan-penduduk", "/statistik/penduduk"]]) {
-      expect(template.modules.find((modul) => modul.slug === slug)).toMatchObject({ url, parentSlug: "data-kependudukan" });
+    expect(template.modules.find((modul) => modul.slug === "data-kependudukan")).toMatchObject({
+      isGroup: true,
+      url: null,
+      parentSlug: null,
+    });
+    for (const [slug, url] of [
+      ["dashboard-kependudukan", "/penduduk/dashboard"],
+      ["penduduk", "/penduduk"],
+      ["keluarga", "/keluarga"],
+      ["mutasi-penduduk", "/mutasi-penduduk"],
+      ["laporan-penduduk", "/statistik/penduduk"],
+    ]) {
+      expect(template.modules.find((modul) => modul.slug === slug)).toMatchObject({
+        url,
+        parentSlug: "data-kependudukan",
+      });
     }
   });
 

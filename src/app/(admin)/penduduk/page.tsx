@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { StatIcon } from "@/components/ui/stat-icon";
 import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
+import { StatIcon } from "@/components/ui/stat-icon";
 import {
   getPendudukFilterOptionsData,
   getRingkasanPendudukData,

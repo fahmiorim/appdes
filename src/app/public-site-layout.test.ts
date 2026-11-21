@@ -1,8 +1,13 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { PublicSiteFooter, PublicSiteHeader } from "./public-site-layout";
+
+// Header membaca menu tenant; unit test tidak membuka koneksi database.
+vi.mock("@/features/publik/application/website-admin", () => ({
+  muatMenuPublik: vi.fn(async () => []),
+}));
 
 const desa = {
   id: 7,
@@ -17,9 +22,11 @@ const desa = {
 };
 
 describe("public shared site layout", () => {
-  it("renders the shared public navigation and active page", () => {
+  it("renders the shared public navigation and active page", async () => {
+    // Header adalah komponen server asinkron; render hasilnya secara langsung
+    // agar test tetap memeriksa markup, bukan penjadwalan Suspense React.
     const markup = renderToStaticMarkup(
-      createElement(PublicSiteHeader, {
+      await PublicSiteHeader({
         desa,
         location: "Sei Balai, Batu Bara, Sumatera Utara",
         logoUrl: null,

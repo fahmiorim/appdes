@@ -339,6 +339,7 @@ describe("AUD-007 jalur tulis mutasi", () => {
       name: nama,
       nationalId: null,
       familyId: null,
+      familyRelationId: null,
       regionId: null,
       address: "",
       fatherName: "",

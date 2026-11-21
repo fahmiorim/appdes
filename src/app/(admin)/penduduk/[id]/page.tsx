@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
 import { notFound } from "next/navigation";
 
-import { getPendudukDetailData } from "@/features/penduduk/application/use-cases";
+import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
 import { hapusPendudukAction } from "@/app/(admin)/penduduk/actions";
+import { getPendudukDetailData } from "@/features/penduduk/application/use-cases";
 import {
   calculateAge,
   GENDER_LABELS,
@@ -89,7 +89,14 @@ export default async function PendudukDetailPage({ params }: { params: Promise<{
               Ubah Data
             </Link>
           ) : null}
-          {bolehHapus ? <form action={hapusPendudukAction}><input type="hidden" name="id" value={penduduk.id}/><button className="button button-secondary" type="submit">Hapus Data</button></form> : null}
+          {bolehHapus ? (
+            <form action={hapusPendudukAction}>
+              <input type="hidden" name="id" value={penduduk.id} />
+              <button className="button button-secondary" type="submit">
+                Hapus Data
+              </button>
+            </form>
+          ) : null}
         </div>
       </div>
 
