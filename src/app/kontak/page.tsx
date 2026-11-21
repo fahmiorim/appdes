@@ -134,7 +134,7 @@ export default async function KontakPage() {
                 <span className={styles.whatsapp}>◉</span>
                 <div>
                   <b>Telepon / WhatsApp</b>
-                  <p>{phone || "Nomor telepon belum tersedia"}</p>
+                  <p>{whatsapp || "Nomor WhatsApp belum tersedia"}</p>
                 </div>
                 {whatsappDigits ? (
                   <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer">
@@ -158,6 +158,13 @@ export default async function KontakPage() {
                 </div>
                 {email ? <a href={`mailto:${email}`}>↗</a> : null}
               </article>
+              {settings.website ? (
+                <article>
+                  <span className={styles.addressIcon}>↗</span>
+                  <div><b>Website Resmi</b><p>{settings.website}</p></div>
+                  <a href={settings.website} target="_blank" rel="noreferrer">↗</a>
+                </article>
+              ) : null}
               <article>
                 <span className={styles.addressIcon}>⌖</span>
                 <div>
