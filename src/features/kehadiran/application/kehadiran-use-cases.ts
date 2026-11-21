@@ -62,7 +62,7 @@ export async function getRekapKehadiranData(villageId: number, tahun: number, bu
 }
 
 export async function tambahKehadiran(villageId: number, input: unknown) {
-  await requirePermission(KEHADIRAN_RESOURCE, "update");
+  await requirePermission(KEHADIRAN_RESOURCE, "create");
   const parsed = kehadiranFormSchema.parse(input);
   return createKehadiran({
     villageId,
