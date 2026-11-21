@@ -11,7 +11,7 @@ export const kehadiranPerangkat = mysqlTable("kehadiran_perangkat", {
   tanggal: date("tanggal", { mode: "string" }).notNull(),
   jamMasuk: time("jam_masuk"),
   jamKeluar: time("jam_keluar"),
-  status: varchar("status", { length: 20 }).notNull().default("hadir"),
+  status: varchar("status", { length: 20 }).default("hadir"),
   latitudeMasuk: varchar("latitude_masuk", { length: 30 }),
   longitudeMasuk: varchar("longitude_masuk", { length: 30 }),
   fotoMasuk: varchar("foto_masuk", { length: 255 }),
