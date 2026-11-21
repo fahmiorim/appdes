@@ -24,7 +24,7 @@ export default async function Page({searchParams}:{searchParams:Promise<{tahun?:
   <section className={styles["ls-kpis"]}>
    <article className={styles["ls-primary"]}><span>Total Anggaran {year}</span><strong>{rp(current.budget)}</strong><small>{budgetChange===null?"Tidak ada data pembanding":(budgetChange>=0?"↑ ":"↓ ")+pct(Math.abs(budgetChange))+" dari "+(year-1)}</small></article>
    <article><span>Realisasi Anggaran</span><strong>{rp(current.actual)}</strong><small>{pct(realization)} dari pagu · {realizationChange===null?"Tanpa pembanding":(realizationChange>=0?"↑ ":"↓ ")+pct(Math.abs(realizationChange))+" nilai realisasi"}</small></article>
-   <article><span>Jumlah Penduduk Proyek</span><strong>{current.projects.toLocaleString("id-ID")} Kegiatan</strong><small>{projectChange===null?"Tidak ada data pembanding":(projectChange>=0?"↑ ":"↓ ")+pct(Math.abs(projectChange))+" jumlah proyek"}</small></article>
+   <article><span>Kegiatan Pembangunan</span><strong>{current.projects.toLocaleString("id-ID")} Kegiatan</strong><small>{projectChange===null?"Tidak ada data pembanding":(projectChange>=0?"↑ ":"↓ ")+pct(Math.abs(projectChange))+" jumlah proyek"}</small></article>
    <article><span>Proyek Selesai</span><strong>{current.done.toLocaleString("id-ID")}</strong><small>{pct(completion)} dari seluruh proyek tahun ini</small></article>
   </section>
   <div className={styles["ls-grid"]}>
