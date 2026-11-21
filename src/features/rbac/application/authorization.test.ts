@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import * as repository from "@/features/rbac/infrastructure/rbac-repository";
 
-import { computeEffectivePermissions } from "./authorization";
+import { computeEffectivePermissions, hasPermission } from "./authorization";
 
 vi.mock("server-only", () => ({}));
 vi.mock("react", () => ({ cache: <T>(fn: T): T => fn }));
@@ -75,5 +75,19 @@ describe("computeEffectivePermissions kepemilikan tenant", () => {
 
     expect(result.isSuperadmin).toBe(true);
     expect(repository.listModules).not.toHaveBeenCalled();
+  });
+});
+
+describe("hasPermission granular CRUD", () => {
+  it("membatasi tambah, ubah, hapus, dan lihat secara independen", () => {
+    const permissions = {
+      isSuperadmin: false,
+      levelByResource: new Map([["penduduk", "write" as const]]),
+      actionByResource: new Map([["penduduk", { read: false, create: true, update: false, delete: false }]]),
+    };
+    expect(hasPermission(permissions, "penduduk", "create")).toBe(true);
+    expect(hasPermission(permissions, "penduduk", "read")).toBe(false);
+    expect(hasPermission(permissions, "penduduk", "update")).toBe(false);
+    expect(hasPermission(permissions, "penduduk", "delete")).toBe(false);
   });
 });
