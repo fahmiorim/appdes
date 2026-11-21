@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, count, desc, eq, isNull, like, ne, or } from "drizzle-orm";
 
 import { db } from "@/db";
-import { inventaris, inventarisKategori, inventarisMutasi, inventarisPemeliharaan } from "@/db/schema";
+import { inventaris, inventarisKategori, inventarisMutasi, inventarisPemeliharaan, inventarisDokumen } from "@/db/schema";
 import {
   hitungPerubahanAset,
   mutasiLogBeforeStep,
@@ -506,4 +506,34 @@ export async function updateStatusPemeliharaan(villageId:number,id:number,status
 export async function deletePemeliharaan(villageId:number,id:number) {
   const [result]=await db.delete(inventarisPemeliharaan).where(and(eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id)));
   if(result.affectedRows===0) throw notFound("Jadwal pemeliharaan tidak ditemukan.");
+}
+
+export async function listDokumenInventaris(villageId:number,inventarisId:number) {
+  return db.select({
+    id:inventarisDokumen.id,nama:inventarisDokumen.nama,namaFile:inventarisDokumen.namaFile,
+    mime:inventarisDokumen.mime,ukuran:inventarisDokumen.ukuran,createdAt:inventarisDokumen.createdAt,
+  }).from(inventarisDokumen)
+    .where(and(eq(inventarisDokumen.villageId,villageId),eq(inventarisDokumen.inventarisId,inventarisId)))
+    .orderBy(desc(inventarisDokumen.createdAt));
+}
+
+export async function getDokumenInventaris(villageId:number,id:number) {
+  const [row]=await db.select().from(inventarisDokumen)
+    .where(and(eq(inventarisDokumen.villageId,villageId),eq(inventarisDokumen.id,id))).limit(1);
+  return row;
+}
+
+export async function createDokumenInventaris(villageId:number,inventarisId:number,input:{
+  nama:string;namaFile:string;mime:string;ukuran:number;jalurMedia:string;
+}) {
+  const [row]=await db.insert(inventarisDokumen).values({villageId,inventarisId,...input}).$returningId();
+  return row?.id;
+}
+
+export async function deleteDokumenInventaris(villageId:number,id:number) {
+  const [row]=await db.select().from(inventarisDokumen)
+    .where(and(eq(inventarisDokumen.villageId,villageId),eq(inventarisDokumen.id,id))).limit(1);
+  if(!row) throw notFound("Dokumen inventaris tidak ditemukan.");
+  await db.delete(inventarisDokumen).where(and(eq(inventarisDokumen.villageId,villageId),eq(inventarisDokumen.id,id)));
+  return row.jalurMedia;
 }
