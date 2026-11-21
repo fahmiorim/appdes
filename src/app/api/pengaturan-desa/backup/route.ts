@@ -12,7 +12,6 @@ import { ambilPengaturanAdmin, simpanPengaturanAdmin } from "@/features/pengatur
 export const runtime="nodejs";
 const response=(data:unknown,status=200)=>NextResponse.json(data,{status,headers:{"Cache-Control":"private, no-store"}});
 async function readSetting(villageId:number,key:string){const [r]=await db.select({nilai:pengaturanDesa.nilai}).from(pengaturanDesa).where(and(eq(pengaturanDesa.villageId,villageId),eq(pengaturanDesa.kunci,key))).limit(1);try{return r?.nilai?JSON.parse(r.nilai):null}catch{return null}}
-async function saveSetting(villageId:number,key:string,value:unknown){await db.insert(pengaturanDesa).values({villageId,kunci:key,nilai:JSON.stringify(value)}).onDuplicateKeyUpdate({set:{nilai:JSON.stringify(value)}})}
 function handle(e:unknown){if(isAppError(e))return response({error:e.message},appErrorStatus(e.code));console.error("Backup konfigurasi desa gagal:",e);return response({error:"Backup konfigurasi gagal diproses."},500);}
 export async function GET(){
  try{
@@ -44,7 +43,8 @@ export async function POST(request:Request){
   const b=parsed.data;
   await db.transaction(async tx=>{
    if(b.profil){await tx.insert(profilDesa).values({villageId,...b.profil}).onDuplicateKeyUpdate({set:{...b.profil}});}
-   if(b.layanan){await tx.delete(layananPublik).where(eq(layananPublik.villageId,villageId));if(b.layanan.length)await tx.insert(layananPublik).values(b.layanan.map(item=>({villageId,...item})));}\n   for(const [key,value] of [["pengaturan.kontak",b.kontak],["pengaturan.integrasi",b.integrasi],["pengaturan.favicon",b.favicon],["pengaturan.template",b.template]] as const){
+   if(b.layanan){await tx.delete(layananPublik).where(eq(layananPublik.villageId,villageId));if(b.layanan.length)await tx.insert(layananPublik).values(b.layanan.map(item=>({villageId,...item})));}
+   for(const [key,value] of [["pengaturan.kontak",b.kontak],["pengaturan.integrasi",b.integrasi],["pengaturan.favicon",b.favicon],["pengaturan.template",b.template]] as const){
     if(value!==undefined)await tx.insert(pengaturanDesa).values({villageId,kunci:key,nilai:JSON.stringify(value)}).onDuplicateKeyUpdate({set:{nilai:JSON.stringify(value)}});
    }
   });
