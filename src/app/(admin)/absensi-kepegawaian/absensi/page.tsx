@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { daftarAbsensi, daftarKehadiranBulanan, getPengaturanKehadiran } from "@/features/kepegawaian/application/use-cases";
+import { daftarAbsensi, daftarKehadiranBulanan, getPengaturanKehadiran, getStatusAbsensiMandiri } from "@/features/kepegawaian/application/use-cases";
 
 import { absensiManualAction, simpanPengaturanKehadiranAction } from "../actions";
 import { AbsensiKepegawaianNav } from "../nav";
@@ -20,7 +20,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
   const tanggal=raw && /^\d{4}-\d{2}-\d{2}$/.test(raw)?raw:new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Jakarta"}).format(new Date());
   const tahun=Number(tanggal.slice(0,4));
   const bulan=Number(tanggal.slice(5,7));
-  const [rows,setting,calendarRows,user]=await Promise.all([daftarAbsensi(tanggal),getPengaturanKehadiran(),daftarKehadiranBulanan(tahun,bulan),verifySession()]);
+  const [rows,setting,calendarRows,user,statusMandiri]=await Promise.all([daftarAbsensi(tanggal),getPengaturanKehadiran(),daftarKehadiranBulanan(tahun,bulan),verifySession(),getStatusAbsensiMandiri()]);
   const canManage=hasPermission(user.permissions,"kehadiran","update");
   let hariLibur:number[]=[0,6];
   try { const parsed=JSON.parse(setting.hariLibur); if(Array.isArray(parsed)) hariLibur=parsed; } catch { /* fallback akhir pekan */ }
@@ -43,7 +43,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
     <div className="page-heading"><div><span className="eyebrow">ABSENSI & KEPEGAWAIAN</span><h1>Absensi Pegawai</h1><p>Kelola dan pantau kehadiran perangkat desa serta staf secara terpusat.</p></div></div>
     <AbsensiKepegawaianNav active="/absensi-kepegawaian/absensi"/>
     <nav className={styles["ak-subnav"]} aria-label="Navigasi absensi"><a className={styles["selected"]} href="#rekap">▦ Rekap Kehadiran</a><a href="#kalender">◷ Riwayat Absensi</a><a href="#rekap">♙ Absensi Manual</a><a href="#pengaturan">⚙ Pengaturan Absensi</a></nav>
-    <AbsensiMandiri wajibGps={setting.wajibGps!==false} />
+    {statusMandiri?<AbsensiMandiri status={statusMandiri} wajibGps={setting.wajibGps!==false} />:null}
     <section className={styles["ak-kpi-grid"]}>
       <article className={`${styles["ak-kpi"]} ${styles.primary}`}><span>Kehadiran Hari Ini</span><strong>{counts.hadir} orang</strong><span>{tingkatKehadiran.toLocaleString("id-ID")}% tingkat kehadiran</span></article>
       <article className={styles["ak-kpi"]}><span>Hadir</span><strong>{counts.hadir} orang</strong></article>
