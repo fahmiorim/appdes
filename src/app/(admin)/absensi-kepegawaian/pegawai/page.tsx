@@ -29,6 +29,7 @@ export default async function PegawaiPage({searchParams}:{searchParams:Promise<R
   return <div className="modul-page">
     <div className="page-heading"><div><span className="eyebrow">ABSENSI & KEPEGAWAIAN</span><h1>Data Pegawai</h1><p>Kelola biodata, jabatan, status kepegawaian, dokumen, dan riwayat masa kerja.</p></div></div>
     <AbsensiKepegawaianNav active="/absensi-kepegawaian/pegawai"/>
+    <nav className={styles["ak-subnav"]} aria-label="Navigasi data pegawai"><a className={styles["selected"]} href="#daftar-pegawai">☷ Daftar Pegawai</a><a href="#detail-pegawai">♧ Struktur Jabatan</a><a href="#masa-kerja">▦ Masa Kerja</a><a href="#dokumen">▤ Dokumen</a><a href="#riwayat">◷ Riwayat Jabatan</a></nav>
     <section className={styles["ak-kpi-grid"]}>
       <article className={styles["ak-kpi"]}><span>Total Pegawai</span><strong>{pegawai.length} orang</strong></article>
       <article className={styles["ak-kpi"]}><span>Pegawai Tetap</span><strong>{tetap} orang</strong></article>
@@ -50,16 +51,16 @@ export default async function PegawaiPage({searchParams}:{searchParams:Promise<R
         <button className={styles["ak-button"]} type="submit">+ Simpan Pegawai</button>
       </form></details>:<p>Akun ini hanya memiliki akses baca data pegawai.</p>}
     </section>
-    <div className={styles["ak-grid"]} style={{marginTop:16}}>
+    <div id="daftar-pegawai" className={styles["ak-grid"]} style={{marginTop:16}}>
       <section className={styles["ak-card"]}><h2>Daftar Data Pegawai</h2><p>{pegawai.length} pegawai terdaftar.</p>
         <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}><thead><tr><th>No.</th><th>Nama</th><th>Jabatan</th><th>Status</th><th>Masa Kerja</th><th>Detail</th></tr></thead><tbody>
           {pegawai.map((x,i)=><tr key={x.id}><td>{i+1}</td><td><strong>{x.nama}</strong><br/><small>{x.nip??"NIP belum diisi"}</small></td><td>{x.jabatan??"—"}</td><td><span className={styles["ak-badge"]}>{x.statusPegawai}</span></td><td>{hitungMasaKerja(x.tanggalMasuk,x.tanggalKeluar)}</td><td><Link className={styles["ak-button"]} href={"/absensi-kepegawaian/pegawai?id="+x.id}>Lihat</Link></td></tr>)}
         </tbody></table></div>
       </section>
-      <section className={styles["ak-card"]}>
+      <section id="detail-pegawai" className={styles["ak-card"]}>
         {selected?<><div className={styles["ak-profile-head"]}><div className={styles["ak-profile-avatar"]}>{selected.nama.split(" ").slice(0,2).map((part)=>part[0]).join("").toUpperCase()}</div><div><h2>{selected.nama}</h2><p>{selected.jabatan??"Jabatan belum ditentukan"}</p><span className={`${styles["ak-badge"]} ${selected.status==="aktif"?styles.aktif:styles.nonaktif}`}>{selected.status==="aktif"?"Aktif":"Nonaktif"} · {selected.statusPegawai.replaceAll("_"," ")}</span></div></div>
           <nav className={styles["ak-profile-tabs"]}><a href="#biodata">Biodata</a><a href="#jabatan">Jabatan</a><a href="#dokumen">Dokumen</a><a href="#riwayat">Riwayat</a></nav>
-          <h3 id="biodata">Informasi Pribadi</h3><dl><div><dt>NIK</dt><dd>{selected.nik??"—"}</dd></div><div><dt>NIP</dt><dd>{selected.nip??"—"}</dd></div><div><dt>Tempat/Tanggal Lahir</dt><dd>{selected.tempatLahir??"—"}, {selected.tanggalLahir??"—"}</dd></div><div><dt>Telepon</dt><dd>{selected.telepon??"—"}</dd></div><div><dt>Email</dt><dd>{selected.email??"—"}</dd></div><div><dt>Pendidikan</dt><dd>{selected.pendidikan??"—"}</dd></div><div><dt>Masa Kerja</dt><dd>{hitungMasaKerja(selected.tanggalMasuk,selected.tanggalKeluar)}</dd></div></dl>
+          <h3 id="biodata">Informasi Pribadi</h3><dl><div><dt>NIK</dt><dd>{selected.nik??"—"}</dd></div><div><dt>NIP</dt><dd>{selected.nip??"—"}</dd></div><div><dt>Tempat/Tanggal Lahir</dt><dd>{selected.tempatLahir??"—"}, {selected.tanggalLahir??"—"}</dd></div><div><dt>Telepon</dt><dd>{selected.telepon??"—"}</dd></div><div><dt>Email</dt><dd>{selected.email??"—"}</dd></div><div><dt>Pendidikan</dt><dd>{selected.pendidikan??"—"}</dd></div><div id="masa-kerja"><dt>Masa Kerja</dt><dd>{hitungMasaKerja(selected.tanggalMasuk,selected.tanggalKeluar)}</dd></div></dl>
           {canManage?<details><summary>Edit Data Pegawai</summary><form action={simpanPegawaiAction} className={styles["ak-form"]}>
             <input type="hidden" name="id" value={selected.id}/><input type="hidden" name="perangkatId" value={selected.perangkatId??""}/>
             <label>Nama<input name="nama" defaultValue={selected.nama} required/></label><label>NIP<input name="nip" defaultValue={selected.nip??""}/></label><label>NIK<input name="nik" defaultValue={selected.nik??""}/></label><label>Jabatan<input name="jabatan" defaultValue={selected.jabatan??""}/></label>
