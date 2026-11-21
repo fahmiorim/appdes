@@ -37,3 +37,5 @@
 @media(max-width:900px){.ls-explorer{grid-template-columns:1fr}}
 @media(max-width:560px){.ls-pagination{align-items:flex-start;flex-direction:column}.ls-finance-row{grid-template-columns:1fr 55px}.ls-finance-row .ls-progress{grid-column:1/-1;grid-row:2}.ls-period-form span{padding:0}}
 @media print{.ls-explorer{display:block}.ls-detail-cover{break-inside:avoid}.ls-subnav,.ls-period-form,.ls-pagination{display:none!important}}
+
+.ls-export-links{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.ls-export-links a{font-size:12px;font-weight:700;color:#5c43bd;text-decoration:none;padding:7px 10px;border:1px solid #e3ddf6;border-radius:8px;background:#fff}
