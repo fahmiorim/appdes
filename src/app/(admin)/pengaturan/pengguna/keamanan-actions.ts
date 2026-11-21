@@ -35,7 +35,7 @@ export async function simpanKeamananAction(formData: FormData): Promise<void> {
 }
 
 export async function blokirIpAction(formData: FormData): Promise<void> {
-  const user = await requirePermission(RESOURCES.pengguna, "update");
+  const user = await requirePermission(RESOURCES.pengguna, "create");
   const villageId = await resolveVillageId(user);
   const ip = String(formData.get("ipAddress") ?? "").trim();
   const reason = String(formData.get("reason") ?? "").trim();
