@@ -15,12 +15,14 @@ export const metadata = { title: "Pengaturan Keamanan" };
 export default async function KeamananPage() {
   const user = await requirePermission(RESOURCES.pengguna, "read");
   const villageId = await resolveVillageId(user);
+  const canManage = hasPermission(user.permissions, RESOURCES.pengguna, "update");
+  const canDelete = hasPermission(user.permissions, RESOURCES.pengguna, "delete");
   const [settings, blockedIps, account] = await Promise.all([getSecuritySettings(villageId), listBlockedIps(villageId), db.select({twoFactorEnabled:users.twoFactorEnabled}).from(users).where(eq(users.id,user.id)).limit(1)]);
   return <main className={styles.page}>
     <header><div><small>Pengaturan Desa / Manajemen Pengguna</small><h1>Pengaturan Keamanan</h1><p>Kebijakan kata sandi, sesi login, dan pembatasan akses jaringan.</p><Link href="/profil/keamanan">Kelola 2FA akun sendiri →</Link></div></header>
     <nav className={styles.tabs}><Link href="/pengaturan/pengguna">Pengguna</Link><Link href="/pengaturan/grup-akses">Peran & Hak Akses</Link>{hasPermission(user.permissions,RESOURCES.auditLog,"read")?<Link href="/pengaturan/pengguna/aktivitas">Aktivitas Pengguna</Link>:null}<Link aria-current="page" href="/pengaturan/pengguna/keamanan">Pengaturan Keamanan</Link></nav>
     <TwoFactorSetup enabled={account[0]?.twoFactorEnabled ?? false}/>
-    <form action={simpanKeamananAction} className={styles.grid}>
+    {canManage ? <form action={simpanKeamananAction} className={styles.grid}>
       <section className={styles.card}><h2>🔐 Kebijakan Password</h2>
         <label>Minimal panjang password<input type="number" min="8" max="72" name="passwordMinLength" defaultValue={settings.passwordMinLength}/></label>
         <label className={styles.check}><input type="checkbox" name="requireUppercase" defaultChecked={settings.requireUppercase}/> Wajib huruf besar (A–Z)</label>
@@ -38,9 +40,9 @@ export default async function KeamananPage() {
         <p className={styles.note}>Whitelist IP hanya mengandalkan alamat dari proxy tepercaya yang dikonfigurasi server. Pastikan IP administrator masuk daftar sebelum mengaktifkan.</p>
       </section>
       <div className={styles.actions}><button type="submit">Simpan Pengaturan</button><button formAction={resetKeamananAction} className={styles.reset} type="submit">Reset ke Default</button></div>
-    </form>
-    <section className={styles.card}><h2>🚫 Daftar IP Diblokir</h2><form action={blokirIpAction} className={styles.inline}><input name="ipAddress" placeholder="Alamat IP" required/><input name="reason" placeholder="Alasan pemblokiran" required/><button type="submit">Blokir IP</button></form>
-      <div className={styles.list}>{blockedIps.map((ip)=><form action={hapusBlokirIpAction} key={ip.id}><input type="hidden" name="id" value={ip.id}/><span><b>{ip.ipAddress}</b><small>{ip.reason}</small></span><button type="submit">Cabut blokir</button></form>)}{blockedIps.length===0?<p>Belum ada IP yang diblokir.</p>:null}</div>
+    </form> : <section className={styles.card}><p>Anda memiliki akses baca. Minta administrator desa untuk mengubah kebijakan keamanan.</p></section>}
+    <section className={styles.card}><h2>🚫 Daftar IP Diblokir</h2>{canManage ? <form action={blokirIpAction} className={styles.inline}><input name="ipAddress" placeholder="Alamat IP" required/><input name="reason" placeholder="Alasan pemblokiran" required/><button type="submit">Blokir IP</button></form> : null}
+      <div className={styles.list}>{blockedIps.map((ip)=><form action={hapusBlokirIpAction} key={ip.id}><input type="hidden" name="id" value={ip.id}/><span><b>{ip.ipAddress}</b><small>{ip.reason}</small></span>{canDelete ? <button type="submit">Cabut blokir</button> : null}</form>)}{blockedIps.length===0?<p>Belum ada IP yang diblokir.</p>:null}</div>
     </section>
   </main>;
 }
