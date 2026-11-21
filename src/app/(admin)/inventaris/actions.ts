@@ -7,6 +7,8 @@ import {
   ajukanMutasi,
   hapusInventaris,
   hapusInventarisKategori,
+  unggahDokumenInventaris,
+  hapusDokumenInventarisUseCase,
   buatJadwalPemeliharaan,
   ubahStatusPemeliharaan,
   hapusJadwalPemeliharaan,
@@ -129,4 +131,23 @@ export async function hapusJadwalPemeliharaanAction(fd:FormData) {
   await hapusJadwalPemeliharaan(positiveId(text(fd,"id")));
   refresh();
   redirect("/inventaris/mutasi?maintenanceDeleted=1");
+}
+
+export async function unggahDokumenInventarisAction(fd:FormData) {
+  const file=fd.get("berkas");
+  if(!(file instanceof File)||file.size===0) throw new Error("Pilih berkas dokumen.");
+  await unggahDokumenInventaris({
+    inventarisId:positiveId(text(fd,"inventarisId")),
+    nama:text(fd,"nama")||file.name,
+    namaFile:file.name,mime:file.type,ukuran:file.size,
+    isi:new Uint8Array(await file.arrayBuffer()),
+  });
+  refresh();
+  redirect("/inventaris/"+text(fd,"inventarisId")+"?documentSaved=1");
+}
+
+export async function hapusDokumenInventarisAction(fd:FormData) {
+  await hapusDokumenInventarisUseCase(positiveId(text(fd,"id")));
+  refresh();
+  redirect("/inventaris?documentDeleted=1");
 }
