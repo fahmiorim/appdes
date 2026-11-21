@@ -7,7 +7,7 @@ import { getLaporanDesa, type JenisLaporan } from "@/features/laporan-statistik/
 import { requirePermission } from "@/lib/dal";
 import { appErrorStatus, isAppError } from "@/lib/errors";
 
-const jenisValid: JenisLaporan[] = ["penduduk", "keuangan", "pembangunan", "bantuan"];
+const jenisValid: JenisLaporan[] = ["penduduk", "keuangan", "pembangunan", "bantuan", "aset", "layanan", "surat-masuk", "surat-keluar"];
 const jsonError = (message: string, status: number) => NextResponse.json({ error: message }, { status });
 const handleError = (error: unknown, fallback: string) => isAppError(error)
   ? jsonError(error.message, appErrorStatus(error.code))
