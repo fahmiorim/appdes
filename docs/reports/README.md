@@ -36,6 +36,7 @@ Gunakan laporan sesuai cakupannya; tidak ada satu laporan yang mewakili seluruh 
 | [Merge rangkaian website publik](./02-public-website/PUBLIC-MOCKUP-MERGE-2026-11-20.md) | Penyelesaian #189–#194, penutupan PR duplikat, dan verifikasi Galeri pada database lokal | Bukti check CI per PR dan status merge |
 | [Sinkronisasi `main` PR #209](./03-core-sid/ADMIN-SURAT-PR-209-2026-11-21.md) | Dashboard surat/pelayanan: renumber migrasi 0027–0031, paritas skema, dan pemindahan akses data keluar dari route/application layer | Bukti check lokal (typecheck, lint, format, 2.078 unit test, build) dan risiko yang tersisa |
 | [Sinkronisasi `main` PR #211](./03-core-sid/ADMIN-PEMERINTAHAN-PR-211-2026-11-21.md) | Pemerintahan desa: migrasi 0032, repository tenant-scoped, dan integrasi publik | Bukti check lokal (typecheck, lint, format, 2.078 unit test, build) serta catatan migrasi wajib |
+| [Perbaikan FK `potensi_desa` ganda](./03-core-sid/FIX-DUPLIKAT-FK-POTENSI-2026-11-21.md) | Skema potensi: hapus deklarasi `potensi_desa_village_fk` duplikat sisa PR #213 | Typecheck dan paritas migrasi lulus; integration test MySQL diverifikasi di CI |
 | [Perbaikan CI PR #213](./03-core-sid/ABSENSI-KEPEGAWAIAN-PR-213-2026-11-21.md) | Absensi & kepegawaian: migrasi 0033, repository tenant-scoped, dan penggunaan use case di route | Bukti check lokal (typecheck, lint, format, 2.078 unit test, build) serta catatan migrasi wajib |
 
 Dokumen di `archive/` dipertahankan untuk jejak audit. Jangan mengutipnya sebagai status terbaru tanpa memeriksa laporan penggantinya.
