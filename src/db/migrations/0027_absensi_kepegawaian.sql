@@ -31,6 +31,7 @@ CREATE TABLE `kepegawaian_pegawai` (
   `created_at` timestamp NOT NULL DEFAULT (now()),
   `updated_at` timestamp NOT NULL DEFAULT (now()),
   CONSTRAINT `kepegawaian_pegawai_id` PRIMARY KEY(`id`),
+  CONSTRAINT `kepegawaian_pegawai_village_fk` FOREIGN KEY (`village_id`) REFERENCES `villages`(`id`) ON DELETE CASCADE,
   CONSTRAINT `kepegawaian_pegawai_village_id_uq` UNIQUE(`village_id`,`id`),
   CONSTRAINT `kepegawaian_pegawai_village_perangkat_uq` UNIQUE(`village_id`,`perangkat_id`),
   INDEX `kepegawaian_pegawai_village_status_idx` (`village_id`,`status`),
@@ -49,6 +50,7 @@ CREATE TABLE `kepegawaian_riwayat` (
   `keterangan` text NULL,
   `created_at` timestamp NOT NULL DEFAULT (now()),
   CONSTRAINT `kepegawaian_riwayat_id` PRIMARY KEY(`id`),
+  CONSTRAINT `kepegawaian_riwayat_village_fk` FOREIGN KEY (`village_id`) REFERENCES `villages`(`id`) ON DELETE CASCADE,
   CONSTRAINT `kepegawaian_riwayat_pegawai_tenant_fk` FOREIGN KEY (`village_id`,`pegawai_id`) REFERENCES `kepegawaian_pegawai`(`village_id`,`id`) ON DELETE CASCADE,
   INDEX `kepegawaian_riwayat_village_pegawai_idx` (`village_id`,`pegawai_id`)
 );
@@ -64,6 +66,7 @@ CREATE TABLE `kepegawaian_dokumen` (
   `berkas` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT (now()),
   CONSTRAINT `kepegawaian_dokumen_id` PRIMARY KEY(`id`),
+  CONSTRAINT `kepegawaian_dokumen_village_fk` FOREIGN KEY (`village_id`) REFERENCES `villages`(`id`) ON DELETE CASCADE,
   CONSTRAINT `kepegawaian_dokumen_pegawai_tenant_fk` FOREIGN KEY (`village_id`,`pegawai_id`) REFERENCES `kepegawaian_pegawai`(`village_id`,`id`) ON DELETE CASCADE,
   INDEX `kepegawaian_dokumen_village_pegawai_idx` (`village_id`,`pegawai_id`)
 );
@@ -85,6 +88,7 @@ CREATE TABLE `cuti_pegawai` (
   `created_at` timestamp NOT NULL DEFAULT (now()),
   `updated_at` timestamp NOT NULL DEFAULT (now()),
   CONSTRAINT `cuti_pegawai_id` PRIMARY KEY(`id`),
+  CONSTRAINT `cuti_pegawai_village_fk` FOREIGN KEY (`village_id`) REFERENCES `villages`(`id`) ON DELETE CASCADE,
   CONSTRAINT `cuti_pegawai_pegawai_tenant_fk` FOREIGN KEY (`village_id`,`pegawai_id`) REFERENCES `kepegawaian_pegawai`(`village_id`,`id`) ON DELETE CASCADE,
   INDEX `cuti_pegawai_village_status_idx` (`village_id`,`status`),
   INDEX `cuti_pegawai_village_pegawai_idx` (`village_id`,`pegawai_id`),
@@ -100,6 +104,7 @@ CREATE TABLE `cuti_kuota` (
   `created_at` timestamp NOT NULL DEFAULT (now()),
   `updated_at` timestamp NOT NULL DEFAULT (now()),
   CONSTRAINT `cuti_kuota_id` PRIMARY KEY(`id`),
+  CONSTRAINT `cuti_kuota_village_fk` FOREIGN KEY (`village_id`) REFERENCES `villages`(`id`) ON DELETE CASCADE,
   CONSTRAINT `cuti_kuota_village_pegawai_tahun_uq` UNIQUE(`village_id`,`pegawai_id`,`tahun`),
   CONSTRAINT `cuti_kuota_pegawai_tenant_fk` FOREIGN KEY (`village_id`,`pegawai_id`) REFERENCES `kepegawaian_pegawai`(`village_id`,`id`) ON DELETE CASCADE
 );
