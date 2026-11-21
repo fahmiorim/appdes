@@ -6,7 +6,8 @@ export function TwoFactorVerify(){
  async function submit(event:React.FormEvent<HTMLFormElement>){event.preventDefault();setError("");setPending(true);try{
   const result=await authClient.twoFactor.verifyTotp({code:code.trim(),trustDevice:true});
   if(result.error){setError("Kode autentikator salah atau kedaluwarsa.");return;}
-  window.location.assign("/beranda");
+  const session = await authClient.getSession();
+  window.location.assign(session.data?.user?.residentId ? "/layanan-mandiri" : "/beranda");
  }catch{setError("Verifikasi tidak dapat dilakukan. Coba lagi.");}finally{setPending(false);}}
  return <section style={{width:"min(100%,420px)",padding:28,borderRadius:18,background:"#fff",boxShadow:"0 18px 55px #34207820",color:"#111b3d"}}>
   <div style={{fontSize:34,color:"#7024dc"}}>◈</div><h1 style={{fontSize:24,fontWeight:800,margin:"8px 0"}}>Verifikasi Dua Faktor</h1>
