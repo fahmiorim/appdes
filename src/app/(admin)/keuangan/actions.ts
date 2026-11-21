@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { listKeuangan, saveKeuanganData, saveKeuanganTriwulanData } from "@/features/keuangan/application/keuangan-use-cases";
 import { isInputRow } from "@/features/keuangan/domain/keuangan";
+import { deleteLaporanKeuanganDokumen, saveLaporanKeuanganDokumen, setLaporanKeuanganDiserahkan } from "@/features/keuangan/application/laporan-dokumen-use-cases";
 import { addDokumentasi, createPembangunan, deleteDokumentasi, deletePembangunan, updatePembangunan } from "@/features/pembangunan/application/use-cases";
 import { dokumentasiFormSchema, pembangunanFormSchema } from "@/features/pembangunan/domain/pembangunan";
 import { redirect } from "next/navigation";
@@ -132,4 +133,38 @@ export async function hapusDokumentasiKegiatanAction(formData: FormData): Promis
   revalidatePath("/keuangan/kegiatan/" + proyekId);
   revalidatePath("/pembangunan");
   redirect("/keuangan/kegiatan/" + proyekId);
+}
+
+export async function simpanDokumenLaporanAction(formData: FormData): Promise<void> {
+  const file = formData.get("berkas");
+  if (!(file instanceof File) || file.size === 0) throw new Error("Pilih dokumen PDF.");
+  await saveLaporanKeuanganDokumen({
+    metadata: {
+      tipe: formData.get("tipe"),
+      judul: formData.get("judul"),
+      tahun: formData.get("tahun"),
+      semester: formData.get("semester"),
+    },
+    berkas: { nama: file.name, tipe: file.type, isi: new Uint8Array(await file.arrayBuffer()) },
+  });
+  revalidatePath("/keuangan/dokumen");
+  revalidatePath("/keuangan/laporan");
+  redirect("/keuangan/dokumen?tersimpan=1");
+}
+
+export async function tandaiDokumenLaporanAction(formData: FormData): Promise<void> {
+  const id = Number(formData.get("id"));
+  if (!Number.isInteger(id) || id < 1) throw new Error("ID dokumen tidak valid.");
+  const tanggal = String(formData.get("diserahkanPada") ?? "");
+  await setLaporanKeuanganDiserahkan(id, tanggal || null);
+  revalidatePath("/keuangan/dokumen");
+  redirect("/keuangan/dokumen?diperbarui=1");
+}
+
+export async function hapusDokumenLaporanAction(formData: FormData): Promise<void> {
+  const id = Number(formData.get("id"));
+  if (!Number.isInteger(id) || id < 1) throw new Error("ID dokumen tidak valid.");
+  await deleteLaporanKeuanganDokumen(id);
+  revalidatePath("/keuangan/dokumen");
+  redirect("/keuangan/dokumen?dihapus=1");
 }
