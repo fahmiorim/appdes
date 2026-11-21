@@ -424,6 +424,7 @@ export async function getPemeliharaanPageData() {
     pemeliharaan,
     riwayatPemeliharaan,
     canWrite:hasPermission(user.permissions,INVENTARIS_RESOURCE,"update"),
+    canManage:hasPermission(user.permissions,INVENTARIS_RESOURCE,"delete"),
     canMutate,
     canReadMutation,
     approverSteps:approverSteps as MutasiStep[],
