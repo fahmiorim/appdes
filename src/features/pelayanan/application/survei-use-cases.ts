@@ -5,10 +5,11 @@ import { db } from "@/db";
 import { survey, surveySoal, surveyResponden, surveyJawaban } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { hasPermission } from "@/features/rbac/application/authorization";
-import { requirePermission } from "@/lib/dal";
+import { requirePermission, requireWargaAktif } from "@/lib/dal";
 import { notFound, validationError, conflict } from "@/lib/errors";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { hitungSkorResponden, klasifikasiSkor } from "@/features/analisis/domain/skor";
+import { getWargaProfile } from "@/features/warga/infrastructure/warga-repository";
 
 const RESOURCE = RESOURCES.analisisSurvei;
 
@@ -214,4 +215,70 @@ export async function getHasilSurveiData(id: number) {
   return { row, totalResponden: respondents.length, scoredCount: scored.length, average,
     klasifikasi: average === null ? "Belum ada penilaian" : klasifikasiSkor(average),
     distribution, questionStats, comments, canExport: hasPermission(user.permissions, RESOURCE, "read") };
+}
+
+
+export async function getSurveiWargaPageData() {
+  const user = await requireWargaAktif();
+  const villageId = await resolveVillageId(user);
+  const today = new Date().toISOString().slice(0, 10);
+  const rows = await db.select({ id: survey.id, judul: survey.judul, deskripsi: survey.deskripsi,
+    sasaran: survey.sasaran, mulai: survey.mulai, selesai: survey.selesai })
+    .from(survey).where(and(eq(survey.villageId, villageId), eq(survey.aktif, 1)))
+    .orderBy(desc(survey.createdAt));
+  return rows.filter((row) => (!row.mulai || row.mulai <= today) && (!row.selesai || row.selesai >= today));
+}
+
+export async function getFormSurveiWargaData(id: number) {
+  const user = await requireWargaAktif();
+  const villageId = await resolveVillageId(user);
+  const today = new Date().toISOString().slice(0, 10);
+  const [row] = await db.select().from(survey)
+    .where(and(eq(survey.villageId, villageId), eq(survey.id, id), eq(survey.aktif, 1))).limit(1);
+  if (!row || (row.mulai && row.mulai > today) || (row.selesai && row.selesai < today)) throw notFound("Survei tidak tersedia saat ini.");
+  const questions = await db.select().from(surveySoal)
+    .where(and(eq(surveySoal.villageId, villageId), eq(surveySoal.surveyId, id)))
+    .orderBy(surveySoal.urutan, surveySoal.id);
+  return { row, questions };
+}
+
+export async function kirimJawabanSurveiWargaData(id: number, rawAnswers: Array<{ soalId: number; jawaban: string }>) {
+  const user = await requireWargaAktif();
+  const villageId = await resolveVillageId(user);
+  const profile = await getWargaProfile(villageId, user.residentId);
+  if (!profile) throw notFound("Profil warga tidak ditemukan.");
+  const form = await getFormSurveiWargaData(id);
+  if (!form.questions.length) throw validationError("Survei belum memiliki pertanyaan.");
+  if (rawAnswers.length !== form.questions.length) throw validationError("Jawab seluruh pertanyaan sebelum mengirim survei.");
+  const answerMap = new Map<number, string>();
+  for (const item of rawAnswers) {
+    const answer = item.jawaban.trim();
+    if (!Number.isSafeInteger(item.soalId) || answer.length < 1 || answer.length > 4000 || answerMap.has(item.soalId)) throw validationError("Jawaban survei tidak valid.");
+    answerMap.set(item.soalId, answer);
+  }
+  for (const question of form.questions) {
+    const answer = answerMap.get(question.id);
+    if (!answer) throw validationError("Seluruh pertanyaan wajib dijawab.");
+    if (question.tipe === "choice") {
+      let choices: unknown = [];
+      try { choices = question.pilihan ? JSON.parse(question.pilihan) : []; } catch { /* konfigurasi rusak */ }
+      if (!Array.isArray(choices) || !choices.includes(answer)) throw validationError("Pilihan jawaban tidak sesuai pertanyaan.");
+    }
+    if (question.tipe === "number" && (!Number.isFinite(Number(answer)) || Number(answer) < 0 || Number(answer) > 5)) throw validationError("Jawaban angka harus antara 0 sampai 5.");
+  }
+  if (answerMap.size !== form.questions.length || form.questions.some((question) => !answerMap.has(question.id))) throw validationError("Pertanyaan survei tidak cocok.");
+  await db.transaction(async (tx) => {
+    if (profile.nationalId) {
+      const [previous] = await tx.select({ id: surveyResponden.id }).from(surveyResponden)
+        .where(and(eq(surveyResponden.villageId, villageId), eq(surveyResponden.surveyId, id), eq(surveyResponden.nik, profile.nationalId))).limit(1);
+      if (previous) throw conflict("Anda sudah pernah mengisi survei ini.");
+    }
+    const [created] = await tx.insert(surveyResponden).values({
+      villageId, surveyId: id, nama: profile.name, nik: profile.nationalId,
+    }).$returningId();
+    if (!created) throw new Error("Jawaban survei gagal disimpan.");
+    await tx.insert(surveyJawaban).values(form.questions.map((question) => ({
+      villageId, respondenId: created.id, soalId: question.id, jawaban: answerMap.get(question.id) ?? "",
+    })));
+  });
 }
