@@ -21,6 +21,8 @@ import {
   updatePengguna,
 } from "@/features/pengguna/infrastructure/pengguna-repository";
 import { isPlatformRole } from "@/features/rbac/domain/role";
+import { getSecuritySettings } from "@/features/pengguna/infrastructure/keamanan-repository";
+import { validasiKataSandi } from "@/features/pengguna/domain/keamanan";
 import { getRoleById, listRoles } from "@/features/rbac/infrastructure/rbac-repository";
 import { requirePermission, requireUser } from "@/lib/dal";
 import { conflict, notFound } from "@/lib/errors";
@@ -94,6 +96,10 @@ export async function createPenggunaData(input: PenggunaCreateInput): Promise<{ 
   const username = normalizeUsername(input.username);
   const email = input.email ?? fallbackEmail(username);
 
+  const policy = await getSecuritySettings(villageId);
+  const passwordError = validasiKataSandi(input.password, policy);
+  if (passwordError) throw conflict(passwordError);
+
   await ensureRoleExists(input.roleId, villageId);
   await ensureUsernameAvailable(username);
   await ensureEmailAvailable(email);
@@ -134,6 +140,12 @@ export async function updatePenggunaData(id: string, input: PenggunaUpdateInput)
 
   const username = normalizeUsername(input.username);
   const email = input.email ?? target.email;
+
+  if (input.password !== null) {
+    const policy = await getSecuritySettings(villageId);
+    const passwordError = validasiKataSandi(input.password, policy);
+    if (passwordError) throw conflict(passwordError);
+  }
 
   await ensureRoleExists(input.roleId, villageId);
   await ensureUsernameAvailable(username, id);
