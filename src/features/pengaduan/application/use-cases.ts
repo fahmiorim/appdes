@@ -1,16 +1,29 @@
 import "server-only";
 
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
+import { denganKunciMysql } from "@/db/kunci-mysql";
 import {
+  formatNomorTiket,
+  identitasCocok,
+  lacakPengaduanSchema,
+  normalisasiNomorTiket,
   normalizeKategori,
+  pengaduanFormSchema,
+  prefiksNomorTiket,
   samarkanNama,
   type PengaduanPublikRow,
+  type PengaduanLacak,
+  type PengaduanInput,
+  type LacakPengaduanInput,
   type StatusPengaduan,
   type TanggapanInput,
 } from "@/features/pengaduan/domain/pengaduan";
 import {
+  countTiketPadaTanggal,
   deletePengaduan,
   getPengaduan,
+  getPengaduanByTiket,
+  insertPengaduan,
   listPengaduan,
   listPengaduanPublik,
   setPublikPengaduan,
@@ -133,4 +146,71 @@ export async function listPengaduanPublikData(villageId: number): Promise<Pengad
     kategori: normalizeKategori(row.kategori),
     namaPelapor: samarkanNama(row.namaPelapor),
   }));
+}
+
+
+/**
+ * Kirim pengaduan publik. Nomor tiket dibuat server dan diserialisasi per
+ * tenant/tanggal agar dua kiriman bersamaan tidak menghasilkan nomor sama.
+ */
+export async function kirimPengaduanData(
+  villageId: number,
+  raw: unknown,
+  lampiran: string | null = null,
+): Promise<{ id: number; nomorTiket: string }> {
+  const parsed = pengaduanFormSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Data pengaduan tidak valid.");
+  }
+
+  const input: PengaduanInput = parsed.data;
+  const sekarang = new Date();
+  const prefiks = prefiksNomorTiket(sekarang);
+
+  return denganKunciMysql(`pengaduan:${villageId}:${prefiks}`, async () => {
+    const urutan = (await countTiketPadaTanggal(villageId, prefiks)) + 1;
+    const nomorTiket = formatNomorTiket(sekarang, urutan);
+    const id = await insertPengaduan(villageId, {
+      nomorTiket,
+      kategori: input.kategori,
+      judul: input.judul,
+      isi: input.isi,
+      namaPelapor: input.namaPelapor,
+      nik: input.nik ?? null,
+      telepon: input.telepon,
+      email: input.email,
+      alamat: input.alamat,
+      lampiran,
+    });
+    return { id, nomorTiket };
+  });
+}
+
+/**
+ * Lacak tiket dengan verifikasi satu identitas yang dikirim saat pelaporan.
+ * Mengembalikan null untuk tiket tidak ditemukan maupun identitas tidak cocok.
+ */
+export async function lacakPengaduanData(
+  villageId: number,
+  raw: unknown,
+): Promise<PengaduanLacak | null> {
+  const parsed = lacakPengaduanSchema.safeParse(raw);
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Data pelacakan tidak valid.");
+  }
+
+  const input: LacakPengaduanInput = parsed.data;
+  const row = await getPengaduanByTiket(villageId, normalisasiNomorTiket(input.nomorTiket));
+  if (!row || !identitasCocok(row, input.identitas)) return null;
+
+  return {
+    nomorTiket: row.nomorTiket,
+    kategori: row.kategori,
+    judul: row.judul,
+    isi: row.isi,
+    status: row.status,
+    tanggapan: row.tanggapan,
+    ditanggapiPada: row.ditanggapiPada,
+    createdAt: row.createdAt,
+  };
 }
