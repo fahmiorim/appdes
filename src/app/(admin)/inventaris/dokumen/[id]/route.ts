@@ -11,7 +11,7 @@ export async function GET(request:Request,{params}:RouteContext<"/inventaris/dok
     return new Response(bytes,{
       headers:{
         "Content-Type":doc.mime,
-        "Content-Disposition":`${new URL(request.url).searchParams.get("inline")==="1" && doc.mime.startsWith("image/") ? "inline" : "attachment"}; filename="${doc.namaFile.replace(/["\\\\\r\n]/g,"_")}"`,
+        "Content-Disposition":`${new URL(request.url).searchParams.get("inline")==="1" && doc.mime.startsWith("image/") ? "inline" : "attachment"}; filename="${namaAman}"`,
         "Content-Length":String(doc.ukuran),
         "Cache-Control":"private, no-store",
         "X-Content-Type-Options":"nosniff",
