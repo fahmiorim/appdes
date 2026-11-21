@@ -127,8 +127,22 @@ export async function simpanAreaPetaAction(fd: FormData) {
   const id = numberOrNull(value(fd, "id"));
   const nama = value(fd, "nama");
   if (!nama) throw new Error("Nama area wajib diisi.");
+  let foto = value(fd, "foto") || null;
+  const fotoFile = fd.get("fotoFile");
+  if (fotoFile instanceof File && fotoFile.size > 0) {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(fotoFile.type)) {
+      throw new Error("Foto area harus berupa JPG, PNG, atau WEBP.");
+    }
+    const user = await requirePermission("wilayah", id ? "update" : "create");
+    const villageId = await resolveVillageId(user);
+    foto = await simpanBerkasMedia(villageId, {
+      nama: fotoFile.name, mime: fotoFile.type, ukuran: fotoFile.size,
+      isi: new Uint8Array(await fotoFile.arrayBuffer()),
+    }, "umum", "fotoFile");
+  }
   await simpanAreaPeta(id, {
-    nama, desk: value(fd, "desk") || null, path: value(fd, "path") || null, enabled: value(fd, "enabled") === "on" ? 1 : 0,
+    nama, desk: value(fd, "desk") || null, foto, path: value(fd, "path") || null,
+    enabled: value(fd, "enabled") === "on" ? 1 : 0,
     sortOrder: Number(value(fd, "sortOrder") || 0), refPolygon: numberOrNull(value(fd, "refPolygon")),
   });
   refresh();
