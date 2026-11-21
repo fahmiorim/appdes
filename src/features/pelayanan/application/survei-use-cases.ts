@@ -111,10 +111,24 @@ export async function simpanSoalSurveiData(surveyId: number, questionId: number 
   const pertanyaan = raw.pertanyaan.trim();
   if (pertanyaan.length < 3 || pertanyaan.length > 2000) throw validationError("Pertanyaan wajib 3–2.000 karakter.");
   if (!["text", "number", "choice"].includes(raw.tipe)) throw validationError("Tipe pertanyaan tidak valid.");
-  const choices = raw.pilihan.split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+  const lines = raw.pilihan.split(/\r?\n/).map((item) => item.trim()).filter(Boolean);
+  const choices: string[] = [];
+  const scoreMap: Record<string, number> = {};
+  for (const line of lines) {
+    const [labelRaw, scoreRaw] = line.split("|");
+    const label = labelRaw?.trim() ?? "";
+    const score = Number(scoreRaw?.trim());
+    if (!label || label.length > 200 || !scoreRaw || !Number.isFinite(score) || score < 0 || score > 5) {
+      throw validationError("Setiap opsi harus ditulis Label|Skor dengan skor 0 sampai 5.");
+    }
+    if (choices.includes(label)) throw validationError("Opsi jawaban tidak boleh duplikat.");
+    choices.push(label);
+    scoreMap[label] = score;
+  }
   if (raw.tipe === "choice" && (choices.length < 2 || choices.length > 20)) throw validationError("Pertanyaan pilihan harus memiliki 2–20 opsi.");
   const bobot = Math.max(1, Math.min(100, Math.trunc(raw.bobot || 1)));
-  const values = { pertanyaan, tipe: raw.tipe, pilihan: raw.tipe === "choice" ? JSON.stringify(choices) : null, bobot };
+  const values = { pertanyaan, tipe: raw.tipe, pilihan: raw.tipe === "choice" ? JSON.stringify(choices) : null,
+    skorPilihan: raw.tipe === "choice" ? JSON.stringify(scoreMap) : null, bobot };
   if (questionId === null) {
     const [created] = await db.insert(surveySoal).values({ villageId, surveyId, ...values }).$returningId();
     if (!created) throw new Error("Gagal menambahkan pertanyaan.");
