@@ -10903,14 +10903,6 @@
           "autoincrement": false,
           "default": "(now())"
         },
-        "akumulasi_penyusutan": {
-          "name": "akumulasi_penyusutan",
-          "type": "decimal(15,2)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'0.00'"
-        },
         "penanggung_jawab": {
           "name": "penanggung_jawab",
           "type": "varchar(150)",
@@ -10931,6 +10923,14 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "akumulasi_penyusutan": {
+          "name": "akumulasi_penyusutan",
+          "type": "decimal(15,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'0.00'"
         }
       },
       "indexes": {
@@ -22180,7 +22180,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'0'"
+          "default": "'0.00'"
         },
         "pelaksana": {
           "name": "pelaksana",
