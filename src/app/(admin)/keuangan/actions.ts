@@ -6,10 +6,9 @@ import { listKeuangan, saveKeuanganData, saveKeuanganTriwulanData } from "@/feat
 import { isInputRow } from "@/features/keuangan/domain/keuangan";
 import { createPembangunan, deletePembangunan, updatePembangunan } from "@/features/pembangunan/application/use-cases";
 import { pembangunanFormSchema } from "@/features/pembangunan/domain/pembangunan";
-import { errorState, successState, toErrorState, type ActionState } from "@/lib/action-state";
+import { redirect } from "next/navigation";
 
-export async function simpanPaguApbdesAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  try {
+export async function simpanPaguApbdesAction(formData: FormData): Promise<void> {
     const tahun = Number(formData.get("tahun"));
     const data = await listKeuangan(tahun);
     const rows = data.rows.filter((row) => isInputRow(row.templateUuid)).map((row) => ({
@@ -22,14 +21,10 @@ export async function simpanPaguApbdesAction(_prev: ActionState, formData: FormD
     revalidatePath("/keuangan/apbdes");
     revalidatePath("/keuangan/realisasi");
     revalidatePath("/keuangan/laporan");
-    return successState("Pagu APBDes berhasil disimpan.");
-  } catch (error) {
-    return toErrorState(error);
-  }
+    redirect("/keuangan/apbdes?tersimpan=1");
 }
 
-export async function simpanRealisasiKeuanganAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  try {
+export async function simpanRealisasiKeuanganAction(formData: FormData): Promise<void> {
     const tahun = Number(formData.get("tahun"));
     const data = await listKeuangan(tahun);
     const rows = data.rows.filter((row) => isInputRow(row.templateUuid)).map((row) => ({
@@ -41,14 +36,10 @@ export async function simpanRealisasiKeuanganAction(_prev: ActionState, formData
     revalidatePath("/keuangan");
     revalidatePath("/keuangan/realisasi");
     revalidatePath("/keuangan/laporan");
-    return successState("Realisasi anggaran berhasil disimpan.");
-  } catch (error) {
-    return toErrorState(error);
-  }
+    redirect("/keuangan/realisasi?tersimpan=1");
 }
 
-export async function simpanRealisasiTriwulanAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  try {
+export async function simpanRealisasiTriwulanAction(formData: FormData): Promise<void> {
     const tahun = Number(formData.get("tahun"));
     const data = await listKeuangan(tahun);
     const rows = data.rows.filter((row) => row.templateUuid.length === 3 && row.templateUuid.startsWith("5.")).map((row) => ({
@@ -61,10 +52,7 @@ export async function simpanRealisasiTriwulanAction(_prev: ActionState, formData
     await saveKeuanganTriwulanData(tahun, rows);
     revalidatePath("/keuangan");
     revalidatePath("/keuangan/realisasi");
-    return successState("Realisasi triwulan berhasil disimpan.");
-  } catch (error) {
-    return toErrorState(error);
-  }
+    redirect("/keuangan/realisasi?triwulan=1");
 }
 
 function proyekInput(formData: FormData) {
@@ -86,31 +74,23 @@ function proyekInput(formData: FormData) {
   });
 }
 
-export async function buatKegiatanPembangunanAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  try {
+export async function buatKegiatanPembangunanAction(formData: FormData): Promise<void> {
     await createPembangunan(proyekInput(formData));
     revalidatePath("/keuangan");
     revalidatePath("/keuangan/kegiatan");
     revalidatePath("/pembangunan");
-    return successState("Kegiatan pembangunan berhasil ditambahkan.");
-  } catch (error) {
-    return toErrorState(error);
-  }
+    redirect("/keuangan/kegiatan?dibuat=1");
 }
 
-export async function ubahKegiatanPembangunanAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  try {
+export async function ubahKegiatanPembangunanAction(formData: FormData): Promise<void> {
     const id = Number(formData.get("id"));
-    if (!Number.isInteger(id) || id < 1) return errorState("ID kegiatan tidak valid.");
+    if (!Number.isInteger(id) || id < 1) throw new Error("ID kegiatan tidak valid.");
     await updatePembangunan(id, proyekInput(formData));
     revalidatePath("/keuangan");
     revalidatePath("/keuangan/kegiatan");
     revalidatePath("/keuangan/kegiatan/" + id);
     revalidatePath("/pembangunan");
-    return successState("Kegiatan pembangunan berhasil diperbarui.");
-  } catch (error) {
-    return toErrorState(error);
-  }
+    redirect("/keuangan/kegiatan/" + id + "?diperbarui=1");
 }
 
 export async function hapusKegiatanPembangunanAction(formData: FormData): Promise<void> {
