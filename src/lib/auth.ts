@@ -39,6 +39,25 @@ async function villageIdForUser(userId: string) {
   return row?.villageId ?? null;
 }
 
+const DEFAULT_PASSWORD_POLICY = { passwordMinLength: 8, passwordReuseCount: 3, requireUppercase: true, requireLowercase: true, requireNumber: true, requireSymbol: false };
+
+async function enforceTenantPasswordPolicy(userId: string, newPassword: string) {
+  const [account] = await db.select({ villageId: users.villageId }).from(users).where(eq(users.id, userId)).limit(1);
+  if (!account?.villageId) return;
+  const [policy] = await db.select().from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
+  const passwordPolicy = policy ?? DEFAULT_PASSWORD_POLICY;
+  const passwordError = validasiKataSandi(newPassword, passwordPolicy);
+  if (passwordError) throw new APIError("BAD_REQUEST", { message: passwordError });
+  if (passwordPolicy.passwordReuseCount <= 0) return;
+  const [[credential], history] = await Promise.all([
+    db.select({ password: accounts.password }).from(accounts).where(and(eq(accounts.accountId, userId), eq(accounts.providerId, "credential"))).limit(1),
+    db.select({ passwordHash: passwordHistory.passwordHash }).from(passwordHistory).where(eq(passwordHistory.userId, userId)).orderBy(desc(passwordHistory.createdAt)).limit(Math.max(0, passwordPolicy.passwordReuseCount - 1)),
+  ]);
+  const hashes = [...new Set([credential?.password, ...history.map((item) => item.passwordHash)].filter((value): value is string => Boolean(value)))];
+  const context = await auth.$context;
+  for (const hash of hashes) if (await context.password.verify({ password: newPassword, hash })) throw new APIError("BAD_REQUEST", { message: "Password tidak boleh sama dengan password terakhir yang pernah digunakan." });
+  if (credential?.password) await db.insert(passwordHistory).values({ userId, passwordHash: credential.password }).onDuplicateKeyUpdate({ set: { passwordHash: credential.password } });
+}
 /**
  * Instans better-auth (server-only).
  *
