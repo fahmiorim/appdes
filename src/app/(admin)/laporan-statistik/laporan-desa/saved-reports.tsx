@@ -49,7 +49,7 @@ export function SavedReports({ jenis, tahun }: { jenis: string; tahun: number })
     </div>
     {message && <p role="status">{message}</p>}
     {items.length ? <div className={styles["ls-table"]}><table><thead><tr><th>Nama Laporan</th><th>Jenis</th><th>Tahun</th><th>Dibuat</th><th>Aksi</th></tr></thead><tbody>
-      {items.map(item => <tr key={item.id}><td><strong>{item.judul}</strong>{item.deskripsi && <small>{item.deskripsi}</small>}</td><td>{labels[item.jenis] || item.jenis}</td><td>{item.tahun}</td><td>{new Date(item.createdAt).toLocaleDateString("id-ID")}</td><td><Link href={`/laporan-statistik/laporan-desa/tersimpan/${item.id}`}>Buka</Link> · <button type="button" onClick={() => rename(item)}>Ubah nama</button> · <button type="button" onClick={() => remove(item)}>Hapus</button></td></tr>)}
+      {items.map(item => <tr key={item.id}><td><strong>{item.judul}</strong>{item.deskripsi && <small>{item.deskripsi}</small>}</td><td>{labels[item.jenis] || item.jenis}</td><td>{item.tahun}</td><td>{new Date(item.createdAt).toLocaleDateString("id-ID")}</td><td><Link href={`/laporan-statistik/laporan-desa/tersimpan/${item.id}`}>Buka</Link> · <a href={`/api/laporan-statistik/tersimpan/${item.id}/ekspor?format=pdf`}>PDF</a> · <a href={`/api/laporan-statistik/tersimpan/${item.id}/ekspor?format=xlsx`}>Excel</a> · <button type="button" onClick={() => rename(item)}>Ubah nama</button> · <button type="button" onClick={() => remove(item)}>Hapus</button></td></tr>)}
     </tbody></table></div> : <p className={styles["ls-empty"]}>Belum ada laporan yang disimpan.</p>}
   </section>;
 }
