@@ -79,6 +79,7 @@ export const perangkatRiwayatJabatan = mysqlTable(
     mulai: date("mulai", { mode: "string" }),
     selesai: date("selesai", { mode: "string" }),
     keterangan: text("keterangan"),
+    tampilPublik: boolean("tampil_publik").notNull().default(false),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [
