@@ -112,10 +112,15 @@ export async function PUT(request:Request) {
       if(!s.success)return json({error:"Template tidak valid."},422);
       const [template]=await db.select().from(websiteTemplates).where(and(eq(websiteTemplates.slug,s.data.templateSlug),eq(websiteTemplates.status,"published"))).limit(1);
       if(!template)return json({error:"Template tidak tersedia atau belum diterbitkan."},404);
-      const options={templateSlug:template.slug,templateTokens:JSON.parse(template.tokens)};
-      const [current]=await db.select({id:theme.id}).from(theme).where(and(eq(theme.villageId,villageId),eq(theme.aktif,true))).limit(1);
-      if(current) await db.update(theme).set({slug:template.slug,nama:template.name,versi:template.version,aktif:true,opsi:JSON.stringify(options)}).where(and(eq(theme.villageId,villageId),eq(theme.id,current.id)));
-      else await db.insert(theme).values({villageId,slug:template.slug,nama:template.name,versi:template.version,aktif:true,opsi:JSON.stringify(options)});
+      let templateTokens: unknown;
+      try { templateTokens=JSON.parse(template.tokens); } catch { return json({error:"Token template tidak valid."},422); }
+      const options={templateSlug:template.slug,templateTokens};
+      await db.transaction(async tx=>{
+        await tx.update(theme).set({aktif:false}).where(eq(theme.villageId,villageId));
+        const [same]=await tx.select({id:theme.id}).from(theme).where(and(eq(theme.villageId,villageId),eq(theme.slug,template.slug))).limit(1);
+        if(same) await tx.update(theme).set({nama:template.name,versi:template.version,aktif:true,opsi:JSON.stringify(options)}).where(and(eq(theme.villageId,villageId),eq(theme.id,same.id)));
+        else await tx.insert(theme).values({villageId,slug:template.slug,nama:template.name,versi:template.version,aktif:true,opsi:JSON.stringify(options)});
+      });
       await simpanNilai(villageId,"pengaturan.template",template.slug);
       return json({message:"Preferensi template website berhasil diterapkan. Tampilan menggunakan komponen website publik FlexiDes dengan token tema yang dipilih."});
     }
