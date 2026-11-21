@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { exportLaporan, type ExportFormat } from "@/features/laporan-statistik/application/export-laporan";
 import { getLaporanDesa, type JenisLaporan } from "@/features/laporan-statistik/application/laporan-statistik-use-cases";
-const kinds: JenisLaporan[] = ["penduduk","keuangan","pembangunan","bantuan"];
+const kinds: JenisLaporan[] = ["penduduk","keuangan","pembangunan","bantuan","aset","layanan","surat-masuk","surat-keluar"];
 const formats: ExportFormat[] = ["csv","xlsx","pdf"];
 export const runtime = "nodejs";
 export async function GET(request:Request) {
