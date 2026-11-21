@@ -157,6 +157,13 @@
       "breakpoints": true
     },
     {
+      "idx": 21,
+      "version": "5",
+      "when": 1795624563264,
+      "tag": "0021_data_kependudukan_menu",
+      "breakpoints": true
+    },
+    {
       "idx": 22,
       "version": "5",
       "when": 1795452000001,
@@ -189,13 +196,6 @@
       "version": "5",
       "when": 1795538163264,
       "tag": "0026_website_desa_menu",
-      "breakpoints": true
-    },
-    {
-      "idx": 21,
-      "version": "5",
-      "when": 1795624563264,
-      "tag": "0021_data_kependudukan_menu",
       "breakpoints": true
     },
     {
@@ -245,6 +245,48 @@
       "version": "5",
       "when": 1795700000000,
       "tag": "0033_absensi_kepegawaian",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "5",
+      "when": 1795700000001,
+      "tag": "0034_inventaris_pemeliharaan",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "5",
+      "when": 1795700000002,
+      "tag": "0035_inventaris_dokumen",
+      "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "5",
+      "when": 1795700000003,
+      "tag": "0036_inventaris_kondisi_perbaikan",
+      "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "5",
+      "when": 1795700000004,
+      "tag": "0037_inventaris_penyusutan_penanggung_jawab",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "5",
+      "when": 1795700000005,
+      "tag": "0038_inventaris_riwayat_pemeliharaan",
+      "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "5",
+      "when": 1795700000006,
+      "tag": "0039_inventaris_kondisi_setelah_pemeliharaan",
       "breakpoints": true
     }
   ]

@@ -113,6 +113,7 @@ describe("neracaAset", () => {
       baik: "1000.00",
       rusak_ringan: "500.00",
       rusak_berat: "0.00",
+      dalam_perbaikan: "0.00",
     });
     expect(tanah?.totalNilai).toBe("1500.00");
   });
@@ -123,6 +124,7 @@ describe("neracaAset", () => {
       baik: "1000.00",
       rusak_ringan: "500.00",
       rusak_berat: "250.00",
+      dalam_perbaikan: "0.00",
     });
     expect(neraca.grandTotal).toBe("1750.00");
   });
