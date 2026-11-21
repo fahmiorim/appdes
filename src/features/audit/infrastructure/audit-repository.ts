@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, count, desc, eq, like, or } from "drizzle-orm";
+import { and, count, desc, eq, gte, like, or } from "drizzle-orm";
 
 import { db } from "@/db";
 import { auditLogs, users, villages } from "@/db/schema";
@@ -49,6 +49,8 @@ export async function listAuditLogs(
     search?: string;
     resource?: string;
     resourceId?: string;
+    event?: string;
+    createdAfter?: Date;
   } = {},
 ): Promise<AuditLogPage> {
   const pageSize = Math.min(Math.max(input.pageSize ?? 25, 1), 100);
@@ -57,6 +59,8 @@ export async function listAuditLogs(
   const conditions = [eq(auditLogs.villageId, villageId)];
   if (input.resource) conditions.push(eq(auditLogs.resource, input.resource));
   if (input.resourceId) conditions.push(eq(auditLogs.resourceId, input.resourceId));
+  if (input.event) conditions.push(eq(auditLogs.event, input.event));
+  if (input.createdAfter) conditions.push(gte(auditLogs.createdAt, input.createdAfter));
 
   if (search) {
     const pattern = `%${search}%`;
