@@ -59,9 +59,17 @@ export async function absensiManualAction(fd: FormData) {
 }
 
 export async function ajukanCutiAction(fd: FormData) {
+  let lampiran:string|null=null;
+  const file=fd.get("lampiran");
+  if(file instanceof File && file.size>0) {
+    if(!["application/pdf","image/jpeg","image/png","image/webp"].includes(file.type)) throw new Error("Lampiran harus berupa PDF, JPG, PNG, atau WEBP.");
+    const user=await requirePermission("cuti-izin","update");
+    const villageId=await resolveVillageId(user);
+    lampiran=await simpanBerkasMedia(villageId,{nama:file.name,mime:file.type,ukuran:file.size,isi:new Uint8Array(await file.arrayBuffer())},"umum","lampiran");
+  }
   await ajukanCuti({
     pegawaiId: number(fd, "pegawaiId"), jenis: text(fd, "jenis"),
-    mulai: text(fd, "mulai"), selesai: text(fd, "selesai"), alasan: text(fd, "alasan"),
+    mulai: text(fd, "mulai"), selesai: text(fd, "selesai"), alasan: text(fd, "alasan"), lampiran,
   });
   refresh();
 }
