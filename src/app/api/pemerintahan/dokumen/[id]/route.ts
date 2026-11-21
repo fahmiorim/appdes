@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { pemerintahanDokumen } from "@/db/schema";
+import { lembagaDesa, pemerintahanDokumen, perangkatDesa } from "@/db/schema";
 import { getIdentitasFromRequest, resolveVillageId } from "@/features/desa/application/resolve-village";
 import { bacaMedia } from "@/features/publik/infrastructure/media-storage";
 import { requirePermission } from "@/lib/dal";
@@ -25,7 +25,24 @@ export async function GET(_request: Request, { params }: Context) {
     .limit(1);
   if (!document) return NextResponse.json({ error: "Dokumen tidak ditemukan." }, { status: 404 });
 
-  if (!document.tampilPublik) {
+  // Dokumen publik tetap harus mengikuti status publik pemiliknya. Flag
+  // dokumen saja tidak boleh membuka berkas milik perangkat/lembaga tersembunyi.
+  if (Boolean(document.perangkatId) === Boolean(document.lembagaId)) {
+    return NextResponse.json({ error: "Dokumen tidak ditemukan." }, { status: 404 });
+  }
+  if (document.tampilPublik) {
+    if (document.perangkatId) {
+      const [owner] = await db.select({ status: perangkatDesa.status }).from(perangkatDesa)
+        .where(and(eq(perangkatDesa.villageId, desa.id), eq(perangkatDesa.id, document.perangkatId))).limit(1);
+      if (owner?.status !== "aktif") return NextResponse.json({ error: "Dokumen tidak ditemukan." }, { status: 404 });
+    } else if (document.lembagaId) {
+      const [owner] = await db.select({ status: lembagaDesa.status, tampilPublik: lembagaDesa.tampilPublik }).from(lembagaDesa)
+        .where(and(eq(lembagaDesa.villageId, desa.id), eq(lembagaDesa.id, document.lembagaId))).limit(1);
+      if (owner?.status !== "aktif" || !owner.tampilPublik) {
+        return NextResponse.json({ error: "Dokumen tidak ditemukan." }, { status: 404 });
+      }
+    }
+  } else {
     const resource = document.perangkatId ? "perangkat-desa" : "lembaga-desa";
     const user = await requirePermission(resource, "read");
     const villageId = await resolveVillageId(user);
