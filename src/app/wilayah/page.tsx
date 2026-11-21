@@ -225,7 +225,10 @@ export default async function WilayahPage() {
                 shapes.map((shape) => (
                   <span key={shape.id}>
                     <i style={{ background: shape.color }} />
-                    {shape.name}
+                    <span className={styles.legendCopy}>
+                      {shape.name}
+                      {shape.description ? <small>{shape.description}</small> : null}
+                    </span>
                   </span>
                 ))
               ) : (
