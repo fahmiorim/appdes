@@ -678,3 +678,15 @@
     min-height: 115px;
   }
 }
+
+.mapLegend .legendCopy {
+  display: grid;
+  gap: 2px;
+}
+.mapLegend .legendCopy small {
+  max-width: 230px;
+  color: #71809a;
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1.35;
+}

@@ -1,6 +1,7 @@
 import {
   boolean,
   date,
+  decimal,
   foreignKey,
   index,
   int,
@@ -41,6 +42,15 @@ export const profilDesa = mysqlTable(
     sambutan: text("sambutan"),
     /** Koordinat peta, mis. `-6.200000, 106.816666`. */
     koordinat: varchar("koordinat", { length: 60 }),
+    luasWilayah: decimal("luas_wilayah", { precision: 12, scale: 2 }),
+    batasUtara: varchar("batas_utara", { length: 150 }),
+    batasSelatan: varchar("batas_selatan", { length: 150 }),
+    batasTimur: varchar("batas_timur", { length: 150 }),
+    batasBarat: varchar("batas_barat", { length: 150 }),
+    ketinggian: varchar("ketinggian", { length: 100 }),
+    suhuRataRata: varchar("suhu_rata_rata", { length: 100 }),
+    curahHujan: varchar("curah_hujan", { length: 100 }),
+    topografi: varchar("topografi", { length: 150 }),
 
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
@@ -96,6 +106,15 @@ export const perangkatDesa = mysqlTable(
     jenisKelamin: varchar("jenis_kelamin", { length: 10 }),
     tempatLahir: varchar("tempat_lahir", { length: 100 }),
     tanggalLahir: date("tanggal_lahir", { mode: "string" }),
+    pendidikan: varchar("pendidikan", { length: 100 }),
+    telepon: varchar("telepon", { length: 30 }),
+    email: varchar("email", { length: 150 }),
+    alamat: varchar("alamat", { length: 255 }),
+    nomorSkPengangkatan: varchar("nomor_sk_pengangkatan", { length: 100 }),
+    tanggalPengangkatan: date("tanggal_pengangkatan", { mode: "string" }),
+    nomorSkPemberhentian: varchar("nomor_sk_pemberhentian", { length: 100 }),
+    tanggalPemberhentian: date("tanggal_pemberhentian", { mode: "string" }),
+    atasanId: int("atasan_id"),
     /** Jalur foto relatif di penyimpanan media. */
     foto: varchar("foto", { length: 255 }),
     /** Tanda tangan (berkas gambar) untuk berkas surat. */
@@ -117,6 +136,8 @@ export const perangkatDesa = mysqlTable(
   },
   (table) => [
     index("perangkat_desa_village_idx").on(table.villageId),
+    uniqueIndex("perangkat_desa_village_id_uq").on(table.villageId, table.id),
+    index("perangkat_desa_village_atasan_idx").on(table.villageId, table.atasanId),
     index("perangkat_desa_jabatan_idx").on(table.jabatanId),
     index("perangkat_desa_village_jabatan_idx").on(table.villageId, table.jabatanId),
     foreignKey({
