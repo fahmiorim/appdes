@@ -35,7 +35,6 @@ export async function saveSecuritySettings(villageId: number, actorId: string, i
     requireUppercase: input.requireUppercase, requireLowercase: input.requireLowercase,
     requireNumber: input.requireNumber, requireSymbol: input.requireSymbol,
     sessionTimeoutMinutes: input.sessionTimeoutMinutes, autoLogoutInactive: input.autoLogoutInactive,
-    warnBeforeSessionEnd: input.warnBeforeSessionEnd, concurrentLogin: input.concurrentLogin,
     ipRestrictionEnabled: input.ipRestrictionEnabled, allowedIps: JSON.stringify(input.allowedIps),
   }});
 }
