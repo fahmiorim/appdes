@@ -22,7 +22,7 @@ function tanggalLokal(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Jakarta" }).format(new Date());
 }
 function tahunLokal(): number { return Number(tanggalLokal().slice(0, 4)); }
-function hitungHariKerja(mulai: string, selesai: string): number {
+function hitungHariKerja(mulai: string, selesai: string, hariLibur: number[] = [0, 6]): number {
   const [sy, sm, sd] = mulai.split("-").map(Number);
   const [ey, em, ed] = selesai.split("-").map(Number);
   const start = Date.UTC(sy, sm - 1, sd);
@@ -31,7 +31,7 @@ function hitungHariKerja(mulai: string, selesai: string): number {
   let total = 0;
   for (let day = start; day <= end; day += 86400000) {
     const weekday = new Date(day).getUTCDay();
-    if (weekday !== 0 && weekday !== 6) total += 1;
+    if (!hariLibur.includes(weekday)) total += 1;
   }
   return Math.max(1, total);
 }
@@ -226,7 +226,14 @@ export async function ajukanCuti(input: { pegawaiId: number; jenis: string; mula
   if (new Date(input.mulai + "T00:00:00Z").toISOString().slice(0,10) !== input.mulai || new Date(input.selesai + "T00:00:00Z").toISOString().slice(0,10) !== input.selesai) throw new Error("Tanggal cuti/izin tidak valid.");
   if (input.mulai < tanggalLokal()) throw new Error("Tanggal mulai tidak boleh di masa lalu.");
   if (input.jenis === "cuti_tahunan" && input.mulai.slice(0,4) !== input.selesai.slice(0,4)) throw new Error("Cuti tahunan harus berada dalam satu tahun kalender.");
-  const durasi = hitungHariKerja(input.mulai, input.selesai);
+  const [pengaturan] = await db.select({ hariLibur: kehadiranPengaturan.hariLibur }).from(kehadiranPengaturan)
+    .where(eq(kehadiranPengaturan.villageId, villageId)).limit(1);
+  let hariLibur: number[] = [0, 6];
+  try {
+    const parsed = JSON.parse(pengaturan?.hariLibur ?? "[0,6]");
+    if (Array.isArray(parsed) && parsed.every((day) => Number.isInteger(day) && day >= 0 && day <= 6)) hariLibur = [...new Set(parsed)];
+  } catch { /* gunakan akhir pekan sebagai fallback */ }
+  const durasi = hitungHariKerja(input.mulai, input.selesai, hariLibur);
   const [overlap] = await db.select({ id: cutiPegawai.id }).from(cutiPegawai)
     .where(and(eq(cutiPegawai.villageId, villageId), eq(cutiPegawai.pegawaiId, input.pegawaiId),
       lte(cutiPegawai.mulai, input.selesai), gte(cutiPegawai.selesai, input.mulai), ne(cutiPegawai.status, "ditolak"))).limit(1);
