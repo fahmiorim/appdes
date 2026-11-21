@@ -103,6 +103,14 @@ export const pengaduanFormSchema = z.object({
     .trim()
     .max(ALAMAT_MAX)
     .transform((value) => (value === "" ? null : value)),
+}).superRefine((value, ctx) => {
+  if (!value.nik && !value.telepon && !value.email) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["telepon"],
+      message: "Isi minimal satu identitas pelapor: NIK, nomor telepon, atau email agar tiket dapat dilacak.",
+    });
+  }
 });
 
 export type PengaduanInput = z.infer<typeof pengaduanFormSchema>;
