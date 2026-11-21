@@ -66,7 +66,7 @@ export const computeEffectivePermissions = cache(
       const parentId = module.parentId ?? 0;
       if (parentId > 0) childrenByParent.set(parentId, [...(childrenByParent.get(parentId) ?? []), module.id]);
       const actions = actionsById.get(module.id);
-      if (actions) actionByResource.set(module.slug, actions);
+      actionByResource.set(module.slug, actions ?? { read: false, create: false, update: false, delete: false });
     }
     // Menu induk hanya mendapat izin lihat jika setidaknya satu anak memang dapat dibaca.
     for (const module of modules) {
