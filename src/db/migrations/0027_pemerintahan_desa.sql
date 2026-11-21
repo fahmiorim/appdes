@@ -136,3 +136,14 @@ INNER JOIN `modules` m ON m.`village_id`=r.`village_id`
 WHERE r.`slug`='administrator'
   AND m.`slug` IN ('pemerintahan-desa','pemerintahan-dashboard','perangkat-desa','lembaga-desa','wilayah')
   ON DUPLICATE KEY UPDATE `access`=VALUES(`access`);
+
+--> statement-breakpoint
+
+-- Hak baca grup agar submenu tetap terlihat untuk role non-administrator.
+INSERT INTO `role_permissions` (`role_id`, `module_id`, `access`)
+SELECT r.`id`, m.`id`, 'read'
+FROM `roles` r
+INNER JOIN `modules` m ON m.`village_id`=r.`village_id`
+WHERE r.`slug` IN ('sekretaris','operator','kepala-desa')
+  AND m.`slug`='pemerintahan-desa'
+ON DUPLICATE KEY UPDATE `access`=VALUES(`access`);
