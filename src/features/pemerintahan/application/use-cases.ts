@@ -65,7 +65,7 @@ export async function getPerangkatDesaData() {
     db.select({ id: jabatanPerangkat.id, nama: jabatanPerangkat.nama }).from(jabatanPerangkat)
       .where(eq(jabatanPerangkat.villageId, villageId)).orderBy(asc(jabatanPerangkat.urut)),
     db.select().from(perangkatRiwayatJabatan).where(eq(perangkatRiwayatJabatan.villageId, villageId)).orderBy(asc(perangkatRiwayatJabatan.mulai)),
-    db.select().from(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.perangkatId, rows[0]?.id ?? -1))).orderBy(asc(pemerintahanDokumen.tanggal)),
+    db.select().from(pemerintahanDokumen).where(eq(pemerintahanDokumen.villageId, villageId)).orderBy(asc(pemerintahanDokumen.tanggal)),
   ]);
   return { rows, jabatan, riwayat, dokumen };
 }
