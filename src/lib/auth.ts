@@ -215,6 +215,7 @@ export const auth = betterAuth({
       residentId: { type: "number", required: false, input: false },
       // Warga wajib mengganti PIN sementara sebelum memakai layanan.
       mustChangePin: { type: "boolean", required: false, defaultValue: true, input: false },
+      twoFactorEnabled: { type: "boolean", required: false, defaultValue: false, input: false },
     },
   },
 
