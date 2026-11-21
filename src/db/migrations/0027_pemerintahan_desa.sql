@@ -8,7 +8,9 @@ ALTER TABLE `perangkat_desa`
   ADD COLUMN `tanggal_pengangkatan` date NULL,
   ADD COLUMN `nomor_sk_pemberhentian` varchar(100) NULL,
   ADD COLUMN `tanggal_pemberhentian` date NULL,
-  ADD COLUMN `atasan_id` int NULL;
+  ADD COLUMN `atasan_id` int NULL,
+  ADD UNIQUE KEY `perangkat_desa_village_id_uq` (`village_id`, `id`),
+  ADD KEY `perangkat_desa_village_atasan_idx` (`village_id`, `atasan_id`);
 --> statement-breakpoint
 
 CREATE TABLE `lembaga_desa` (
