@@ -38,7 +38,6 @@ const umumSchema = z.object({
     pendaftaranWargaAktif: z.boolean(),
     penomoranSurat: z.coerce.number().int().min(1).max(4),
   });
-const settingsSchema = z.object({ kontak: kontakSchema.optional(), integrasi: integrasiSchema.optional(), umum: umumSchema.optional() });
 async function simpanNilai(villageId:number,key:string,value:unknown) {
   await db.insert(pengaturanDesa).values({villageId,kunci:key,nilai:JSON.stringify(value)}).onDuplicateKeyUpdate({set:{nilai:JSON.stringify(value)}});
 }
