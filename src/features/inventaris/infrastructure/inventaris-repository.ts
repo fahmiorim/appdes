@@ -146,6 +146,7 @@ export async function listInventaris(
         satuan: inventaris.satuan,
         hargaSatuan: inventaris.hargaSatuan,
         nilaiAkhir: inventaris.nilaiAkhir,
+        akumulasiPenyusutan: inventaris.akumulasiPenyusutan,
         tahunPembelian: inventaris.tahunPembelian,
         tanggalPembelian: inventaris.tanggalPembelian,
         asal: inventaris.asal,
@@ -215,6 +216,7 @@ function nilaiInventaris(input: InventarisInput) {
     hargaSatuan: desimalAtauNull(input.hargaSatuan),
     nilaiAkhir:
       input.hargaSatuan === undefined ? null : (input.hargaSatuan * input.jumlah).toFixed(2),
+    akumulasiPenyusutan: input.akumulasiPenyusutan.toFixed(2),
     tahunPembelian: input.tahunPembelian ?? null,
     tanggalPembelian: input.tanggalPembelian || null,
     asal: input.asal ?? null,
@@ -418,6 +420,7 @@ export async function setujuiMutasiTahap(
         jumlah: aset.jumlah,
         hargaSatuan: aset.hargaSatuan,
         nilaiAkhir: aset.nilaiAkhir,
+        akumulasiPenyusutan: aset.akumulasiPenyusutan,
         kondisi: aset.kondisi,
         lokasi: aset.lokasi,
         isDeleted: aset.isDeleted,
