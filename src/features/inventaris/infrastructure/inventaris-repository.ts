@@ -504,6 +504,7 @@ export async function setujuiMutasiTahap(
         hargaSatuan: aset.hargaSatuan,
         nilaiAkhir: aset.nilaiAkhir,
         akumulasiPenyusutan: aset.akumulasiPenyusutan,
+        nilaiResidu: aset.nilaiResidu,
         kondisi: aset.kondisi,
         lokasi: aset.lokasi,
         isDeleted: aset.isDeleted,
