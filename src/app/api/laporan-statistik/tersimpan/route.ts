@@ -5,9 +5,13 @@ import { laporanDesaTersimpan } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { getLaporanDesa, type JenisLaporan } from "@/features/laporan-statistik/application/laporan-statistik-use-cases";
 import { requirePermission } from "@/lib/dal";
+import { appErrorStatus, isAppError } from "@/lib/errors";
 
 const jenisValid: JenisLaporan[] = ["penduduk", "keuangan", "pembangunan", "bantuan"];
 const jsonError = (message: string, status: number) => NextResponse.json({ error: message }, { status });
+const handleError = (error: unknown, fallback: string) => isAppError(error)
+  ? jsonError(error.message, appErrorStatus(error.code))
+  : jsonError(fallback, 500);
 
 export async function GET() {
   try {
@@ -21,8 +25,8 @@ export async function GET() {
       .where(eq(laporanDesaTersimpan.villageId, villageId))
       .orderBy(desc(laporanDesaTersimpan.createdAt));
     return NextResponse.json({ data: rows }, { headers: { "Cache-Control": "private, no-store" } });
-  } catch {
-    return jsonError("Tidak dapat memuat laporan tersimpan. Periksa sesi dan hak akses Anda.", 403);
+  } catch (error) {
+    return handleError(error, "Tidak dapat memuat laporan tersimpan.");
   }
 }
 
@@ -42,8 +46,8 @@ export async function POST(request: Request) {
       kolom: report.columns, baris: report.rows, dibuatOleh: user.id,
     });
     return NextResponse.json({ message: "Laporan berhasil disimpan." }, { status: 201 });
-  } catch {
-    return jsonError("Laporan gagal disimpan. Periksa sesi, hak akses, dan koneksi data.", 403);
+  } catch (error) {
+    return handleError(error, "Laporan gagal disimpan.");
   }
 }
 
@@ -59,8 +63,8 @@ export async function PATCH(request: Request) {
       .where(and(eq(laporanDesaTersimpan.id, id), eq(laporanDesaTersimpan.villageId, villageId)));
     if (!result.affectedRows) return jsonError("Laporan tidak ditemukan.", 404);
     return NextResponse.json({ message: "Laporan berhasil diperbarui." });
-  } catch {
-    return jsonError("Laporan gagal diperbarui. Periksa sesi dan hak akses Anda.", 403);
+  } catch (error) {
+    return handleError(error, "Laporan gagal diperbarui.");
   }
 }
 
@@ -74,7 +78,7 @@ export async function DELETE(request: Request) {
       .where(and(eq(laporanDesaTersimpan.id, id), eq(laporanDesaTersimpan.villageId, villageId)));
     if (!result.affectedRows) return jsonError("Laporan tidak ditemukan.", 404);
     return NextResponse.json({ message: "Laporan berhasil dihapus." });
-  } catch {
-    return jsonError("Laporan gagal dihapus. Periksa sesi dan hak akses Anda.", 403);
+  } catch (error) {
+    return handleError(error, "Laporan gagal dihapus.");
   }
 }
