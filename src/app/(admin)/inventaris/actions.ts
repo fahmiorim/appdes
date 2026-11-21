@@ -45,6 +45,7 @@ export async function simpanInventarisAction(fd: FormData) {
     kodeBarang:text(fd,"kodeBarang"), merk:text(fd,"merk"), tipe:text(fd,"tipe"),
     spesifikasi:text(fd,"spesifikasi"), jumlah:Number(text(fd,"jumlah")||1),
     satuan:text(fd,"satuan")||"buah", hargaSatuan:optionalNumber(text(fd,"hargaSatuan")),
+    akumulasiPenyusutan:Number(text(fd,"akumulasiPenyusutan")||0),
     tahunPembelian:optionalNumber(text(fd,"tahunPembelian")),
     tanggalPembelian:text(fd,"tanggalPembelian"), asal:text(fd,"asal")||undefined,
     donatur:text(fd,"donatur"), kondisi:text(fd,"kondisi")||"baik",
