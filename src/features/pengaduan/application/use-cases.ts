@@ -103,13 +103,18 @@ export async function tanggapiPengaduanData(
       notification = result.success ? "sent" : result.skipped ? "skipped" : "failed";
     }
     if (pengaduan.telepon) {
-      const result = await notifyStatusChangeWhatsApp(
-        pengaduan.nomorTiket,
-        pengaduan.telepon,
-        input.status,
-        pengaduan.status,
-      );
-      whatsappNotification = result.success ? "sent" : result.skipped ? "skipped" : "failed";
+      try {
+        const result = await notifyStatusChangeWhatsApp(
+          pengaduan.nomorTiket,
+          pengaduan.telepon,
+          input.status,
+          pengaduan.status,
+        );
+        whatsappNotification = result.success ? "sent" : result.skipped ? "skipped" : "failed";
+      } catch {
+        // Perubahan status sudah tersimpan; gangguan provider tidak membatalkan aksi petugas.
+        whatsappNotification = "failed";
+      }
     }
   }
 
