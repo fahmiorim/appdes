@@ -1,6 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
-import QRCode from "qrcode";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import styles from "./keamanan.module.css";
@@ -26,7 +25,7 @@ export function TwoFactorSetup({enabled,hasEmail,hasVerifiedEmail,canEmailOtp}:{
    <button type="button" disabled={busy||!password} onClick={start}>{busy?"Memproses...":"Aktifkan 2FA"}</button>
   </div>:<>
    <p className={styles.note}>Tambahkan akun secara manual di aplikasi autentikator menggunakan URI berikut. Simpan kode cadangan di tempat aman.</p>
-   {qrData?<img src={qrData} alt="QR autentikator FlexiDesa" width={220} height={220}/>:null}<textarea readOnly value={uri} aria-label="TOTP URI"/><p>Kunci manual: <code>{secret}</code></p>
+   <textarea readOnly value={uri} aria-label="TOTP URI"/><p>Kunci manual: <code>{secret}</code></p>
    <label>Kode 6 digit<input value={code} onChange={e=>setCode(e.target.value)} inputMode="numeric" maxLength={6}/></label>
    <div className={styles.backup}>{backup.map(v=><code key={v}>{v}</code>)}</div><button type="button" className={styles.copyCodes} onClick={()=>navigator.clipboard.writeText(backup.join("\n"))}>Salin kode cadangan</button>
    <button type="button" disabled={busy||code.length!==6} onClick={verify}>{busy?"Memverifikasi...":"Verifikasi & Aktifkan"}</button>
