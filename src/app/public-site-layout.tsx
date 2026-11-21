@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { muatMenuPublik } from "@/features/publik/application/website-admin";
+import { muatMenuPublik, muatTemaPublik } from "@/features/publik/application/website-admin";
 
 import styles from "./public-site-layout.module.css";
 
@@ -68,7 +68,7 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
 ];
 
 export async function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Props) {
-  const configuredMenu = await muatMenuPublik(desa.id);
+  const [configuredMenu, tema] = await Promise.all([muatMenuPublik(desa.id), muatTemaPublik(desa.id)]);
   const menu =
     configuredMenu.length > 0
       ? configuredMenu
