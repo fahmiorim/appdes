@@ -288,6 +288,13 @@
       "when": 1795706000000,
       "tag": "0045_better_auth_two_factor",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "5",
+      "when": 1795707000000,
+      "tag": "0046_rbac_crud_permissions",
+      "breakpoints": true
     }
   ]
 }
