@@ -11,7 +11,7 @@ const options: {value:JenisLaporan;label:string;description:string}[]=[
  {value:"penduduk",label:"Kependudukan",description:"Rekap demografi dan sebaran penduduk."},
  {value:"keuangan",label:"Keuangan",description:"Anggaran, realisasi, dan sisa APBDes."},
  {value:"pembangunan",label:"Pembangunan",description:"Kegiatan, sumber dana, status, dan progres."},
- {value:"bantuan",label:"Bantuan",description:"Program, sasaran, periode, dan jumlah peserta."}
+ {value:"bantuan",label:"Bantuan",description:"Program, sasaran, periode, dan jumlah peserta."},\n {value:"aset",label:"Inventaris & Aset",description:"Daftar barang, kondisi, lokasi, dan nilai aset."},\n {value:"layanan",label:"Pelayanan Publik",description:"Permohonan layanan, status, dan waktu penyelesaian."},\n {value:"surat-masuk",label:"Surat Masuk",description:"Agenda surat masuk dan disposisi."},\n {value:"surat-keluar",label:"Surat Keluar",description:"Agenda surat keluar dan pengiriman."}
 ];
 export default async function Page({searchParams}:{searchParams:Promise<{jenis?:string;tahun?:string}>}) {
  const q=await searchParams, parsed=Number(q.tahun), year=Number.isInteger(parsed)&&parsed>=2000&&parsed<=2100?parsed:new Date().getFullYear();
