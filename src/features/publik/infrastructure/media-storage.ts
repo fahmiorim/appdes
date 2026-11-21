@@ -32,6 +32,7 @@ export type KategoriMedia =
   | "slider"
   | "perangkat"
   | "dokumen"
+  | "pemerintahan"
   | "permohonan"
   | "pengaduan"
   | "surat-tte"
