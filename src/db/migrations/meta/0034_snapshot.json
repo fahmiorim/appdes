@@ -10902,6 +10902,27 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(now())"
+        },
+        "penanggung_jawab": {
+          "name": "penanggung_jawab",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "jabatan_penanggung_jawab": {
+          "name": "jabatan_penanggung_jawab",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "telepon_penanggung_jawab": {
+          "name": "telepon_penanggung_jawab",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -22151,7 +22172,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'0'"
+          "default": "'0.00'"
         },
         "pelaksana": {
           "name": "pelaksana",
