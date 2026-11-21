@@ -219,6 +219,12 @@ export async function getWilayahPemerintahanData() {
 
 export async function simpanAreaPeta(id: number | null, input: { nama: string; path: string | null; enabled: number; sortOrder: number; refPolygon: number | null }) {
   const villageId = await tenant("wilayah", id ? "update" : "create");
+  if (!input.nama.trim()) throw new Error("Nama area GIS wajib diisi.");
+  if (id) {
+    const [existing] = await db.select({ id: areas.id }).from(areas)
+      .where(and(eq(areas.villageId, villageId), eq(areas.id, id))).limit(1);
+    if (!existing) throw new Error("Area GIS tidak ditemukan pada desa aktif.");
+  }
   if (input.refPolygon) {
     const [layer] = await db.select({ id: polygons.id }).from(polygons).where(and(eq(polygons.villageId, villageId), eq(polygons.id, input.refPolygon))).limit(1);
     if (!layer) throw new Error("Layer polygon tidak ditemukan pada desa aktif.");
@@ -250,6 +256,12 @@ export async function hapusAreaPeta(id: number) {
 
 export async function simpanJabatanPerangkat(id: number | null, nama: string, urut: number) {
   const villageId = await tenant("perangkat-desa", id ? "update" : "create");
+  if (!nama.trim()) throw new Error("Nama jabatan wajib diisi.");
+  if (id) {
+    const [existing] = await db.select({ id: jabatanPerangkat.id }).from(jabatanPerangkat)
+      .where(and(eq(jabatanPerangkat.villageId, villageId), eq(jabatanPerangkat.id, id))).limit(1);
+    if (!existing) throw new Error("Jabatan tidak ditemukan pada desa aktif.");
+  }
   const slug = nama.normalize("NFKD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   if (!slug) throw new Error("Nama jabatan tidak valid.");
   const [duplicate] = await db.select({ id: jabatanPerangkat.id }).from(jabatanPerangkat)
@@ -321,7 +333,13 @@ export async function hapusDokumenPemerintahan(id: number) {
 
 export async function simpanLayerPeta(id: number | null, input: { nama: string; color: string; enabled: number; sortOrder: number }) {
   const villageId = await tenant("wilayah", id ? "update" : "create");
+  if (!input.nama.trim()) throw new Error("Nama layer wajib diisi.");
   if (!/^#[0-9a-fA-F]{6}$/.test(input.color)) throw new Error("Warna layer harus berupa kode HEX.");
+  if (id) {
+    const [existing] = await db.select({ id: polygons.id }).from(polygons)
+      .where(and(eq(polygons.villageId, villageId), eq(polygons.id, id))).limit(1);
+    if (!existing) throw new Error("Layer peta tidak ditemukan pada desa aktif.");
+  }
   if (id) await db.update(polygons).set({ nama: input.nama, color: input.color, enabled: input.enabled, sortOrder: input.sortOrder })
     .where(and(eq(polygons.villageId, villageId), eq(polygons.id, id)));
   else await db.insert(polygons).values({ villageId, nama: input.nama, color: input.color, enabled: input.enabled, sortOrder: input.sortOrder, tipe: 0, parrent: 0 });
