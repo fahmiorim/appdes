@@ -19,6 +19,7 @@ export const kehadiranPerangkat = mysqlTable("kehadiran_perangkat", {
   catatan: varchar("catatan", { length: 500 }),
 }, (table) => [
   index("kehadiran_perangkat_village_tanggal_idx").on(table.villageId, table.tanggal),
+  index("kehadiran_perangkat_village_pegawai_idx").on(table.villageId, table.pegawaiId),
   index("kehadiran_perangkat_village_status_idx").on(table.villageId, table.status),
   foreignKey({ name: "kehadiran_perangkat_pegawai_tenant_fk", columns: [table.villageId, table.pegawaiId], foreignColumns: [kepegawaianPegawai.villageId, kepegawaianPegawai.id] }).onDelete("cascade"),
 ]);
