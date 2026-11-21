@@ -15,6 +15,7 @@ export default async function Page() {
   const totalResponden = survei.rows.reduce((sum, row) => sum + row.totalResponden, 0);
   const layananAktif = layanan.rows.filter((row) => row.aktif).length;
   const terbaru = [...pengajuan.rows].slice(0, 5);
+  const statusMax = Math.max(1, ...pengajuan.statusSummary.map((item) => item.total));
   return <div className="modul-page">
     <div className="page-heading"><div><span className="eyebrow">Admin Desa / Pelayanan Publik</span><h1>Dashboard Pelayanan Publik</h1><p>Ringkasan layanan, pengajuan masyarakat, dan survei kepuasan desa.</p></div></div>
     <div className="dashboard-stats">
@@ -24,6 +25,7 @@ export default async function Page() {
       <article className="modul-card"><span>Responden Survei</span><strong>{totalResponden.toLocaleString("id-ID")}</strong><small>Akumulasi responden seluruh survei</small></article>
     </div>
     <div className="dashboard-grid">
+      <section className="modul-card"><h2>Komposisi Status Pengajuan</h2><div className="service-status-chart">{pengajuan.statusSummary.map((item) => <div className="service-status-row" key={item.status}><span>{statusLabel[item.status] ?? item.status}</span><div><i style={{width:(item.total/statusMax*100)+"%"}}/></div><strong>{item.total}</strong></div>)}</div>{pengajuan.statusSummary.length===0?<p className="modul-empty">Belum ada data pengajuan.</p>:null}</section>
       <section className="modul-card"><div className="page-heading"><div><h2>Pengajuan Terbaru</h2><p>Permohonan layanan masyarakat yang tercatat.</p></div><Link href="/pelayanan-publik/pengajuan">Lihat semua →</Link></div>
         <div className="modul-scroll"><table className="modul-table"><thead><tr><th>Nomor</th><th>Pemohon</th><th>Layanan</th><th>Status</th></tr></thead><tbody>{terbaru.map((row) => <tr key={row.id}><td>{row.nomorTiket}</td><td>{row.namaPemohon}</td><td>{row.namaLayanan ?? "Layanan tidak tersedia"}</td><td>{statusLabel[row.status] ?? row.status}</td></tr>)}</tbody></table></div>
         {terbaru.length === 0 ? <p className="modul-empty">Belum ada pengajuan.</p> : null}
