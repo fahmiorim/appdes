@@ -10,6 +10,7 @@ import { db } from "@/db";
 import { users } from "@/db/schema/auth";
 import { eq } from "drizzle-orm";
 import { hasPermission } from "@/features/rbac/application/authorization";
+import { env } from "@/lib/env";
 
 export const metadata = { title: "Pengaturan Keamanan" };
 export default async function KeamananPage() {
@@ -17,11 +18,11 @@ export default async function KeamananPage() {
   const villageId = await resolveVillageId(user);
   const canManage = hasPermission(user.permissions, RESOURCES.pengguna, "update");
   const canDelete = hasPermission(user.permissions, RESOURCES.pengguna, "delete");
-  const [settings, blockedIps, account] = await Promise.all([getSecuritySettings(villageId), listBlockedIps(villageId), db.select({twoFactorEnabled:users.twoFactorEnabled}).from(users).where(eq(users.id,user.id)).limit(1)]);
+  const [settings, blockedIps, account] = await Promise.all([getSecuritySettings(villageId), listBlockedIps(villageId), db.select({twoFactorEnabled:users.twoFactorEnabled,email:users.email}).from(users).where(eq(users.id,user.id)).limit(1)]);
   return <main className={styles.page}>
     <header><div><small>Pengaturan Desa / Manajemen Pengguna</small><h1>Pengaturan Keamanan</h1><p>Kebijakan kata sandi, sesi login, dan pembatasan akses jaringan.</p><Link href="/profil/keamanan">Kelola 2FA akun sendiri →</Link></div></header>
     <nav className={styles.tabs}><Link href="/pengaturan/pengguna">Pengguna</Link><Link href="/pengaturan/grup-akses">Peran & Hak Akses</Link>{hasPermission(user.permissions,RESOURCES.auditLog,"read")?<Link href="/pengaturan/pengguna/aktivitas">Aktivitas Pengguna</Link>:null}<Link aria-current="page" href="/pengaturan/pengguna/keamanan">Pengaturan Keamanan</Link></nav>
-    <TwoFactorSetup enabled={account[0]?.twoFactorEnabled ?? false}/>
+    <TwoFactorSetup enabled={account[0]?.twoFactorEnabled ?? false} hasEmail={Boolean(account[0]?.email)} canEmailOtp={Boolean(env.RESEND_API_KEY && env.RESEND_FROM)}/>
     {canManage ? <form action={simpanKeamananAction} className={styles.grid}>
       <section className={styles.card}><h2>🔐 Kebijakan Password</h2>
         <label>Minimal panjang password<input type="number" min="8" max="72" name="passwordMinLength" defaultValue={settings.passwordMinLength}/></label>
