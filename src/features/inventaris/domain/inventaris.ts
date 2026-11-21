@@ -135,6 +135,9 @@ export const inventarisFormSchema = z.object({
   satuan: z.string().trim().max(20).default("buah"),
   hargaSatuan: z.coerce.number().min(0).max(999999999999).optional(),
   akumulasiPenyusutan: z.coerce.number().min(0).max(999999999999).default(0),
+  umurManfaatBulan: z.coerce.number().int().min(1).max(1200).optional(),
+  nilaiResidu: z.coerce.number().min(0).max(999999999999).default(0),
+  tanggalMulaiPenyusutan: z.iso.date().optional().or(z.literal("")),
   tahunPembelian: z.coerce.number().int().min(1900).max(2100).optional(),
   tanggalPembelian: z.iso.date().optional().or(z.literal("")),
   asal: z.enum(INVENTARIS_ASAL).optional(),
@@ -147,8 +150,11 @@ export const inventarisFormSchema = z.object({
   teleponPenanggungJawab: z.string().trim().max(30).optional().or(z.literal("")),
 }).superRefine((value, ctx) => {
   const nilaiPerolehan = (value.hargaSatuan ?? 0) * value.jumlah;
-  if (value.akumulasiPenyusutan > nilaiPerolehan + 0.005) {
-    ctx.addIssue({code:"custom",path:["akumulasiPenyusutan"],message:"Akumulasi penyusutan tidak boleh melebihi nilai perolehan."});
+  if (value.nilaiResidu > nilaiPerolehan + 0.005) {
+    ctx.addIssue({code:"custom",path:["nilaiResidu"],message:"Nilai residu tidak boleh melebihi nilai perolehan."});
+  }
+  if (value.akumulasiPenyusutan + value.nilaiResidu > nilaiPerolehan + 0.005) {
+    ctx.addIssue({code:"custom",path:["akumulasiPenyusutan"],message:"Akumulasi penyusutan dan nilai residu tidak boleh melebihi nilai perolehan."});
   }
 });
 
@@ -182,6 +188,9 @@ export interface InventarisRow {
   hargaSatuan: string | null;
   nilaiAkhir: string | null;
   akumulasiPenyusutan?: string;
+  umurManfaatBulan?: number | null;
+  nilaiResidu?: string;
+  tanggalMulaiPenyusutan?: string | null;
   tahunPembelian: number | null;
   tanggalPembelian: string | null;
   asal: InventarisAsal | null;
@@ -195,6 +204,40 @@ export interface InventarisRow {
 }
 
 /** Kategori inventaris untuk pilihan formulir dan halaman kategori. */
+
+export interface HasilPenyusutanAset {
+  nilaiPerolehan: number;
+  akumulasiPenyusutan: number;
+  nilaiBuku: number;
+  penyusutanBulanan: number;
+  bulanTerpakai: number;
+}
+
+/** Penyusutan garis lurus; nilai awal akumulasi menjadi saldo pembuka. */
+export function hitungPenyusutanAset(input:{
+  hargaSatuan:string|null;jumlah:string;akumulasiPenyusutan?:string|null;
+  umurManfaatBulan?:number|null;nilaiResidu?:string|null;tanggalMulaiPenyusutan?:string|null;
+},asOf=new Date()):HasilPenyusutanAset {
+  const nilaiPerolehan=Math.max(0,Number(input.hargaSatuan??0)*Number(input.jumlah??0));
+  const residu=Math.min(nilaiPerolehan,Math.max(0,Number(input.nilaiResidu??0)));
+  const saldoAwal=Math.min(Math.max(0,Number(input.akumulasiPenyusutan??0)),Math.max(0,nilaiPerolehan-residu));
+  const umur=input.umurManfaatBulan??null;
+  const mulai=input.tanggalMulaiPenyusutan??null;
+  let bulanTerpakai=0;
+  if(umur&&mulai){
+    const start=new Date(mulai+"T00:00:00Z");
+    const end=new Date(Date.UTC(asOf.getUTCFullYear(),asOf.getUTCMonth(),asOf.getUTCDate()));
+    if(!Number.isNaN(start.getTime())&&end>=start){
+      bulanTerpakai=Math.max(0,(end.getUTCFullYear()-start.getUTCFullYear())*12+end.getUTCMonth()-start.getUTCMonth()-(end.getUTCDate()<start.getUTCDate()?1:0));
+      bulanTerpakai=Math.min(umur,bulanTerpakai);
+    }
+  }
+  const dasar=Math.max(0,nilaiPerolehan-residu-saldoAwal);
+  const penyusutanBulanan=umur?dasar/umur:0;
+  const akumulasiPenyusutan=Math.min(nilaiPerolehan-residu,saldoAwal+penyusutanBulanan*bulanTerpakai);
+  return {nilaiPerolehan,akumulasiPenyusutan,nilaiBuku:Math.max(residu,nilaiPerolehan-akumulasiPenyusutan),penyusutanBulanan,bulanTerpakai};
+}
+
 export interface InventarisKategoriRow {
   id: number;
   kode: string;
