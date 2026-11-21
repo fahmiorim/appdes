@@ -159,7 +159,7 @@ export async function addDokumentasi(
   input: DokumentasiFormInput,
   berkas: BerkasUnggahan | null,
 ): Promise<void> {
-  const user = await requirePermission(PEMBANGUNAN_RESOURCE, "update");
+  const user = await requirePermission(PEMBANGUNAN_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   await getScopedProyek(villageId, proyekId);
@@ -173,7 +173,7 @@ export async function addDokumentasi(
 }
 
 export async function deleteDokumentasi(id: number): Promise<void> {
-  const user = await requirePermission(PEMBANGUNAN_RESOURCE, "update");
+  const user = await requirePermission(PEMBANGUNAN_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
 
   const dokumentasi = await findDokumentasiScoped(villageId, id);
