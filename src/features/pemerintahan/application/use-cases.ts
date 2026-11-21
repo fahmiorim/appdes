@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, count, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { areas, lembagaAnggota, lembagaDesa, perangkatDesa, jabatanPerangkat, regions, perangkatRiwayatJabatan, polygons, pemerintahanDokumen } from "@/db/schema";
+import { areas, lembagaAnggota, lembagaDesa, perangkatDesa, jabatanPerangkat, regions, perangkatRiwayatJabatan, polygons, pemerintahanDokumen, profilDesa } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { getIdentitasDesa } from "@/features/desa/infrastructure/desa-repository";
 import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
@@ -166,7 +166,7 @@ export async function hapusAnggotaLembaga(id: number) {
 
 export async function getWilayahPemerintahanData() {
   const villageId = await tenant("wilayah");
-  const [rows, shapes, layers, officials] = await Promise.all([
+  const [rows, shapes, layers, officials, profil] = await Promise.all([
     db.select().from(regions).where(eq(regions.villageId, villageId)).orderBy(asc(regions.sortOrder), asc(regions.dusun), asc(regions.rw), asc(regions.rt)),
     db.select({ id: areas.id, nama: areas.nama, enabled: areas.enabled, path: areas.path, refPolygon: areas.refPolygon }).from(areas)
       .where(eq(areas.villageId, villageId)).orderBy(asc(areas.sortOrder)),
@@ -175,8 +175,9 @@ export async function getWilayahPemerintahanData() {
     db.select({ id: perangkatDesa.id, nama: perangkatDesa.nama, jabatan: jabatanPerangkat.nama, atasanId: perangkatDesa.atasanId, status: perangkatDesa.status, urut: perangkatDesa.urut }).from(perangkatDesa)
       .leftJoin(jabatanPerangkat, and(eq(perangkatDesa.jabatanId, jabatanPerangkat.id), eq(jabatanPerangkat.villageId, villageId)))
       .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.status, "aktif"))).orderBy(asc(perangkatDesa.urut)),
+    db.select().from(profilDesa).where(eq(profilDesa.villageId, villageId)).limit(1),
   ]);
-  return { rows, shapes, layers, officials };
+  return { rows, shapes, layers, officials, profil: profil[0] ?? null };
 }
 
 
@@ -282,4 +283,18 @@ export async function ubahMetadataDokumenPemerintahan(id: number, input: { judul
   if (!document) throw new Error("Dokumen tidak ditemukan.");
   await requirePermission(document.perangkatId ? "perangkat-desa" : "lembaga-desa", "update");
   await db.update(pemerintahanDokumen).set(input).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id)));
+}
+
+export async function simpanProfilWilayah(input: {
+  luasWilayah: string | null; batasUtara: string | null; batasSelatan: string | null;
+  batasTimur: string | null; batasBarat: string | null; ketinggian: string | null;
+  suhuRataRata: string | null; curahHujan: string | null; topografi: string | null;
+}) {
+  const villageId = await tenant("wilayah", "update");
+  if (input.luasWilayah && (!Number.isFinite(Number(input.luasWilayah)) || Number(input.luasWilayah) < 0)) {
+    throw new Error("Luas wilayah harus berupa angka positif.");
+  }
+  const [existing] = await db.select({ id: profilDesa.id }).from(profilDesa).where(eq(profilDesa.villageId, villageId)).limit(1);
+  if (existing) await db.update(profilDesa).set(input).where(and(eq(profilDesa.villageId, villageId), eq(profilDesa.id, existing.id)));
+  else await db.insert(profilDesa).values({ ...input, villageId });
 }
