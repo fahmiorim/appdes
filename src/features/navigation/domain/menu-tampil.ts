@@ -18,6 +18,10 @@
 export const RUTE_ADMIN_TERSEDIA: readonly string[] = [
   "/beranda",
   "/penduduk",
+  "/absensi-kepegawaian",
+  "/absensi-kepegawaian/absensi",
+  "/absensi-kepegawaian/pegawai",
+  "/absensi-kepegawaian/cuti-izin",
   "/penduduk/dashboard",
   "/keluarga",
   "/mutasi-penduduk",
