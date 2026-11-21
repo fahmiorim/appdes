@@ -70,7 +70,7 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
 
 export async function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Props) {
   const configuredMenu = await muatMenuPublik(desa.id);
-  const menu =
+  const menuItems =
     configuredMenu.length > 0
       ? configuredMenu
           .filter((item) => item.parentId === null)
@@ -87,6 +87,22 @@ export async function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Prop
               : { href: item.link, label: item.nama };
           })
       : navigation;
+  const menu: (NavigationLink | NavigationGroup)[] = [...menuItems];
+  const pembangunanSudahAda = menu.some((item) =>
+    "href" in item
+      ? item.href === "/pembangunan"
+      : item.children.some((child) => child.href === "/pembangunan"),
+  );
+  if (!pembangunanSudahAda) {
+    const grupInformasi = menu.find(
+      (item): item is NavigationGroup => !("href" in item) && item.label.toLowerCase() === "informasi",
+    );
+    if (grupInformasi) {
+      grupInformasi.children.push({ href: "/pembangunan", label: "Pembangunan Desa" });
+    } else {
+      menu.push({ href: "/pembangunan", label: "Pembangunan Desa" });
+    }
+  }
   return (
     <>
       <header className={styles.header}>
