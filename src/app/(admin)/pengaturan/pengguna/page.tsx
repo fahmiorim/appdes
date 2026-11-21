@@ -95,20 +95,10 @@ export default async function PenggunaPage() {
       </div>
 
       <nav aria-label="Bagian manajemen pengguna" className="pengguna-tabs">
-        <Link aria-current="page" className="pengguna-tab" href="/pengaturan/pengguna">
-          Daftar Pengguna
-        </Link>
-        <Link className="pengguna-tab" href="/pengaturan/grup-akses">
-          Hak Akses (Role)
-        </Link>
-        <Link className="pengguna-tab" href="/pengaturan/grup-akses#izin">
-          Grup &amp; Permission
-        </Link>
-        {bolehAudit ? (
-          <a className="pengguna-tab" href="#log-aktivitas">
-            Log Aktivitas
-          </a>
-        ) : null}
+        <Link aria-current="page" className="pengguna-tab" href="/pengaturan/pengguna">Pengguna</Link>
+        <Link className="pengguna-tab" href="/pengaturan/grup-akses">Peran &amp; Hak Akses</Link>
+        {bolehAudit ? <Link className="pengguna-tab" href="/pengaturan/pengguna/aktivitas">Aktivitas Pengguna</Link> : null}
+        <Link className="pengguna-tab" href="/pengaturan/pengguna/keamanan">Pengaturan Keamanan</Link>
       </nav>
 
       <div className="pengguna-layout">
@@ -203,7 +193,7 @@ export default async function PenggunaPage() {
           <section className="pengguna-rail-card">
             <header className="pengguna-rail-head">
               <h2>Aktivitas Terbaru</h2>
-              {bolehAudit ? <a href="#log-aktivitas">Lihat semua</a> : null}
+              {bolehAudit ? <Link href="/pengaturan/pengguna/aktivitas">Lihat semua</Link> : null}
             </header>
             {aktivitas.length === 0 ? (
               <p className="pengguna-rail-note">Belum ada aktivitas pengguna atau role.</p>
