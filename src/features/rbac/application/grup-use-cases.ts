@@ -17,6 +17,7 @@ import {
 } from "@/features/rbac/infrastructure/rbac-repository";
 import { requirePermission, requireUser } from "@/lib/dal";
 import { conflict, notFound } from "@/lib/errors";
+import { countPenggunaDenganRole } from "@/features/pengguna/infrastructure/pengguna-repository";
 
 /** Pastikan role yang diakses berada pada desa yang sama. */
 async function getScopedRole(id: number, villageId: number) {
@@ -124,6 +125,8 @@ export async function deleteRoleData(id: number): Promise<void> {
 
   const role = await getScopedRole(id, villageId);
   if (role.isSystem) throw conflict("Grup sistem tidak dapat dihapus.");
+  const assigned = await countPenggunaDenganRole(villageId, id);
+  if (assigned > 0) throw conflict("Role masih digunakan oleh " + assigned + " pengguna. Pindahkan pengguna ke role lain terlebih dahulu.");
 
   await deleteRole(villageId, id);
 
