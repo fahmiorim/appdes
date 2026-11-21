@@ -90,7 +90,7 @@ export async function simpanIzinAction(
     }
 
     for (const [kunci] of formData.entries()) {
-      const cocok = /^(read|create|update|delete)-(\\d+)$/.exec(kunci);
+      const cocok = /^(read|create|update|delete)-([0-9]+)$/.exec(kunci);
       if (!cocok) continue;
       const akses = cocok[1] as "read" | "create" | "update" | "delete";
       const moduleId = Number(cocok[2]);
