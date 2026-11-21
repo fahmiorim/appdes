@@ -5,7 +5,8 @@
 - **Tanggal:** 2026-11-21.
 - **Branch:** `feature/admin-desa-dashboard-v1`.
 - **Base commit:** `5d7f26a` (`main` saat sinkronisasi).
-- **Commit hasil:** akan dicatat setelah commit sinkronisasi dan perbaikan dibuat.
+- **Commit implementasi dan sinkronisasi:** `4ac22d53de8ba0af1cd17854af446f9563bd6894`.
+- **Commit pembaruan laporan dan status CI:** dicatat di riwayat branch setelah file laporan ini diperbarui.
 
 ## Kondisi awal dan analisis
 
@@ -59,16 +60,18 @@ Tidak ada perubahan pada DAL, query, server session, tenant filter, permission, 
 | `npm run format:check` | PASS | Seluruh repository sesuai Prettier. |
 | `npm run build` | PASS | Next.js production build sukses; ada dua warning tracing filesystem di `ekspor-kedaluwarsa.mjs` dan `whatsapp-baileys.ts`, di luar scope. |
 | `git diff --check` | PASS | Tidak ada whitespace error. |
-| `npm run test:integration` | SKIPPED | Tidak dijalankan lokal; CI #201 sebelumnya menandai job eksekusi integration skipped karena tak relevan. |
-| Visual QA dashboard | SKIPPED | CI sebelumnya gagal pada build TypeScript sebelum capture; visual QA baru harus diverifikasi pada check sesudah push. |
+| `npm run test:integration` | SKIPPED | Tidak dijalankan lokal; job eksekusi integration CI terbaru berstatus skipped, sementara check integrasi metadata PASS. |
+| Visual QA dashboard | PASS (CI) | Check `Visual QA login (desktop/mobile)` lulus pada run `44896976892`, job `136824640768`; workflow menyelesaikan build dan capture desktop/mobile. |
+| GitHub CI untuk commit `4ac22d5` | PASS | `Build produksi`, `Unit test dan quality check`, `Deteksi perubahan`, `Integration test (MySQL 8)`, `Ringkasan CI`, dan Visual QA PASS. Job `Jalankan integration test (MySQL 8)` berstatus skipped pada run ini. PR state `CLEAN`. |
 
 ## Risiko dan keterbatasan
 
 - CSS hasil merge diformat seluruhnya sehingga ada perubahan baris format dalam blok dashboard. CSS umum yang dipertahankan berasal dari `main` terbaru.
 - Build menampilkan warning tracing filesystem yang tidak terkait PR ini.
-- Pemeriksaan GitHub CI untuk commit yang diperbarui belum tersedia pada saat laporan disusun.
-- PR #201 masih draft sampai CI baru dan review maintainer tersedia.
+- `npm run lint` tetap mengeluarkan dua warning repository-level yang tidak terkait pada `scripts/wilayah/generate-wilayah.mjs`.
+- Integration test eksekusi tidak dijalankan dalam CI terbaru (SKIPPED); check integrasi ringkasan PASS bukan bukti integration test benar-benar dieksekusi.
+- Tidak ada review maintainer tercatat pada PR ketika pemeriksaan selesai; PR disiapkan untuk review, tidak di-merge.
 
 ## Kesimpulan dan rekomendasi
 
-Root cause TypeScript ditutup dengan guard eksplisit item utama pengumuman; kegagalan format dan variabel tak terpakai juga diperbaiki. Validasi lokal typecheck, lint, format, unit test, dan build lulus. Push perubahan dan tunggu seluruh checks PR terbaru, termasuk Visual QA, sebelum mengubah status draft atau meminta merge.
+Root cause TypeScript ditutup dengan guard eksplisit item utama pengumuman; kegagalan format dan variabel tak terpakai juga diperbaiki. Validasi lokal typecheck, lint, format, unit test, dan build lulus. CI GitHub terbaru pada commit `4ac22d5` juga hijau, termasuk Visual QA; job eksekusi integration tetap SKIPPED. PR layak dikeluarkan dari draft dan diserahkan untuk review maintainer. Jangan merge sebelum review/approval.
