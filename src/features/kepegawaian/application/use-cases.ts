@@ -383,3 +383,15 @@ export async function hapusDokumenPegawai(id:number) {
   await db.delete(kepegawaianDokumen).where(and(eq(kepegawaianDokumen.villageId,villageId),eq(kepegawaianDokumen.id,id)));
   await hapusMedia(doc.berkas);
 }
+
+
+export async function ubahRiwayatPegawai(input:{id:number;pegawaiId:number;jabatan:string;unitKerja?:string|null;nomorSk?:string|null;mulai:string;selesai?:string|null;keterangan?:string|null}) {
+  const { villageId } = await village("kepegawaian","update");
+  if(!input.jabatan.trim()||!input.mulai) throw new Error("Jabatan dan tanggal mulai wajib diisi.");
+  if(input.selesai&&input.selesai<input.mulai) throw new Error("Tanggal selesai tidak boleh sebelum tanggal mulai.");
+  const [existing]=await db.select({id:kepegawaianRiwayat.id}).from(kepegawaianRiwayat)
+    .where(and(eq(kepegawaianRiwayat.villageId,villageId),eq(kepegawaianRiwayat.id,input.id),eq(kepegawaianRiwayat.pegawaiId,input.pegawaiId))).limit(1);
+  if(!existing) throw new Error("Riwayat jabatan tidak ditemukan.");
+  await db.update(kepegawaianRiwayat).set({jabatan:input.jabatan.trim(),unitKerja:input.unitKerja||null,nomorSk:input.nomorSk||null,mulai:input.mulai,selesai:input.selesai||null,keterangan:input.keterangan||null})
+    .where(and(eq(kepegawaianRiwayat.villageId,villageId),eq(kepegawaianRiwayat.id,input.id)));
+}
