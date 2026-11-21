@@ -240,8 +240,13 @@ export async function unggahDokumenPemerintahan(input: {
   perangkatId: number | null; lembagaId: number | null; judul: string; nomor: string | null;
   tanggal: string | null; berkas: string; tampilPublik: boolean;
 }) {
+  if (Boolean(input.perangkatId) === Boolean(input.lembagaId)) {
+    throw new Error("Dokumen harus terhubung ke tepat satu perangkat atau lembaga.");
+  }
+  if (!input.judul.trim() || !input.berkas.trim()) {
+    throw new Error("Judul dan berkas dokumen wajib diisi.");
+  }
   const villageId = await tenant(input.perangkatId ? "perangkat-desa" : "lembaga-desa", "create");
-  if (!input.perangkatId && !input.lembagaId) throw new Error("Dokumen harus terhubung ke perangkat atau lembaga.");
   if (input.perangkatId) {
     const [owner] = await db.select({ id: perangkatDesa.id }).from(perangkatDesa).where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, input.perangkatId))).limit(1);
     if (!owner) throw new Error("Perangkat tidak ditemukan pada desa aktif.");
