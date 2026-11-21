@@ -274,7 +274,10 @@ export async function simpanAreaPeta(id: number | null, input: { nama: string; d
 
 export async function hapusAreaPeta(id: number) {
   const villageId = await tenant("wilayah", "delete");
+  const [area] = await db.select({ foto: areas.foto }).from(areas)
+    .where(and(eq(areas.villageId, villageId), eq(areas.id, id))).limit(1);
   await db.delete(areas).where(and(eq(areas.villageId, villageId), eq(areas.id, id)));
+  if (area?.foto) await hapusMedia(area.foto);
 }
 
 export async function simpanJabatanPerangkat(id: number | null, nama: string, urut: number) {
