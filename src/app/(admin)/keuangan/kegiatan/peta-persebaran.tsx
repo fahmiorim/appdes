@@ -53,7 +53,7 @@ export function PetaPersebaran({ points }: { points: Point[] }) {
       {tiles.map((tile) => <img key={tile.key} className="finance-map__tile" src={tile.src} alt="" aria-hidden="true" style={{ left: "calc(50% + " + tile.left + "px)", top: "calc(50% + " + tile.top + "px)" }} />)}
       {points.map((point, index) => {
         const position = project(point.latitude, point.longitude, zoom);
-        return <Link key={point.id} className="finance-map__pin" href={"/keuangan/kegiatan/" + point.id} title={point.judul} aria-label={"Buka kegiatan " + point.judul} style={{ left: "calc(50% + " + (position.x - centerX) + "px)", top: "calc(50% + " + (position.y - centerY) + "px)" }}>{index + 1}</Link>;
+        return <Link key={point.id} className="finance-map__pin" href={"/keuangan/kegiatan/" + point.id} title={point.judul} aria-label={"Buka kegiatan " + point.judul} style={{ left: "calc(50% + " + (position.x - centerX) + "px)", top: "calc(50% + " + (position.y - centerY) + "px)" }}><span>{index + 1}</span></Link>;
       })}
     </div>
     <div className="finance-map__attribution">Peta © OpenStreetMap · © CARTO · Pilih nomor pin untuk membuka detail kegiatan</div>
