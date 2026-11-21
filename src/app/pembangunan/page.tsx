@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { getPembangunanPublik } from "@/features/pembangunan/application/use-cases";
