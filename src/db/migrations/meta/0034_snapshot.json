@@ -22172,7 +22172,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'0.00'"
+          "default": "'0'"
         },
         "pelaksana": {
           "name": "pelaksana",
