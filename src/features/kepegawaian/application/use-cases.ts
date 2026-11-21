@@ -473,6 +473,9 @@ export async function catatAbsensiMandiri(input:{latitude:number|null;longitude:
     if(!existing && wajibFoto && !input.fotoMasuk) throw new Error("Foto selfie wajib dilampirkan saat check-in.");
     if(existing) {
       if(!existing.jamMasuk) throw new Error("Data absensi hari ini perlu diperiksa administrator.");
+      const masukMenit=Number(existing.jamMasuk.slice(0,2))*60+Number(existing.jamMasuk.slice(3,5));
+      const sekarangMenit=Number(now.slice(0,2))*60+Number(now.slice(3,5));
+      if(sekarangMenit-masukMenit<2) throw new Error("Check-in baru saja tercatat. Tunggu sebelum melakukan check-out.");
       await db.update(kehadiranPerangkat).set({jamKeluar:now})
         .where(and(eq(kehadiranPerangkat.villageId,villageId),eq(kehadiranPerangkat.id,existing.id)));
       return {aksi:"check_out" as const,nama:pegawai.nama,jam:now};
