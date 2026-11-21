@@ -58,8 +58,10 @@ export async function PATCH(request: Request) {
     const body = await request.json() as { id?: number; judul?: string; deskripsi?: string };
     const id = Number(body.id), judul = body.judul?.trim();
     if (!Number.isInteger(id) || id < 1 || !judul || judul.length > 200) return jsonError("Data perubahan tidak valid.", 400);
+    const changes: { judul: string; deskripsi?: string | null } = { judul };
+    if ("deskripsi" in body) changes.deskripsi = body.deskripsi?.trim() || null;
     const result = await db.update(laporanDesaTersimpan)
-      .set({ judul, deskripsi: body.deskripsi?.trim() || null })
+      .set(changes)
       .where(and(eq(laporanDesaTersimpan.id, id), eq(laporanDesaTersimpan.villageId, villageId)));
     if (!result.affectedRows) return jsonError("Laporan tidak ditemukan.", 404);
     return NextResponse.json({ message: "Laporan berhasil diperbarui." });
