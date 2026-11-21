@@ -246,6 +246,13 @@
       "when": 1795700000000,
       "tag": "0033_inventaris_pemeliharaan",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "5",
+      "when": 1795700000001,
+      "tag": "0034_inventaris_dokumen",
+      "breakpoints": true
     }
   ]
 }
