@@ -16,7 +16,7 @@ describe("kebijakan keamanan desa", () => {
   });
   it("menolak whitelist IP yang tidak valid", () => {
     const result = keamananSchema.safeParse({
-      passwordMinLength: 8, requireUppercase: true, requireLowercase: true, requireNumber: true,
+      passwordMinLength: 8, passwordExpiryDays: 90, passwordReuseCount: 3, requireUppercase: true, requireLowercase: true, requireNumber: true,
       requireSymbol: false, sessionTimeoutMinutes: 30, autoLogoutInactive: true,
       concurrentLogin: false, requireTwoFactorForAllUsers: false, ipRestrictionEnabled: true, allowedIps: ["999.2.3.4"],
     });
