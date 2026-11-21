@@ -115,14 +115,23 @@ export async function PUT(request:Request) {
       try { templateTokens=JSON.parse(template.tokens); } catch { return json({error:"Token template tidak valid."},422); }
       const options={templateSlug:template.slug,templateTokens};
       await db.transaction(async tx=>{
+        const [currentActive]=await tx.select({opsi:theme.opsi}).from(theme).where(and(eq(theme.villageId,villageId),eq(theme.aktif,true))).limit(1);
         await tx.update(theme).set({aktif:false}).where(eq(theme.villageId,villageId));
         const [same]=await tx.select({id:theme.id,opsi:theme.opsi}).from(theme).where(and(eq(theme.villageId,villageId),eq(theme.slug,template.slug))).limit(1);
         if(same) {
           let previous: Record<string, unknown> = {};
-          try { const parsed: unknown = same.opsi ? JSON.parse(same.opsi) : {}; if(parsed && typeof parsed==="object" && !Array.isArray(parsed)) previous=parsed as Record<string,unknown>; } catch {}
+          try {
+            const rawPrevious = same.opsi ?? currentActive?.opsi;
+            const parsed: unknown = rawPrevious ? JSON.parse(rawPrevious) : {};
+            if(parsed && typeof parsed==="object" && !Array.isArray(parsed)) previous=parsed as Record<string,unknown>;
+          } catch {}
           await tx.update(theme).set({nama:template.name,versi:template.version,aktif:true,opsi:JSON.stringify({...previous,...options})}).where(and(eq(theme.villageId,villageId),eq(theme.id,same.id)));
         }
-        else await tx.insert(theme).values({villageId,slug:template.slug,nama:template.name,versi:template.version,aktif:true,opsi:JSON.stringify(options)});
+        else {
+          let previous: Record<string, unknown> = {};
+          try { const parsed: unknown = currentActive?.opsi ? JSON.parse(currentActive.opsi) : {}; if(parsed && typeof parsed==="object" && !Array.isArray(parsed)) previous=parsed as Record<string,unknown>; } catch {}
+          await tx.insert(theme).values({villageId,slug:template.slug,nama:template.name,versi:template.version,aktif:true,opsi:JSON.stringify({...previous,...options})});
+        }
       });
       await simpanNilai(villageId,"pengaturan.template",template.slug);
       return json({message:"Preferensi template website berhasil diterapkan. Tampilan menggunakan komponen website publik FlexiDes dengan token tema yang dipilih."});
