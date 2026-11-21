@@ -44,11 +44,11 @@ export async function POST(request:Request){
   const b=parsed.data;
   await db.transaction(async tx=>{
    if(b.profil){await tx.insert(profilDesa).values({villageId,...b.profil}).onDuplicateKeyUpdate({set:{...b.profil}});}
-   for(const [key,value] of [["pengaturan.kontak",b.kontak],["pengaturan.integrasi",b.integrasi],["pengaturan.favicon",b.favicon],["pengaturan.template",b.template]] as const){
+   if(b.layanan){await tx.delete(layananPublik).where(eq(layananPublik.villageId,villageId));if(b.layanan.length)await tx.insert(layananPublik).values(b.layanan.map(item=>({villageId,...item})));}\n   for(const [key,value] of [["pengaturan.kontak",b.kontak],["pengaturan.integrasi",b.integrasi],["pengaturan.favicon",b.favicon],["pengaturan.template",b.template]] as const){
     if(value!==undefined)await tx.insert(pengaturanDesa).values({villageId,kunci:key,nilai:JSON.stringify(value)}).onDuplicateKeyUpdate({set:{nilai:JSON.stringify(value)}});
    }
   });
   if(b.umum)await simpanPengaturanAdmin(b.umum);
-  return response({message:"Konfigurasi berhasil dipulihkan. Data transaksi, pengguna, dan media tidak diubah."});
+  return response({message:"Konfigurasi berhasil dipulihkan. Data transaksi, pengguna, dan isi berkas media tidak diubah."});
  }catch(e){return handle(e);}
 }
