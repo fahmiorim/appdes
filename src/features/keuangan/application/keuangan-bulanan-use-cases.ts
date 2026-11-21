@@ -1,7 +1,7 @@
 import "server-only";
 
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
-import { formatMoney, sumMoney, toMinor } from "@/features/keuangan/domain/keuangan";
+import { formatMoney, sumMoney } from "@/features/keuangan/domain/keuangan";
 import { KEUANGAN_RESOURCE } from "@/features/keuangan/domain/keuangan";
 import { listKeuanganBulanan, saveKeuanganBulanan } from "@/features/keuangan/infrastructure/keuangan-bulanan-repository";
 import { requirePermission } from "@/lib/dal";
