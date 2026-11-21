@@ -7,7 +7,7 @@ import styles from "../inventaris.module.css";
 import { simpanInventarisAction, unggahDokumenInventarisAction, hapusDokumenInventarisAction } from "../actions";
 
 export const metadata={title:"Pengelolaan Aset"};
-type Props={params:Promise<{id:string}>;searchParams:Promise<{edit?:string;saved?:string;documentSaved?:string}>};
+type Props={params:Promise<{id:string}>;searchParams:Promise<{edit?:string;saved?:string;documentSaved?:string;documentDeleted?:string}>};
 const dateLabel=(value:string|null)=>value?new Intl.DateTimeFormat("id-ID",{dateStyle:"long",timeZone:"UTC"}).format(new Date(value+"T00:00:00Z")):"—";
 const asalLabel=(value:string|null)=>value?({pembelian:"Pembelian",hibah:"Hibah",bantuan_pemerintah:"Bantuan Pemerintah",sumbangan:"Sumbangan",lainnya:"Lainnya"} as Record<string,string>)[value]??value:"—";
 
@@ -19,7 +19,7 @@ export default async function DetailInventarisPage({params,searchParams}:Props){
   return <main className={styles.page}>
     <header className={styles.heading}><div className={styles.headingIcon}>⬡</div><div><span className={styles.eyebrow}>INVENTARIS &amp; ASET / PENGELOLAAN ASET</span><h1>{x.namaBarang}</h1><p>{x.nomorInventaris??"Nomor inventaris belum ditetapkan"} · Detail informasi, perolehan, kondisi, dan riwayat aset.</p></div></header>
     <nav className={styles.tabs}><Link href="/inventaris">Daftar Inventaris</Link><Link href="/inventaris/pengelolaan">Pengelolaan Aset</Link><Link className={styles.active} href={"/inventaris/"+id}>Detail Aset</Link><Link href={"/inventaris/mutasi?inventarisId="+id}>Riwayat Mutasi</Link><Link href="/inventaris/laporan">Laporan &amp; Statistik</Link></nav>
-    {query.saved?<p className={styles.notice}>Perubahan inventaris berhasil disimpan.</p>:null}{query.documentSaved?<p className={styles.notice}>Dokumen berhasil diunggah.</p>:null}
+    {query.saved?<p className={styles.notice}>Perubahan inventaris berhasil disimpan.</p>:null}{query.documentSaved?<p className={styles.notice}>Dokumen berhasil diunggah.</p>:null}{query.documentDeleted?<p className={styles.notice}>Dokumen berhasil dihapus.</p>:null}
     <section className={styles.detailGrid}>
       <article className={styles.panel}><div className={styles.panelHead}><div><h2>Informasi Aset</h2><p>Data identitas barang dan klasifikasi.</p></div><span className={`${styles.tag} ${x.kondisi==="baik"?styles.good:x.kondisi==="rusak_ringan"?styles.warn:styles.bad}`}>{INVENTARIS_KONDISI_LABELS[x.kondisi]}</span></div>
         <dl className={styles.detailList}>
@@ -44,7 +44,7 @@ export default async function DetailInventarisPage({params,searchParams}:Props){
     </section>
     {data.dokumen.some(doc=>doc.mime.startsWith("image/"))?<section className={styles.panel}><div className={styles.panelHead}><div><h2>Foto Aset</h2><p>Foto kondisi dan dokumentasi visual aset yang tersimpan privat.</p></div></div><div className={styles.assetGallery}>{data.dokumen.filter(doc=>doc.mime.startsWith("image/")).map(doc=><a key={doc.id} href={"/inventaris/dokumen/"+doc.id}><img src={"/inventaris/dokumen/"+doc.id+"?inline=1"} alt={doc.nama} loading="lazy"/><span>{doc.nama}</span></a>)}</div></section>:null}
     <section className={styles.panel}><div className={styles.panelHead}><div><h2>Dokumen Terkait ({data.dokumen.length})</h2><p>Arsip bukti perolehan, BPKB, sertifikat, foto, dan dokumen pendukung. Berkas hanya dapat diunduh pengguna berwenang.</p></div></div>
-      {data.dokumen.length?<div className={styles.timeline}>{data.dokumen.map(doc=><article key={doc.id}><strong>{doc.nama}</strong><small>{doc.namaFile} · {(doc.ukuran/1024).toFixed(0)} KB · {dateLabel(doc.createdAt.toISOString().slice(0,10))}</small><div className={styles.actions}><a className={styles.secondary} href={"/inventaris/dokumen/"+doc.id}>Unduh</a>{data.canDelete?<form action={hapusDokumenInventarisAction}><input type="hidden" name="id" value={doc.id}/><button className={styles.secondary}>Hapus</button></form>:null}</div></article>)}</div>:<p className={styles.empty}>Belum ada dokumen untuk aset ini.</p>}
+      {data.dokumen.length?<div className={styles.timeline}>{data.dokumen.map(doc=><article key={doc.id}><strong>{doc.nama}</strong><small>{doc.namaFile} · {(doc.ukuran/1024).toFixed(0)} KB · {dateLabel(doc.createdAt.toISOString().slice(0,10))}</small><div className={styles.actions}><a className={styles.secondary} href={"/inventaris/dokumen/"+doc.id}>Unduh</a>{data.canDelete?<form action={hapusDokumenInventarisAction}><input type="hidden" name="id" value={doc.id}/><input type="hidden" name="inventarisId" value={x.id}/><button className={styles.secondary}>Hapus</button></form>:null}</div></article>)}</div>:<p className={styles.empty}>Belum ada dokumen untuk aset ini.</p>}
       {data.canWrite?<form action={unggahDokumenInventarisAction} className={styles.form} style={{marginTop:14}}><input type="hidden" name="inventarisId" value={x.id}/><label>Nama Dokumen<input name="nama" placeholder="Contoh: BPKB / Sertifikat / Faktur"/></label><label className={styles.wide}>Berkas (PDF maks. 8 MB; gambar maks. 5 MB)<input name="berkas" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" required/></label><button className={styles.primary}>Unggah Dokumen</button></form>:null}
     </section>
     <section className={styles.grid}>
