@@ -1,5 +1,6 @@
 import "server-only";
 import { and, asc, eq, isNull, or, gt } from "drizzle-orm";
+import { users } from "@/db/schema/auth";
 import { db } from "@/db";
 import { villageBlockedIps, villageSecuritySettings } from "@/db/schema";
 import type { BlockedIpDTO, KeamananInput } from "../domain/keamanan";
@@ -49,18 +50,6 @@ export async function createBlockedIp(villageId: number, createdBy: string, ipAd
 }
 export async function deleteBlockedIp(villageId: number, id: number): Promise<void> {
   await db.delete(villageBlockedIps).where(and(eq(villageBlockedIps.villageId, villageId), eq(villageBlockedIps.id, id)));
-}
-export async function getLoginIpPolicy(username: string): Promise<{ villageId: number; ipRestrictionEnabled: boolean; allowedIps: string[]; blocked: boolean } | null> {
-  const { users } = await import("@/db/schema/auth");
-  const [user] = await db.select({ villageId: users.villageId }).from(users).where(eq(users.username, username)).limit(1);
-  if (!user?.villageId) return null;
-  const [settings] = await db.select().from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, user.villageId)).limit(1);
-  const [blocked] = await db.select({ id: villageBlockedIps.id }).from(villageBlockedIps).where(and(
-    eq(villageBlockedIps.villageId, user.villageId),
-    eq(villageBlockedIps.ipAddress, "__IP_PLACEHOLDER__"),
-    or(isNull(villageBlockedIps.expiresAt), gt(villageBlockedIps.expiresAt, new Date())),
-  )).limit(1);
-  return { villageId: user.villageId, ipRestrictionEnabled: settings?.ipRestrictionEnabled ?? false, allowedIps: parseIps(settings?.allowedIps ?? null), blocked: Boolean(blocked) };
 }
 export async function isTenantIpBlocked(villageId: number, ipAddress: string): Promise<boolean> {
   const [row] = await db.select({ id: villageBlockedIps.id }).from(villageBlockedIps).where(and(
