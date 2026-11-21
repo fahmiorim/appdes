@@ -18,7 +18,6 @@ export interface PenggunaAdminData {
   statistik: StatistikPengguna;
   currentUserId: string;
   canCreate: boolean;
-  canCreate: boolean;
   canUpdate: boolean;
   canDelete: boolean;
   moduleCount: number;
@@ -57,6 +56,7 @@ export interface GrupAksesAdminData {
   roles: RoleRecord[];
   statistik: StatistikPengguna;
   selected: Awaited<ReturnType<typeof getRoleDetail>> | null;
+  canCreate: boolean;
   canUpdate: boolean;
   canDelete: boolean;
   moduleCount: number;
