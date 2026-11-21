@@ -52,6 +52,7 @@ export interface GrupAksesAdminData {
   canDelete: boolean;
   moduleCount: number;
   totalHakAkses: number;
+  canAudit: boolean;
 }
 
 /**
@@ -81,5 +82,6 @@ export async function getGrupAksesAdminData(roleParam?: number): Promise<GrupAks
     canDelete: hasPermission(user.permissions, GRUP_AKSES_RESOURCE, "delete"),
     moduleCount: modules.filter((module) => module.isActive && !module.isHidden && !module.isGroup).length,
     totalHakAkses,
+    canAudit: hasPermission(user.permissions, "audit-log", "read"),
   };
 }
