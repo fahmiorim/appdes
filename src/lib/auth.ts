@@ -3,7 +3,7 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { twoFactor, username } from "better-auth/plugins";
-import { and, eq, ne, or, isNull, gt } from "drizzle-orm";
+import { and, desc, eq, ne, or, isNull, gt } from "drizzle-orm";
 
 import { db } from "@/db";
 import { accounts, sessions, users } from "@/db/schema/auth";
@@ -137,7 +137,7 @@ export const auth = betterAuth({
               if (policy.passwordReuseCount > 0) {
                 const [[credential], history] = await Promise.all([
                   db.select({ password: accounts.password }).from(accounts).where(and(eq(accounts.accountId, userId), eq(accounts.providerId, "credential"))).limit(1),
-                  db.select({ passwordHash: passwordHistory.passwordHash }).from(passwordHistory).where(eq(passwordHistory.userId, userId)).orderBy(passwordHistory.createdAt).limit(policy.passwordReuseCount),
+                  db.select({ passwordHash: passwordHistory.passwordHash }).from(passwordHistory).where(eq(passwordHistory.userId, userId)).orderBy(desc(passwordHistory.createdAt)).limit(Math.max(0, policy.passwordReuseCount - 1)),
                 ]);
                 const hashes = [...new Set([credential?.password, ...history.map((item) => item.passwordHash)].filter((value): value is string => Boolean(value)))];
                 for (const hash of hashes) {
