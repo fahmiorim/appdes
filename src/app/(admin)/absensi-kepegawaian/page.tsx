@@ -13,6 +13,10 @@ export default async function DashboardAbsensiPage() {
   const data = await getDashboardAbsensiData();
   const statusLabel: Record<string, string> = { hadir: "Hadir", izin: "Izin", cuti: "Cuti", tidak_hadir: "Tidak Hadir" };
   const maxTrend = Math.max(1, ...data.trendRows.map((x) => Number(x.total)));
+  const totalStatus = Math.max(1, data.hadir + data.izin + data.cuti + data.tidakHadir);
+  const hadirPct = data.hadir / totalStatus * 100;
+  const izinPct = data.izin / totalStatus * 100;
+  const cutiPct = data.cuti / totalStatus * 100;
   return <div className="modul-page">
     <div className="page-heading"><div><span className="eyebrow">ABSENSI & KEPEGAWAIAN</span><h1>Absensi & Kepegawaian</h1><p>Monitoring kehadiran, data pegawai, dan administrasi kepegawaian perangkat desa.</p></div></div>
     <AbsensiKepegawaianNav active="/absensi-kepegawaian"/>
@@ -30,11 +34,10 @@ export default async function DashboardAbsensiPage() {
         {data.trendRows.length ? <div className={styles["ak-bars"]}>{data.trendRows.map((row) => <span key={row.tanggal} style={{height:`${Math.max(8,Number(row.total)/maxTrend*100)}%`}} title={`${row.tanggal}: ${row.total} hadir`}><small>{row.tanggal.slice(5)}</small></span>)}</div> : <div className={styles["ak-empty"]}>Belum ada catatan kehadiran dalam 30 hari terakhir.</div>}
       </section>
       <section className={styles["ak-card"]}>
-        <h2>Komposisi Kepegawaian</h2><p>Status pegawai aktif.</p>
-        <div className={styles["ak-kpi-grid"]} style={{gridTemplateColumns:"repeat(3,minmax(0,1fr))"}}>
-          <div><strong>{data.komposisi.tetap}</strong><span>Pegawai Tetap</span></div>
-          <div><strong>{data.komposisi.kontrak}</strong><span>Kontrak</span></div>
-          <div><strong>{data.komposisi.purnaTugas}</strong><span>Purna Tugas</span></div>
+        <h2>Komposisi Kehadiran Hari Ini</h2><p>Distribusi status kehadiran seluruh pegawai.</p>
+        <div className={styles["ak-donut-layout"]}>
+          <div className={styles["ak-donut"]} style={{background:`conic-gradient(#22b84b 0 ${hadirPct}%,#ffb21b ${hadirPct}% ${hadirPct+izinPct}%,#8b24f3 ${hadirPct+izinPct}% ${hadirPct+izinPct+cutiPct}%,#f04455 ${hadirPct+izinPct+cutiPct}% 100%)`}}><div><strong>{data.totalPegawai}</strong><span>Pegawai</span></div></div>
+          <div className={styles["ak-donut-legend"]}><span><i className={styles.green}/>Hadir <b>{data.hadir} orang</b></span><span><i className={styles.amber}/>Izin <b>{data.izin} orang</b></span><span><i className={styles.purple}/>Cuti <b>{data.cuti} orang</b></span><span><i className={styles.red}/>Tidak Hadir <b>{data.tidakHadir} orang</b></span></div>
         </div>
         <div className={styles["ak-actions"]}><Link className={styles["ak-button"]} href="/absensi-kepegawaian/pegawai">Kelola Data Pegawai</Link></div>
       </section>
