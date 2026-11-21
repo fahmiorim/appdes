@@ -37,11 +37,11 @@ export async function POST(request: Request) {
     if (!judul || judul.length > 200) return jsonError("Judul wajib diisi (maksimal 200 karakter).", 400);
     if (!jenisValid.includes(jenis) || !Number.isInteger(tahun) || tahun < 2000 || tahun > 2100) return jsonError("Jenis atau tahun laporan tidak valid.", 400);
     const report = await getLaporanDesa(jenis, tahun);
-    const [saved] = await db.insert(laporanDesaTersimpan).values({
+    await db.insert(laporanDesaTersimpan).values({
       villageId, judul, jenis, tahun, deskripsi: body.deskripsi?.trim() || null,
       kolom: report.columns, baris: report.rows, dibuatOleh: user.id,
     });
-    return NextResponse.json({ id: Number(saved.insertId), message: "Laporan berhasil disimpan." }, { status: 201 });
+    return NextResponse.json({ message: "Laporan berhasil disimpan." }, { status: 201 });
   } catch {
     return jsonError("Laporan gagal disimpan. Periksa sesi, hak akses, dan koneksi data.", 403);
   }
@@ -57,7 +57,7 @@ export async function PATCH(request: Request) {
     const result = await db.update(laporanDesaTersimpan)
       .set({ judul, deskripsi: body.deskripsi?.trim() || null })
       .where(and(eq(laporanDesaTersimpan.id, id), eq(laporanDesaTersimpan.villageId, villageId)));
-    if (!result[0].affectedRows) return jsonError("Laporan tidak ditemukan.", 404);
+    if (!result.affectedRows) return jsonError("Laporan tidak ditemukan.", 404);
     return NextResponse.json({ message: "Laporan berhasil diperbarui." });
   } catch {
     return jsonError("Laporan gagal diperbarui. Periksa sesi dan hak akses Anda.", 403);
