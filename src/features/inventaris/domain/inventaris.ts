@@ -122,6 +122,11 @@ export const inventarisKategoriFormSchema = z.object({
   penanggungJawab: z.string().trim().max(150).optional().or(z.literal("")),
   jabatanPenanggungJawab: z.string().trim().max(100).optional().or(z.literal("")),
   teleponPenanggungJawab: z.string().trim().max(30).optional().or(z.literal("")),
+}).superRefine((value, ctx) => {
+  const nilaiPerolehan = (value.hargaSatuan ?? 0) * value.jumlah;
+  if (value.akumulasiPenyusutan > nilaiPerolehan + 0.005) {
+    ctx.addIssue({code:"custom",path:["akumulasiPenyusutan"],message:"Akumulasi penyusutan tidak boleh melebihi nilai perolehan."});
+  }
 });
 
 export type InventarisKategoriInput = z.infer<typeof inventarisKategoriFormSchema>;
@@ -251,6 +256,7 @@ export interface MutasiDetailSnapshot {
 export interface InventarisAssetPatch {
   jumlah?: string;
   nilaiAkhir?: string | null;
+  akumulasiPenyusutan?: string;
   kondisi?: InventarisKondisi;
   lokasi?: string | null;
   isDeleted?: boolean;
