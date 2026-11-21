@@ -260,6 +260,13 @@
       "when": 1795702000000,
       "tag": "0041_laporan_desa_tersimpan",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "5",
+      "when": 1795703000000,
+      "tag": "0042_laporan_desa_template",
+      "breakpoints": true
     }
   ]
 }
