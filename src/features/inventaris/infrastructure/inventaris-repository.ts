@@ -293,7 +293,12 @@ function nilaiInventaris(input: InventarisInput) {
 
 export async function createInventaris(villageId:number,input:InventarisInput,actorName:string) {
   return db.transaction(async(tx)=>{
-    const [row]=await tx.insert(inventaris).values({villageId,...nilaiInventaris(input)}).$returningId();
+    const values=nilaiInventaris(input);
+    const [row]=await tx.insert(inventaris).values({villageId,...values}).$returningId();
+    if(row?.id&&!values.nomorInventaris){
+      const nomor=`INV-${String(row.id).padStart(5,"0")}`;
+      await tx.update(inventaris).set({nomorInventaris:nomor}).where(and(eq(inventaris.villageId,villageId),eq(inventaris.id,row.id)));
+    }
     if(row?.id && (input.penanggungJawab||input.jabatanPenanggungJawab||input.teleponPenanggungJawab)){
       await tx.insert(inventarisPenanggungJawabRiwayat).values({
         villageId,inventarisId:row.id,namaSebelum:null,jabatanSebelum:null,teleponSebelum:null,
