@@ -1,12 +1,12 @@
 import Link from "next/link";
 
 import { getPerangkatDesaData } from "@/features/pemerintahan/application/use-cases";
-import { hapusJabatanAction, hapusPerangkatAction, simpanJabatanAction, simpanPerangkatAction } from "../actions";
+import { hapusJabatanAction, hapusPerangkatAction, hapusRiwayatAction, simpanJabatanAction, simpanPerangkatAction, simpanRiwayatAction } from "../actions";
 
 export const metadata = { title: "Perangkat Desa" };
 
 export default async function PerangkatDesaPage() {
-  const { rows, jabatan } = await getPerangkatDesaData();
+  const { rows, jabatan, riwayat } = await getPerangkatDesaData();
   const active = rows.filter((row) => row.status === "aktif").length;
   return <div className="modul-page pemerintahan-page">
     <header className="page-heading"><div><span className="eyebrow">PEMERINTAHAN DESA</span><h1>Perangkat Desa</h1><p>Kelola data perangkat, jabatan, status kepegawaian, masa jabatan, dan dokumen pendukung.</p></div><Link className="button button-secondary" href="/pemerintahan-desa">← Dashboard</Link></header>
@@ -31,6 +31,10 @@ export default async function PerangkatDesaPage() {
         <label>NIP<input name="nip" defaultValue={row.nip ?? ""}/></label><label>NIK<input name="nik" defaultValue={row.nik ?? ""}/></label><label>Jenis Kelamin<select name="jenisKelamin" defaultValue={row.jenisKelamin ?? ""}><option value="">Pilih</option><option value="male">Laki-laki</option><option value="female">Perempuan</option></select></label>
         <label>Tempat Lahir<input name="tempatLahir" defaultValue={row.tempatLahir ?? ""}/></label><label>Tanggal Lahir<input type="date" name="tanggalLahir" defaultValue={row.tanggalLahir ?? ""}/></label><label>Pendidikan<input name="pendidikan" defaultValue={row.pendidikan ?? ""}/></label><label>Telepon<input name="telepon" defaultValue={row.telepon ?? ""}/></label><label>Email<input name="email" type="email" defaultValue={row.email ?? ""}/></label><label>Alamat<input name="alamat" defaultValue={row.alamat ?? ""}/></label><label>Foto<input name="foto" defaultValue={row.foto ?? ""}/></label><label>Periode<input name="periode" defaultValue={row.periode ?? ""}/></label><label>Nomor SK<input name="nomorSkPengangkatan" defaultValue={row.nomorSkPengangkatan ?? ""}/></label><label>Tanggal SK<input type="date" name="tanggalPengangkatan" defaultValue={row.tanggalPengangkatan ?? ""}/></label><label>Status<select name="status" defaultValue={row.status}><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option></select></label><label>Urutan<input type="number" name="urut" defaultValue={row.urut}/></label>
         <div className="pemerintahan-form-actions"><button className="button button-primary" type="submit">Simpan Perubahan</button></div></form><form action={hapusPerangkatAction}><input type="hidden" name="id" value={row.id}/><button className="button button-danger-ghost" type="submit">Hapus Perangkat</button></form></details></td></tr>)}</tbody></table></div> : <p className="modul-empty">Belum ada data perangkat desa.</p>}
+    </section>
+    <section className="modul-card"><div className="pemerintahan-card-heading"><div><h2>Riwayat Jabatan</h2><p>Catat riwayat penempatan, masa jabatan, dan SK setiap perangkat.</p></div></div>
+      <form action={simpanRiwayatAction} className="pemerintahan-form"><label>Perangkat<select name="perangkatId" required><option value="">Pilih perangkat</option>{rows.map(x=><option key={x.id} value={x.id}>{x.nama}</option>)}</select></label><label>Jabatan<input name="jabatan" required/></label><label>Nomor SK<input name="nomorSk"/></label><label>Mulai<input name="mulai" type="date"/></label><label>Selesai<input name="selesai" type="date"/></label><label>Keterangan<input name="keterangan"/></label><button className="button button-primary" type="submit">Tambah Riwayat</button></form>
+      {riwayat.length ? <div className="modul-table-wrap"><table className="modul-table"><thead><tr><th>Perangkat</th><th>Jabatan</th><th>Nomor SK</th><th>Periode</th><th>Aksi</th></tr></thead><tbody>{riwayat.map(item=><tr key={item.id}><td>{rows.find(x=>x.id===item.perangkatId)?.nama ?? "—"}</td><td>{item.jabatan}</td><td>{item.nomorSk ?? "—"}</td><td>{item.mulai ?? "—"} – {item.selesai ?? "Sekarang"}</td><td><form action={hapusRiwayatAction}><input type="hidden" name="id" value={item.id}/><button className="button button-danger-ghost" type="submit">Hapus</button></form></td></tr>)}</tbody></table></div> : <p className="modul-empty">Riwayat jabatan belum dicatat.</p>}
     </section>
   </div>;
 }
