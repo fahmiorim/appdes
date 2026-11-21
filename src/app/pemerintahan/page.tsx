@@ -119,7 +119,11 @@ export default async function PemerintahanPage() {
   );
   const lainnya = perangkat.filter(
     (item) => item.id !== kepalaDesa?.id && item.id !== sekretaris?.id,
-  );
+  ).sort((a, b) => {
+    const aParent = a.atasanId ?? 0;
+    const bParent = b.atasanId ?? 0;
+    return aParent - bParent || a.urut - b.urut;
+  });
   const struktur = [kepalaDesa, sekretaris, ...lainnya].filter(
     (item): item is (typeof perangkat)[number] => Boolean(item),
   );
