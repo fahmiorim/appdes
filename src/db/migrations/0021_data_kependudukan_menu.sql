@@ -43,8 +43,6 @@ SET child.`parent_id` = parent.`id`,
 WHERE child.`slug` IN ('dashboard-kependudukan', 'penduduk', 'keluarga', 'mutasi-penduduk', 'laporan-penduduk');
 --> statement-breakpoint
 
---> statement-breakpoint
-
 INSERT INTO `role_permissions` (`role_id`, `module_id`, `access`)
 SELECT r.`id`, m.`id`, 'manage'
 FROM `roles` r
