@@ -64,6 +64,8 @@ export async function GET() {
       db.select({id:websiteTemplates.id,slug:websiteTemplates.slug,nama:websiteTemplates.name,kategori:websiteTemplates.category,deskripsi:websiteTemplates.description,versi:websiteTemplates.version,tokens:websiteTemplates.tokens,tags:websiteTemplates.tags}).from(websiteTemplates).where(eq(websiteTemplates.status,"published")).orderBy(asc(websiteTemplates.name)),
       db.select({id:theme.id,slug:theme.slug,nama:theme.nama,versi:theme.versi,opsi:theme.opsi}).from(theme).where(and(eq(theme.villageId,villageId),eq(theme.aktif,true))).limit(1),
       ambilPengaturanAdmin(),
+      hitungUkuranMedia(villageId),
+      db.select({kuotaMediaMb:villages.kuotaMediaMb}).from(villages).where(eq(villages.id,villageId)).limit(1),
     ]);
     return json({desa:desa??null,profil:profil??null,layanan,kontak:settings[0]??{},integrasi:settings[1]??{},favicon:settings[2],templates:templates.map(t=>({...t,tokens:(()=>{try{return JSON.parse(t.tokens)}catch{return {}}})(),tags:(()=>{try{return JSON.parse(t.tags)}catch{return []}})()})),temaAktif:activeTheme??null,umum:general,media:{usedBytes:mediaUsage,quotaMb:mediaQuota?.kuotaMediaMb??null}})
   } catch(error){return handleError(error);}
