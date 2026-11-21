@@ -52,7 +52,7 @@ export const computeEffectivePermissions = cache(
       role.villageId === null &&
       villageId === null
     ) {
-      return { isSuperadmin: true, levelByResource: new Map() };
+      return { isSuperadmin: true, levelByResource: new Map(), actionByResource: new Map() };
     }
 
     const [modules, levelById, actionsById] = await Promise.all([
