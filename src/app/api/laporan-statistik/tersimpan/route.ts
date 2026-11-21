@@ -72,7 +72,7 @@ export async function DELETE(request: Request) {
     if (!Number.isInteger(id) || id < 1) return jsonError("ID laporan tidak valid.", 400);
     const result = await db.delete(laporanDesaTersimpan)
       .where(and(eq(laporanDesaTersimpan.id, id), eq(laporanDesaTersimpan.villageId, villageId)));
-    if (!result[0].affectedRows) return jsonError("Laporan tidak ditemukan.", 404);
+    if (!result.affectedRows) return jsonError("Laporan tidak ditemukan.", 404);
     return NextResponse.json({ message: "Laporan berhasil dihapus." });
   } catch {
     return jsonError("Laporan gagal dihapus. Periksa sesi dan hak akses Anda.", 403);
