@@ -73,6 +73,8 @@ export const pembangunanFormSchema = z.object({
   judul: z.string().trim().min(1, "Judul proyek wajib diisi.").max(200, "Maksimal 200 karakter."),
   deskripsi: optionalText(2000),
   lokasi: optionalText(200),
+  latitude: z.preprocess((v) => (isBlankSelection(v) ? null : v), z.coerce.number().min(-90).max(90).nullable()),
+  longitude: z.preprocess((v) => (isBlankSelection(v) ? null : v), z.coerce.number().min(-180).max(180).nullable()),
   tahunAnggaran: z.coerce
     .number({ error: "Tahun anggaran tidak valid." })
     .int("Tahun anggaran tidak valid.")
@@ -118,6 +120,8 @@ export interface PembangunanProyekDTO {
   slug: string;
   deskripsi: string | null;
   lokasi: string | null;
+  latitude: number | null;
+  longitude: number | null;
   tahunAnggaran: number;
   sumberDana: string | null;
   anggaran: string | null;
