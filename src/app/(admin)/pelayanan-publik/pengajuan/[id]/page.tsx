@@ -7,7 +7,7 @@ import { listBerkasPengajuanAdminData } from "@/features/pelayanan/application/p
 const labels: Record<string, string> = { diajukan: "Diajukan", diverifikasi: "Diverifikasi", diproses: "Diproses", selesai: "Selesai", ditolak: "Ditolak" };
 const transitions: Record<string, string[]> = { diajukan: ["diverifikasi", "ditolak"], diverifikasi: ["diproses", "ditolak"], diproses: ["selesai", "ditolak"], selesai: [], ditolak: [] };
 
-export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tersimpan?: string }> }) {
+export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tersimpan?: string; hasil?: string }> }) {
   const p = await params;
   const id = Number(p.id);
   if (!Number.isSafeInteger(id) || id < 1) notFound();
