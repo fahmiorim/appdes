@@ -14,6 +14,7 @@ import {
   simpanPegawai,
   tambahRiwayatPegawai,
   simpanDokumenPegawai,
+  simpanPengaturanKehadiran,
 } from "@/features/kepegawaian/application/use-cases";
 
 function text(fd: FormData, key: string): string {
@@ -100,5 +101,12 @@ export async function unggahDokumenPegawaiAction(fd: FormData) {
   const villageId=await resolveVillageId(user);
   const berkas=await simpanBerkasMedia(villageId,{nama:file.name,mime:file.type,ukuran:file.size,isi:new Uint8Array(await file.arrayBuffer())},"umum","berkas");
   await simpanDokumenPegawai({pegawaiId,judul,kategori:text(fd,"kategori")||"lainnya",nomor:nullable(fd,"nomor"),tanggal:nullable(fd,"tanggal"),berkas});
+  refresh();
+}
+
+
+export async function simpanPengaturanKehadiranAction(fd: FormData) {
+  const hariLibur=fd.getAll("hariLibur").map((x)=>Number(x));
+  await simpanPengaturanKehadiran({jamMasuk:text(fd,"jamMasuk"),jamKeluar:text(fd,"jamKeluar"),hariLibur});
   refresh();
 }
