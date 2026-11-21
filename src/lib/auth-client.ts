@@ -1,8 +1,8 @@
 "use client";
 
-import { usernameClient } from "better-auth/client/plugins";
+import { twoFactorClient, usernameClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient({
-  plugins: [usernameClient()],
+  plugins: [usernameClient(), twoFactorClient({ onTwoFactorRedirect: () => { window.location.assign("/two-factor"); } })],
 });
