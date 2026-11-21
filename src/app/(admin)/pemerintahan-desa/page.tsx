@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { agendaMendatang } from "@/features/agenda/application/agenda-use-cases";
 import { getPemerintahanDashboard } from "@/features/pemerintahan/application/use-cases";
@@ -17,8 +18,19 @@ export default async function PemerintahanDashboardPage() {
   const villageId = await resolveVillageId(user);
   const agenda = await agendaMendatang(villageId, 4);
   const kepala = data.perangkat.find((item) => (item.jabatan ?? "").toLowerCase().includes("kepala desa"));
-  const sekretaris = data.perangkat.find((item) => (item.jabatan ?? "").toLowerCase().includes("sekretaris"));
-  const children = data.perangkat.filter((item) => item.id !== kepala?.id && item.id !== sekretaris?.id);
+  const anakPerangkat = (atasanId: number) => data.perangkat
+    .filter((item) => item.atasanId === atasanId)
+    .sort((a, b) => a.urut - b.urut || a.nama.localeCompare(b.nama, "id"));
+  const akarOrganisasi = data.perangkat.filter((item) =>
+    item.id === kepala?.id || !item.atasanId || !data.perangkat.some((parent) => parent.id === item.atasanId),
+  );
+  const renderOrganisasi = (item: (typeof data.perangkat)[number], depth = 0): ReactNode => {
+    const children = anakPerangkat(item.id);
+    return <article className={`pemerintahan-org-node ${item.id === kepala?.id ? "root" : ""}`} key={item.id} data-depth={depth}>
+      <strong>{item.nama}</strong><span>{item.jabatan ?? "Perangkat Desa"}</span>
+      {children.length ? <div className="pemerintahan-org-children pemerintahan-org-nested">{children.map((child) => renderOrganisasi(child, depth + 1))}</div> : null}
+    </article>;
+  };
   const stats = [
     ["Perangkat Desa", money(data.totalPerangkat), "👥", "perangkat"],
     ["Lembaga Desa", money(data.totalLembaga), "🏛️", "lembaga"],
@@ -44,11 +56,7 @@ export default async function PemerintahanDashboardPage() {
       <div className="pemerintahan-dashboard-grid">
         <section className="modul-card pemerintahan-org-card">
           <div className="pemerintahan-card-heading"><div><h2>Struktur Organisasi Pemerintahan Desa</h2><p>Disusun dari relasi atasan dan perangkat aktif.</p></div><Link href="/pemerintahan-desa/perangkat">Kelola Perangkat ↗</Link></div>
-          {kepala ? <div className="pemerintahan-org">
-            <article className="pemerintahan-org-node root"><strong>{[kepala.nama].join(" ")}</strong><span>{kepala.jabatan ?? "Kepala Desa"}</span></article>
-            {sekretaris ? <><div className="pemerintahan-org-connector"/><article className="pemerintahan-org-node secretary"><strong>{sekretaris.nama}</strong><span>{sekretaris.jabatan}</span></article></> : null}
-            <div className="pemerintahan-org-children">{children.map(item => <article className="pemerintahan-org-node" key={item.id}><strong>{item.nama}</strong><span>{item.jabatan ?? "Perangkat Desa"}</span></article>)}</div>
-          </div> : <p className="modul-empty">Belum ada perangkat aktif. Tambahkan perangkat dan atur hierarki organisasi.</p>}
+          {data.perangkat.length ? <div className="pemerintahan-org">{akarOrganisasi.map((item) => renderOrganisasi(item))}</div> : <p className="modul-empty">Belum ada perangkat aktif. Tambahkan perangkat dan atur hierarki organisasi.</p>}
         </section>
         <section className="modul-card">
           <div className="pemerintahan-card-heading"><div><h2>Lembaga & BPD</h2><p>Ringkasan kelembagaan desa.</p></div><Link href="/pemerintahan-desa/lembaga">Kelola ↗</Link></div>
