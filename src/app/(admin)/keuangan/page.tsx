@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { listKeuangan } from "@/features/keuangan/application/keuangan-use-cases";
+import { getKeuanganBulanan } from "@/features/keuangan/application/keuangan-bulanan-use-cases";
+import { simpanTargetRealisasiBulananAction } from "./actions";
 import { formatRupiah, toMinor } from "@/features/keuangan/domain/keuangan";
 import { listPembangunan } from "@/features/pembangunan/application/use-cases";
 import { statusPembangunanLabel } from "@/features/pembangunan/domain/pembangunan";
@@ -18,8 +20,9 @@ const pct = (realisasi: string, pagu: string) => {
 
 export default async function KeuanganPage() {
   const tahun = new Date().getFullYear();
-  const [keuangan, pembangunan] = await Promise.all([
+  const [keuangan, pembangunan, bulanan] = await Promise.all([
     listKeuangan(tahun),
+    getKeuanganBulanan(tahun),
     listPembangunan({ search: "", tahun, status: "", page: 1, pageSize: 1000 }).catch(() => ({
       rows: [], total: 0, page: 1, pageSize: 5, pageCount: 1,
     })),
@@ -59,6 +62,13 @@ export default async function KeuanganPage() {
         <Link href="/keuangan/laporan">▧ Laporan Keuangan</Link>
       </nav>
 
+
+      <section className={styles.panel}>
+        <div className={styles.panelHeading}><div><h2>Tren Target &amp; Realisasi Bulanan {tahun}</h2><p>Grafik memakai data bulanan yang dicatat operator, bukan pembagian otomatis angka tahunan.</p></div><strong>{formatRupiah(bulanan.totalRealisasi)} / {formatRupiah(bulanan.totalTarget)}</strong></div>
+        <div className={styles.monthChart}>{bulanan.rows.map(row=>{const max=Math.max(1,...bulanan.rows.flatMap(x=>[Number(x.target),Number(x.realisasi)]));return <div className={styles.monthColumn} key={row.bulan}><div className={styles.monthBars}><i className={styles.monthTarget} style={{height:Math.max(2,Number(row.target)/max*100)+"%"}}/><i className={styles.monthActual} style={{height:Math.max(2,Number(row.realisasi)/max*100)+"%"}}/></div><span>{row.label}</span></div>;})}</div>
+        <div className={styles.chartLegend}><span><i className={styles.monthTarget}/> Target</span><span><i className={styles.monthActual}/> Realisasi</span></div>
+        <details className={styles.monthEditor}><summary>Input / perbarui target dan realisasi per bulan</summary><form action={simpanTargetRealisasiBulananAction}><input type="hidden" name="tahun" value={tahun}/><div className={styles.tableWrap}><table className={styles.dataTable}><thead><tr><th>Bulan</th><th>Target (Rp)</th><th>Realisasi (Rp)</th></tr></thead><tbody>{bulanan.rows.map(row=><tr key={row.bulan}><td>{row.label}</td><td><input className={styles.moneyInput} type="number" min="0" step="1" name={"target:"+row.bulan} defaultValue={Number(row.target)}/></td><td><input className={styles.moneyInput} type="number" min="0" step="1" name={"realisasi:"+row.bulan} defaultValue={Number(row.realisasi)}/></td></tr>)}</tbody></table></div><button className={styles.primaryButton} type="submit">Simpan Data Bulanan</button></form></details>
+      </section>
       <section className={styles.grid}>
         <article className={styles.panel}>
           <div className={styles.panelHeading}><div><h2>Ringkasan APBDes {keuangan.tahun}</h2><p>Ikhtisar pagu dan realisasi per akun utama</p></div><Link href="/keuangan/apbdes">Kelola APBDes →</Link></div>
