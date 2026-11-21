@@ -158,3 +158,35 @@ export async function muatHalamanPublik(
 export async function muatMenuPublik(villageId: number): Promise<MenuPublikRingkas[]> {
   return listMenuPublik(villageId);
 }
+
+/** Token tema aktif tenant untuk rendering situs publik; hanya nilai HEX/enum tervalidasi yang diteruskan ke CSS. */
+export async function muatTemaPublik(villageId: number) {
+  const active = await ambilTemaAktifDenganOpsi(villageId);
+  if (!active?.opsi) return null;
+  try {
+    const parsed: unknown = JSON.parse(active.opsi);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+    const root = parsed as Record<string, unknown>;
+    const raw = root.templateTokens;
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+    const token = raw as Record<string, unknown>;
+    const color = (key: string, fallback: string) =>
+      typeof token[key] === "string" && /^#[0-9a-fA-F]{6}$/.test(token[key] as string)
+        ? token[key] as string
+        : fallback;
+    return {
+      primary: color("primary", "#075cf0"),
+      secondary: color("secondary", "#0d2136"),
+      accent: color("accent", "#7a20f0"),
+      background: color("background", "#f1f6ff"),
+      surface: color("surface", "#ffffff"),
+      text: color("text", "#101b4b"),
+      fontHeading: token.fontHeading === "serif" ? "serif" : "sans",
+      radius: token.radius === "kecil" ? "10px" : token.radius === "besar" ? "22px" : "15px",
+      style: token.style === "gelap" ? "gelap" : "terang",
+      templateName: active.nama,
+    };
+  } catch {
+    return null;
+  }
+}
