@@ -43,7 +43,7 @@ export default async function GrupAksesPage({
         ) : null}
       </div>
 
-      <div className="pengguna-kpi-grid pengguna-kpi-grid-tiga">
+      <div className="pengguna-kpi-grid">
         <article className="pengguna-kpi" data-tone="ungu">
           <div>
             <span>Total Role</span>
@@ -59,11 +59,10 @@ export default async function GrupAksesPage({
           </div>
         </article>
         <article className="pengguna-kpi" data-tone="oranye">
-          <div>
-            <span>Role Sistem</span>
-            <strong>{angka.format(sistem)}</strong>
-            <small>Nama dan izin terkunci</small>
-          </div>
+          <div><span>Modul Sistem</span><strong>{angka.format(data.moduleCount)}</strong><small>Modul aktif yang dapat diatur</small></div>
+        </article>
+        <article className="pengguna-kpi" data-tone="merah">
+          <div><span>Total Hak Akses</span><strong>{angka.format(data.totalHakAkses)}</strong><small>Izin yang sudah diberikan pada role</small></div>
         </article>
       </div>
 
