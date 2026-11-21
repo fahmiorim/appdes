@@ -58,6 +58,9 @@ export default async function GrupAksesPage({
             <small>Dapat diubah dan dihapus</small>
           </div>
         </article>
+        <article className="pengguna-kpi" data-tone="biru">
+          <div><span>Pengguna Terikat</span><strong>{angka.format(data.statistik.total)}</strong><small>Akun staf pada desa ini</small></div>
+        </article>
         <article className="pengguna-kpi" data-tone="oranye">
           <div><span>Modul Sistem</span><strong>{angka.format(data.moduleCount)}</strong><small>Modul aktif yang dapat diatur</small></div>
         </article>
