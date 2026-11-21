@@ -112,6 +112,11 @@ describe("hitungPerubahanAset", () => {
       hitungPerubahanAset(asetDasar, mutasi({ jenis: "perbaikan", kondisiBaru: "baik" })),
     ).toEqual({ kondisi: "baik" });
   });
+  it("menandai aset dalam perbaikan bila pengajuan belum menentukan kondisi akhir", () => {
+    expect(
+      hitungPerubahanAset(asetDasar, mutasi({ jenis: "perbaikan", kondisiBaru: null })),
+    ).toEqual({ kondisi: "dalam_perbaikan" });
+  });
 
   it("mengurangi jumlah aset untuk penghapusan sebagian", () => {
     expect(
