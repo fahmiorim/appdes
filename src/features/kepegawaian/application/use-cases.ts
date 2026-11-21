@@ -195,7 +195,7 @@ export async function daftarCuti(tahun = tahunLokal()) {
     id: cutiPegawai.id, pegawaiId: kepegawaianPegawai.id, nama: kepegawaianPegawai.nama,
     jabatan: kepegawaianPegawai.jabatan, jenis: cutiPegawai.jenis, mulai: cutiPegawai.mulai,
     selesai: cutiPegawai.selesai, durasi: cutiPegawai.durasi, alasan: cutiPegawai.alasan,
-    status: cutiPegawai.status, catatan: cutiPegawai.catatan,
+    lampiran: cutiPegawai.lampiran, status: cutiPegawai.status, catatan: cutiPegawai.catatan,
   }).from(cutiPegawai).innerJoin(kepegawaianPegawai, and(eq(cutiPegawai.villageId, kepegawaianPegawai.villageId), eq(cutiPegawai.pegawaiId, kepegawaianPegawai.id)))
     .where(and(eq(cutiPegawai.villageId, villageId), gte(cutiPegawai.mulai, `${tahun}-01-01`), lte(cutiPegawai.mulai, `${tahun}-12-31`)))
     .orderBy(desc(cutiPegawai.createdAt));
