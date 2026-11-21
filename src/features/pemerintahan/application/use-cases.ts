@@ -80,6 +80,17 @@ export async function simpanPerangkatDesa(id: number | null, input: {
   nomorSkPengangkatan: string | null; tanggalPengangkatan: string | null; nomorSkPemberhentian: string | null; tanggalPemberhentian: string | null; atasanId: number | null; urut: number;
 }) {
   const villageId = await tenant("perangkat-desa", id ? "update" : "create");
+  if (!input.nama.trim()) throw new Error("Nama perangkat wajib diisi.");
+  if (!["aktif", "nonaktif"].includes(input.status)) throw new Error("Status perangkat tidak valid.");
+  if (input.nik && !/^\\d{16}$/.test(input.nik)) throw new Error("NIK harus terdiri dari 16 digit.");
+  if (input.tanggalPengangkatan && input.tanggalPemberhentian && input.tanggalPemberhentian < input.tanggalPengangkatan) {
+    throw new Error("Tanggal pemberhentian tidak boleh sebelum tanggal pengangkatan.");
+  }
+  if (id) {
+    const [existing] = await db.select({ id: perangkatDesa.id }).from(perangkatDesa)
+      .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, id))).limit(1);
+    if (!existing) throw new Error("Perangkat tidak ditemukan pada desa aktif.");
+  }
   if (input.jabatanId) {
     const [jabatan] = await db.select({ id: jabatanPerangkat.id }).from(jabatanPerangkat)
       .where(and(eq(jabatanPerangkat.villageId, villageId), eq(jabatanPerangkat.id, input.jabatanId))).limit(1);
@@ -133,8 +144,18 @@ export async function simpanLembagaDesa(id: number | null, input: {
   status: string; tampilPublik: boolean; urut: number;
 }) {
   const villageId = await tenant("lembaga-desa", id ? "update" : "create");
-  if (id) await db.update(lembagaDesa).set(input).where(and(eq(lembagaDesa.villageId, villageId), eq(lembagaDesa.id, id)));
-  else await db.insert(lembagaDesa).values({ ...input, villageId });
+  if (!input.nama.trim()) throw new Error("Nama lembaga wajib diisi.");
+  if (!["bpd", "lpm", "pkk", "karang-taruna", "bumdes", "lainnya"].includes(input.jenis)) throw new Error("Jenis lembaga tidak valid.");
+  if (!["aktif", "nonaktif"].includes(input.status)) throw new Error("Status lembaga tidak valid.");
+  if (input.masaBaktiMulai && input.masaBaktiSelesai && input.masaBaktiSelesai < input.masaBaktiMulai) {
+    throw new Error("Akhir masa bakti tidak boleh sebelum tanggal mulai.");
+  }
+  if (id) {
+    const [existing] = await db.select({ id: lembagaDesa.id }).from(lembagaDesa)
+      .where(and(eq(lembagaDesa.villageId, villageId), eq(lembagaDesa.id, id))).limit(1);
+    if (!existing) throw new Error("Lembaga tidak ditemukan pada desa aktif.");
+    await db.update(lembagaDesa).set(input).where(and(eq(lembagaDesa.villageId, villageId), eq(lembagaDesa.id, id)));
+  } else await db.insert(lembagaDesa).values({ ...input, villageId });
 }
 
 export async function hapusLembagaDesa(id: number) {
@@ -153,7 +174,14 @@ export async function simpanAnggotaLembaga(id: number | null, input: {
   const [parent] = await db.select({ id: lembagaDesa.id }).from(lembagaDesa)
     .where(and(eq(lembagaDesa.villageId, villageId), eq(lembagaDesa.id, input.lembagaId))).limit(1);
   if (!parent) throw new Error("Lembaga tidak ditemukan pada desa aktif.");
+  if (!input.nama.trim()) throw new Error("Nama anggota wajib diisi.");
+  if (input.periodeMulai && input.periodeSelesai && input.periodeSelesai < input.periodeMulai) {
+    throw new Error("Akhir periode anggota tidak boleh sebelum tanggal mulai.");
+  }
   if (id) {
+    const [existing] = await db.select({ id: lembagaAnggota.id }).from(lembagaAnggota)
+      .where(and(eq(lembagaAnggota.villageId, villageId), eq(lembagaAnggota.id, id))).limit(1);
+    if (!existing) throw new Error("Anggota tidak ditemukan pada desa aktif.");
     const [before] = await db.select({ foto: lembagaAnggota.foto }).from(lembagaAnggota).where(and(eq(lembagaAnggota.villageId, villageId), eq(lembagaAnggota.id, id))).limit(1);
     await db.update(lembagaAnggota).set(input).where(and(eq(lembagaAnggota.villageId, villageId), eq(lembagaAnggota.id, id)));
     if (before?.foto && before.foto !== input.foto) await hapusMedia(before.foto);
@@ -191,8 +219,20 @@ export async function simpanAreaPeta(id: number | null, input: { nama: string; p
     if (!layer) throw new Error("Layer polygon tidak ditemukan pada desa aktif.");
   }
   if (input.path) {
-    const geo = JSON.parse(input.path) as { type?: string; coordinates?: unknown };
-    if (!geo || geo.type !== "Polygon" || !Array.isArray(geo.coordinates)) throw new Error("Geometri harus berupa GeoJSON Polygon yang valid.");
+    let geo: { type?: string; coordinates?: unknown };
+    try { geo = JSON.parse(input.path) as { type?: string; coordinates?: unknown }; }
+    catch { throw new Error("Format GeoJSON tidak valid."); }
+    if (!geo || geo.type !== "Polygon" || !Array.isArray(geo.coordinates) || !geo.coordinates.length) {
+      throw new Error("Geometri harus berupa GeoJSON Polygon yang valid.");
+    }
+    const validRing = (ring: unknown) => Array.isArray(ring) && ring.length >= 4 &&
+      ring.every((point) => Array.isArray(point) && point.length >= 2 &&
+        Number.isFinite(point[0]) && Number.isFinite(point[1]) &&
+        Number(point[0]) >= -180 && Number(point[0]) <= 180 &&
+        Number(point[1]) >= -90 && Number(point[1]) <= 90);
+    if (!(geo.coordinates as unknown[]).every(validRing)) {
+      throw new Error("Koordinat Polygon harus berupa pasangan longitude/latitude yang valid.");
+    }
   }
   if (id) await db.update(areas).set(input).where(and(eq(areas.villageId, villageId), eq(areas.id, id)));
   else await db.insert(areas).values({ ...input, villageId });
@@ -227,8 +267,14 @@ export async function simpanRiwayatJabatan(id: number | null, input: { perangkat
   const [owner] = await db.select({ id: perangkatDesa.id }).from(perangkatDesa)
     .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, input.perangkatId))).limit(1);
   if (!owner) throw new Error("Perangkat tidak ditemukan pada desa aktif.");
-  if (id) await db.update(perangkatRiwayatJabatan).set(input).where(and(eq(perangkatRiwayatJabatan.villageId, villageId), eq(perangkatRiwayatJabatan.id, id)));
-  else await db.insert(perangkatRiwayatJabatan).values({ ...input, villageId });
+  if (!input.jabatan.trim()) throw new Error("Nama jabatan pada riwayat wajib diisi.");
+  if (input.mulai && input.selesai && input.selesai < input.mulai) throw new Error("Tanggal akhir riwayat tidak boleh sebelum tanggal mulai.");
+  if (id) {
+    const [existing] = await db.select({ id: perangkatRiwayatJabatan.id }).from(perangkatRiwayatJabatan)
+      .where(and(eq(perangkatRiwayatJabatan.villageId, villageId), eq(perangkatRiwayatJabatan.id, id))).limit(1);
+    if (!existing) throw new Error("Riwayat jabatan tidak ditemukan pada desa aktif.");
+    await db.update(perangkatRiwayatJabatan).set(input).where(and(eq(perangkatRiwayatJabatan.villageId, villageId), eq(perangkatRiwayatJabatan.id, id)));
+  } else await db.insert(perangkatRiwayatJabatan).values({ ...input, villageId });
 }
 
 export async function hapusRiwayatJabatan(id: number) {
