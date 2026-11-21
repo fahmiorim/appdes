@@ -5818,6 +5818,8 @@ a.beranda-quick-tile:hover {
   padding-top: 12px;
 }
 
+.pengguna-izin-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
 .pengguna-izin-footer p {
   margin: 0;
   color: #7c88a6;
