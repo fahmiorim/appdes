@@ -446,6 +446,7 @@ export async function buatJadwalPemeliharaan(input:{
 
 export async function ubahStatusPemeliharaan(input:{
   id:number;status:"terjadwal"|"dalam_proses"|"selesai"|"dibatalkan";
+  kondisiSetelah?:"baik"|"rusak_ringan"|"rusak_berat"|"dalam_perbaikan";
   jenis?:string;tanggalRencana?:string;biaya?:number;pelaksana?:string;deskripsi?:string;
   tanggalSelesai?:string;hasil?:string;
 }) {
@@ -462,9 +463,10 @@ export async function ubahStatusPemeliharaan(input:{
     const rencana=new Date((input.tanggalRencana??"")+"T00:00:00Z");
     if(Number.isNaN(selesai.getTime())||selesai.toISOString().slice(0,10)!==input.tanggalSelesai||selesai<rencana) throw validationError("Tanggal selesai tidak boleh lebih awal dari tanggal rencana.");
     if(!input.hasil?.trim()) throw validationError("Hasil pekerjaan wajib diisi ketika pemeliharaan selesai.");
+    if(!input.kondisiSetelah) throw validationError("Pilih kondisi aset setelah pemeliharaan selesai.");
   }
   await updateStatusPemeliharaan(villageId,input.id,{
-    status:input.status,jenis:input.jenis?.trim(),tanggalRencana:input.tanggalRencana,
+    status:input.status,kondisiSetelah:input.status==="selesai"?input.kondisiSetelah:null,jenis:input.jenis?.trim(),tanggalRencana:input.tanggalRencana,
     biaya:input.biaya?.toFixed(2),pelaksana:input.pelaksana?.trim()||null,
     deskripsi:input.deskripsi?.trim()||null,tanggalSelesai:input.tanggalSelesai||null,hasil:input.hasil?.trim()||null,
   },namaPengguna(user));
