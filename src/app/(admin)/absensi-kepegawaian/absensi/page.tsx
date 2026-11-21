@@ -13,6 +13,9 @@ export const metadata: Metadata = { title: "Absensi Pegawai" };
 export default async function AbsensiPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
   const params=await searchParams;
   const raw=Array.isArray(params.tanggal)?params.tanggal[0]:params.tanggal;
+  const query=Array.isArray(params.q)?params.q[0]??"":params.q??"";
+  const statusFilter=Array.isArray(params.status)?params.status[0]??"":params.status??"";
+  const jabatanFilter=Array.isArray(params.jabatan)?params.jabatan[0]??"":params.jabatan??"";
   const tanggal=raw && /^\d{4}-\d{2}-\d{2}$/.test(raw)?raw:new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Jakarta"}).format(new Date());
   const tahun=Number(tanggal.slice(0,4));
   const bulan=Number(tanggal.slice(5,7));
@@ -29,6 +32,12 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
 
   const counts={hadir:rows.filter(x=>x.status==="hadir").length,izin:rows.filter(x=>x.status==="izin").length,cuti:rows.filter(x=>x.status==="cuti").length,tidak:rows.filter(x=>!x.status||x.status==="tidak_hadir").length};
   const tingkatKehadiran=rows.length?Math.round(counts.hadir/rows.length*1000)/10:0;
+  const filteredRows=rows.filter((row)=>
+    (!query||row.nama.toLocaleLowerCase("id-ID").includes(query.toLocaleLowerCase("id-ID"))) &&
+    (!statusFilter||(row.status??"tidak_hadir")===statusFilter) &&
+    (!jabatanFilter||(row.jabatan??"")===jabatanFilter)
+  );
+  const jabatanOptions=[...new Set(rows.map((row)=>row.jabatan).filter((value):value is string=>Boolean(value)))].sort();
   return <div className="modul-page">
     <div className="page-heading"><div><span className="eyebrow">ABSENSI & KEPEGAWAIAN</span><h1>Absensi Pegawai</h1><p>Kelola dan pantau kehadiran perangkat desa serta staf secara terpusat.</p></div></div>
     <AbsensiKepegawaianNav active="/absensi-kepegawaian/absensi"/>
@@ -44,11 +53,14 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
       <section id="rekap" className={styles["ak-card"]}>
         <div className={styles["ak-card-heading-row"]}><div><h2>Rekap Absensi Pegawai</h2><p>Daftar kehadiran pegawai untuk tanggal yang dipilih.</p></div><a className={styles["ak-button"]} href={"/absensi-kepegawaian/absensi/ekspor?tanggal="+tanggal}>↓ Export</a></div>
         <form className={styles["ak-filter"]} method="get">
+          <label>Cari pegawai<input type="search" name="q" placeholder="Nama pegawai..." defaultValue={query}/></label>
           <label>Tanggal<input type="date" name="tanggal" defaultValue={tanggal}/></label>
-          <button className={styles["ak-button"]} type="submit">Tampilkan</button>
+          <label>Jabatan<select name="jabatan" defaultValue={jabatanFilter}><option value="">Semua Jabatan</option>{jabatanOptions.map((name)=><option key={name} value={name}>{name}</option>)}</select></label>
+          <label>Status<select name="status" defaultValue={statusFilter}><option value="">Semua Status</option><option value="hadir">Hadir</option><option value="izin">Izin</option><option value="cuti">Cuti</option><option value="tidak_hadir">Tidak Hadir</option></select></label>
+          <button className={styles["ak-button"]} type="submit">⌕ Filter</button>
         </form>
         <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}><thead><tr><th>No.</th><th>Nama Pegawai</th><th>Jabatan</th><th>Jam Masuk</th><th>Jam Pulang</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
-          {rows.map((row,i)=><tr key={row.pegawaiId}><td>{i+1}</td><td><span className={styles["ak-person"]}><span>{row.nama.split(" ").slice(0,2).map((part)=>part[0]).join("").toUpperCase()}</span><b>{row.nama}</b></span></td><td>{row.jabatan??"—"}</td><td>{row.jamMasuk??"—"}</td><td>{row.jamKeluar??"—"}</td><td><span className={`${styles["ak-badge"]} ${styles[row.status??"tidak_hadir"]??""}`}>{statusLabel[row.status??"tidak_hadir"]??"Tidak Hadir"}</span></td><td>{canManage?<details><summary>Ubah</summary>
+          {filteredRows.map((row,i)=><tr key={row.pegawaiId}><td>{i+1}</td><td><span className={styles["ak-person"]}><span>{row.nama.split(" ").slice(0,2).map((part)=>part[0]).join("").toUpperCase()}</span><b>{row.nama}</b></span></td><td>{row.jabatan??"—"}</td><td>{row.jamMasuk??"—"}</td><td>{row.jamKeluar??"—"}</td><td><span className={`${styles["ak-badge"]} ${styles[row.status??"tidak_hadir"]??""}`}>{statusLabel[row.status??"tidak_hadir"]??"Tidak Hadir"}</span></td><td>{canManage?<details><summary>Ubah</summary>
             <form action={absensiManualAction} className={styles["ak-form"]}>
               <input type="hidden" name="pegawaiId" value={row.pegawaiId}/><input type="hidden" name="tanggal" value={tanggal}/>
               <label>Jam Masuk<input type="time" name="jamMasuk" defaultValue={row.jamMasuk??""}/></label>
@@ -59,7 +71,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
             </form>
           </details>:<span>—</span>}</td></tr>)}
         </tbody></table></div>
-        {!rows.length?<div className={styles["ak-empty"]}>Belum ada pegawai aktif. Tambahkan pegawai terlebih dahulu.</div>:null}
+        {!filteredRows.length?<div className={styles["ak-empty"]}>{rows.length?"Tidak ada data yang sesuai dengan filter.":"Belum ada pegawai aktif. Tambahkan pegawai terlebih dahulu."}</div>:null}
       </section>
       <div className={styles["ak-side-stack"]}>
         <section id="kalender" className={styles["ak-card"]}><h2>Kalender Kehadiran</h2><p>{monthLabel}</p>
