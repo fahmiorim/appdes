@@ -31,7 +31,7 @@ export default async function KeamananPage() {
         <label>Durasi sesi tidak aktif (menit)<input type="number" min="5" max="720" name="sessionTimeoutMinutes" defaultValue={settings.sessionTimeoutMinutes}/></label>
         <label className={styles.check}><input type="checkbox" name="autoLogoutInactive" defaultChecked={settings.autoLogoutInactive}/> Logout otomatis setelah tidak aktif</label>
         <label className={styles.check}><input type="checkbox" name="concurrentLogin" defaultChecked={settings.concurrentLogin}/> Batasi satu sesi per akun</label>
-        <label className={styles.check}><input type="checkbox" name="requireTwoFactorForAllUsers" defaultChecked={settings.requireTwoFactorForAllUsers}/> Wajibkan 2FA untuk semua akun desa</label>
+        <label className={styles.check}><input type="checkbox" name="requireTwoFactorForAllUsers" defaultChecked={settings.requireTwoFactorForAllUsers}/> Wajibkan 2FA untuk semua akun desa</label><p className={styles.note}>Aktifkan dan verifikasi 2FA pada akun administrator terlebih dahulu. Jika diwajibkan, akun yang belum mendaftar 2FA tidak dapat login.</p>
         <label className={styles.check}><input type="checkbox" name="ipRestrictionEnabled" defaultChecked={settings.ipRestrictionEnabled}/> Aktifkan whitelist IP</label>
         <label>IP yang diizinkan (satu per baris)<textarea name="allowedIps" defaultValue={settings.allowedIps.join("\n")} placeholder="203.0.113.10&#10;2001:db8::1"/></label>
         <p className={styles.note}>Whitelist IP hanya mengandalkan alamat dari proxy tepercaya yang dikonfigurasi server. Pastikan IP administrator masuk daftar sebelum mengaktifkan.</p>
