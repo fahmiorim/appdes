@@ -43,7 +43,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
     <div className="page-heading"><div><span className="eyebrow">ABSENSI & KEPEGAWAIAN</span><h1>Absensi Pegawai</h1><p>Kelola dan pantau kehadiran perangkat desa serta staf secara terpusat.</p></div></div>
     <AbsensiKepegawaianNav active="/absensi-kepegawaian/absensi"/>
     <nav className={styles["ak-subnav"]} aria-label="Navigasi absensi"><a className={styles["selected"]} href="#rekap">▦ Rekap Kehadiran</a><a href="#kalender">◷ Riwayat Absensi</a><a href="#rekap">♙ Absensi Manual</a><a href="#pengaturan">⚙ Pengaturan Absensi</a></nav>
-    {statusMandiri?<AbsensiMandiri status={statusMandiri} wajibGps={setting.wajibGps!==false} />:null}
+    {statusMandiri?<AbsensiMandiri attendance={statusMandiri} wajibGps={setting.wajibGps!==false} />:null}
     <section className={styles["ak-kpi-grid"]}>
       <article className={`${styles["ak-kpi"]} ${styles.primary}`}><span>Kehadiran Hari Ini</span><strong>{counts.hadir} orang</strong><span>{tingkatKehadiran.toLocaleString("id-ID")}% tingkat kehadiran</span></article>
       <article className={styles["ak-kpi"]}><span>Hadir</span><strong>{counts.hadir} orang</strong></article>
