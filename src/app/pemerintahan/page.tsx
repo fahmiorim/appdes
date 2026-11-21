@@ -241,6 +241,11 @@ export default async function PemerintahanPage() {
                       <span className={styles.orgIcon}>♙</span>
                       <strong>{item.jabatan ?? "Perangkat Desa"}</strong>
                       <span>{namaLengkap(item)}</span>
+                      {item.atasanId ? (
+                        <small>
+                          Atasan: {perangkat.find((parent) => parent.id === item.atasanId)?.nama ?? "Tidak tersedia"}
+                        </small>
+                      ) : null}
                     </article>
                   ))}
                 </div>
