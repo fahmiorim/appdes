@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS `village_security_settings` (
   `village_id` int NOT NULL,
   `password_min_length` int NOT NULL DEFAULT 8,
+  `password_expiry_days` int NOT NULL DEFAULT 90,
+  `password_reuse_count` int NOT NULL DEFAULT 3,
   `require_uppercase` boolean NOT NULL DEFAULT true,
   `require_lowercase` boolean NOT NULL DEFAULT true,
   `require_number` boolean NOT NULL DEFAULT true,
@@ -21,6 +23,8 @@ CREATE TABLE IF NOT EXISTS `village_security_settings` (
 INSERT INTO `village_security_settings` (`village_id`)
 SELECT v.`id` FROM `villages` v
 WHERE NOT EXISTS (SELECT 1 FROM `village_security_settings` s WHERE s.`village_id`=v.`id`);
+--> statement-breakpoint
+UPDATE `accounts` SET `updated_at`=CURRENT_TIMESTAMP WHERE `provider_id`='credential';
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS `village_blocked_ips` (
   `id` int NOT NULL AUTO_INCREMENT,
