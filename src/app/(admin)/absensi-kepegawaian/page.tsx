@@ -75,7 +75,7 @@ export default async function DashboardAbsensiPage() {
           <div><span>♀</span><label>Perempuan</label><b>{data.jenisKelamin.perempuan} orang</b></div>
           <div><span>◷</span><label>Rata-rata Masa Kerja</label><b>{Math.floor(data.rataMasaKerjaBulan/12)} thn {data.rataMasaKerjaBulan%12} bln</b></div>
           <div><span>▣</span><label>Pegawai Kontrak</label><b>{data.komposisi.kontrak} orang</b></div>
-          <div><span>♙</span><label>Akan Purna Tugas</label><b>{data.komposisi.purnaTugas} orang</b></div>
+          <div><span>♙</span><label>Purna Tugas</label><b>{data.komposisi.purnaTugas} orang</b></div>
         </div>
         <div className={styles["ak-actions"]}><Link className={styles["ak-button"]} href="/absensi-kepegawaian/pegawai">Kelola Data Pegawai →</Link></div>
       </section>
