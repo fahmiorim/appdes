@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
    */
   experimental: {
     authInterrupts: true,
+    // Upload pemerintahan menerima PDF hingga 20 MB sesuai validasi media.
+    serverActions: {
+      bodySizeLimit: "25mb",
+    },
   },
 
   /**
