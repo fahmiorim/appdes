@@ -6,12 +6,13 @@ import styles from "../inventaris.module.css";
 import { ajukanMutasiInventarisAction, buatJadwalPemeliharaanAction, hapusJadwalPemeliharaanAction, setujuiMutasiInventarisAction, tolakMutasiInventarisAction, ubahStatusPemeliharaanAction } from "../actions";
 
 export const metadata={title:"Mutasi & Pemeliharaan Aset"};
-type Props={searchParams:Promise<{inventarisId?:string}>};
+type Props={searchParams:Promise<{inventarisId?:string;jenis?:string}>};
 const dateLabel=(v:string|null)=>v?new Intl.DateTimeFormat("id-ID",{dateStyle:"medium",timeZone:"UTC"}).format(new Date(v+"T00:00:00Z")):"—";
 
 export default async function MutasiPemeliharaanPage({searchParams}:Props){
   const p=await searchParams;const id=Number(p.inventarisId);const selected=Number.isSafeInteger(id)&&id>0?id:undefined;
   const data=await getPemeliharaanPageData();
+  const selectedAsset=data.inventaris.find(x=>x.id===selected);
   const pending=data.mutasi.filter(x=>x.status==="diajukan").length;
   const scheduled=data.pemeliharaan.filter(x=>x.status==="terjadwal").length;
   const progress=data.pemeliharaan.filter(x=>x.status==="dalam_proses").length;
@@ -33,9 +34,9 @@ export default async function MutasiPemeliharaanPage({searchParams}:Props){
     </section>
     {data.canMutate?<section className={styles.panel}><div className={styles.panelHead}><div><h2>Ajukan Mutasi Aset</h2><p>Pengajuan akan melalui verifikasi operator, sekretaris desa, dan kepala desa.</p></div></div><form action={ajukanMutasiInventarisAction} className={styles.form}>
       <label>Aset *<select name="inventarisId" required defaultValue={selected??""}><option value="">Pilih aset</option>{data.inventaris.map(x=><option key={x.id} value={x.id}>{x.nomorInventaris??"INV-"+x.id} · {x.namaBarang} ({x.jumlah} {x.satuan})</option>)}</select></label>
-      <label>Jenis Mutasi *<select name="jenis"><option value="pindah">Pindah Lokasi</option><option value="rusak">Perubahan Kondisi / Rusak</option><option value="perbaikan">Perbaikan</option><option value="hapus">Penghapusan</option></select></label>
+      <label>Jenis Mutasi *<select name="jenis" defaultValue={p.jenis==="hapus"?"hapus":"pindah"}><option value="pindah">Pindah Lokasi</option><option value="rusak">Perubahan Kondisi / Rusak</option><option value="perbaikan">Perbaikan</option><option value="hapus">Penghapusan</option></select></label>
       <label>Tanggal Mutasi *<input name="tanggalMutasi" type="date" required defaultValue={new Date().toISOString().slice(0,10)}/></label>
-      <label>Jumlah Mutasi *<input name="jumlahMutasi" type="number" min="0.01" step="0.01" defaultValue="1" required/></label>
+      <label>Jumlah Mutasi *<input name="jumlahMutasi" type="number" min="0.01" step="0.01" defaultValue={p.jenis==="hapus"&&selectedAsset?selectedAsset.jumlah:"1"} required/></label>
       <label>Lokasi Baru<input name="lokasiBaru" maxLength={150}/></label>
       <label>Kondisi Baru<select name="kondisiBaru"><option value="">Tidak berubah</option><option value="baik">Baik</option><option value="rusak_ringan">Rusak Ringan</option><option value="rusak_berat">Rusak Berat</option><option value="dalam_perbaikan">Dalam Perbaikan</option></select></label>
       <label className={styles.wide}>Alasan Mutasi *<textarea name="alasan" rows={2} required/></label><label className={styles.wide}>Keterangan Tambahan<textarea name="keterangan" rows={2}/></label><button className={styles.primary}>Kirim Pengajuan</button>
