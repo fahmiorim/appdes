@@ -13,8 +13,7 @@ import { hitungUkuranMedia } from "@/features/publik/infrastructure/media-storag
 
 export const runtime = "nodejs";
 const json = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { "Cache-Control": "private, no-store" } });
-const settingsSchema = z.object({
-  kontak: z.object({
+const kontakSchema = z.object({
     whatsapp: z.string().trim().max(30).default(""),
     telepon: z.string().trim().max(30).default(""),
     email: z.string().trim().max(100).default(""),
@@ -26,20 +25,20 @@ const settingsSchema = z.object({
     koordinat: z.string().trim().max(60).default(""),
     tautanPeta: z.string().trim().max(500).default(""),
     jamLayanan: z.string().trim().max(150).default(""),
-  }).optional(),
-  integrasi: z.object({
+  });
+const integrasiSchema = z.object({
     webhookUrl: z.string().trim().max(500).default(""),
     webhookAktif: z.boolean().default(false),
     endpointEksternal: z.string().trim().max(500).default(""),
     catatan: z.string().trim().max(1000).default(""),
-  }).optional(),
-  umum: z.object({
+  });
+const umumSchema = z.object({
     komentarAktif: z.boolean(),
     beritaBeranda: z.coerce.number().int().min(1).max(12),
     pendaftaranWargaAktif: z.boolean(),
     penomoranSurat: z.coerce.number().int().min(1).max(4),
-  }).optional(),
-});
+  });
+const settingsSchema = z.object({ kontak: kontakSchema.optional(), integrasi: integrasiSchema.optional(), umum: umumSchema.optional() });
 async function simpanNilai(villageId:number,key:string,value:unknown) {
   await db.insert(pengaturanDesa).values({villageId,kunci:key,nilai:JSON.stringify(value)}).onDuplicateKeyUpdate({set:{nilai:JSON.stringify(value)}});
 }
@@ -85,7 +84,7 @@ export async function PUT(request:Request) {
       return json({message:"Profil dan identitas desa berhasil disimpan."});
     }
     if(body.section==="kontak") {
-      const s=settingsSchema.shape.kontak!.safeParse(body.data);
+      const s=kontakSchema.safeParse(body.data);
       if(!s.success)return json({error:s.error.issues[0]?.message??"Kontak tidak valid."},422);
       const d=s.data;
       if(d.tautanPeta){try{const u=new URL(d.tautanPeta);if(!["https:","http:"].includes(u.protocol))throw new Error();}catch{return json({error:"Tautan peta harus berupa URL HTTP/HTTPS."},422);}}
@@ -97,7 +96,7 @@ export async function PUT(request:Request) {
       return json({message:"Kontak dan lokasi berhasil disimpan."});
     }
     if(body.section==="integrasi") {
-      const s=settingsSchema.shape.integrasi!.safeParse(body.data);
+      const s=integrasiSchema.safeParse(body.data);
       if(!s.success)return json({error:s.error.issues[0]?.message??"Pengaturan integrasi tidak valid."},422);
       const d=s.data;
       for(const field of ["webhookUrl","endpointEksternal"] as const){const value=d[field];if(value){try{const u=new URL(value);if(!["https:","http:"].includes(u.protocol))throw new Error();}catch{return json({error:"URL integrasi harus menggunakan HTTP/HTTPS."},422);}}}
@@ -105,7 +104,7 @@ export async function PUT(request:Request) {
       return json({message:"Pengaturan integrasi berhasil disimpan."});
     }
     if(body.section==="umum") {
-      const s=settingsSchema.shape.umum!.safeParse(body.data);
+      const s=umumSchema.safeParse(body.data);
       if(!s.success)return json({error:s.error.issues[0]?.message??"Pengaturan umum tidak valid."},422);
       await simpanPengaturanAdmin(s.data);
       return json({message:"Preferensi umum berhasil disimpan."});
