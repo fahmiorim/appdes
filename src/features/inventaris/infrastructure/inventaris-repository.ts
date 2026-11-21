@@ -605,6 +605,7 @@ export async function updateStatusPemeliharaan(villageId:number,id:number,input:
       eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id),eq(inventarisPemeliharaan.isDeleted,false),
     )).limit(1);
     if(!before) throw notFound("Jadwal pemeliharaan tidak ditemukan.");
+    if(before.status==="selesai"||before.status==="dibatalkan") throw conflict("Jadwal yang sudah selesai atau dibatalkan tidak dapat diubah lagi.");
     await tx.update(inventarisPemeliharaan).set(input).where(and(
       eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id),
     ));
