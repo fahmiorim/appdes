@@ -1,0 +1,20 @@
+CREATE TABLE `keuangan_bulanan` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `village_id` INT NOT NULL,
+  `tahun` INT NOT NULL,
+  `bulan` INT NOT NULL,
+  `template_uuid` VARCHAR(20) NOT NULL,
+  `target` DECIMAL(65,2) NOT NULL DEFAULT 0.00,
+  `realisasi` DECIMAL(65,2) NOT NULL DEFAULT 0.00,
+  `created_by` VARCHAR(36) NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `keuangan_bulanan_pk` PRIMARY KEY (`id`),
+  CONSTRAINT `keuangan_bulanan_village_fk` FOREIGN KEY (`village_id`) REFERENCES `villages`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `keuangan_bulanan_template_fk` FOREIGN KEY (`template_uuid`) REFERENCES `keuangan_template`(`uuid`) ON DELETE RESTRICT,
+  CONSTRAINT `keuangan_bulanan_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL,
+  CONSTRAINT `keuangan_bulanan_month_chk` CHECK (`bulan` BETWEEN 1 AND 12),
+  CONSTRAINT `keuangan_bulanan_year_chk` CHECK (`tahun` BETWEEN 2000 AND 2100),
+  UNIQUE KEY `keuangan_bulanan_village_year_month_account_uq` (`village_id`, `tahun`, `bulan`, `template_uuid`),
+  KEY `keuangan_bulanan_village_year_idx` (`village_id`, `tahun`)
+);
