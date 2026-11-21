@@ -295,6 +295,13 @@
       "when": 1795707000000,
       "tag": "0046_rbac_crud_permissions",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "5",
+      "when": 1795708000000,
+      "tag": "0047_password_history",
+      "breakpoints": true
     }
   ]
 }
