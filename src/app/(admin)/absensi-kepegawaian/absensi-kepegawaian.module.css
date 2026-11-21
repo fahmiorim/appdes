@@ -27,3 +27,5 @@
 .ak-card dl{display:grid;gap:7px;margin:12px 0}
 .ak-card dl>div{display:grid;grid-template-columns:minmax(100px,.7fr) 1fr;gap:8px;font-size:12px}
 .ak-card dt{color:#817991}.ak-card dd{margin:0;font-weight:650;color:#28213f}
+
+.has-data{background:#eee7ff!important;border:1px solid #d8c7ff}
