@@ -198,7 +198,7 @@ export async function createPenduduk(input: PendudukFormInput): Promise<{ id: nu
 }
 
 export async function updatePenduduk(id: number, input: PendudukFormInput): Promise<void> {
-  const user = await requirePermission(PENDUDUK_RESOURCE, "update");
+  const user = await requirePermission(PENDUDUK_RESOURCE, id === null ? "create" : "update");
   const villageId = await resolveVillageId(user);
 
   const existing = await findPendudukById(villageId, id);
