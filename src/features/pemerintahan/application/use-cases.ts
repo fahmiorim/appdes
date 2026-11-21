@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, count, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { areas, lembagaAnggota, lembagaDesa, perangkatDesa, jabatanPerangkat, regions, perangkatRiwayatJabatan, polygons } from "@/db/schema";
+import { areas, lembagaAnggota, lembagaDesa, perangkatDesa, jabatanPerangkat, regions, perangkatRiwayatJabatan, polygons, pemerintahanDokumen } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { requirePermission } from "@/lib/dal";
 
@@ -50,7 +50,7 @@ export async function getPemerintahanDashboard() {
 
 export async function getPerangkatDesaData() {
   const villageId = await tenant("perangkat-desa");
-  const [rows, jabatan, riwayat] = await Promise.all([
+  const [rows, jabatan, riwayat, dokumen] = await Promise.all([
     db.select({
       id: perangkatDesa.id, nama: perangkatDesa.nama, gelarDepan: perangkatDesa.gelarDepan,
       gelarBelakang: perangkatDesa.gelarBelakang, nip: perangkatDesa.nip, nik: perangkatDesa.nik,
@@ -65,8 +65,9 @@ export async function getPerangkatDesaData() {
     db.select({ id: jabatanPerangkat.id, nama: jabatanPerangkat.nama }).from(jabatanPerangkat)
       .where(eq(jabatanPerangkat.villageId, villageId)).orderBy(asc(jabatanPerangkat.urut)),
     db.select().from(perangkatRiwayatJabatan).where(eq(perangkatRiwayatJabatan.villageId, villageId)).orderBy(asc(perangkatRiwayatJabatan.mulai)),
+    db.select().from(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.perangkatId, rows[0]?.id ?? -1))).orderBy(asc(pemerintahanDokumen.tanggal)),
   ]);
-  return { rows, jabatan, riwayat };
+  return { rows, jabatan, riwayat, dokumen };
 }
 
 export async function simpanPerangkatDesa(id: number | null, input: {
@@ -101,11 +102,12 @@ export async function hapusPerangkatDesa(id: number) {
 
 export async function getLembagaDesaData() {
   const villageId = await tenant("lembaga-desa");
-  const [rows, anggota] = await Promise.all([
+  const [rows, anggota, dokumen] = await Promise.all([
     db.select().from(lembagaDesa).where(eq(lembagaDesa.villageId, villageId)).orderBy(asc(lembagaDesa.urut), asc(lembagaDesa.id)),
     db.select().from(lembagaAnggota).where(eq(lembagaAnggota.villageId, villageId)).orderBy(asc(lembagaAnggota.urut), asc(lembagaAnggota.id)),
+    db.select().from(pemerintahanDokumen).where(eq(pemerintahanDokumen.villageId, villageId)).orderBy(asc(pemerintahanDokumen.tanggal)),
   ]);
-  return { rows, anggota };
+  return { rows, anggota, dokumen };
 }
 
 export async function simpanLembagaDesa(id: number | null, input: {
@@ -199,4 +201,27 @@ export async function simpanRiwayatJabatan(id: number | null, input: { perangkat
 export async function hapusRiwayatJabatan(id: number) {
   const villageId = await tenant("perangkat-desa", "delete");
   await db.delete(perangkatRiwayatJabatan).where(and(eq(perangkatRiwayatJabatan.villageId, villageId), eq(perangkatRiwayatJabatan.id, id)));
+}
+
+export async function unggahDokumenPemerintahan(input: {
+  perangkatId: number | null; lembagaId: number | null; judul: string; nomor: string | null;
+  tanggal: string | null; berkas: string; tampilPublik: boolean;
+}) {
+  const villageId = await tenant(input.perangkatId ? "perangkat-desa" : "lembaga-desa", "create");
+  if (!input.perangkatId && !input.lembagaId) throw new Error("Dokumen harus terhubung ke perangkat atau lembaga.");
+  if (input.perangkatId) {
+    const [owner] = await db.select({ id: perangkatDesa.id }).from(perangkatDesa).where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, input.perangkatId))).limit(1);
+    if (!owner) throw new Error("Perangkat tidak ditemukan pada desa aktif.");
+  }
+  if (input.lembagaId) {
+    const [owner] = await db.select({ id: lembagaDesa.id }).from(lembagaDesa).where(and(eq(lembagaDesa.villageId, villageId), eq(lembagaDesa.id, input.lembagaId))).limit(1);
+    if (!owner) throw new Error("Lembaga tidak ditemukan pada desa aktif.");
+  }
+  await db.insert(pemerintahanDokumen).values({ ...input, villageId });
+}
+
+export async function hapusDokumenPemerintahan(id: number) {
+  const user = await requirePermission("perangkat-desa", "delete");
+  const villageId = await resolveVillageId(user);
+  await db.delete(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id)));
 }
