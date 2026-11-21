@@ -18,7 +18,7 @@ export default async function DetailInventarisPage({params,searchParams}:Props){
   const x=data.item;
   return <main className={styles.page}>
     <header className={styles.heading}><div className={styles.headingIcon}>⬡</div><div><span className={styles.eyebrow}>INVENTARIS &amp; ASET / PENGELOLAAN ASET</span><h1>{x.namaBarang}</h1><p>{x.nomorInventaris??"Nomor inventaris belum ditetapkan"} · Detail informasi, perolehan, kondisi, dan riwayat aset.</p></div></header>
-    <nav className={styles.tabs}><Link href="/inventaris">Daftar Inventaris</Link><Link className={styles.active} href={"/inventaris/"+id}>Detail Aset</Link><Link href={"/inventaris/mutasi?inventarisId="+id}>Riwayat Mutasi</Link><Link href="/inventaris/laporan">Laporan &amp; Statistik</Link></nav>
+    <nav className={styles.tabs}><Link href="/inventaris">Daftar Inventaris</Link><Link href="/inventaris/pengelolaan">Pengelolaan Aset</Link><Link className={styles.active} href={"/inventaris/"+id}>Detail Aset</Link><Link href={"/inventaris/mutasi?inventarisId="+id}>Riwayat Mutasi</Link><Link href="/inventaris/laporan">Laporan &amp; Statistik</Link></nav>
     {query.saved?<p className={styles.notice}>Perubahan inventaris berhasil disimpan.</p>:null}{query.documentSaved?<p className={styles.notice}>Dokumen berhasil diunggah.</p>:null}
     <section className={styles.detailGrid}>
       <article className={styles.panel}><div className={styles.panelHead}><div><h2>Informasi Aset</h2><p>Data identitas barang dan klasifikasi.</p></div><span className={`${styles.tag} ${x.kondisi==="baik"?styles.good:x.kondisi==="rusak_ringan"?styles.warn:styles.bad}`}>{INVENTARIS_KONDISI_LABELS[x.kondisi]}</span></div>
