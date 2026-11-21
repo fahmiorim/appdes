@@ -16,7 +16,7 @@ describe("levelAllows", () => {
     expect(levelAllows(undefined, "delete")).toBe(false);
   });
 
-  it("memetakan read -> read, write -> update, manage -> delete", () => {
+  it("memetakan tingkat legacy ke aksi read, create, update, dan delete", () => {
     expect(levelAllows("read", "read")).toBe(true);
     expect(levelAllows("read", "update")).toBe(false);
     expect(levelAllows("read", "delete")).toBe(false);
