@@ -421,6 +421,7 @@ export interface PerangkatRingkas {
   urut: number;
   periode: string | null;
   pendidikan: string | null;
+  atasanId: number | null;
 }
 
 export async function listPerangkatDesa(villageId: number): Promise<PerangkatRingkas[]> {
@@ -439,6 +440,7 @@ export async function listPerangkatDesa(villageId: number): Promise<PerangkatRin
       urut: perangkatDesa.urut,
       periode: perangkatDesa.periode,
       pendidikan: perangkatDesa.pendidikan,
+      atasanId: perangkatDesa.atasanId,
     })
     .from(perangkatDesa)
     .leftJoin(
