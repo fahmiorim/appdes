@@ -49,7 +49,7 @@ export async function simpanSuratDinasData(
   raw: unknown,
   unggahan?: BerkasUnggahan | null,
 ) {
-  const user = await requirePermission(SURAT_DINAS_RESOURCE, "update");
+  const user = await requirePermission(SURAT_DINAS_RESOURCE, id === null ? "create" : "update");
   const villageId = await resolveVillageId(user);
   const parsed = suratDinasFormSchema.safeParse(raw);
   if (!parsed.success)
