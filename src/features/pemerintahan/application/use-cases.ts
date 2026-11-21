@@ -236,13 +236,20 @@ export async function simpanAreaPeta(id: number | null, input: { nama: string; d
     if (!geo || geo.type !== "Polygon" || !Array.isArray(geo.coordinates) || !geo.coordinates.length) {
       throw new Error("Geometri harus berupa GeoJSON Polygon yang valid.");
     }
-    const validRing = (ring: unknown) => Array.isArray(ring) && ring.length >= 4 &&
-      ring.every((point) => Array.isArray(point) && point.length >= 2 &&
-        Number.isFinite(point[0]) && Number.isFinite(point[1]) &&
+    const validRing = (ring: unknown): boolean => {
+      if (!Array.isArray(ring) || ring.length < 4) return false;
+      const validPoint = (point: unknown) =>
+        Array.isArray(point) && point.length >= 2 &&
+        Number.isFinite(Number(point[0])) && Number.isFinite(Number(point[1])) &&
         Number(point[0]) >= -180 && Number(point[0]) <= 180 &&
-        Number(point[1]) >= -90 && Number(point[1]) <= 90);
+        Number(point[1]) >= -90 && Number(point[1]) <= 90;
+      if (!ring.every(validPoint)) return false;
+      const first = ring[0] as unknown[];
+      const last = ring[ring.length - 1] as unknown[];
+      return Number(first[0]) === Number(last[0]) && Number(first[1]) === Number(last[1]);
+    };
     if (!(geo.coordinates as unknown[]).every(validRing)) {
-      throw new Error("Koordinat Polygon harus berupa pasangan longitude/latitude yang valid.");
+      throw new Error("Setiap ring Polygon harus memiliki minimal empat titik, koordinat longitude/latitude valid, dan titik awal yang sama dengan titik akhir.");
     }
   }
   if (id) await db.update(areas).set(input).where(and(eq(areas.villageId, villageId), eq(areas.id, id)));
