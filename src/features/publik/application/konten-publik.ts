@@ -1,5 +1,9 @@
 import "server-only";
 
+import { and, eq } from "drizzle-orm";
+import { db } from "@/db";
+import { pengaturanDesa } from "@/db/schema";
+
 import {
   countBerita,
   getAlbumBySlug,
@@ -107,9 +111,6 @@ export async function daftarPotensiDesa(villageId: number, includeInactive = fal
 
 /** Pengaturan kontak publik tenant; hanya field kontak nonrahasia yang dibaca. */
 export async function pengaturanKontakPublik(villageId: number) {
-  const { and, eq } = await import("drizzle-orm");
-  const { db } = await import("@/db");
-  const { pengaturanDesa } = await import("@/db/schema");
   const [row] = await db.select({ nilai: pengaturanDesa.nilai }).from(pengaturanDesa)
     .where(and(eq(pengaturanDesa.villageId, villageId), eq(pengaturanDesa.kunci, "pengaturan.kontak"))).limit(1);
   try {
