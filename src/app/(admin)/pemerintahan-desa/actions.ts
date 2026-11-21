@@ -128,7 +128,7 @@ export async function simpanAreaPetaAction(fd: FormData) {
   const nama = value(fd, "nama");
   if (!nama) throw new Error("Nama area wajib diisi.");
   await simpanAreaPeta(id, {
-    nama, path: value(fd, "path") || null, enabled: value(fd, "enabled") === "on" ? 1 : 0,
+    nama, desk: value(fd, "desk") || null, path: value(fd, "path") || null, enabled: value(fd, "enabled") === "on" ? 1 : 0,
     sortOrder: Number(value(fd, "sortOrder") || 0), refPolygon: numberOrNull(value(fd, "refPolygon")),
   });
   refresh();
