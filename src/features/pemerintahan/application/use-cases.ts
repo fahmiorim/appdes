@@ -226,3 +226,18 @@ export async function hapusDokumenPemerintahan(id: number) {
   const villageId = await resolveVillageId(user);
   const [document] = await db.select({ berkas: pemerintahanDokumen.berkas }).from(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id))).limit(1);\n  if (!document) return;\n  await db.delete(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.id, id)));\n  await hapusMedia(document.berkas);
 }
+
+export async function simpanLayerPeta(id: number | null, input: { nama: string; color: string; enabled: number; sortOrder: number }) {
+  const villageId = await tenant("wilayah", id ? "update" : "create");
+  if (!/^#[0-9a-fA-F]{6}$/.test(input.color)) throw new Error("Warna layer harus berupa kode HEX.");
+  if (id) await db.update(polygons).set({ nama: input.nama, color: input.color, enabled: input.enabled, sortOrder: input.sortOrder })
+    .where(and(eq(polygons.villageId, villageId), eq(polygons.id, id)));
+  else await db.insert(polygons).values({ villageId, nama: input.nama, color: input.color, enabled: input.enabled, sortOrder: input.sortOrder, tipe: 0, parrent: 0 });
+}
+
+export async function hapusLayerPeta(id: number) {
+  const villageId = await tenant("wilayah", "delete");
+  const [used] = await db.select({ id: areas.id }).from(areas).where(and(eq(areas.villageId, villageId), eq(areas.refPolygon, id))).limit(1);
+  if (used) throw new Error("Layer masih dipakai area peta. Pindahkan atau hapus area terkait terlebih dahulu.");
+  await db.delete(polygons).where(and(eq(polygons.villageId, villageId), eq(polygons.id, id)));
+}
