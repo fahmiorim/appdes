@@ -53,7 +53,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
     </section>
     <div className={styles["ak-grid"]}>
       <section id="rekap" className={styles["ak-card"]}>
-        <div className={styles["ak-card-heading-row"]}><div><h2>Rekap Absensi Pegawai</h2><p>Daftar kehadiran pegawai untuk tanggal yang dipilih.</p></div><a className={styles["ak-button"]} href={"/absensi-kepegawaian/absensi/ekspor?tanggal="+tanggal}>↓ Export Harian</a><a className={styles["ak-button"]} href={"/absensi-kepegawaian/absensi/ekspor-bulanan?tahun="+tahun+"&bulan="+bulan}>↓ Laporan Bulanan</a></div>
+        <div className={styles["ak-card-heading-row"]}><div><h2>Rekap Absensi Pegawai</h2><p>Daftar kehadiran pegawai untuk tanggal yang dipilih.</p></div><a className={styles["ak-button"]} href={"/absensi-kepegawaian/absensi/ekspor?tanggal="+tanggal}>↓ CSV Harian</a><a className={styles["ak-button"]} href={"/absensi-kepegawaian/absensi/ekspor-bulanan?tahun="+tahun+"&bulan="+bulan}>↓ CSV Bulanan</a><a className={styles["ak-button"]} href={"/absensi-kepegawaian/absensi/ekspor-xlsx?tahun="+tahun+"&bulan="+bulan}>↓ Excel</a><a className={styles["ak-button"]} href={"/absensi-kepegawaian/absensi/ekspor-pdf?tahun="+tahun+"&bulan="+bulan}>↓ PDF</a></div>
         <form className={styles["ak-filter"]} method="get">
           <label>Cari pegawai<input type="search" name="q" placeholder="Nama pegawai..." defaultValue={query}/></label>
           <label>Tanggal<input type="date" name="tanggal" defaultValue={tanggal}/></label>
