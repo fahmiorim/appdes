@@ -43,7 +43,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
     <div className="page-heading"><div><span className="eyebrow">ABSENSI & KEPEGAWAIAN</span><h1>Absensi Pegawai</h1><p>Kelola dan pantau kehadiran perangkat desa serta staf secara terpusat.</p></div></div>
     <AbsensiKepegawaianNav active="/absensi-kepegawaian/absensi"/>
     <nav className={styles["ak-subnav"]} aria-label="Navigasi absensi"><a className={styles["selected"]} href="#rekap">▦ Rekap Kehadiran</a><a href="#kalender">◷ Riwayat Absensi</a><a href="#rekap">♙ Absensi Manual</a><a href="#pengaturan">⚙ Pengaturan Absensi</a></nav>
-    <AbsensiMandiri />
+    <AbsensiMandiri wajibGps={setting.wajibGps!==false} />
     <section className={styles["ak-kpi-grid"]}>
       <article className={`${styles["ak-kpi"]} ${styles.primary}`}><span>Kehadiran Hari Ini</span><strong>{counts.hadir} orang</strong><span>{tingkatKehadiran.toLocaleString("id-ID")}% tingkat kehadiran</span></article>
       <article className={styles["ak-kpi"]}><span>Hadir</span><strong>{counts.hadir} orang</strong></article>
@@ -62,7 +62,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
           <button className={styles["ak-button"]} type="submit">⌕ Filter</button>
         </form>
         <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}><thead><tr><th>No.</th><th>Nama Pegawai</th><th>Jabatan</th><th>Jam Masuk</th><th>Jam Pulang</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
-          {filteredRows.map((row,i)=><tr key={row.pegawaiId}><td>{i+1}</td><td><span className={styles["ak-person"]}><span>{row.nama.split(" ").slice(0,2).map((part)=>part[0]).join("").toUpperCase()}</span><b>{row.nama}</b></span></td><td>{row.jabatan??"—"}</td><td>{row.jamMasuk??"—"}</td><td>{row.jamKeluar??"—"}</td><td><span className={`${styles["ak-badge"]} ${styles[row.status??"tidak_hadir"]??""}`}>{statusLabel[row.status??"tidak_hadir"]??"Tidak Hadir"}</span>{row.fotoMasuk?<a href={"/api/kehadiran/foto/"+row.id} target="_blank" rel="noreferrer" className={styles["ak-link"]}> · Bukti selfie</a>:null}</td><td>{canManage?<details><summary>Ubah</summary>
+          {filteredRows.map((row,i)=><tr key={row.pegawaiId}><td>{i+1}</td><td><span className={styles["ak-person"]}><span>{row.nama.split(" ").slice(0,2).map((part)=>part[0]).join("").toUpperCase()}</span><b>{row.nama}</b></span></td><td>{row.jabatan??"—"}</td><td>{row.jamMasuk??"—"}</td><td>{row.jamKeluar??"—"}</td><td><span className={`${styles["ak-badge"]} ${styles[row.status??"tidak_hadir"]??""}`}>{statusLabel[row.status??"tidak_hadir"]??"Tidak Hadir"}</span>{row.fotoMasuk?<a href={"/api/kehadiran/foto/"+row.id} target="_blank" rel="noreferrer" className={styles["ak-button"]}> · Bukti selfie</a>:null}</td><td>{canManage?<details><summary>Ubah</summary>
             <form action={absensiManualAction} className={styles["ak-form"]}>
               <input type="hidden" name="pegawaiId" value={row.pegawaiId}/><input type="hidden" name="tanggal" value={tanggal}/>
               <label>Jam Masuk<input type="time" name="jamMasuk" defaultValue={row.jamMasuk??""}/></label>
