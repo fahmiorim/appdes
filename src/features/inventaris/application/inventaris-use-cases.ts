@@ -34,6 +34,8 @@ import {
   getMutasi,
   inventarisKategoriKodeExists,
   listInventaris,
+  listInventarisPage,
+  listInventarisLocations,
   listInventarisKategori,
   listMutasi,
   inventarisNomorExists,
@@ -88,6 +90,26 @@ export async function getInventarisPageData(search: string) {
     total: data.total,
     canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canManage: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
+  };
+}
+
+
+export async function getInventarisTablePageData(input:{
+  search:string;kategoriId?:number;lokasi?:string;kondisi?:string;page:number;pageSize:number;
+}) {
+  const user=await requirePermission(INVENTARIS_RESOURCE,"read");
+  const villageId=await resolveVillageId(user);
+  const [kategori,locations,data,summary]=await Promise.all([
+    listInventarisKategori(villageId),
+    listInventarisLocations(villageId),
+    listInventarisPage(villageId,input),
+    listInventaris(villageId),
+  ]);
+  return {
+    kategori,locations,rows:denganPenyusutan(data.rows),total:data.total,
+    summaryRows:denganPenyusutan(summary.rows),
+    canWrite:hasPermission(user.permissions,INVENTARIS_RESOURCE,"update"),
+    canManage:hasPermission(user.permissions,INVENTARIS_RESOURCE,"delete"),
   };
 }
 
