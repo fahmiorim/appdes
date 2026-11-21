@@ -11,7 +11,8 @@ export default async function CutiIzinPage() {
   const disetujui=rows.filter(x=>x.status==="disetujui").length;
   const menunggu=rows.filter(x=>x.status==="menunggu").length;
   const ditolak=rows.filter(x=>x.status==="ditolak").length;
-  const tahun=new Date().getFullYear();
+  const hariIni=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Jakarta"}).format(new Date());
+  const tahun=Number(hariIni.slice(0,4));
   const aktif=kuota.filter(x=>x.total-x.terpakai>0);
   return <div className="modul-page">
     <div className="page-heading"><div><span className="eyebrow">ABSENSI & KEPEGAWAIAN</span><h1>Cuti & Izin</h1><p>Kelola pengajuan, persetujuan, dan riwayat cuti serta izin perangkat desa.</p></div></div>
@@ -21,7 +22,7 @@ export default async function CutiIzinPage() {
       <article className={styles["ak-kpi"]}><span>Disetujui</span><strong>{disetujui} pengajuan</strong></article>
       <article className={styles["ak-kpi"]}><span>Menunggu</span><strong>{menunggu} pengajuan</strong></article>
       <article className={styles["ak-kpi"]}><span>Ditolak</span><strong>{ditolak} pengajuan</strong></article>
-      <article className={styles["ak-kpi"]}><span>Cuti Aktif Hari Ini</span><strong>{rows.filter(x=>x.status==="disetujui"&&x.mulai<=new Date().toISOString().slice(0,10)&&x.selesai>=new Date().toISOString().slice(0,10)).length} pegawai</strong></article>
+      <article className={styles["ak-kpi"]}><span>Cuti Aktif Hari Ini</span><strong>{rows.filter(x=>x.status==="disetujui"&&x.mulai<=hariIni&&x.selesai>=hariIni).length} pegawai</strong></article>
       <article className={styles["ak-kpi"]}><span>Sisa Kuota Pegawai</span><strong>{aktif.length} pegawai</strong></article>
     </section>
     <div className={styles["ak-grid"]}>
