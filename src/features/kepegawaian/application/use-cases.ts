@@ -188,6 +188,10 @@ export async function catatAbsensiManual(input: { pegawaiId: number; tanggal: st
   if (!pegawai) throw new Error("Pegawai aktif tidak ditemukan.");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.tanggal)) throw new Error("Tanggal absensi tidak valid.");
   if (!["hadir", "izin", "cuti", "tidak_hadir"].includes(input.status)) throw new Error("Status absensi tidak valid.");
+  if (new Date(input.tanggal + "T00:00:00Z").toISOString().slice(0,10) !== input.tanggal) throw new Error("Tanggal absensi tidak valid.");
+  if (input.jamMasuk && !/^([01]\d|2[0-3]):[0-5]\d$/.test(input.jamMasuk)) throw new Error("Jam masuk tidak valid.");
+  if (input.jamKeluar && !/^([01]\d|2[0-3]):[0-5]\d$/.test(input.jamKeluar)) throw new Error("Jam pulang tidak valid.");
+  if (input.jamMasuk && input.jamKeluar && input.jamKeluar < input.jamMasuk) throw new Error("Jam pulang tidak boleh sebelum jam masuk.");
   const [existing] = await db.select({ id: kehadiranPerangkat.id }).from(kehadiranPerangkat)
     .where(and(eq(kehadiranPerangkat.villageId, villageId), eq(kehadiranPerangkat.pegawaiId, input.pegawaiId), eq(kehadiranPerangkat.tanggal, input.tanggal))).limit(1);
   const values = { perangkatId: null, jamMasuk: input.jamMasuk || null, jamKeluar: input.jamKeluar || null, status: input.status, catatan: input.catatan || null };
