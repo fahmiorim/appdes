@@ -14,6 +14,19 @@ export default async function CutiIzinPage() {
   const hariIni=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Jakarta"}).format(new Date());
   const tahun=Number(hariIni.slice(0,4));
   const aktif=kuota.filter(x=>x.total-x.terpakai>0);
+  const bulan=Number(hariIni.slice(5,7));
+  const monthStart=new Date(Date.UTC(tahun,bulan-1,1)).getUTCDay();
+  const daysInMonth=new Date(Date.UTC(tahun,bulan,0)).getUTCDate();
+  const calendarMap=new Map<number,string[]>();
+  for(const item of rows.filter(x=>x.status==="disetujui")) {
+    const start=Math.max(1,Number(item.mulai.slice(8,10)));
+    const end=Math.min(daysInMonth,Number(item.selesai.slice(8,10)));
+    if(Number(item.mulai.slice(5,7))===bulan||Number(item.selesai.slice(5,7))===bulan) {
+      for(let day=start;day<=end;day++){const list=calendarMap.get(day)??[];list.push(item.jenis);calendarMap.set(day,list);}
+    }
+  }
+  const monthLabel=new Intl.DateTimeFormat("id-ID",{month:"long",year:"numeric",timeZone:"Asia/Jakarta"}).format(new Date(Date.UTC(tahun,bulan-1,1)));
+
   return <div className="modul-page">
     <div className="page-heading"><div><span className="eyebrow">ABSENSI & KEPEGAWAIAN</span><h1>Cuti & Izin</h1><p>Kelola pengajuan, persetujuan, dan riwayat cuti serta izin perangkat desa.</p></div></div>
     <AbsensiKepegawaianNav active="/absensi-kepegawaian/cuti-izin"/>
@@ -45,6 +58,11 @@ export default async function CutiIzinPage() {
       </section>
     </div>
     <div className={styles["ak-grid"]} style={{marginTop:16}}>
+      <section className={styles["ak-card"]}><h2>Kalender Cuti & Izin</h2><p>{monthLabel}</p><div className={styles["ak-calendar"]}>
+        {["Min","Sen","Sel","Rab","Kam","Jum","Sab"].map(day=><span className={styles["ak-calendar-head"]} key={day}>{day}</span>)}
+        {Array.from({length:monthStart},(_,i)=><span key={"blank-"+i}/>)}
+        {Array.from({length:daysInMonth},(_,i)=>{const day=i+1;const types=calendarMap.get(day)??[];return <div key={day} className={styles["ak-calendar-day"]+" "+(types.length?styles["has-data"]:"")}><strong>{day}</strong>{types.length?<small>{types.length} agenda</small>:null}</div>;})}
+      </div><p>Kalender menandai tanggal cuti yang sudah disetujui.</p></section>
       <section className={styles["ak-card"]}><h2>Kuota Cuti Tahunan ({tahun})</h2><p>Default 12 hari per tahun. Kuota dapat disesuaikan per pegawai.</p>
         <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}><thead><tr><th>Pegawai</th><th>Total</th><th>Terpakai</th><th>Sisa</th><th>Ubah Kuota</th></tr></thead><tbody>
           {kuota.map(x=><tr key={x.id}><td>{x.nama}</td><td>{x.total} hari</td><td>{x.terpakai} hari</td><td>{x.total-x.terpakai} hari</td><td><form action={simpanKuotaCutiAction} className={styles["ak-filter"]}><input type="hidden" name="pegawaiId" value={x.id}/><input type="hidden" name="tahun" value={tahun}/><input type="number" name="total" min="0" max="365" defaultValue={x.total} style={{width:80}}/><button className={styles["ak-button"]}>Simpan</button></form></td></tr>)}
