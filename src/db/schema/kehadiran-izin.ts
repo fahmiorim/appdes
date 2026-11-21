@@ -1,4 +1,5 @@
 import {
+  boolean,
   date,
   foreignKey,
   index,
@@ -69,6 +70,12 @@ export const kehadiranPengaturan = mysqlTable(
     jamKeluar: varchar("jam_keluar", { length: 5 }).notNull().default("16:00"),
     /** JSON array angka hari libur (0=Minggu … 6=Sabtu). */
     hariLibur: text("hari_libur").notNull(),
+    latitudeKantor: varchar("latitude_kantor", { length: 30 }),
+    longitudeKantor: varchar("longitude_kantor", { length: 30 }),
+    radiusMeter: int("radius_meter").notNull().default(100),
+    toleransiTerlambatMenit: int("toleransi_terlambat_menit").notNull().default(0),
+    wajibGps: boolean("wajib_gps").notNull().default(true),
+    wajibFoto: boolean("wajib_foto").notNull().default(true),
     diperbaruiOleh: varchar("diperbarui_oleh", { length: 36 }),
     updatedAt: timestamp("updated_at")
       .notNull()
