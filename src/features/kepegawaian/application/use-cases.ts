@@ -3,6 +3,7 @@ import "server-only";
 import { and, asc, count, desc, eq, gte, lte, ne, sql } from "drizzle-orm";
 
 import { db } from "@/db";
+import { denganKunciMysql } from "@/db/kunci-mysql";
 import {
   cutiKuota,
   cutiPegawai,
@@ -454,23 +455,25 @@ export async function catatAbsensiMandiri(input:{latitude:number|null;longitude:
     const distance=jarakMeter(input.latitude,input.longitude,Number(setting.latitudeKantor),Number(setting.longitudeKantor));
     if(distance>(setting.radiusMeter??100)) throw new Error(`Anda berada di luar area absensi kantor (jarak sekitar ${Math.round(distance)} meter).`);
   }
-  const tanggal=tanggalLokal();
-  const now=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Jakarta",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(new Date());
-  const [existing]=await db.select().from(kehadiranPerangkat)
-    .where(and(eq(kehadiranPerangkat.villageId,villageId),eq(kehadiranPerangkat.pegawaiId,pegawai.id),eq(kehadiranPerangkat.tanggal,tanggal))).limit(1);
-  if(existing?.jamKeluar) throw new Error("Absensi hari ini sudah lengkap. Check-in dan check-out sudah tercatat.");
-  if(!existing && wajibFoto && !input.fotoMasuk) throw new Error("Foto selfie wajib dilampirkan saat check-in.");
-  if(existing) {
-    if(!existing.jamMasuk) throw new Error("Data absensi hari ini perlu diperiksa administrator.");
-    await db.update(kehadiranPerangkat).set({jamKeluar:now})
-      .where(and(eq(kehadiranPerangkat.villageId,villageId),eq(kehadiranPerangkat.id,existing.id)));
-    return {aksi:"check_out" as const,nama:pegawai.nama,jam:now};
-  }
-  await db.insert(kehadiranPerangkat).values({
-    villageId,pegawaiId:pegawai.id,perangkatId:null,tanggal,jamMasuk:now,status:"hadir",
-    latitudeMasuk:input.latitude===null?null:String(input.latitude),longitudeMasuk:input.longitude===null?null:String(input.longitude),fotoMasuk:input.fotoMasuk??null,
+  return denganKunciMysql(`absensi:${villageId}:${pegawai.id}:${tanggalLokal()}`, async () => {
+    const tanggal=tanggalLokal();
+    const now=new Intl.DateTimeFormat("en-GB",{timeZone:"Asia/Jakarta",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).format(new Date());
+    const [existing]=await db.select().from(kehadiranPerangkat)
+      .where(and(eq(kehadiranPerangkat.villageId,villageId),eq(kehadiranPerangkat.pegawaiId,pegawai.id),eq(kehadiranPerangkat.tanggal,tanggal))).limit(1);
+    if(existing?.jamKeluar) throw new Error("Absensi hari ini sudah lengkap. Check-in dan check-out sudah tercatat.");
+    if(!existing && wajibFoto && !input.fotoMasuk) throw new Error("Foto selfie wajib dilampirkan saat check-in.");
+    if(existing) {
+      if(!existing.jamMasuk) throw new Error("Data absensi hari ini perlu diperiksa administrator.");
+      await db.update(kehadiranPerangkat).set({jamKeluar:now})
+        .where(and(eq(kehadiranPerangkat.villageId,villageId),eq(kehadiranPerangkat.id,existing.id)));
+      return {aksi:"check_out" as const,nama:pegawai.nama,jam:now};
+    }
+    await db.insert(kehadiranPerangkat).values({
+      villageId,pegawaiId:pegawai.id,perangkatId:null,tanggal,jamMasuk:now,status:"hadir",
+      latitudeMasuk:input.latitude===null?null:String(input.latitude),longitudeMasuk:input.longitude===null?null:String(input.longitude),fotoMasuk:input.fotoMasuk??null,
+    });
+    return {aksi:"check_in" as const,nama:pegawai.nama,jam:now};
   });
-  return {aksi:"check_in" as const,nama:pegawai.nama,jam:now};
 }
 
 export async function daftarKehadiranBulanan(tahun:number, bulan:number) {
