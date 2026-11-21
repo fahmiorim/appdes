@@ -5,7 +5,7 @@ import { hashPassword } from "better-auth/crypto";
 import { and, count, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { accounts, roles, sessions, users } from "@/db/schema";
+import { accounts, passwordHistory, roles, sessions, users } from "@/db/schema";
 import type { PenggunaDTO } from "@/features/pengguna/domain/pengguna";
 
 /**
