@@ -74,7 +74,7 @@ function denganPenyusutan<T extends {
   hargaSatuan:string|null;jumlah:string;akumulasiPenyusutan?:string|null;
   umurManfaatBulan?:number|null;nilaiResidu?:string|null;tanggalMulaiPenyusutan?:string|null;
 }>(rows:T[]) {
-  return rows.map(row=>({...row,akumulasiPenyusutan:hitungPenyusutanAset(row).akumulasiPenyusutan.toFixed(2)}));
+  return rows.map(row=>{const p=hitungPenyusutanAset(row);return {...row,akumulasiPenyusutan:p.akumulasiPenyusutan.toFixed(2),nilaiBuku:p.nilaiBuku.toFixed(2),penyusutanBulanan:p.penyusutanBulanan.toFixed(2)};});
 }
 
 export async function getInventarisPageData(search: string) {
@@ -99,14 +99,17 @@ export async function getInventarisTablePageData(input:{
 }) {
   const user=await requirePermission(INVENTARIS_RESOURCE,"read");
   const villageId=await resolveVillageId(user);
-  const [kategori,locations,data,summary]=await Promise.all([
+  const [kategori,locations,firstPage,summary]=await Promise.all([
     listInventarisKategori(villageId),
     listInventarisLocations(villageId),
     listInventarisPage(villageId,input),
     listInventaris(villageId),
   ]);
+  const lastPage=Math.max(1,Math.ceil(firstPage.total/input.pageSize));
+  const safePage=Math.min(input.page,lastPage);
+  const data=safePage===input.page?firstPage:await listInventarisPage(villageId,{...input,page:safePage});
   return {
-    kategori,locations,rows:denganPenyusutan(data.rows),total:data.total,
+    kategori,locations,rows:denganPenyusutan(data.rows),total:data.total,currentPage:safePage,
     summaryRows:denganPenyusutan(summary.rows),
     canWrite:hasPermission(user.permissions,INVENTARIS_RESOURCE,"update"),
     canManage:hasPermission(user.permissions,INVENTARIS_RESOURCE,"delete"),
@@ -142,6 +145,7 @@ export async function getLaporanInventaris(kategoriId?: number) {
   return {
     kategori,
     kategoriId: kategoriId ?? null,
+    items,
     rekap: rekapPerKategori(items),
   };
 }
