@@ -3,7 +3,7 @@ import "server-only";
 import { and, asc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { lembagaAnggota, lembagaDesa } from "@/db/schema";
+import { lembagaAnggota, lembagaDesa, pemerintahanDokumen, perangkatRiwayatJabatan } from "@/db/schema";
 
 /** Hanya lembaga dan anggota yang secara eksplisit diizinkan tampil ke publik. */
 export async function daftarLembagaPublik(villageId: number) {
@@ -23,5 +23,15 @@ export async function daftarLembagaPublik(villageId: number) {
   }).from(lembagaAnggota)
     .where(and(eq(lembagaAnggota.villageId, villageId), eq(lembagaAnggota.aktif, true), eq(lembagaAnggota.tampilPublik, true)))
     .orderBy(asc(lembagaAnggota.urut), asc(lembagaAnggota.id));
-  return lembaga.map((item) => ({ ...item, anggota: members.filter((member) => member.lembagaId === item.id) }));
+  const docs = await db.select({ id: pemerintahanDokumen.id, lembagaId: pemerintahanDokumen.lembagaId, judul: pemerintahanDokumen.judul, nomor: pemerintahanDokumen.nomor, tanggal: pemerintahanDokumen.tanggal }).from(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.tampilPublik, true)));\n  return lembaga.map((item) => ({ ...item, anggota: members.filter((member) => member.lembagaId === item.id), dokumen: docs.filter((doc) => doc.lembagaId === item.id) }));
+}
+
+export async function detailPerangkatPemerintahanPublik(villageId: number, perangkatId: number) {
+  const [riwayat, dokumen] = await Promise.all([
+    db.select({ id: perangkatRiwayatJabatan.id, jabatan: perangkatRiwayatJabatan.jabatan, nomorSk: perangkatRiwayatJabatan.nomorSk, mulai: perangkatRiwayatJabatan.mulai, selesai: perangkatRiwayatJabatan.selesai, keterangan: perangkatRiwayatJabatan.keterangan })
+      .from(perangkatRiwayatJabatan).where(and(eq(perangkatRiwayatJabatan.villageId, villageId), eq(perangkatRiwayatJabatan.perangkatId, perangkatId))),
+    db.select({ id: pemerintahanDokumen.id, judul: pemerintahanDokumen.judul, nomor: pemerintahanDokumen.nomor, tanggal: pemerintahanDokumen.tanggal })
+      .from(pemerintahanDokumen).where(and(eq(pemerintahanDokumen.villageId, villageId), eq(pemerintahanDokumen.perangkatId, perangkatId), eq(pemerintahanDokumen.tampilPublik, true))),
+  ]);
+  return { riwayat, dokumen };
 }
