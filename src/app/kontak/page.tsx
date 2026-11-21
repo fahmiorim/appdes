@@ -27,14 +27,17 @@ function mediaUrl(value: string | null, villageId: number): string | null {
 }
 export default async function KontakPage() {
   const desa = await getIdentitasFromRequest();
+  const settings = await pengaturanKontakPublik(desa.id);
   const location = locationLabel(desa);
   const logoUrl = mediaUrl(desa.logo, desa.id);
-  const phone = desa.telepon?.trim() ?? "";
+  const phone = settings.telepon || desa.telepon?.trim() || "";
   const phoneDigits = phone.replace(/\\D/g, "");
-  const whatsappNumber = phoneDigits.startsWith("0") ? "62" + phoneDigits.slice(1) : phoneDigits;
-  const email = desa.emailDesa?.trim() ?? "";
-  const address = desa.alamatKantor?.trim() ?? "";
-  const mapQuery = [address, desa.namaDesa, location].filter(Boolean).join(", ");
+  const whatsapp = settings.whatsapp || phone;
+  const whatsappDigits = whatsapp.replace(/\\D/g, "");
+  const whatsappNumber = whatsappDigits.startsWith("0") ? "62" + whatsappDigits.slice(1) : whatsappDigits;
+  const email = settings.email || desa.emailDesa?.trim() || "";
+  const address = settings.alamat || desa.alamatKantor?.trim() || "";
+  const mapQuery = [address, desa.namaDesa, location, settings.koordinat].filter(Boolean).join(", ");
   return (
     <main className={styles.site}>
       <PublicSiteHeader desa={desa} location={location} logoUrl={logoUrl} activePath="/kontak" />
@@ -203,7 +206,7 @@ export default async function KontakPage() {
                 </div>
               </div>
               <p className={styles.hoursNote}>
-                {settings.jamLayanan || "Jadwal operasional belum dicantumkan pada profil desa."}
+                {settings.jamLayanan || "{settings.jamLayanan || "Jadwal operasional belum dicantumkan pada profil desa."}"}
               </p>
             </section>
             <section className={styles.tracking}>
