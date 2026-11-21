@@ -174,14 +174,6 @@ export async function updatePengguna(
     // Reset password oleh admin mencabut semua sesi lama seperti reset via Better Auth.
     await tx.delete(sessions).where(eq(sessions.userId, id));
     return;
-
-    await tx.insert(accounts).values({
-      id: randomUUID(),
-      accountId: id,
-      providerId: "credential",
-      userId: id,
-      password: passwordHash,
-    });
   });
 }
 
