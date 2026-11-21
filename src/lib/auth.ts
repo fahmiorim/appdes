@@ -42,8 +42,8 @@ async function villageIdForUser(userId: string) {
 const DEFAULT_PASSWORD_POLICY = { passwordMinLength: 8, passwordReuseCount: 3, requireUppercase: true, requireLowercase: true, requireNumber: true, requireSymbol: false };
 
 async function enforceTenantPasswordPolicy(userId: string, newPassword: string) {
-  const [account] = await db.select({ villageId: users.villageId }).from(users).where(eq(users.id, userId)).limit(1);
-  if (!account?.villageId) return;
+  const [account] = await db.select({ villageId: users.villageId, residentId: users.residentId }).from(users).where(eq(users.id, userId)).limit(1);
+  if (!account?.villageId || account.residentId !== null) return;
   const [policy] = await db.select().from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
   const passwordPolicy = policy ?? DEFAULT_PASSWORD_POLICY;
   const passwordError = validasiKataSandi(newPassword, passwordPolicy);
