@@ -105,19 +105,35 @@ export async function POST(request: Request) {
         officeAddress: backup.desa.alamat, email: backup.desa.email, phone: backup.desa.telepon,
         website: backup.desa.website, logo: backup.desa.logo, headName: backup.desa.kepalaDesa, headNip: backup.desa.nip,
       }).where(eq(villages.id, villageId));
-      if (backup.profil) {
-        await tx.insert(profilDesa).values({ villageId, ...backup.profil })
-          .onDuplicateKeyUpdate({ set: { ...backup.profil } });
-      }
+      const profile = backup.profil ?? {
+        visi: null, misi: null, sejarah: null, sambutan: null, koordinat: null, luasWilayah: null,
+        batasUtara: null, batasSelatan: null, batasTimur: null, batasBarat: null, ketinggian: null,
+        suhuRataRata: null, curahHujan: null, topografi: null,
+      };
+      await tx.insert(profilDesa).values({ villageId, ...profile })
+        .onDuplicateKeyUpdate({ set: { ...profile } });
       await tx.update(theme).set({aktif:false}).where(eq(theme.villageId,villageId));
       if (backup.tema) {
         const [sameTheme] = await tx.select({id:theme.id}).from(theme).where(and(eq(theme.villageId,villageId),eq(theme.slug,backup.tema.slug))).limit(1);
         if (sameTheme) await tx.update(theme).set({...backup.tema,aktif:true}).where(and(eq(theme.id,sameTheme.id),eq(theme.villageId,villageId)));
         else await tx.insert(theme).values({villageId,...backup.tema,aktif:true});
       }
-      await tx.delete(layananPublik).where(eq(layananPublik.villageId, villageId));
-      if (backup.layanan.length) {
-        await tx.insert(layananPublik).values(backup.layanan.map(item => ({ villageId, ...item })));
+      const existingServices = await tx.select({ id: layananPublik.id, nama: layananPublik.nama, kategori: layananPublik.kategori })
+        .from(layananPublik).where(eq(layananPublik.villageId, villageId));
+      const restoredIds = new Set<number>();
+      for (const item of backup.layanan) {
+        const existing = existingServices.find(row => !restoredIds.has(row.id) && row.nama === item.nama && row.kategori === item.kategori);
+        if (existing) {
+          restoredIds.add(existing.id);
+          await tx.update(layananPublik).set({ ...item }).where(and(eq(layananPublik.id, existing.id), eq(layananPublik.villageId, villageId)));
+        } else {
+          const [created] = await tx.insert(layananPublik).values({ villageId, ...item }).$returningId();
+          if (created) restoredIds.add(created.id);
+        }
+      }
+      for (const row of existingServices) {
+        if (!restoredIds.has(row.id)) await tx.update(layananPublik).set({ aktif: false })
+          .where(and(eq(layananPublik.id, row.id), eq(layananPublik.villageId, villageId)));
       }
       for (const [key, value] of [
         ["pengaturan.kontak", backup.kontak], ["pengaturan.integrasi", backup.integrasi],
