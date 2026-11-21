@@ -199,6 +199,41 @@
       "breakpoints": true
     },
     {
+      "idx": 27,
+      "version": "5",
+      "when": 1795625000000,
+      "tag": "0027_layanan_publik_catalog",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "5",
+      "when": 1795626000000,
+      "tag": "0028_pengajuan_layanan",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "5",
+      "when": 1795627000000,
+      "tag": "0029_riwayat_pengajuan_layanan",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "5",
+      "when": 1795628000000,
+      "tag": "0030_pengajuan_layanan_berkas",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "5",
+      "when": 1795629000000,
+      "tag": "0031_pengajuan_layanan_hasil",
+      "breakpoints": true
+    },
+    {
       "idx": 32,
       "version": "5",
       "when": 1795630000000,

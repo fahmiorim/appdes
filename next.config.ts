@@ -16,10 +16,9 @@ const nextConfig: NextConfig = {
    */
   experimental: {
     authInterrupts: true,
-    // Upload pemerintahan menerima PDF hingga 20 MB sesuai validasi media.
-    serverActions: {
-      bodySizeLimit: "25mb",
-    },
+    // Lampiran surat dinas dan upload pemerintahan menerima PDF hingga 20 MB
+    // sesuai validasi media, ditambah sedikit ruang untuk overhead multipart.
+    serverActions: { bodySizeLimit: "25mb" },
   },
 
   /**

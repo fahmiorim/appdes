@@ -1,0 +1,118 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import { getHasilSurveiData } from "@/features/pelayanan/application/survei-use-cases";
+
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+  const { id: raw } = await params;
+  const id = Number(raw);
+  if (!Number.isSafeInteger(id) || id < 1) notFound();
+  const d = await getHasilSurveiData(id);
+  const max = Math.max(1, ...d.distribution.map((x) => x.total));
+  return (
+    <div className="modul-page">
+      <div className="page-heading">
+        <div>
+          <span className="eyebrow">Survei & Kepuasan / Hasil</span>
+          <h1>Hasil Survei</h1>
+          <p>
+            {d.row.judul} · {d.row.sasaran ?? "Seluruh masyarakat"}
+          </p>
+        </div>
+        <div className="page-heading-actions">
+          <Link className="button button-secondary" href={"/pelayanan-publik/survei/" + id}>
+            Kembali ke survei
+          </Link>
+          <a
+            className="button button-primary"
+            href={"/pelayanan-publik/survei/" + id + "/hasil/ekspor"}
+          >
+            Ekspor CSV
+          </a>
+        </div>
+      </div>
+      <div className="dashboard-stats">
+        <article className="modul-card">
+          <span>Total Responden</span>
+          <strong>{d.totalResponden.toLocaleString("id-ID")}</strong>
+          <small>Responden terdaftar</small>
+        </article>
+        <article className="modul-card">
+          <span>Responden Dinilai</span>
+          <strong>{d.scoredCount.toLocaleString("id-ID")}</strong>
+          <small>Memiliki jawaban terukur</small>
+        </article>
+        <article className="modul-card">
+          <span>Indeks Kepuasan</span>
+          <strong>{d.average === null ? "—" : d.average.toFixed(1)}</strong>
+          <small>Skor 0–100 · {d.klasifikasi}</small>
+        </article>
+        <article className="modul-card">
+          <span>Periode Survei</span>
+          <strong style={{ fontSize: 16 }}>
+            {d.row.mulai ?? "Bebas"} – {d.row.selesai ?? "Bebas"}
+          </strong>
+          <small>{d.row.aktif === 1 ? "Survei aktif" : "Survei nonaktif"}</small>
+        </article>
+      </div>
+      <section className="modul-card">
+        <h2>Distribusi Tingkat Kepuasan</h2>
+        <p>Komposisi responden yang memiliki jawaban terukur.</p>
+        <div className="survey-results-bars">
+          {d.distribution.map((x) => (
+            <div className="survey-result-row" key={x.label}>
+              <div>
+                <strong>{x.label}</strong>
+                <span>
+                  {x.total} responden (
+                  {d.scoredCount ? Math.round((x.total / d.scoredCount) * 100) : 0}%)
+                </span>
+              </div>
+              <div className="survey-result-track">
+                <i style={{ width: (x.total / max) * 100 + "%" }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+      <section className="modul-card">
+        <h2>Rekap Jawaban per Pertanyaan</h2>
+        {d.questionStats.map((q) => (
+          <article className="survey-result-question" key={q.id}>
+            <strong>{q.pertanyaan}</strong>
+            <p>
+              {q.total} jawaban ·{" "}
+              {q.tipe === "choice" ? "Pilihan ganda" : q.tipe === "number" ? "Angka" : "Isian teks"}
+            </p>
+            {q.pilihan.length ? (
+              <ul>
+                {q.pilihan.map((x) => (
+                  <li key={x.jawaban}>
+                    <span>{x.jawaban}</span>
+                    <strong>{x.total}</strong>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </article>
+        ))}
+        {d.questionStats.length === 0 ? <p className="modul-empty">Belum ada pertanyaan.</p> : null}
+      </section>
+      <section className="modul-card">
+        <h2>Ulasan & Saran Masyarakat</h2>
+        {d.comments.length ? (
+          <div className="survey-comments">
+            {d.comments.map((x, i) => (
+              <article key={i}>
+                <strong>{x.pertanyaan}</strong>
+                <p>{x.jawaban}</p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p className="modul-empty">Belum ada ulasan atau jawaban teks.</p>
+        )}
+      </section>
+    </div>
+  );
+}

@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "9d6e8eb1-7982-4bc1-9ebc-cedbfc1213be",
-  "prevId": "33bf461d-49e0-401b-9c0a-3196f55d40fd",
+  "id": "0032_pemerintahan_desa",
+  "prevId": "0031_pengajuan_layanan_hasil",
   "tables": {
     "agenda_kegiatan": {
       "name": "agenda_kegiatan",
@@ -8578,6 +8578,667 @@
       "compositePrimaryKeys": {
         "posyandu_id": {
           "name": "posyandu_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "layanan_publik": {
+      "name": "layanan_publik",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "village_id": {
+          "name": "village_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nama": {
+          "name": "nama",
+          "type": "varchar(180)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "kategori": {
+          "name": "kategori",
+          "type": "varchar(60)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'administrasi'"
+        },
+        "deskripsi": {
+          "name": "deskripsi",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "persyaratan": {
+          "name": "persyaratan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "estimasi_hari": {
+          "name": "estimasi_hari",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 1
+        },
+        "biaya": {
+          "name": "biaya",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "metode": {
+          "name": "metode",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'online_dan_langsung'"
+        },
+        "aktif": {
+          "name": "aktif",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "layanan_publik_village_id_uq": {
+          "name": "layanan_publik_village_id_uq",
+          "columns": [
+            "village_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "layanan_publik_village_active_idx": {
+          "name": "layanan_publik_village_active_idx",
+          "columns": [
+            "village_id",
+            "aktif"
+          ],
+          "isUnique": false
+        },
+        "layanan_publik_village_name_idx": {
+          "name": "layanan_publik_village_name_idx",
+          "columns": [
+            "village_id",
+            "nama"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "layanan_publik_village_fk": {
+          "name": "layanan_publik_village_fk",
+          "tableFrom": "layanan_publik",
+          "tableTo": "villages",
+          "columnsFrom": [
+            "village_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "layanan_publik_id": {
+          "name": "layanan_publik_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "pengajuan_layanan": {
+      "name": "pengajuan_layanan",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "village_id": {
+          "name": "village_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "layanan_id": {
+          "name": "layanan_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "resident_id": {
+          "name": "resident_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "nomor_tiket": {
+          "name": "nomor_tiket",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nama_pemohon": {
+          "name": "nama_pemohon",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nik": {
+          "name": "nik",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "telepon": {
+          "name": "telepon",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "alamat": {
+          "name": "alamat",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "keperluan": {
+          "name": "keperluan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lampiran": {
+          "name": "lampiran",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(24)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'diajukan'"
+        },
+        "catatan_petugas": {
+          "name": "catatan_petugas",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "alasan_penolakan": {
+          "name": "alasan_penolakan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "petugas_id": {
+          "name": "petugas_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "diproses_pada": {
+          "name": "diproses_pada",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "selesai_pada": {
+          "name": "selesai_pada",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "pengajuan_layanan_village_ticket_uq": {
+          "name": "pengajuan_layanan_village_ticket_uq",
+          "columns": [
+            "village_id",
+            "nomor_tiket"
+          ],
+          "isUnique": true
+        },
+        "pengajuan_layanan_village_id_uq": {
+          "name": "pengajuan_layanan_village_id_uq",
+          "columns": [
+            "village_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "pengajuan_layanan_tenant_status_idx": {
+          "name": "pengajuan_layanan_tenant_status_idx",
+          "columns": [
+            "village_id",
+            "status",
+            "created_at"
+          ],
+          "isUnique": false
+        },
+        "pengajuan_layanan_tenant_layanan_idx": {
+          "name": "pengajuan_layanan_tenant_layanan_idx",
+          "columns": [
+            "village_id",
+            "layanan_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "pengajuan_layanan_service_tenant_fk": {
+          "name": "pengajuan_layanan_service_tenant_fk",
+          "tableFrom": "pengajuan_layanan",
+          "tableTo": "layanan_publik",
+          "columnsFrom": [
+            "village_id",
+            "layanan_id"
+          ],
+          "columnsTo": [
+            "village_id",
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "pengajuan_layanan_resident_tenant_fk": {
+          "name": "pengajuan_layanan_resident_tenant_fk",
+          "tableFrom": "pengajuan_layanan",
+          "tableTo": "residents",
+          "columnsFrom": [
+            "village_id",
+            "resident_id"
+          ],
+          "columnsTo": [
+            "village_id",
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "pengajuan_layanan_village_fk": {
+          "name": "pengajuan_layanan_village_fk",
+          "tableFrom": "pengajuan_layanan",
+          "tableTo": "villages",
+          "columnsFrom": [
+            "village_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pengajuan_layanan_petugas_fk": {
+          "name": "pengajuan_layanan_petugas_fk",
+          "tableFrom": "pengajuan_layanan",
+          "tableTo": "users",
+          "columnsFrom": [
+            "petugas_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "pengajuan_layanan_id": {
+          "name": "pengajuan_layanan_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "riwayat_pengajuan_layanan": {
+      "name": "riwayat_pengajuan_layanan",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "village_id": {
+          "name": "village_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "pengajuan_id": {
+          "name": "pengajuan_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status_sebelumnya": {
+          "name": "status_sebelumnya",
+          "type": "varchar(24)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status_baru": {
+          "name": "status_baru",
+          "type": "varchar(24)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "catatan": {
+          "name": "catatan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "actor_id": {
+          "name": "actor_id",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "riwayat_pengajuan_tenant_request_idx": {
+          "name": "riwayat_pengajuan_tenant_request_idx",
+          "columns": [
+            "village_id",
+            "pengajuan_id",
+            "created_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "riwayat_pengajuan_request_tenant_fk": {
+          "name": "riwayat_pengajuan_request_tenant_fk",
+          "tableFrom": "riwayat_pengajuan_layanan",
+          "tableTo": "pengajuan_layanan",
+          "columnsFrom": [
+            "village_id",
+            "pengajuan_id"
+          ],
+          "columnsTo": [
+            "village_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "riwayat_pengajuan_village_fk": {
+          "name": "riwayat_pengajuan_village_fk",
+          "tableFrom": "riwayat_pengajuan_layanan",
+          "tableTo": "villages",
+          "columnsFrom": [
+            "village_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "riwayat_pengajuan_actor_fk": {
+          "name": "riwayat_pengajuan_actor_fk",
+          "tableFrom": "riwayat_pengajuan_layanan",
+          "tableTo": "users",
+          "columnsFrom": [
+            "actor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "riwayat_pengajuan_layanan_id": {
+          "name": "riwayat_pengajuan_layanan_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "pengajuan_layanan_berkas": {
+      "name": "pengajuan_layanan_berkas",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "village_id": {
+          "name": "village_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "pengajuan_id": {
+          "name": "pengajuan_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nama_persyaratan": {
+          "name": "nama_persyaratan",
+          "type": "varchar(180)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "jenis": {
+          "name": "jenis",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'persyaratan'"
+        },
+        "jalur": {
+          "name": "jalur",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nama_asli": {
+          "name": "nama_asli",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "mime": {
+          "name": "mime",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'application/pdf'"
+        },
+        "ukuran": {
+          "name": "ukuran",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "pengajuan_layanan_berkas_tenant_request_idx": {
+          "name": "pengajuan_layanan_berkas_tenant_request_idx",
+          "columns": [
+            "village_id",
+            "pengajuan_id"
+          ],
+          "isUnique": false
+        },
+        "pengajuan_layanan_berkas_tenant_type_idx": {
+          "name": "pengajuan_layanan_berkas_tenant_type_idx",
+          "columns": [
+            "village_id",
+            "pengajuan_id",
+            "jenis"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "pengajuan_layanan_berkas_request_tenant_fk": {
+          "name": "pengajuan_layanan_berkas_request_tenant_fk",
+          "tableFrom": "pengajuan_layanan_berkas",
+          "tableTo": "pengajuan_layanan",
+          "columnsFrom": [
+            "village_id",
+            "pengajuan_id"
+          ],
+          "columnsTo": [
+            "village_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pengajuan_layanan_berkas_village_fk": {
+          "name": "pengajuan_layanan_berkas_village_fk",
+          "tableFrom": "pengajuan_layanan_berkas",
+          "tableTo": "villages",
+          "columnsFrom": [
+            "village_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "pengajuan_layanan_berkas_id": {
+          "name": "pengajuan_layanan_berkas_id",
           "columns": [
             "id"
           ]

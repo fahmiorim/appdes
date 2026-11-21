@@ -32,6 +32,12 @@ describe("ruteTersedia", () => {
     expect(ruteTersedia("/keluarga")).toBe(true);
     expect(ruteTersedia("/mutasi-penduduk")).toBe(true);
     expect(ruteTersedia("/statistik/penduduk")).toBe(true);
+    expect(ruteTersedia("/persuratan/dashboard")).toBe(true);
+    expect(ruteTersedia("/persuratan/surat")).toBe(true);
+    expect(ruteTersedia("/persuratan/jenis-surat")).toBe(true);
+    expect(ruteTersedia("/persuratan/arsip")).toBe(true);
+    expect(ruteTersedia("/persuratan/master")).toBe(true);
+    expect(ruteTersedia("/permohonan-surat")).toBe(true);
     expect(ruteTersedia("/konten/berita")).toBe(true);
     expect(ruteTersedia("/pengaturan/pengguna")).toBe(true);
   });

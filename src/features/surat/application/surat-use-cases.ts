@@ -2,6 +2,7 @@ import "server-only";
 
 import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
 import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
+import { listAuditLogs } from "@/features/audit/infrastructure/audit-repository";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import {
   getIdentitasDesa,
@@ -249,6 +250,21 @@ export async function listSuratWithMeta(params: {
   return { ...result, jenis: jenis.filter((item) => item.isActive), penduduk, recap, syarat };
 }
 
+/** Riwayat aktivitas satu surat, dibatasi tenant dan izin baca surat. */
+export async function getRiwayatSuratData(id: number) {
+  const user = await requirePermission(SURAT_RESOURCE, "read");
+  const villageId = await resolveVillageId(user);
+  const surat = await getSurat(villageId, id);
+  if (!surat) throw notFound("Surat tidak ditemukan.");
+  const history = await listAuditLogs(villageId, {
+    page: 1,
+    pageSize: 50,
+    resource: SURAT_RESOURCE,
+    resourceId: String(id),
+  });
+  return history.rows;
+}
+
 export interface ArsipNomorFilter {
   search: string;
   year?: number;
@@ -433,6 +449,14 @@ export async function createSuratDraftData(input: SuratInput): Promise<{ id: num
     createdBy: user.id,
   });
 
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.suratCreate,
+    resource: SURAT_RESOURCE,
+    resourceId: String(id),
+    details: { typeId: jenis.id },
+  });
   return { id };
 }
 
@@ -459,6 +483,14 @@ export async function updateSuratDraftData(id: number, input: SuratInput): Promi
     typeName: jenis.name,
     nilaiIsian: serializeNilaiIsian(denganPengikut(values, input.pengikut ?? [], input.luar ?? [])),
   });
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.suratUpdate,
+    resource: SURAT_RESOURCE,
+    resourceId: String(id),
+    details: { typeId: jenis.id },
+  });
 }
 
 export async function deleteSuratData(id: number): Promise<void> {
@@ -470,6 +502,13 @@ export async function deleteSuratData(id: number): Promise<void> {
   if (surat.status !== "draft") throw conflict("Hanya konsep surat yang dapat dihapus.");
 
   await deleteSurat(villageId, id);
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.suratDelete,
+    resource: SURAT_RESOURCE,
+    resourceId: String(id),
+  });
 }
 
 /** Ajukan konsep ke antrean verifikasi (operator → sekdes → kades). */
@@ -501,6 +540,13 @@ export async function ajukanVerifikasiSuratData(
     verifikasiKades: null,
     logVerifikasi: "diajukan",
     catatanVerifikasi: null,
+  });
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.suratSubmit,
+    resource: SURAT_RESOURCE,
+    resourceId: String(id),
   });
 }
 
@@ -608,6 +654,7 @@ async function terbitkanSurat(
   villageId: number,
   surat: SuratDetail,
   desa: IdentitasDesa,
+  actorId: string,
 ): Promise<{ number: string; verificationToken: string }> {
   const jenis = await loadJenis(villageId, surat.typeId);
   const penduduk = surat.residentId
@@ -667,6 +714,14 @@ async function terbitkanSurat(
     logVerifikasi: "kades",
     verificationToken: token,
     verificationTokenHash: hash,
+  });
+  await recordAuditEvent({
+    villageId,
+    actorId,
+    event: AUDIT_EVENTS.suratVerify,
+    resource: SURAT_RESOURCE,
+    resourceId: String(surat.id),
+    details: { tahap: "kades", nomor: number },
   });
 
   // TTE pasca-terbit: mode nonaktif (default) → keluar segera tanpa I/O.
@@ -730,6 +785,14 @@ export async function verifySuratData(
       logVerifikasi: "operator",
       status: "verifikasi",
     });
+    await recordAuditEvent({
+      villageId,
+      actorId: user.id,
+      event: AUDIT_EVENTS.suratVerify,
+      resource: SURAT_RESOURCE,
+      resourceId: String(id),
+      details: { tahap: step },
+    });
     return { number: null, verificationToken: null };
   }
 
@@ -739,12 +802,20 @@ export async function verifySuratData(
       logVerifikasi: "sekdes",
       status: "verifikasi",
     });
+    await recordAuditEvent({
+      villageId,
+      actorId: user.id,
+      event: AUDIT_EVENTS.suratVerify,
+      resource: SURAT_RESOURCE,
+      resourceId: String(id),
+      details: { tahap: step },
+    });
     return { number: null, verificationToken: null };
   }
 
   const desa = await getIdentitasDesa(villageId);
   if (!desa) throw notFound("Identitas desa belum dikonfigurasi.");
-  const { number, verificationToken } = await terbitkanSurat(villageId, surat, desa);
+  const { number, verificationToken } = await terbitkanSurat(villageId, surat, desa, user.id);
 
   // Permohonan warga yang terhubung menjadi "Siap Diambil" begitu surat terbit.
   const permohonan = await findPermohonanByLetterId(villageId, id);
@@ -788,6 +859,14 @@ export async function rejectSuratData(id: number, reason: string): Promise<void>
   }
 
   await rejectSurat(villageId, id, reason.trim());
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.suratReject,
+    resource: SURAT_RESOURCE,
+    resourceId: String(id),
+    details: { tahap: nextStep },
+  });
 
   // Surat yang ditolak membuat permohonan terkait ikut dibatalkan dengan alasan.
   await sinkronStatusSuratPermohonan(villageId, id, 5, reason.trim());
@@ -814,8 +893,10 @@ async function loadSuratPrintData(
   const anggotaKeluarga = await loadAnggotaKeluarga(villageId, penduduk);
   const pengikutSurat = await loadPengikutSurat(villageId, surat.nilaiIsian);
 
-  // Varian dari URL mengalahkan pengaturan jenis surat, sama seperti pratinjau cetak.
-  const varianAktif = varian ?? jenis.templateVariant ?? "default";
+  // Surat terbit memakai isi dan identitas jenis yang sudah disalin saat penerbitan.
+  // Jangan biarkan perubahan template/varian/layout master mengubah cetak ulang arsip.
+  const varianAktif =
+    surat.status === "issued" ? "default" : (varian ?? jenis.templateVariant ?? "default");
   const templateBody =
     varianAktif !== "default" && jenis.templateBodyAlt ? jenis.templateBodyAlt : jenis.templateBody;
 
@@ -838,7 +919,7 @@ async function loadSuratPrintData(
     penduduk,
     content,
     varian: varianAktif,
-    layoutConfig: jenis.layoutConfig,
+    layoutConfig: surat.status === "issued" ? null : jenis.layoutConfig,
   };
 }
 
@@ -850,6 +931,13 @@ export async function getSuratPrintData(
   const user = await requirePermission(SURAT_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
   return loadSuratPrintData(villageId, id, varian);
+}
+
+export async function getSuratCurrentRoleSlugData(): Promise<string | null> {
+  const user = await requirePermission(SURAT_RESOURCE, "read");
+  if (user.roleId === null) return null;
+  const role = await findRoleById(user.roleId, user.villageId);
+  return role?.slug ?? null;
 }
 
 /**
@@ -905,7 +993,7 @@ async function bangunPdfSurat(data: SuratPrintData): Promise<Uint8Array> {
   const origin = await getRequestOrigin();
   return buildSuratPdf({
     desa: data.desa,
-    jenisNama: data.jenis.name,
+    jenisNama: data.surat.typeName,
     nomor: data.surat.number,
     tanggal: data.surat.letterDate,
     content: data.content,
@@ -914,7 +1002,6 @@ async function bangunPdfSurat(data: SuratPrintData): Promise<Uint8Array> {
       : null,
     layoutConfig: data.layoutConfig,
     templateVariant: data.varian,
-    templateBodyAlt: data.jenis.templateBodyAlt,
   });
 }
 
