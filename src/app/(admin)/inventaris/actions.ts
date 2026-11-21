@@ -147,7 +147,8 @@ export async function unggahDokumenInventarisAction(fd:FormData) {
 }
 
 export async function hapusDokumenInventarisAction(fd:FormData) {
+  const inventarisId=positiveId(text(fd,"inventarisId"));
   await hapusDokumenInventarisUseCase(positiveId(text(fd,"id")));
   refresh();
-  redirect("/inventaris?documentDeleted=1");
+  redirect("/inventaris/"+inventarisId+"?documentDeleted=1");
 }
