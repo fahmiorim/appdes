@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
    */
   experimental: {
     authInterrupts: true,
+    // Lampiran cuti dan arsip pegawai dapat berupa PDF hingga 20 MB.
+    serverActions: {
+      bodySizeLimit: "25mb",
+    },
   },
 
   /**
