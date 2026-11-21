@@ -108,3 +108,13 @@ export async function simpanIzinAction(
     return toErrorState(error);
   }
 }
+
+export async function resetIzinRoleAction(_state: ActionState<null>, formData: FormData): Promise<ActionState<null>> {
+  try {
+    const roleId = roleIdDari(formData);
+    if (roleId === null) throw new Error("Grup akses tidak valid.");
+    await saveRolePermissions(roleId, []);
+    revalidatePath(HALAMAN);
+    return successState("Semua izin direset ke default aman (tidak ada akses).", null);
+  } catch (error) { return toErrorState(error); }
+}
