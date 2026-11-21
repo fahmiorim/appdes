@@ -4,6 +4,7 @@ import { daftarAbsensi, daftarKehadiranBulanan, getPengaturanKehadiran } from "@
 
 import { absensiManualAction, simpanPengaturanKehadiranAction } from "../actions";
 import { AbsensiKepegawaianNav } from "../nav";
+import { AbsensiMandiri } from "./absensi-mandiri";
 import styles from "../absensi-kepegawaian.module.css";
 import { hasPermission } from "@/features/rbac/application/authorization";
 import { verifySession } from "@/lib/dal";
@@ -42,6 +43,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
     <div className="page-heading"><div><span className="eyebrow">ABSENSI & KEPEGAWAIAN</span><h1>Absensi Pegawai</h1><p>Kelola dan pantau kehadiran perangkat desa serta staf secara terpusat.</p></div></div>
     <AbsensiKepegawaianNav active="/absensi-kepegawaian/absensi"/>
     <nav className={styles["ak-subnav"]} aria-label="Navigasi absensi"><a className={styles["selected"]} href="#rekap">▦ Rekap Kehadiran</a><a href="#kalender">◷ Riwayat Absensi</a><a href="#rekap">♙ Absensi Manual</a><a href="#pengaturan">⚙ Pengaturan Absensi</a></nav>
+    <AbsensiMandiri />
     <section className={styles["ak-kpi-grid"]}>
       <article className={`${styles["ak-kpi"]} ${styles.primary}`}><span>Kehadiran Hari Ini</span><strong>{counts.hadir} orang</strong><span>{tingkatKehadiran.toLocaleString("id-ID")}% tingkat kehadiran</span></article>
       <article className={styles["ak-kpi"]}><span>Hadir</span><strong>{counts.hadir} orang</strong></article>
@@ -87,10 +89,15 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
         </section>
       </div>
     </div>
-    <section id="pengaturan" className={styles["ak-card"]} style={{marginTop:16}}><h2>Pengaturan Absensi</h2><p>Atur jam kerja dan hari libur mingguan desa.</p>
+    <section id="pengaturan" className={styles["ak-card"]} style={{marginTop:16}}><h2>Pengaturan Absensi</h2><p>Atur jam kerja, hari libur, lokasi kantor, radius GPS, dan verifikasi absensi.</p>
       {canManage?<form action={simpanPengaturanKehadiranAction} className={styles["ak-form"]}>
         <label>Jam Masuk<input type="time" name="jamMasuk" defaultValue={setting.jamMasuk}/></label>
         <label>Jam Pulang<input type="time" name="jamKeluar" defaultValue={setting.jamKeluar}/></label>
+        <label>Latitude Kantor<input name="latitudeKantor" type="number" step="any" min="-90" max="90" defaultValue={setting.latitudeKantor??""} placeholder="-3.123456"/></label>
+        <label>Longitude Kantor<input name="longitudeKantor" type="number" step="any" min="-180" max="180" defaultValue={setting.longitudeKantor??""} placeholder="99.123456"/></label>
+        <label>Radius Geofence (meter)<input name="radiusMeter" type="number" min="20" max="5000" defaultValue={setting.radiusMeter??100}/></label>
+        <label>Toleransi Terlambat (menit)<input name="toleransiTerlambatMenit" type="number" min="0" max="180" defaultValue={setting.toleransiTerlambatMenit??0}/></label>
+        <div className={styles.wide}><strong>Validasi Absensi Mandiri</strong><div className={styles["ak-filter"]}><label><input type="checkbox" name="wajibGps" value="1" defaultChecked={setting.wajibGps!==false}/> Wajib GPS dan radius lokasi kantor</label><label><input type="checkbox" name="wajibFoto" value="1" defaultChecked={setting.wajibFoto!==false}/> Wajib foto selfie saat check-in</label></div></div>
         <div className={styles.wide}><strong>Hari Libur</strong><div className={styles["ak-filter"]}>
           {["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"].map((day,index)=><label key={day}><input type="checkbox" name="hariLibur" value={index} defaultChecked={hariLibur.includes(index)}/> {day}</label>)}
         </div></div>
