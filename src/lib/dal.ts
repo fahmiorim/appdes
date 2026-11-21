@@ -88,7 +88,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     const [[security], [credential]] = await Promise.all([
       db.select({ timeout: villageSecuritySettings.sessionTimeoutMinutes, enabled: villageSecuritySettings.autoLogoutInactive, passwordExpiryDays: villageSecuritySettings.passwordExpiryDays, requireTwoFactor: villageSecuritySettings.requireTwoFactorForAllUsers })
         .from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1),
-      db.select({ updatedAt: accounts.updatedAt }).from(accounts).where(eq(accounts.userId, user.id)).limit(1),
+      db.select({ updatedAt: accounts.updatedAt }).from(accounts).where(and(eq(accounts.userId, user.id), eq(accounts.providerId, "credential"))).limit(1),
     ]);
     const expiryDays = security?.passwordExpiryDays ?? 90;
     passwordExpired = account.residentId === null && expiryDays > 0 && Boolean(credential?.updatedAt) && Date.now() - credential!.updatedAt!.getTime() > expiryDays * 86_400_000;
