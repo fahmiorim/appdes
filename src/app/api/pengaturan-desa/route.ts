@@ -87,8 +87,14 @@ export async function PUT(request:Request) {
       if(!s.success)return json({error:s.error.issues[0]?.message??"Kontak tidak valid."},422);
       const d=s.data;
       if(d.tautanPeta){try{const u=new URL(d.tautanPeta);if(!["https:","http:"].includes(u.protocol))throw new Error();}catch{return json({error:"Tautan peta harus berupa URL HTTP/HTTPS."},422);}}
-      const coord=d.koordinat? /^-?\d{1,2}(?:\.\d+)?\s*,\s*-?\d{1,3}(?:\.\d+)?$/.test(d.koordinat):true;
-      if(!coord)return json({error:"Koordinat harus berformat latitude, longitude."},422);
+      for (const number of [d.telepon,d.whatsapp]) {
+        if(number && !/^[0-9+()\s-]{6,30}$/.test(number))return json({error:"Nomor telepon/WhatsApp tidak valid."},422);
+      }
+      if(d.koordinat){
+        const parts=d.koordinat.split(",").map(value=>Number(value.trim()));
+        if(parts.length!==2||!parts.every(Number.isFinite)||parts[0]<-90||parts[0]>90||parts[1]<-180||parts[1]>180)
+          return json({error:"Koordinat harus berupa latitude (-90 s.d. 90), longitude (-180 s.d. 180)."},422);
+      }
       await db.update(villages).set({phone:d.telepon||d.whatsapp||null,email:d.email||null,officeAddress:d.alamat||null,website:d.website||null}).where(eq(villages.id,villageId));
       await db.insert(profilDesa).values({villageId,koordinat:d.koordinat||null}).onDuplicateKeyUpdate({set:{koordinat:d.koordinat||null}});
       await simpanNilai(villageId,"pengaturan.kontak",d);
