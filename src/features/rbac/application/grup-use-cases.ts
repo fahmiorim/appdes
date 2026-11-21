@@ -172,3 +172,13 @@ export async function saveRolePermissions(
     details: { jumlahModul: mapped.length },
   });
 }
+
+/** Buat role kustom baru dengan menyalin matriks izin role sumber dalam tenant yang sama. */
+export async function duplicateRoleData(sourceRoleId: number, input: RoleFormInput): Promise<{ id: number }> {
+  const source = await getRoleDetail(sourceRoleId);
+  const created = await createRoleData(input);
+  await saveRolePermissions(created.id, source.permissions.map((permission) => ({
+    moduleId: permission.moduleId, read: permission.read, write: permission.write, manage: permission.manage,
+  })));
+  return created;
+}
