@@ -86,7 +86,7 @@ export default async function KeuanganPage() {
 
         <article className={styles.panel}>
           <div className={styles.panelHeading}><div><h2>Akses Cepat</h2><p>Operasional pengelolaan keuangan desa</p></div></div>
-          <div className={styles.quickLinks}><Link href="/keuangan/apbdes">＋ Susun / perbarui APBDes</Link><Link href="/keuangan/realisasi">↗ Catat realisasi anggaran</Link><Link href="/keuangan/kegiatan">⚒ Tambah kegiatan pembangunan</Link><Link href="/keuangan/laporan">▧ Lihat &amp; ekspor laporan</Link></div>
+          <div className={styles.quickLinks}><Link href="/keuangan/apbdes">＋ Susun / perbarui APBDes</Link><Link href="/keuangan/realisasi">↗ Catat realisasi anggaran</Link><Link href="/keuangan/kegiatan">⚒ Tambah kegiatan pembangunan</Link><Link href="/keuangan/laporan">▧ Lihat &amp; ekspor laporan</Link><Link href="/keuangan/dokumen">▤ Arsip dokumen keuangan</Link></div>
         </article>
       </section>
     </main>
