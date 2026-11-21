@@ -33,10 +33,14 @@ export async function kirimPengaduanAction(formData: FormData): Promise<never> {
       alamat: String(formData.get("alamat") ?? ""),
     }, jalurLampiran);
 
-    redirect(`/pengaduan/berhasil?tiket=${encodeURIComponent(hasil.nomorTiket)}`);
+    return hasil;
   } catch (error) {
     if (jalurLampiran) await hapusMedia(jalurLampiran).catch(() => undefined);
     const message = error instanceof Error ? error.message : "Pengaduan gagal dikirim.";
     redirect(`/pengaduan/baru?error=${encodeURIComponent(message)}`);
   }
+
+  // Redirect berada di luar blok try agar exception khusus Next tidak dianggap
+  // sebagai kegagalan penyimpanan.
+  redirect(`/pengaduan/berhasil?tiket=${encodeURIComponent(hasil.nomorTiket)}`);
 }
