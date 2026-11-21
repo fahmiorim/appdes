@@ -31,6 +31,9 @@ Gunakan laporan sesuai cakupannya; tidak ada satu laporan yang mewakili seluruh 
 | [Katalog mockup](../mockups/README.md) | 126 path dan pengelompokan aset | Sumber inventaris file |
 | [Sinkronisasi dokumen mockup](./05-ui-audit/DOCS-SYNC-MOCKUP-2026-11-19.md) | Penyelarasan Design System, peta fitur, dan roadmap | Catatan keputusan relevansi fase dan backlog platform |
 | [Perbaikan check CI PR #156](./05-ui-audit/CI-FIX-PR-156-2026-11-19.md) | Perbaikan format dan integration test template tenant | Bukti akar masalah dan validasi 1.979 unit + 290 integration test |
+| [Rebuild website publik dari mockup](./02-public-website/PUBLIC-MOCKUP-REBUILD-2026-11-20.md) | Rangkaian 21 halaman publik, perbaikan format/type/lint, dan renumber migration komentar | Catatan pekerjaan stack PR publik dan risiko merge berurutan |
+| [Perbaikan migration Galeri dan Potensi](./02-public-website/MIGRASI-GALERI-POTENSI-2026-11-20.md) | Migration `0022` idempotent untuk kolom/tabel yang dilewati akibat urutan timestamp journal | Bukti analisis dan batas validasi database |
+| [Merge rangkaian website publik](./02-public-website/PUBLIC-MOCKUP-MERGE-2026-11-20.md) | Penyelesaian #189–#194, penutupan PR duplikat, dan verifikasi Galeri pada database lokal | Bukti check CI per PR dan status merge |
 
 Dokumen di `archive/` dipertahankan untuk jejak audit. Jangan mengutipnya sebagai status terbaru tanpa memeriksa laporan penggantinya.
 

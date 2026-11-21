@@ -10,6 +10,7 @@ import {
 import {
   createAgenda,
   deleteAgenda,
+  getAgendaPublikById,
   listAgendaAdmin,
   listAgendaPublik,
   listAgendaPublikRentang,
@@ -108,6 +109,16 @@ export async function agendaMendatang(villageId: number, limit = 20): Promise<Ag
  * Dipakai kalender publik agar arsip kegiatan tetap dapat dilihat, tanpa
  * membatasi ke agenda mendatang atau memotong jumlah baris per bulan.
  */
+/** Detail agenda yang sudah ditayangkan oleh tenant aktif. */
+export async function detailAgendaPublik(
+  villageId: number,
+  id: number,
+): Promise<AgendaPublikRow | null> {
+  if (!Number.isSafeInteger(id) || id < 1) return null;
+  const row = await getAgendaPublikById(villageId, id);
+  return row ? keAgendaPublik(row) : null;
+}
+
 export async function agendaBulan(
   villageId: number,
   tahun: number,

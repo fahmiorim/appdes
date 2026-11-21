@@ -1,6 +1,20 @@
 import "server-only";
 
-import { and, asc, count, desc, eq, inArray, isNotNull, like, lte, ne, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  like,
+  lte,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import { db } from "@/db";
 import {
@@ -9,10 +23,13 @@ import {
   dokumenPublik,
   galeriAlbum,
   galeriFoto,
+  galeriVideo,
   halamanStatis,
   jabatanPerangkat,
   menuPublik,
   perangkatDesa,
+  potensiDesa,
+  potensiIndikator,
   profilDesa,
   slider,
   widget,
@@ -47,7 +64,9 @@ export interface BeritaRingkas {
   terbitPada: Date | null;
   createdAt: Date;
   kategori: string | null;
+  kategoriSlug: string | null;
   headline: boolean;
+  hit: number;
 }
 
 export async function listBerita(
@@ -79,7 +98,9 @@ export async function listBerita(
       terbitPada: berita.terbitPada,
       createdAt: berita.createdAt,
       kategori: beritaKategori.nama,
+      kategoriSlug: beritaKategori.slug,
       headline: berita.headline,
+      hit: berita.hit,
     })
     .from(berita)
     .leftJoin(
@@ -114,6 +135,7 @@ export interface BeritaDetail extends BeritaRingkas {
   isi: string;
   dokumen: string | null;
   hit: number;
+  bolehKomentar: boolean;
 }
 
 export async function getBeritaBySlug(
@@ -133,7 +155,9 @@ export async function getBeritaBySlug(
       terbitPada: berita.terbitPada,
       createdAt: berita.createdAt,
       kategori: beritaKategori.nama,
+      kategoriSlug: beritaKategori.slug,
       headline: berita.headline,
+      bolehKomentar: berita.bolehKomentar,
     })
     .from(berita)
     .leftJoin(
@@ -175,6 +199,8 @@ export interface AlbumRingkas {
   nama: string;
   slug: string;
   keterangan: string | null;
+  kategori: string | null;
+  publishedAt: Date | null;
   sampul: string | null;
   jumlahFoto: number;
 }
@@ -193,6 +219,8 @@ export async function listAlbumGaleri(villageId: number, cari?: string): Promise
       nama: galeriAlbum.nama,
       slug: galeriAlbum.slug,
       keterangan: galeriAlbum.keterangan,
+      kategori: galeriAlbum.kategori,
+      publishedAt: galeriAlbum.publishedAt,
       sampul: galeriAlbum.sampul,
       urut: galeriAlbum.urut,
     })
@@ -235,6 +263,8 @@ export async function getAlbumBySlug(
       nama: galeriAlbum.nama,
       slug: galeriAlbum.slug,
       keterangan: galeriAlbum.keterangan,
+      kategori: galeriAlbum.kategori,
+      publishedAt: galeriAlbum.publishedAt,
       sampul: galeriAlbum.sampul,
     })
     .from(galeriAlbum)
@@ -846,4 +876,252 @@ export async function listSlugBerita(villageId: number): Promise<string[]> {
     .from(berita)
     .where(and(beritaLayakTayang(villageId), isNotNull(berita.slug)));
   return rows.map((row) => row.slug);
+}
+
+export interface VideoGaleriPublik {
+  id: number;
+  judul: string;
+  keterangan: string | null;
+  url: string;
+  provider: string;
+  thumbnail: string | null;
+  publishedAt: Date | null;
+}
+
+export async function listVideoGaleriPublik(
+  villageId: number,
+  limit = 8,
+): Promise<VideoGaleriPublik[]> {
+  return db
+    .select({
+      id: galeriVideo.id,
+      judul: galeriVideo.judul,
+      keterangan: galeriVideo.keterangan,
+      url: galeriVideo.url,
+      provider: galeriVideo.provider,
+      thumbnail: galeriVideo.thumbnail,
+      publishedAt: galeriVideo.publishedAt,
+    })
+    .from(galeriVideo)
+    .where(
+      and(
+        eq(galeriVideo.villageId, villageId),
+        eq(galeriVideo.aktif, true),
+        or(isNull(galeriVideo.publishedAt), lte(galeriVideo.publishedAt, new Date())),
+      ),
+    )
+    .orderBy(desc(galeriVideo.publishedAt), desc(galeriVideo.id))
+    .limit(limit);
+}
+
+/* ---------------------------------------------------------------- potensi desa */
+
+export interface PotensiDesaRingkas {
+  id: number;
+  kategori: string;
+  judul: string;
+  slug: string;
+  ringkasan: string | null;
+  deskripsi: string | null;
+  gambar: string | null;
+  lokasi: string | null;
+  kontak: string | null;
+  unggulan: boolean;
+  aktif: boolean;
+  indikator: { id: number; label: string; nilai: string }[];
+}
+
+export async function listPotensiDesa(
+  villageId: number,
+  includeInactive = false,
+): Promise<PotensiDesaRingkas[]> {
+  const conditions = [eq(potensiDesa.villageId, villageId)];
+  if (!includeInactive) conditions.push(eq(potensiDesa.aktif, true));
+  const rows = await db
+    .select({
+      id: potensiDesa.id,
+      kategori: potensiDesa.kategori,
+      judul: potensiDesa.judul,
+      slug: potensiDesa.slug,
+      ringkasan: potensiDesa.ringkasan,
+      deskripsi: potensiDesa.deskripsi,
+      gambar: potensiDesa.gambar,
+      lokasi: potensiDesa.lokasi,
+      kontak: potensiDesa.kontak,
+      unggulan: potensiDesa.unggulan,
+      aktif: potensiDesa.aktif,
+      urut: potensiDesa.urut,
+    })
+    .from(potensiDesa)
+    .where(and(...conditions))
+    .orderBy(asc(potensiDesa.urut), asc(potensiDesa.id));
+  const ids = rows.map((row) => row.id);
+  const indicators = ids.length
+    ? await db
+        .select({
+          id: potensiIndikator.id,
+          potensiId: potensiIndikator.potensiId,
+          label: potensiIndikator.label,
+          nilai: potensiIndikator.nilai,
+        })
+        .from(potensiIndikator)
+        .where(
+          and(eq(potensiIndikator.villageId, villageId), inArray(potensiIndikator.potensiId, ids)),
+        )
+        .orderBy(asc(potensiIndikator.urut), asc(potensiIndikator.id))
+    : [];
+  const byPotensi = new Map<number, { id: number; label: string; nilai: string }[]>();
+  for (const item of indicators)
+    byPotensi.set(item.potensiId, [
+      ...(byPotensi.get(item.potensiId) ?? []),
+      { id: item.id, label: item.label, nilai: item.nilai },
+    ]);
+  return rows.map(({ urut: _urut, ...row }) => ({
+    ...row,
+    indikator: byPotensi.get(row.id) ?? [],
+  }));
+}
+
+/* ------------------------------------------------------- kelola galeri admin */
+
+export interface VideoGaleriAdmin {
+  id: number;
+  judul: string;
+  url: string;
+  provider: string;
+  publishedAt: Date | null;
+}
+
+export async function listVideoGaleriAdmin(villageId: number): Promise<VideoGaleriAdmin[]> {
+  return db
+    .select({
+      id: galeriVideo.id,
+      judul: galeriVideo.judul,
+      url: galeriVideo.url,
+      provider: galeriVideo.provider,
+      publishedAt: galeriVideo.publishedAt,
+    })
+    .from(galeriVideo)
+    .where(eq(galeriVideo.villageId, villageId))
+    .orderBy(desc(galeriVideo.publishedAt), desc(galeriVideo.id));
+}
+
+export async function simpanMetadataAlbumAdmin(
+  villageId: number,
+  albumId: number,
+  kategori: string | null,
+  publishedAt: Date | null,
+): Promise<void> {
+  await db
+    .update(galeriAlbum)
+    .set({ kategori, publishedAt })
+    .where(and(eq(galeriAlbum.id, albumId), eq(galeriAlbum.villageId, villageId)));
+}
+
+export async function tambahVideoGaleriAdmin(
+  villageId: number,
+  data: {
+    judul: string;
+    keterangan: string | null;
+    url: string;
+    provider: "youtube" | "vimeo";
+    publishedAt: Date;
+  },
+): Promise<void> {
+  await db.insert(galeriVideo).values({
+    villageId,
+    judul: data.judul,
+    keterangan: data.keterangan,
+    url: data.url,
+    provider: data.provider,
+    aktif: true,
+    publishedAt: data.publishedAt,
+  });
+}
+
+export async function hapusVideoGaleriAdmin(villageId: number, videoId: number): Promise<void> {
+  await db
+    .delete(galeriVideo)
+    .where(and(eq(galeriVideo.id, videoId), eq(galeriVideo.villageId, villageId)));
+}
+
+/* ------------------------------------------------------ kelola potensi admin */
+
+export interface PotensiAdminInput {
+  id: number;
+  kategori: string;
+  judul: string;
+  slug: string;
+  ringkasan: string | null;
+  deskripsi: string | null;
+  gambar: string | null;
+  lokasi: string | null;
+  kontak: string | null;
+  unggulan: boolean;
+  aktif: boolean;
+  indikator: { label: string; nilai: string; urut: number }[];
+}
+
+export async function simpanPotensiAdmin(
+  villageId: number,
+  data: PotensiAdminInput,
+): Promise<void> {
+  await db.transaction(async (tx) => {
+    if (data.id > 0) {
+      await tx
+        .update(potensiDesa)
+        .set({
+          kategori: data.kategori,
+          judul: data.judul,
+          slug: data.slug,
+          ringkasan: data.ringkasan,
+          deskripsi: data.deskripsi,
+          gambar: data.gambar,
+          lokasi: data.lokasi,
+          kontak: data.kontak,
+          unggulan: data.unggulan,
+          aktif: data.aktif,
+        })
+        .where(and(eq(potensiDesa.id, data.id), eq(potensiDesa.villageId, villageId)));
+      await tx
+        .delete(potensiIndikator)
+        .where(
+          and(eq(potensiIndikator.villageId, villageId), eq(potensiIndikator.potensiId, data.id)),
+        );
+      if (data.indikator.length) {
+        await tx
+          .insert(potensiIndikator)
+          .values(data.indikator.map((item) => ({ ...item, villageId, potensiId: data.id })));
+      }
+      return;
+    }
+
+    const [created] = await tx
+      .insert(potensiDesa)
+      .values({
+        villageId,
+        kategori: data.kategori,
+        judul: data.judul,
+        slug: data.slug,
+        ringkasan: data.ringkasan,
+        deskripsi: data.deskripsi,
+        gambar: data.gambar,
+        lokasi: data.lokasi,
+        kontak: data.kontak,
+        unggulan: data.unggulan,
+        aktif: data.aktif,
+      })
+      .$returningId();
+    if (created?.id && data.indikator.length) {
+      await tx
+        .insert(potensiIndikator)
+        .values(data.indikator.map((item) => ({ ...item, villageId, potensiId: created.id })));
+    }
+  });
+}
+
+export async function hapusPotensiAdmin(villageId: number, id: number): Promise<void> {
+  await db
+    .delete(potensiDesa)
+    .where(and(eq(potensiDesa.id, id), eq(potensiDesa.villageId, villageId)));
 }

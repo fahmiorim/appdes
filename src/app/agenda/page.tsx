@@ -1,69 +1,29 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { agendaBulan, agendaMendatang } from "@/features/agenda/application/agenda-use-cases";
 import {
-  agendaLabelTanggal,
+  agendaJamLabel,
   bulanAgendaDalamRentang,
   geserBulanAgenda,
 } from "@/features/agenda/domain/agenda";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 
+import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
 import styles from "./agenda.module.css";
+import { CetakJadwal } from "./cetak-jadwal";
 
 export const dynamic = "force-dynamic";
-
 type Props = {
-  searchParams: Promise<{ q?: string; bulan?: string; tahun?: string; hari?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    bulan?: string;
+    tahun?: string;
+    hari?: string;
+    kategori?: string;
+    page?: string;
+  }>;
 };
-
-function mediaUrl(value: string | null | undefined, villageId: number): string | null {
-  if (!value) return null;
-  const segments = value.split(/[\\/]/).filter(Boolean);
-  if (
-    segments.length === 0 ||
-    segments.some((segment) => segment === "." || segment === ".." || segment.includes(".."))
-  ) {
-    return null;
-  }
-  const path = segments[0] === String(villageId) ? segments : [String(villageId), ...segments];
-  return `/api/publik/media/${path.map(encodeURIComponent).join("/")}`;
-}
-
-function locationLabel(desa: {
-  namaKecamatan: string | null;
-  namaKabupaten: string | null;
-  namaPropinsi: string | null;
-}): string {
-  return [desa.namaKecamatan, desa.namaKabupaten, desa.namaPropinsi].filter(Boolean).join(", ");
-}
-
-function dateParts(value: string) {
-  const [year = 1970, month = 1, day = 1] = value.split("-").map(Number);
-  const date = new Date(Date.UTC(year, month - 1, day));
-  return {
-    day: new Intl.DateTimeFormat("id-ID", { day: "2-digit", timeZone: "UTC" }).format(date),
-    month: new Intl.DateTimeFormat("id-ID", { month: "short", timeZone: "UTC" }).format(date),
-    weekday: new Intl.DateTimeFormat("id-ID", { weekday: "long", timeZone: "UTC" }).format(date),
-  };
-}
-
-function plainText(value: string | null): string {
-  return (value ?? "")
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]*>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-const namaBulan = [
+const BULAN = [
   "Januari",
   "Februari",
   "Maret",
@@ -77,440 +37,464 @@ const namaBulan = [
   "November",
   "Desember",
 ];
+const KATEGORI = [
+  "umum",
+  "rapat",
+  "sosialisasi",
+  "keagamaan",
+  "kesehatan",
+  "lingkungan",
+  "pelatihan",
+  "pendidikan",
+  "olahraga",
+  "pemerintahan",
+];
+
+function plainText(value: string | null): string {
+  return (value ?? "")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+function dateParts(value: string) {
+  const [year = 1970, month = 1, day = 1] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return {
+    day: new Intl.DateTimeFormat("id-ID", { day: "2-digit", timeZone: "UTC" }).format(date),
+    month: new Intl.DateTimeFormat("id-ID", { month: "short", timeZone: "UTC" }).format(date),
+    year,
+  };
+}
+function locationLabel(desa: {
+  namaKecamatan: string | null;
+  namaKabupaten: string | null;
+  namaPropinsi: string | null;
+}) {
+  return [desa.namaKecamatan, desa.namaKabupaten, desa.namaPropinsi].filter(Boolean).join(", ");
+}
 
 export default async function AgendaPage({ searchParams }: Props) {
   const [desa, params] = await Promise.all([getIdentitasFromRequest(), searchParams]);
   const lokasi = locationLabel(desa);
-  const namaKabupaten = desa.namaKabupaten?.trim();
-  const labelKabupaten = namaKabupaten
-    ? /^(kabupaten|kota)\\s/i.test(namaKabupaten)
-      ? namaKabupaten
-      : `Kabupaten ${namaKabupaten}`
-    : "Sistem Informasi Desa";
   const now = new Date();
   const currentYear = now.getFullYear();
-  const tahunMin = currentYear - 1;
-  const tahunMaks = currentYear + 2;
-  const requestedMonth = Number(params.bulan);
-  const requestedYear = Number(params.tahun);
+  const minYear = currentYear - 1,
+    maxYear = currentYear + 2;
+  const rawMonth = Number(params.bulan),
+    rawYear = Number(params.tahun);
   const month =
-    Number.isInteger(requestedMonth) && requestedMonth >= 1 && requestedMonth <= 12
-      ? requestedMonth
-      : now.getMonth() + 1;
+    Number.isInteger(rawMonth) && rawMonth >= 1 && rawMonth <= 12 ? rawMonth : now.getMonth() + 1;
   const year =
-    Number.isInteger(requestedYear) && requestedYear >= tahunMin && requestedYear <= tahunMaks
-      ? requestedYear
-      : currentYear;
+    Number.isInteger(rawYear) && rawYear >= minYear && rawYear <= maxYear ? rawYear : currentYear;
   const query = (params.q ?? "").trim().slice(0, 100);
-  const requestedDay = Number(params.hari);
+  const category = (params.kategori ?? "").trim().toLowerCase();
   const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const rawDay = Number(params.hari);
   const selectedDay =
-    Number.isInteger(requestedDay) && requestedDay >= 1 && requestedDay <= daysInMonth
-      ? requestedDay
-      : null;
-  const [agenda, mendatang] = await Promise.all([
+    Number.isInteger(rawDay) && rawDay >= 1 && rawDay <= daysInMonth ? rawDay : null;
+  const rawPage = Number(params.page);
+  const page = Number.isInteger(rawPage) && rawPage > 0 ? rawPage : 1;
+  const [monthItems, upcoming] = await Promise.all([
     agendaBulan(desa.id, year, month),
-    agendaMendatang(desa.id, 3),
+    agendaMendatang(desa.id, 6),
   ]);
-  const filteredAgenda = agenda.filter(
+  const normalizedQuery = query.toLocaleLowerCase("id-ID");
+  const filtered = monthItems.filter(
     (item) =>
-      !query ||
-      [item.judul, item.lokasi, item.deskripsi].some((value) =>
-        plainText(value).toLocaleLowerCase("id-ID").includes(query.toLocaleLowerCase("id-ID")),
-      ),
+      (!category || item.kategori.toLowerCase() === category) &&
+      (!normalizedQuery ||
+        [item.judul, item.lokasi, item.deskripsi].some((value) =>
+          plainText(value).toLocaleLowerCase("id-ID").includes(normalizedQuery),
+        )),
   );
-  const eventDays = new Set(filteredAgenda.map((item) => Number(item.mulai.slice(8, 10))));
-  const selectedDateAgenda = selectedDay
-    ? filteredAgenda.filter((item) => Number(item.mulai.slice(8, 10)) === selectedDay)
+  const eventDays = new Set(filtered.map((item) => Number(item.mulai.slice(8, 10))));
+  const selectedItems = selectedDay
+    ? filtered.filter((item) => Number(item.mulai.slice(8, 10)) === selectedDay)
     : [];
-  const previousMonth = geserBulanAgenda({ tahun: year, bulan: month }, -1);
-  const nextMonth = geserBulanAgenda({ tahun: year, bulan: month }, 1);
-  const bisaMundur = bulanAgendaDalamRentang(previousMonth, tahunMin, tahunMaks);
-  const bisaMaju = bulanAgendaDalamRentang(nextMonth, tahunMin, tahunMaks);
-  const monthHref = (value: { bulan: number; tahun: number }) => {
-    const search = new URLSearchParams({
-      bulan: String(value.bulan),
-      tahun: String(value.tahun),
-    });
-    if (query) search.set("q", query);
-    return `/agenda?${search.toString()}`;
-  };
-  const dayHref = (day: number) => {
-    const search = new URLSearchParams({
-      bulan: String(month),
-      tahun: String(year),
-      hari: String(day),
-    });
-    if (query) search.set("q", query);
-    return `/agenda?${search.toString()}`;
-  };
-  const firstWeekday = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
-  const mondayOffset = (firstWeekday + 6) % 7;
-  const calendarDays: (number | null)[] = [
-    ...Array.from({ length: mondayOffset }, () => null),
-    ...Array.from({ length: daysInMonth }, (_, index) => index + 1),
-  ];
-  const years = [tahunMin, currentYear, currentYear + 1, tahunMaks];
-  const monthLabel = new Intl.DateTimeFormat("id-ID", {
+  const previous = geserBulanAgenda({ tahun: year, bulan: month }, -1),
+    next = geserBulanAgenda({ tahun: year, bulan: month }, 1);
+  const canPrevious = bulanAgendaDalamRentang(previous, minYear, maxYear),
+    canNext = bulanAgendaDalamRentang(next, minYear, maxYear);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / 4));
+  const currentPage = Math.min(page, totalPages);
+  const pageItems = filtered.slice((currentPage - 1) * 4, currentPage * 4);
+  const categories = [
+    ...new Set(monthItems.map((item) => item.kategori.trim().toLowerCase()).filter(Boolean)),
+  ].sort();
+  const selectedMonth = new Intl.DateTimeFormat("id-ID", {
     month: "long",
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date(Date.UTC(year, month - 1, 1)));
+  const firstOffset = (new Date(Date.UTC(year, month - 1, 1)).getUTCDay() + 6) % 7;
+  const cells: (number | null)[] = [
+    ...Array.from({ length: firstOffset }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
+  while (cells.length % 7) cells.push(null);
+  const href = (overrides: Record<string, string | null>) => {
+    const output = new URLSearchParams();
+    const values: Record<string, string | null> = {
+      bulan: String(month),
+      tahun: String(year),
+      q: query || null,
+      kategori: category || null,
+      ...overrides,
+    };
+    for (const [key, value] of Object.entries(values)) if (value) output.set(key, value);
+    return "/agenda?" + output.toString();
+  };
+  const stats = {
+    total: monthItems.length,
+    done: monthItems.filter((x) => x.status === "selesai").length,
+    ongoing: monthItems.filter((x) => x.status === "berlangsung").length,
+    planned: monthItems.filter((x) => x.status === "rencana").length,
+  };
+  const logoUrl = desa.logo
+    ? "/api/publik/media/" +
+      [String(desa.id), ...desa.logo.split(/[\\/]/).filter(Boolean)]
+        .map(encodeURIComponent)
+        .join("/")
+    : null;
 
   return (
     <main className={styles.site}>
-      <div className={styles.topline}>
-        <div className={styles.container + " " + styles.toplineInner}>
-          <span>Website Resmi Pemerintah Desa</span>
-          <span className={styles.toplineLocation}>
-            {lokasi || "Informasi resmi dan kegiatan desa"}
-          </span>
-        </div>
-      </div>
-
-      <header className={styles.header}>
-        <div className={styles.container + " " + styles.headerInner}>
-          <Link href="/" className={styles.brand} aria-label={`Beranda ${desa.namaDesa ?? "desa"}`}>
-            {desa.logo ? (
-              <Image
-                src={mediaUrl(desa.logo, desa.id) ?? "/images/logo.png"}
-                alt=""
-                width={46}
-                height={46}
-                className={styles.logo}
-                unoptimized
-              />
-            ) : (
-              <span className={styles.logoFallback} aria-hidden="true">
-                D
-              </span>
-            )}
-            <span className={styles.brandCopy}>
-              <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>{labelKabupaten}</small>
-            </span>
-          </Link>
-          <nav className={styles.nav} aria-label="Navigasi utama">
-            <Link href="/">Beranda</Link>
-            <Link href="/profil">Profil Desa</Link>
-            <Link href="/berita">Berita</Link>
-            <Link href="/agenda" aria-current="page">
-              Agenda
-            </Link>
-          </nav>
-          <Link href="/masuk" className={styles.login}>
-            Masuk <span aria-hidden="true">↗</span>
-          </Link>
-        </div>
-      </header>
-
+      <PublicSiteHeader desa={desa} location={lokasi} logoUrl={logoUrl} activePath="/agenda" />
       <section className={styles.hero}>
-        <div className={styles.container}>
-          <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+        <div className={styles.heroInner}>
+          <nav aria-label="Breadcrumb">
             <Link href="/">Beranda</Link>
-            <span>/</span>
-            <span>Informasi</span>
-            <span>/</span>
+            <span>›</span>
+            <Link href="/berita">Informasi</Link>
+            <span>›</span>
             <span>Agenda Kegiatan</span>
           </nav>
-          <p className={styles.eyebrow}>INFORMASI KEGIATAN DESA</p>
           <h1>Agenda Kegiatan Desa</h1>
-          <p className={styles.heroText}>
-            Jadwal, rencana, dan kegiatan pemerintah {desa.namaDesa ?? "desa"} untuk masyarakat.
+          <p>
+            Jadwal, rencana, dan laporan kegiatan Pemerintah {desa.namaDesa ?? "Desa"} untuk
+            masyarakat.
           </p>
-          {lokasi ? <p className={styles.location}>⌖ {lokasi}</p> : null}
+          <span className={styles.heroArt} aria-hidden="true">
+            ▦
+          </span>
         </div>
       </section>
-
-      <section className={styles.content}>
-        <div className={styles.container}>
-          <nav className={styles.agendaTabs} aria-label="Informasi desa">
-            <Link href="/berita">Berita Desa</Link>
-            <Link href="/pengumuman">Pengumuman</Link>
-            <Link href="/agenda" aria-current="page">
-              Agenda Kegiatan
-            </Link>
-            <Link href="/dokumen">Dokumen Desa</Link>
-          </nav>
-
-          <div className={styles.agendaLayout}>
-            <div className={styles.agendaMain}>
-              <section className={styles.calendarPanel}>
-                <div className={styles.calendarHeader}>
-                  <div className={styles.calendarTitle}>
-                    <p className={styles.kicker}>KALENDER KEGIATAN</p>
-                    <h2>▦ Kalender Kegiatan</h2>
-                    <p>Lihat jadwal kegiatan desa dalam tampilan kalender interaktif.</p>
-                  </div>
-                  <div className={styles.monthSwitcher}>
-                    {bisaMundur ? (
-                      <Link href={monthHref(previousMonth)} aria-label="Bulan sebelumnya">
-                        ‹
-                      </Link>
-                    ) : (
-                      <button
-                        type="button"
-                        className={styles.monthDisabled}
-                        aria-label="Bulan sebelumnya tidak tersedia"
-                        disabled
-                      >
-                        ‹
-                      </button>
-                    )}
-                    <strong>{monthLabel}</strong>
-                    {bisaMaju ? (
-                      <Link href={monthHref(nextMonth)} aria-label="Bulan berikutnya">
-                        ›
-                      </Link>
-                    ) : (
-                      <button
-                        type="button"
-                        className={styles.monthDisabled}
-                        aria-label="Bulan berikutnya tidak tersedia"
-                        disabled
-                      >
-                        ›
-                      </button>
-                    )}
-                  </div>
-                </div>
-                <div className={styles.calendarContent}>
-                  <div className={styles.calendarGrid}>
-                    {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((day) => (
-                      <span className={styles.calendarWeekday} key={day}>
-                        {day}
-                      </span>
-                    ))}
-                    {calendarDays.map((day, index) => {
-                      const isSelected = day === selectedDay;
-                      const className = [
-                        styles.calendarDay,
-                        day && eventDays.has(day) ? styles.calendarHasEvent : "",
-                        day === now.getDate() &&
-                        month === now.getMonth() + 1 &&
-                        year === currentYear
-                          ? styles.calendarToday
-                          : "",
-                        isSelected ? styles.calendarSelected : "",
-                      ]
-                        .filter(Boolean)
-                        .join(" ");
-                      return day ? (
-                        <Link
-                          className={className}
-                          href={dayHref(day)}
-                          aria-current={isSelected ? "date" : undefined}
-                          key={`${day}-${index}`}
-                        >
-                          {day}
-                          {eventDays.has(day) ? <i aria-label="Ada kegiatan" /> : null}
-                        </Link>
-                      ) : (
-                        <span className={styles.calendarDayEmpty} key={`empty-${index}`} />
-                      );
-                    })}
-                  </div>
-                  <section className={styles.selectedDayPanel} aria-live="polite">
-                    <h3>
-                      ▦ Kegiatan pada{" "}
-                      {selectedDay ? `${selectedDay} ${namaBulan[month - 1]}` : "tanggal pilihan"}
-                    </h3>
-                    {selectedDay ? (
-                      selectedDateAgenda.length ? (
-                        <div className={styles.selectedDayList}>
-                          {selectedDateAgenda.map((item) => (
-                            <article className={styles.selectedDayEvent} key={item.id}>
-                              <strong>{item.judul}</strong>
-                              <span>{item.lokasi || "Lokasi belum ditentukan"}</span>
-                              {item.deskripsi ? <p>{plainText(item.deskripsi)}</p> : null}
-                            </article>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className={styles.muted}>Belum ada kegiatan pada tanggal ini.</p>
-                      )
-                    ) : (
-                      <p className={styles.muted}>
-                        Pilih tanggal pada kalender untuk melihat kegiatan yang dijadwalkan.
-                      </p>
-                    )}
-                  </section>
-                </div>
-              </section>
-
-              <form className={styles.agendaFilter} action="/agenda" method="get">
-                <label>
-                  <span>Filter kegiatan</span>
-                  <input
-                    type="search"
-                    name="q"
-                    placeholder="Cari agenda kegiatan..."
-                    defaultValue={query}
-                  />
-                </label>
-                <label>
-                  <span>Bulan</span>
-                  <select name="bulan" defaultValue={String(month)}>
-                    {namaBulan.map((name, index) => (
-                      <option value={index + 1} key={name}>
-                        {name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <span>Tahun</span>
-                  <select name="tahun" defaultValue={String(year)}>
-                    {years.map((value) => (
-                      <option value={value} key={value}>
-                        {value}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <button type="submit">Terapkan filter</button>
-              </form>
-
-              <div className={styles.sectionHeading}>
+      <div className={styles.container}>
+        <nav className={styles.tabs} aria-label="Navigasi informasi">
+          <Link href="/berita">▤　Berita Desa</Link>
+          <Link href="/pengumuman">⚑　Pengumuman</Link>
+          <Link href="/agenda" aria-current="page">
+            ▦　Agenda Kegiatan
+          </Link>
+          <Link href="/laporan-kegiatan">▥　Laporan Kegiatan</Link>
+        </nav>
+        <div className={styles.layout}>
+          <div className={styles.main}>
+            <section className={styles.calendarCard}>
+              <div className={styles.calendarHeading}>
                 <div>
-                  <p className={styles.kicker}>DAFTAR AGENDA KEGIATAN</p>
-                  <h2>Seluruh agenda kegiatan</h2>
-                  <p>Agenda yang telah dipublikasikan oleh pemerintah desa.</p>
+                  <h2>▦　Kalender Kegiatan</h2>
+                  <p>Lihat jadwal kegiatan desa dalam tampilan kalender interaktif.</p>
                 </div>
-                <span className={styles.count}>{filteredAgenda.length} agenda</span>
+                <div className={styles.monthNav}>
+                  {canPrevious ? (
+                    <Link
+                      href={href({
+                        bulan: String(previous.bulan),
+                        tahun: String(previous.tahun),
+                        hari: null,
+                        page: null,
+                      })}
+                      aria-label="Bulan sebelumnya"
+                    >
+                      ‹
+                    </Link>
+                  ) : (
+                    <span>‹</span>
+                  )}
+                  <strong>{selectedMonth}</strong>
+                  {canNext ? (
+                    <Link
+                      href={href({
+                        bulan: String(next.bulan),
+                        tahun: String(next.tahun),
+                        hari: null,
+                        page: null,
+                      })}
+                      aria-label="Bulan berikutnya"
+                    >
+                      ›
+                    </Link>
+                  ) : (
+                    <span>›</span>
+                  )}
+                </div>
               </div>
-
-              {filteredAgenda.length > 0 ? (
-                <div className={styles.agendaList}>
-                  {filteredAgenda.map((item) => {
+              <div className={styles.calendarContent}>
+                <div className={styles.calendarGrid}>
+                  {["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"].map((d) => (
+                    <b key={d}>{d}</b>
+                  ))}
+                  {cells.map((day, i) =>
+                    day ? (
+                      <Link
+                        key={i}
+                        href={href({ hari: String(day), page: null })}
+                        aria-current={day === selectedDay ? "date" : undefined}
+                        className={[
+                          styles.day,
+                          day === selectedDay ? styles.selected : "",
+                          eventDays.has(day) ? styles.hasEvent : "",
+                          day === now.getDate() &&
+                          month === now.getMonth() + 1 &&
+                          year === currentYear
+                            ? styles.today
+                            : "",
+                        ]
+                          .filter(Boolean)
+                          .join(" ")}
+                      >
+                        {day}
+                        {eventDays.has(day) ? <i /> : null}
+                      </Link>
+                    ) : (
+                      <span key={i} />
+                    ),
+                  )}
+                </div>
+                <section className={styles.selectedPanel}>
+                  <h3>
+                    ▦　Kegiatan pada{" "}
+                    {selectedDay ? selectedDay + " " + BULAN[month - 1] : "tanggal pilihan"}
+                  </h3>
+                  {selectedDay ? (
+                    selectedItems.length ? (
+                      <div className={styles.selectedList}>
+                        {selectedItems.map((item) => (
+                          <Link key={item.id} href={"/agenda/" + item.id}>
+                            <span>
+                              <b>{item.jamMulai ?? "Waktu belum diatur"}</b>
+                              <small>{item.lokasi ?? "Lokasi belum ditentukan"}</small>
+                            </span>
+                            <strong>{item.judul}</strong>
+                            <em>{item.kategori}</em>
+                          </Link>
+                        ))}
+                      </div>
+                    ) : (
+                      <p>Belum ada kegiatan pada tanggal ini.</p>
+                    )
+                  ) : (
+                    <p>Pilih tanggal bertanda titik untuk melihat jadwal kegiatannya.</p>
+                  )}
+                </section>
+              </div>
+            </section>
+            <form className={styles.filters} action="/agenda" method="get">
+              <strong>⚑　Filter Kegiatan</strong>
+              <select name="kategori" defaultValue={category}>
+                <option value="">Semua Kategori</option>
+                {[...new Set([...KATEGORI, ...categories])].map((x) => (
+                  <option key={x} value={x}>
+                    {x.charAt(0).toUpperCase() + x.slice(1)}
+                  </option>
+                ))}
+              </select>
+              <select name="bulan" defaultValue={String(month)}>
+                {BULAN.map((x, i) => (
+                  <option key={x} value={i + 1}>
+                    {x}
+                  </option>
+                ))}
+              </select>
+              <select name="tahun" defaultValue={String(year)}>
+                {[minYear, currentYear, currentYear + 1, maxYear]
+                  .filter((x, i, a) => a.indexOf(x) === i)
+                  .map((x) => (
+                    <option key={x}>{x}</option>
+                  ))}
+              </select>
+              <input
+                type="search"
+                name="q"
+                placeholder="Cari agenda kegiatan..."
+                defaultValue={query}
+              />
+              <button type="submit">Cari</button>
+            </form>
+            <section className={styles.listCard}>
+              <div className={styles.listHeading}>
+                <div>
+                  <h2>☷　Daftar Agenda Kegiatan</h2>
+                  <p>
+                    Daftar seluruh agenda kegiatan desa yang direncanakan dan sedang berlangsung.
+                  </p>
+                </div>
+                <span>{filtered.length} agenda</span>
+              </div>
+              {pageItems.length ? (
+                <div className={styles.eventList}>
+                  {pageItems.map((item) => {
                     const date = dateParts(item.mulai);
-                    const deskripsi = plainText(item.deskripsi);
+                    const time = agendaJamLabel(item.jamMulai, item.jamSelesai);
                     return (
-                      <article className={styles.agendaCard} key={item.id}>
-                        <div
-                          className={styles.dateBlock}
-                          aria-label={agendaLabelTanggal(item.mulai, item.selesai)}
-                        >
-                          <strong>{date.day}</strong>
+                      <article key={item.id}>
+                        <div className={styles.dateBadge}>
+                          <b>{date.day}</b>
                           <span>{date.month}</span>
-                          <small>{year}</small>
+                          <small>{date.year}</small>
                         </div>
-                        <div className={styles.agendaBody}>
-                          <p className={styles.dateLabel}>
-                            {date.weekday} · {agendaLabelTanggal(item.mulai, item.selesai)}
+                        <div className={styles.eventVisual} aria-hidden="true">
+                          <span>▦</span>
+                        </div>
+                        <div className={styles.eventCopy}>
+                          <div className={styles.eventTop}>
+                            <h3>{item.judul}</h3>
+                            <span
+                              className={
+                                item.status === "rencana"
+                                  ? styles.statusPlan
+                                  : item.status === "berlangsung"
+                                    ? styles.statusLive
+                                    : styles.statusDone
+                              }
+                            >
+                              {item.status === "rencana"
+                                ? "Rencana"
+                                : item.status === "berlangsung"
+                                  ? "Berlangsung"
+                                  : "Selesai"}
+                            </span>
+                          </div>
+                          <p className={styles.eventMeta}>
+                            ◷　{time ?? "Waktu belum ditentukan"}　⌖　
+                            {item.lokasi ?? "Lokasi belum ditentukan"}
                           </p>
-                          <h3>{item.judul}</h3>
-                          {deskripsi ? <p className={styles.description}>{deskripsi}</p> : null}
-                          {item.lokasi ? (
-                            <p className={styles.place}>
-                              <span aria-hidden="true">⌖</span> {item.lokasi}
-                            </p>
-                          ) : null}
+                          <p className={styles.description}>
+                            {plainText(item.deskripsi) ||
+                              "Informasi lebih lanjut mengenai kegiatan ini dapat dilihat pada detail agenda."}
+                          </p>
+                          <Link href={"/agenda/" + item.id}>Lihat Detail　→</Link>
                         </div>
-                        <span className={styles.agendaMark} aria-hidden="true">
-                          ↗
-                        </span>
                       </article>
                     );
                   })}
                 </div>
               ) : (
-                <div className={styles.emptyState}>
-                  <span className={styles.emptyIcon} aria-hidden="true">
-                    ▦
-                  </span>
-                  <h3>{query ? "Agenda tidak ditemukan" : "Belum ada agenda pada periode ini"}</h3>
-                  <p>Ubah filter bulan, tahun, atau kata kunci untuk melihat agenda lainnya.</p>
-                  <Link href="/agenda">
-                    Reset filter <span aria-hidden="true">→</span>
-                  </Link>
+                <div className={styles.empty}>
+                  <span>▦</span>
+                  <h3>Belum ada agenda pada periode ini</h3>
+                  <p>Belum ada kegiatan yang dipublikasikan sesuai filter yang dipilih.</p>
+                  <Link href="/agenda">Hapus Filter →</Link>
                 </div>
               )}
-            </div>
-
-            <aside className={styles.agendaAside}>
-              <section className={styles.sidebarCard}>
-                <h2>Statistik kegiatan</h2>
-                <div className={styles.sidebarStats}>
-                  <div>
-                    <strong>{agenda.length}</strong>
-                    <span>Total agenda bulan</span>
-                  </div>
-                  <div>
-                    <strong>{filteredAgenda.length}</strong>
-                    <span>Sesuai filter</span>
-                  </div>
+              {totalPages > 1 ? (
+                <nav className={styles.pagination} aria-label="Halaman agenda">
+                  {currentPage > 1 ? (
+                    <Link href={href({ page: String(currentPage - 1), hari: null })}>
+                      ‹ Sebelumnya
+                    </Link>
+                  ) : (
+                    <span>‹ Sebelumnya</span>
+                  )}
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+                    <Link
+                      key={n}
+                      href={href({ page: String(n), hari: null })}
+                      aria-current={n === currentPage ? "page" : undefined}
+                    >
+                      {n}
+                    </Link>
+                  ))}
+                  {currentPage < totalPages ? (
+                    <Link href={href({ page: String(currentPage + 1), hari: null })}>
+                      Selanjutnya ›
+                    </Link>
+                  ) : (
+                    <span>Selanjutnya ›</span>
+                  )}
+                </nav>
+              ) : null}
+            </section>
+          </div>
+          <aside className={styles.aside}>
+            <section className={styles.sideCard}>
+              <h2>▥　Statistik Kegiatan</h2>
+              <div className={styles.stats}>
+                <div>
+                  <b>▦</b>
+                  <strong>{stats.total}</strong>
+                  <span>Total Kegiatan</span>
                 </div>
-              </section>
-              <section className={styles.sidebarCard}>
-                <h2>Kegiatan mendatang</h2>
-                {mendatang.length ? (
-                  <div className={styles.sidebarEvents}>
-                    {mendatang.map((item) => {
-                      const date = dateParts(item.mulai);
-                      return (
-                        <div className={styles.sidebarEvent} key={item.id}>
-                          <span>
-                            <strong>{date.day}</strong>
-                            <small>{date.month}</small>
-                          </span>
-                          <div>
-                            <strong>{item.judul}</strong>
-                            <small>{item.lokasi || "Lokasi belum ditentukan"}</small>
-                          </div>
+                <div>
+                  <b>✓</b>
+                  <strong>{stats.done}</strong>
+                  <span>Sudah Dilaksanakan</span>
+                </div>
+                <div>
+                  <b>⌛</b>
+                  <strong>{stats.ongoing}</strong>
+                  <span>Sedang Berlangsung</span>
+                </div>
+                <div>
+                  <b>◷</b>
+                  <strong>{stats.planned}</strong>
+                  <span>Dalam Perencanaan</span>
+                </div>
+              </div>
+              <small className={styles.statsNote}>Statistik untuk {selectedMonth}</small>
+            </section>
+            <section className={styles.sideCard}>
+              <h2>▦　Kegiatan Mendatang</h2>
+              {upcoming.length ? (
+                <div className={styles.upcoming}>
+                  {upcoming.slice(0, 3).map((item) => {
+                    const d = dateParts(item.mulai);
+                    return (
+                      <Link key={item.id} href={"/agenda/" + item.id}>
+                        <span>
+                          <b>{d.day}</b>
+                          <small>{d.month}</small>
+                        </span>
+                        <div>
+                          <strong>{item.judul}</strong>
+                          <small>
+                            ◷　
+                            {agendaJamLabel(item.jamMulai, item.jamSelesai) ?? "Waktu belum diatur"}
+                            　|　{item.lokasi ?? "Lokasi belum ditentukan"}
+                          </small>
                         </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className={styles.muted}>Belum ada kegiatan yang dijadwalkan.</p>
-                )}
-              </section>
-              <section className={styles.notifyCard}>
-                <span aria-hidden="true">✓</span>
-                <h2>Ikuti kegiatan desa</h2>
-                <p>Masuk ke akun warga untuk mendapatkan informasi layanan dan kegiatan desa.</p>
-                <Link href="/masuk">Masuk ke akun warga ↗</Link>
-              </section>
-            </aside>
-          </div>
+                        <b>›</b>
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className={styles.muted}>Belum ada agenda mendatang.</p>
+              )}
+              <Link className={styles.allLink} href="/agenda">
+                Lihat Semua Kegiatan　→
+              </Link>
+            </section>
+            <section className={styles.notify}>
+              <span>▣</span>
+              <h2>Ikuti Setiap Kegiatan Desa</h2>
+              <p>Dapatkan informasi terbaru agenda dan kegiatan desa secara langsung.</p>
+              <Link href="/masuk">♧　Masuk untuk informasi warga</Link>
+            </section>
+            <section className={styles.download}>
+              <h2>↓　Unduh Jadwal Kegiatan</h2>
+              <p>Jadwal kegiatan desa dapat dicetak atau disimpan melalui fitur cetak.</p>
+              <CetakJadwal />
+            </section>
+          </aside>
         </div>
-      </section>
-
-      <footer className={styles.footer}>
-        <div className={styles.container}>
-          <div className={styles.footerMain}>
-            <div>
-              <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <p>
-                Portal informasi resmi untuk mewujudkan pelayanan publik desa yang terbuka, mudah,
-                dan terpercaya.
-              </p>
-            </div>
-            <div>
-              <span>INFORMASI KANTOR</span>
-              <p>{desa.alamatKantor || lokasi || "Alamat kantor desa belum tersedia."}</p>
-              {desa.telepon ? <a href={`tel:${desa.telepon}`}>{desa.telepon}</a> : null}
-            </div>
-            <div>
-              <span>TAUTAN CEPAT</span>
-              <Link href="/">Beranda</Link>
-              <Link href="/profil">Profil Desa</Link>
-              <Link href="/berita">Berita</Link>
-              <Link href="/masuk">Layanan Warga</Link>
-            </div>
-          </div>
-          <div className={styles.footerBottom}>
-            <span>
-              © {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}. Seluruh hak cipta
-              dilindungi.
-            </span>
-            <span>
-              Didukung oleh <strong>FlexiDesa</strong>
-            </span>
-          </div>
-        </div>
-      </footer>
+      </div>
+      <PublicSiteFooter desa={desa} location={lokasi} logoUrl={logoUrl} />
     </main>
   );
 }

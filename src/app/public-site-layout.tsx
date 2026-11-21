@@ -34,6 +34,7 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
       { href: "/sejarah", label: "Sejarah Desa" },
       { href: "/visi-misi", label: "Visi & Misi" },
       { href: "/wilayah", label: "Wilayah Desa" },
+      { href: "/potensi", label: "Potensi Desa" },
     ],
   },
   {
@@ -51,10 +52,13 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
   {
     label: "Informasi",
     children: [
+      { href: "/informasi", label: "Informasi Desa" },
       { href: "/berita", label: "Berita" },
       { href: "/pengumuman", label: "Pengumuman" },
       { href: "/agenda", label: "Agenda Kegiatan" },
       { href: "/statistik", label: "Statistik Desa" },
+      { href: "/transparansi/apbdes", label: "APBDes & Transparansi Anggaran" },
+      { href: "/transparansi/laporan-keuangan", label: "Laporan Keuangan Desa" },
     ],
   },
   { href: "/galeri", label: "Galeri" },
@@ -158,10 +162,12 @@ export function PublicSiteFooter({ desa, location, logoUrl }: Props) {
         </div>
         <div className={styles.footerColumn}>
           <strong>Informasi</strong>
+          <Link href="/informasi">Informasi Desa</Link>
           <Link href="/berita">Berita Desa</Link>
           <Link href="/pengumuman">Pengumuman</Link>
           <Link href="/agenda">Agenda Kegiatan</Link>
           <Link href="/galeri">Galeri</Link>
+          <Link href="/transparansi/laporan-keuangan">Laporan Keuangan</Link>
         </div>
         <div className={styles.footerColumn + " " + styles.contactColumn}>
           <strong>Kontak Desa</strong>

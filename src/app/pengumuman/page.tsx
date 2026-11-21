@@ -1,310 +1,342 @@
-import Image from "next/image";
 import Link from "next/link";
 
+import { agendaMendatang } from "@/features/agenda/application/agenda-use-cases";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
-import { daftarBerita, daftarKategoriBerita } from "@/features/publik/application/konten-publik";
+import {
+  daftarBerita,
+  daftarKategoriBerita,
+  hitungBeritaPublik,
+} from "@/features/publik/application/konten-publik";
 
+import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
 import styles from "./pengumuman.module.css";
 
 export const dynamic = "force-dynamic";
-
-/**
- * Tanggal publik selalu diformat dalam zona waktu Indonesia Barat.
- * Tanpa `timeZone` eksplisit, hasil bergantung pada TZ server (UTC di CI),
- * sehingga pengumuman yang terbit dini hari bisa tampil dengan tanggal mundur.
- */
 const ZONA_WAKTU = "Asia/Jakarta";
-
-type Props = {
-  searchParams: Promise<{ q?: string }>;
-};
+type Props = { searchParams: Promise<{ q?: string; kategori?: string }> };
 
 function mediaUrl(value: string | null, villageId: number): string | null {
   if (!value) return null;
-
-  const segments = value.split(/[\\/]/).filter(Boolean);
-  if (
-    segments.length === 0 ||
-    segments.some((segment) => segment === "." || segment === ".." || segment.includes(".."))
-  ) {
+  const parts = value.split(/[\\/]/).filter(Boolean);
+  if (!parts.length || parts.some((part) => part === "." || part === ".." || part.includes("..")))
     return null;
-  }
-
-  const path = segments[0] === String(villageId) ? segments : [String(villageId), ...segments];
-
-  return `/api/publik/media/${path.map(encodeURIComponent).join("/")}`;
+  const safe = parts[0] === String(villageId) ? parts : [String(villageId), ...parts];
+  return "/api/publik/media/" + safe.map(encodeURIComponent).join("/");
 }
-
-function tanggal(value: Date): string {
+function tanggal(value: Date) {
   return new Intl.DateTimeFormat("id-ID", {
     day: "numeric",
-    month: "long",
+    month: "short",
     year: "numeric",
     timeZone: ZONA_WAKTU,
   }).format(value);
 }
+function tanggalAgenda(value: string) {
+  const [yearValue, monthValue, dayValue] = value.split("-").map(Number);
+  const year = yearValue ?? 0;
+  const month = monthValue ?? 1;
+  const day = dayValue ?? 1;
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return {
+    day: new Intl.DateTimeFormat("id-ID", { day: "2-digit", timeZone: "UTC" }).format(date),
+    month: new Intl.DateTimeFormat("id-ID", { month: "short", timeZone: "UTC" }).format(date),
+    year,
+  };
+}
+function angka(value: number) {
+  return new Intl.NumberFormat("id-ID").format(value);
+}
 
 export async function generateMetadata() {
   const desa = await getIdentitasFromRequest();
-
   return {
-    title: `Pengumuman | ${desa.namaDesa ?? "Pemerintah Desa"}`,
-    description: `Pengumuman resmi dan informasi penting dari ${desa.namaDesa ?? "pemerintah desa"}.`,
+    title: `Pengumuman & Agenda | ${desa.namaDesa ?? "Pemerintah Desa"}`,
+    description: `Pengumuman resmi dan agenda kegiatan ${desa.namaDesa ?? "desa"}.`,
   };
 }
 
 export default async function PengumumanPage({ searchParams }: Props) {
   const [desa, params] = await Promise.all([getIdentitasFromRequest(), searchParams]);
-  const kategori = await daftarKategoriBerita(desa.id);
-  const q = params.q?.trim().slice(0, 100) ?? "";
-  const kategoriPengumuman = kategori.find((item) => item.slug === "pengumuman");
-  const pengumuman = kategoriPengumuman
+  const q = (params.q ?? "").trim().slice(0, 100);
+  const selectedCategory = (params.kategori ?? "").trim().slice(0, 80);
+  const [categories, agenda] = await Promise.all([
+    daftarKategoriBerita(desa.id),
+    agendaMendatang(desa.id, 3),
+  ]);
+  const announcementCategory = categories.find((item) => item.slug === "pengumuman");
+  const defaultCategory = selectedCategory || announcementCategory?.slug;
+  const announcements = defaultCategory
     ? await daftarBerita(desa.id, {
         limit: 60,
-        kategoriSlug: kategoriPengumuman.slug,
+        kategoriSlug: defaultCategory,
         cari: q || undefined,
       })
-    : [];
-
-  const [utama, ...lainnya] = pengumuman;
-  const lokasi = [desa.namaKecamatan, desa.namaKabupaten, desa.namaPropinsi]
+    : await daftarBerita(desa.id, { limit: 60, cari: q || undefined });
+  const categoryCounts = await Promise.all(
+    categories.map((item) => hitungBeritaPublik(desa.id, item.slug)),
+  );
+  const counts = new Map(categories.map((item, index) => [item.slug, categoryCounts[index] ?? 0]));
+  const shown = announcements;
+  const location = [desa.namaKecamatan, desa.namaKabupaten, desa.namaPropinsi]
     .filter(Boolean)
     .join(", ");
-
+  const logoUrl = mediaUrl(desa.logo, desa.id);
+  const importantLinks = [
+    {
+      title: "APBDes & Transparansi",
+      description: "Rencana dan realisasi anggaran desa",
+      href: "/transparansi/apbdes",
+      icon: "▤",
+      tone: "purple",
+    },
+    {
+      title: "Layanan Surat Online",
+      description: "Ajukan surat melalui Area Warga",
+      href: "/layanan/surat",
+      icon: "▧",
+      tone: "blue",
+    },
+    {
+      title: "Data Statistik Desa",
+      description: "Data kependudukan dan wilayah",
+      href: "/statistik",
+      icon: "▥",
+      tone: "green",
+    },
+    {
+      title: "Galeri Kegiatan",
+      description: "Dokumentasi kegiatan desa",
+      href: "/galeri",
+      icon: "▧",
+      tone: "pink",
+    },
+  ];
   return (
     <main className={styles.site}>
-      <div className={styles.topline}>
-        <div className={`${styles.container} ${styles.toplineInner}`}>
-          <span>Website Resmi Pemerintah Desa</span>
-          <span>{lokasi || "Portal Informasi Desa"}</span>
-        </div>
-      </div>
-
-      <header className={styles.header}>
-        <div className={`${styles.container} ${styles.headerInner}`}>
-          <Link href="/" className={styles.brand} aria-label={`Beranda ${desa.namaDesa ?? "desa"}`}>
-            {desa.logo ? (
-              <Image
-                src={mediaUrl(desa.logo, desa.id) ?? "/images/logo.png"}
-                alt=""
-                width={46}
-                height={46}
-                className={styles.logo}
-                unoptimized
-              />
-            ) : (
-              <span className={styles.logoFallback} aria-hidden="true">
-                D
-              </span>
-            )}
-            <span className={styles.brandCopy}>
-              <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-              <small>
-                {desa.namaKabupaten ? `Kabupaten ${desa.namaKabupaten}` : "Sistem Informasi Desa"}
-              </small>
-            </span>
-          </Link>
-
-          <nav className={styles.nav} aria-label="Navigasi utama">
-            <Link href="/">Beranda</Link>
-            <Link href="/profil">Profil Desa</Link>
-            <Link href="/berita">Berita</Link>
-            <Link href="/pengumuman" aria-current="page">
-              Pengumuman
-            </Link>
-          </nav>
-
-          <Link href="/masuk" className={styles.login}>
-            Masuk <span aria-hidden="true">↗</span>
-          </Link>
-        </div>
-      </header>
-
+      <PublicSiteHeader
+        desa={desa}
+        location={location}
+        logoUrl={logoUrl}
+        activePath="/pengumuman"
+      />
       <section className={styles.hero}>
         <div className={styles.container}>
-          <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+          <nav className={styles.breadcrumb}>
             <Link href="/">Beranda</Link>
-            <span>/</span>
-            <span>Informasi</span>
-            <span>/</span>
-            <span aria-current="page">Pengumuman</span>
+            <span>›</span>
+            <Link href="/berita">Informasi</Link>
+            <span>›</span>
+            <span>Pengumuman & Agenda</span>
           </nav>
-
-          <div className={styles.heroCopy}>
-            <span className={styles.eyebrow}>PUSAT INFORMASI RESMI</span>
-            <h1>Pengumuman Desa</h1>
-            <p>
-              Informasi penting, pemberitahuan, dan agenda resmi yang disampaikan oleh Pemerintah{" "}
-              {desa.namaDesa ?? "Desa"}.
-            </p>
-            {lokasi ? <span className={styles.location}>⌖ {lokasi}</span> : null}
-          </div>
-
-          <div className={styles.heroStamp} aria-hidden="true">
-            <span>INFO</span>
-            <strong>DESA</strong>
-            <i>RESMI</i>
+          <div className={styles.heroContent}>
+            <div>
+              <span className={styles.eyebrow}>PUSAT INFORMASI RESMI</span>
+              <h1>Pengumuman & Agenda Kegiatan</h1>
+              <p>Informasi penting dan jadwal kegiatan resmi {desa.namaDesa ?? "desa"}.</p>
+            </div>
+            <div className={styles.heroArt} aria-hidden="true">
+              <div className={styles.calendarArt}>
+                <b>▦</b>
+                <span>✓</span>
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
+                <i />
+              </div>
+              <div className={styles.megaphone}>◀</div>
+            </div>
           </div>
         </div>
       </section>
-
-      <section className={styles.content}>
-        <div className={styles.container}>
-          <div className={styles.sectionIntro}>
-            <div>
-              <span className={styles.kicker}>PENGUMUMAN TERBARU</span>
-              <h2>Informasi untuk masyarakat</h2>
-              <p>Pengumuman yang telah diterbitkan dan dapat dibaca oleh masyarakat.</p>
-            </div>
-
-            <form className={styles.search} action="/pengumuman" method="get">
-              <label className={styles.srOnly} htmlFor="announcement-search">
-                Cari pengumuman
-              </label>
-              <input
-                id="announcement-search"
-                type="search"
-                name="q"
-                defaultValue={q}
-                placeholder="Cari pengumuman..."
-              />
-              <button type="submit">Cari</button>
-            </form>
-          </div>
-
-          {utama ? (
-            <article className={styles.featured}>
-              <div className={styles.featuredCopy}>
-                <span className={styles.noticeLabel}>
-                  <i /> Pengumuman terbaru
-                </span>
-                <time dateTime={(utama.terbitPada ?? utama.createdAt).toISOString()}>
-                  {tanggal(utama.terbitPada ?? utama.createdAt)}
-                </time>
-                <h2>{utama.judul}</h2>
-                <p>
-                  {utama.ringkasan ||
-                    "Buka pengumuman untuk membaca informasi selengkapnya dari pemerintah desa."}
-                </p>
-                <Link
-                  href={`/berita/${encodeURIComponent(utama.slug)}`}
-                  className={styles.primaryLink}
-                >
-                  Baca pengumuman <span aria-hidden="true">→</span>
-                </Link>
-              </div>
-
-              <div className={styles.featuredMedia}>
-                {utama.gambar && mediaUrl(utama.gambar, desa.id) ? (
-                  <Image
-                    src={mediaUrl(utama.gambar, desa.id)!}
-                    alt=""
-                    fill
-                    sizes="(max-width: 760px) 100vw, 48vw"
-                    unoptimized
-                  />
-                ) : (
-                  <div className={styles.mediaFallback}>
-                    <span>INFORMASI</span>
-                    <strong>DESA</strong>
-                  </div>
-                )}
-              </div>
-            </article>
-          ) : null}
-
-          {lainnya.length > 0 ? (
-            <div className={styles.listSection}>
-              <div className={styles.listHeading}>
+      <div className={styles.container + " " + styles.content}>
+        <nav className={styles.tabs}>
+          <Link className={styles.activeTab} href="/pengumuman">
+            ⚑　Pengumuman
+          </Link>
+          <Link href="/agenda">▦　Agenda Kegiatan</Link>
+        </nav>
+        <div className={styles.layout}>
+          <div className={styles.mainColumn}>
+            <section className={styles.panel}>
+              <div className={styles.panelHeading}>
                 <div>
-                  <span className={styles.kicker}>ARSIP INFORMASI</span>
-                  <h2>Pengumuman lainnya</h2>
+                  <h2>
+                    <span>⚑</span> Pengumuman Terbaru
+                  </h2>
+                  <p>Informasi resmi dari Pemerintah {desa.namaDesa ?? "Desa"}.</p>
                 </div>
-                <span>{pengumuman.length} pengumuman</span>
+                <Link href="/pengumuman">Lihat Semua　→</Link>
               </div>
-
-              <div className={styles.list}>
-                {lainnya.map((item) => {
-                  const date = item.terbitPada ?? item.createdAt;
-
-                  return (
-                    <article className={styles.item} key={item.id}>
-                      <div className={styles.dateTile}>
-                        <strong>
-                          {new Intl.DateTimeFormat("id-ID", {
-                            day: "2-digit",
-                            timeZone: ZONA_WAKTU,
-                          }).format(date)}
-                        </strong>
-                        <span>
-                          {new Intl.DateTimeFormat("id-ID", {
-                            month: "short",
-                            year: "numeric",
-                            timeZone: ZONA_WAKTU,
-                          }).format(date)}
-                        </span>
+              {shown.length ? (
+                <div className={styles.announcementList}>
+                  {shown.slice(0, 3).map((item, index) => (
+                    <article className={styles.announcement} key={item.id}>
+                      <div className={styles.announcementIcon + " " + styles["tone" + (index % 3)]}>
+                        {index === 0 ? "⚑" : index === 1 ? "▤" : "ⓘ"}
                       </div>
-
-                      <div className={styles.itemCopy}>
-                        <time dateTime={date.toISOString()}>{tanggal(date)}</time>
-                        <h3>
-                          <Link href={`/berita/${encodeURIComponent(item.slug)}`}>
-                            {item.judul}
-                          </Link>
-                        </h3>
+                      <div className={styles.announcementCopy}>
+                        <div className={styles.titleRow}>
+                          <h3>
+                            <Link href={`/pengumuman/${encodeURIComponent(item.slug)}`}>
+                              {item.judul}
+                            </Link>
+                          </h3>
+                          {item.headline ? <span className={styles.important}>Penting</span> : null}
+                        </div>
                         <p>
-                          {item.ringkasan || "Baca informasi selengkapnya pada halaman pengumuman."}
+                          {item.ringkasan ||
+                            "Buka pengumuman untuk membaca informasi selengkapnya dari pemerintah desa."}
                         </p>
+                        <div className={styles.meta}>
+                          <span>▣　{tanggal(item.terbitPada ?? item.createdAt)}</span>
+                          <span>◉　{angka(item.hit)} kali dibaca</span>
+                        </div>
                       </div>
-
                       <Link
-                        href={`/berita/${encodeURIComponent(item.slug)}`}
-                        className={styles.itemArrow}
+                        className={styles.arrow}
+                        href={`/pengumuman/${encodeURIComponent(item.slug)}`}
                         aria-label={`Baca ${item.judul}`}
                       >
-                        →
+                        ›
                       </Link>
                     </article>
-                  );
-                })}
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.empty}>
+                  <b>{q ? "Pengumuman tidak ditemukan" : "Belum ada pengumuman"}</b>
+                  <p>
+                    {q
+                      ? "Coba kata kunci lain."
+                      : "Pengumuman resmi akan tampil di sini setelah diterbitkan dengan kategori pengumuman."}
+                  </p>
+                </div>
+              )}
+            </section>
+            <section className={styles.panel + " " + styles.agendaPanel}>
+              <div className={styles.panelHeading}>
+                <div>
+                  <h2>
+                    <span className={styles.blueIcon}>▦</span> Agenda Kegiatan
+                  </h2>
+                  <p>Jadwal kegiatan dan program Pemerintah {desa.namaDesa ?? "Desa"}.</p>
+                </div>
+                <Link href="/agenda">Lihat Semua　→</Link>
               </div>
-            </div>
-          ) : (
-            <div className={styles.empty}>
-              <span className={styles.emptyIcon} aria-hidden="true">
-                i
-              </span>
-              <h2>{q ? "Pengumuman tidak ditemukan" : "Belum ada pengumuman"}</h2>
-              <p>
-                {q
-                  ? "Coba gunakan kata kunci lain."
-                  : kategoriPengumuman
-                    ? "Pengumuman resmi akan ditampilkan di sini setelah diterbitkan."
-                    : "Kategori berita dengan slug “pengumuman” belum tersedia. Tambahkan kategori tersebut dan terbitkan kontennya melalui pengelolaan berita."}
-              </p>
-              {q ? <Link href="/pengumuman">Hapus pencarian</Link> : null}
-            </div>
-          )}
-
-          <div className={styles.bottomNav}>
-            <Link href="/berita">← Lihat berita desa</Link>
-            <Link href="/agenda">Lihat agenda kegiatan →</Link>
+              {agenda.length ? (
+                <div className={styles.agendaList}>
+                  {agenda.map((item, index) => {
+                    const date = tanggalAgenda(item.mulai);
+                    return (
+                      <article className={styles.agendaItem} key={item.id}>
+                        <div className={styles.dateTile}>
+                          <b>{date.day}</b>
+                          <strong>{date.month}</strong>
+                          <small>{date.year}</small>
+                        </div>
+                        <div className={styles.agendaCopy}>
+                          <h3>
+                            <Link href={`/agenda/${item.id}`}>{item.judul}</Link>
+                          </h3>
+                          <p>{item.deskripsi || "Informasi kegiatan resmi pemerintah desa."}</p>
+                          <div className={styles.meta}>
+                            <span>
+                              ◷　
+                              {item.jamMulai
+                                ? item.jamMulai.slice(0, 5).replace(":", ".") +
+                                  (item.jamSelesai
+                                    ? " – " + item.jamSelesai.slice(0, 5).replace(":", ".")
+                                    : "") +
+                                  " WIB"
+                                : "Waktu belum ditentukan"}
+                            </span>
+                            <span>⌖　{item.lokasi || "Lokasi belum ditentukan"}</span>
+                          </div>
+                        </div>
+                        <span className={styles.eventVisual}>
+                          {index === 0 ? "▦" : index === 1 ? "♧" : "▤"}
+                        </span>
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className={styles.empty}>
+                  <b>Belum ada agenda mendatang</b>
+                  <p>Agenda kegiatan yang telah dipublikasikan akan tampil di sini.</p>
+                </div>
+              )}
+            </section>
           </div>
+          <aside className={styles.sidebar}>
+            <section className={styles.sideCard}>
+              <h2>⌕　Cari Informasi</h2>
+              <form action="/pengumuman" method="get" className={styles.search}>
+                <input
+                  name="q"
+                  type="search"
+                  defaultValue={q}
+                  placeholder="Ketik kata kunci..."
+                  aria-label="Cari informasi"
+                />
+                <button type="submit">⌕</button>
+              </form>
+            </section>
+            <section className={styles.sideCard}>
+              <h2>▤　Kategori Informasi</h2>
+              <div className={styles.categoryList}>
+                <Link
+                  href="/pengumuman"
+                  className={!selectedCategory ? styles.categoryActive : undefined}
+                >
+                  <span>▤</span>
+                  <b>Semua Informasi</b>
+                  <small>
+                    {angka(categories.reduce((sum, item) => sum + (counts.get(item.slug) ?? 0), 0))}
+                  </small>
+                </Link>
+                {categories.map((item, index) => (
+                  <Link
+                    key={item.id}
+                    href={`/pengumuman?kategori=${encodeURIComponent(item.slug)}`}
+                    className={selectedCategory === item.slug ? styles.categoryActive : undefined}
+                  >
+                    <span>{["⚑", "▦", "♧", "ⓘ", "•••"][index % 5]}</span>
+                    <b>{item.nama}</b>
+                    <small>{angka(counts.get(item.slug) ?? 0)}</small>
+                  </Link>
+                ))}
+              </div>
+            </section>
+            <section className={styles.sideCard}>
+              <h2>ⓘ　Informasi Penting</h2>
+              <div className={styles.importantLinks}>
+                {importantLinks.map((item) => (
+                  <Link href={item.href} key={item.href}>
+                    <span className={styles[item.tone]}>{item.icon}</span>
+                    <div>
+                      <b>{item.title}</b>
+                      <small>{item.description}</small>
+                    </div>
+                    <strong>›</strong>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          </aside>
         </div>
-      </section>
-
-      <footer className={styles.footer}>
-        <div className={`${styles.container} ${styles.footerInner}`}>
+        <section className={styles.bottomCta}>
+          <div className={styles.ctaArt}>▦　♬</div>
           <div>
-            <strong>{desa.namaDesa ?? "Pemerintah Desa"}</strong>
-            <span>Portal informasi resmi desa</span>
+            <h2>Jangan Lewatkan Informasi Penting Desa!</h2>
+            <p>Dapatkan informasi pengumuman dan agenda kegiatan terbaru dari pemerintah desa.</p>
           </div>
-          <span>
-            © {new Date().getFullYear()} {desa.namaDesa ?? "Pemerintah Desa"}
-          </span>
-          <Link href="/">Kembali ke beranda ↑</Link>
-        </div>
-      </footer>
+          <Link href="/kontak">Hubungi Pemerintah Desa　→</Link>
+        </section>
+      </div>
+      <PublicSiteFooter desa={desa} location={location} logoUrl={logoUrl} />
     </main>
   );
 }

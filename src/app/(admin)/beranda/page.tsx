@@ -15,9 +15,9 @@ import { waktuRelatif } from "@/features/dashboard/domain/waktu-relatif";
 import { getStatistikDesa } from "@/features/desa/application/statistik-desa";
 import { getIdentitasDesaUseCase } from "@/features/desa/application/use-cases";
 import { getLaporanKeuangan } from "@/features/keuangan/application/keuangan-use-cases";
+import { isSuperAdminUser } from "@/features/multi-desa/application/provisioning-use-cases";
 import { getBukuPembangunan } from "@/features/pembangunan/application/use-cases";
 import { listBeritaAdminData } from "@/features/publik/application/konten-admin";
-import { isSuperAdminUser } from "@/features/multi-desa/application/provisioning-use-cases";
 import { hasPermission } from "@/features/rbac/application/authorization";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { verifySession } from "@/lib/dal";
@@ -217,7 +217,7 @@ export default async function AdminHomePage() {
           getStatistikDesa(villageId),
           dashboardStatistikUmur(villageId),
           dashboardTrenPermohonan(villageId),
-                  dashboardAktivitasTerbaru(villageId),
+          dashboardAktivitasTerbaru(villageId),
           hasPermission(user.permissions, RESOURCES.laporanKeuangan, "read")
             ? getLaporanKeuangan()
             : Promise.resolve(null),
@@ -238,11 +238,9 @@ export default async function AdminHomePage() {
   const laporanApbdes = data?.[6] ?? null;
   const programPrioritas = data?.[7] ?? [];
   const pengumuman = data?.[8] ?? [];
+  const pengumumanUtama = pengumuman[0];
 
   const namaDesa = identitas?.namaDesa ?? "Desa";
-  const wilayah = [identitas?.namaKecamatan, identitas?.namaKabupaten]
-    .map((bagian) => bagian?.trim())
-    .filter((bagian): bagian is string => Boolean(bagian));
 
   const sekarang = new Date();
 
@@ -338,8 +336,14 @@ export default async function AdminHomePage() {
                 <span className="beranda-kpi-icon">{ikonAksesCepat("apbdes")}</span>
                 <div className="beranda-kpi-body">
                   <span className="beranda-kpi-label">Realisasi APBDes {laporanApbdes.tahun}</span>
-                  <strong className="beranda-kpi-value">{laporanApbdes.total.anggaran !== "0.00" ? `${Math.round((Number(laporanApbdes.total.realisasi) / Math.max(Number(laporanApbdes.total.anggaran), 1)) * 1000) / 10}%` : "—"}</strong>
-                  <span className="beranda-chip" data-tone="ungu">Rp {Number(laporanApbdes.total.realisasi).toLocaleString("id-ID")}</span>
+                  <strong className="beranda-kpi-value">
+                    {laporanApbdes.total.anggaran !== "0.00"
+                      ? `${Math.round((Number(laporanApbdes.total.realisasi) / Math.max(Number(laporanApbdes.total.anggaran), 1)) * 1000) / 10}%`
+                      : "—"}
+                  </strong>
+                  <span className="beranda-chip" data-tone="ungu">
+                    Rp {Number(laporanApbdes.total.realisasi).toLocaleString("id-ID")}
+                  </span>
                 </div>
               </article>
             ) : null}
@@ -356,7 +360,11 @@ export default async function AdminHomePage() {
               <div className="beranda-card-head">
                 <h2 className="beranda-card-title" id="tren-layanan-surat">
                   <span className="beranda-title-icon" aria-hidden="true">
-                    <Ikon><path d="M4 19V5" /><path d="M4 19h16" /><path d="m7 14 3.5-3.5 3 2.5L20 7" /></Ikon>
+                    <Ikon>
+                      <path d="M4 19V5" />
+                      <path d="M4 19h16" />
+                      <path d="m7 14 3.5-3.5 3 2.5L20 7" />
+                    </Ikon>
                   </span>
                   Tren Layanan Surat
                 </h2>
@@ -370,18 +378,40 @@ export default async function AdminHomePage() {
             {laporanApbdes ? (
               <section className="beranda-card" aria-labelledby="dashboard-apbdes">
                 <div className="beranda-card-head">
-                  <h2 className="beranda-card-title" id="dashboard-apbdes">Realisasi APBDes Tahun {laporanApbdes.tahun}</h2>
+                  <h2 className="beranda-card-title" id="dashboard-apbdes">
+                    Realisasi APBDes Tahun {laporanApbdes.tahun}
+                  </h2>
                   <Link href="/keuangan">Detail →</Link>
                 </div>
                 <div className="beranda-apbdes-summary">
-                  <div className="beranda-apbdes-ring" style={{ "--realisasi": `${Math.min(100, Math.max(0, Number(laporanApbdes.total.anggaran) > 0 ? Number(laporanApbdes.total.realisasi) / Number(laporanApbdes.total.anggaran) * 100 : 0))}%` } as React.CSSProperties}>
-                    <strong>{Number(laporanApbdes.total.anggaran) > 0 ? `${(Number(laporanApbdes.total.realisasi) / Number(laporanApbdes.total.anggaran) * 100).toLocaleString("id-ID", { maximumFractionDigits: 1 })}%` : "—"}</strong>
+                  <div
+                    className="beranda-apbdes-ring"
+                    style={
+                      {
+                        "--realisasi": `${Math.min(100, Math.max(0, Number(laporanApbdes.total.anggaran) > 0 ? (Number(laporanApbdes.total.realisasi) / Number(laporanApbdes.total.anggaran)) * 100 : 0))}%`,
+                      } as React.CSSProperties
+                    }
+                  >
+                    <strong>
+                      {Number(laporanApbdes.total.anggaran) > 0
+                        ? `${((Number(laporanApbdes.total.realisasi) / Number(laporanApbdes.total.anggaran)) * 100).toLocaleString("id-ID", { maximumFractionDigits: 1 })}%`
+                        : "—"}
+                    </strong>
                     <span>Realisasi</span>
                   </div>
                   <dl>
-                    <div><dt>Pagu Anggaran</dt><dd>Rp {Number(laporanApbdes.total.anggaran).toLocaleString("id-ID")}</dd></div>
-                    <div><dt>Realisasi</dt><dd>Rp {Number(laporanApbdes.total.realisasi).toLocaleString("id-ID")}</dd></div>
-                    <div><dt>Sisa Anggaran</dt><dd>Rp {Number(laporanApbdes.total.selisih).toLocaleString("id-ID")}</dd></div>
+                    <div>
+                      <dt>Pagu Anggaran</dt>
+                      <dd>Rp {Number(laporanApbdes.total.anggaran).toLocaleString("id-ID")}</dd>
+                    </div>
+                    <div>
+                      <dt>Realisasi</dt>
+                      <dd>Rp {Number(laporanApbdes.total.realisasi).toLocaleString("id-ID")}</dd>
+                    </div>
+                    <div>
+                      <dt>Sisa Anggaran</dt>
+                      <dd>Rp {Number(laporanApbdes.total.selisih).toLocaleString("id-ID")}</dd>
+                    </div>
                   </dl>
                 </div>
               </section>
@@ -389,17 +419,26 @@ export default async function AdminHomePage() {
             {hasPermission(user.permissions, RESOURCES.pembangunan, "read") ? (
               <section className="beranda-card" aria-labelledby="dashboard-program">
                 <div className="beranda-card-head">
-                  <h2 className="beranda-card-title" id="dashboard-program">Program & Kegiatan Prioritas</h2>
+                  <h2 className="beranda-card-title" id="dashboard-program">
+                    Program & Kegiatan Prioritas
+                  </h2>
                   <Link href="/pembangunan">Detail →</Link>
                 </div>
                 {programPrioritas.length === 0 ? (
-                  <p className="beranda-empty">Belum ada program pembangunan untuk tahun berjalan.</p>
+                  <p className="beranda-empty">
+                    Belum ada program pembangunan untuk tahun berjalan.
+                  </p>
                 ) : (
                   <ul className="beranda-program-list">
                     {programPrioritas.slice(0, 4).map((item) => (
                       <li key={item.id}>
-                        <div><strong>{item.judul}</strong><span>{item.lokasi ?? "Lokasi belum diisi"}</span></div>
-                        <div className="beranda-program-progress"><span style={{ width: `${Math.min(100, Math.max(0, item.progres))}%` }} /></div>
+                        <div>
+                          <strong>{item.judul}</strong>
+                          <span>{item.lokasi ?? "Lokasi belum diisi"}</span>
+                        </div>
+                        <div className="beranda-program-progress">
+                          <span style={{ width: `${Math.min(100, Math.max(0, item.progres))}%` }} />
+                        </div>
                         <strong>{item.progres}%</strong>
                         <span className="beranda-program-status">{item.status}</span>
                       </li>
@@ -414,18 +453,33 @@ export default async function AdminHomePage() {
             <section className="beranda-card" aria-labelledby="aktivitas-terbaru">
               <div className="beranda-card-head">
                 <h2 className="beranda-card-title" id="aktivitas-terbaru">
-                  <span className="beranda-title-icon" aria-hidden="true"><Ikon><path d="M3 12h4l2.5-6 4 12 2.5-6h5" /></Ikon></span>
+                  <span className="beranda-title-icon" aria-hidden="true">
+                    <Ikon>
+                      <path d="M3 12h4l2.5-6 4 12 2.5-6h5" />
+                    </Ikon>
+                  </span>
                   Aktivitas Terbaru
                 </h2>
               </div>
-              {aktivitas.length === 0 ? <p className="beranda-empty">Belum ada aktivitas tercatat.</p> : (
+              {aktivitas.length === 0 ? (
+                <p className="beranda-empty">Belum ada aktivitas tercatat.</p>
+              ) : (
                 <ol className="beranda-feed">
                   {aktivitas.slice(0, 5).map((catatan) => (
                     <li key={catatan.id}>
-                      <span className="beranda-feed-icon" data-tone={toneAktivitas(catatan.event)} aria-hidden="true">{ikonAktivitas(catatan.event)}</span>
+                      <span
+                        className="beranda-feed-icon"
+                        data-tone={toneAktivitas(catatan.event)}
+                        aria-hidden="true"
+                      >
+                        {ikonAktivitas(catatan.event)}
+                      </span>
                       <div className="beranda-feed-body">
                         <strong>{labelAktivitas(catatan.event)}</strong>
-                        <span>{catatan.actorName ?? "Sistem"} · {waktuRelatif(catatan.createdAt, sekarang)}</span>
+                        <span>
+                          {catatan.actorName ?? "Sistem"} ·{" "}
+                          {waktuRelatif(catatan.createdAt, sekarang)}
+                        </span>
                       </div>
                     </li>
                   ))}
@@ -436,34 +490,68 @@ export default async function AdminHomePage() {
             <section className="beranda-card" aria-labelledby="pengumuman-informasi">
               <div className="beranda-card-head">
                 <h2 className="beranda-card-title" id="pengumuman-informasi">
-                  <span className="beranda-title-icon" aria-hidden="true"><Ikon><path d="M4 7h16v13H4z" /><path d="M8 7V4h8v3M8 12h8M8 16h5" /></Ikon></span>
+                  <span className="beranda-title-icon" aria-hidden="true">
+                    <Ikon>
+                      <path d="M4 7h16v13H4z" />
+                      <path d="M8 7V4h8v3M8 12h8M8 16h5" />
+                    </Ikon>
+                  </span>
                   Pengumuman & Informasi
                 </h2>
-                {hasPermission(user.permissions, RESOURCES.berita, "read") ? <Link href="/konten/berita">Lihat Semua →</Link> : null}
+                {hasPermission(user.permissions, RESOURCES.berita, "read") ? (
+                  <Link href="/konten/berita">Lihat Semua →</Link>
+                ) : null}
               </div>
               {!hasPermission(user.permissions, RESOURCES.berita, "read") ? (
                 <p className="beranda-empty">Akun ini tidak memiliki akses membaca berita desa.</p>
-              ) : pengumuman.length === 0 ? (
-                <p className="beranda-empty">Belum ada berita atau pengumuman yang dipublikasikan.</p>
+              ) : !pengumumanUtama ? (
+                <p className="beranda-empty">
+                  Belum ada berita atau pengumuman yang dipublikasikan.
+                </p>
               ) : (
                 <div className="beranda-announcement">
-                  {pengumuman[0].gambar ? (
-                    <Image alt="" className="beranda-announcement-image" height={150} src={pengumuman[0].gambar} unoptimized width={190} />
+                  {pengumumanUtama.gambar ? (
+                    <Image
+                      alt=""
+                      className="beranda-announcement-image"
+                      height={150}
+                      src={pengumumanUtama.gambar}
+                      unoptimized
+                      width={190}
+                    />
                   ) : (
-                    <div className="beranda-announcement-placeholder" aria-hidden="true"><Ikon><path d="M4 5h16v14H4z" /><path d="m5 16 5-5 3 3 2-2 4 4" /></Ikon></div>
+                    <div className="beranda-announcement-placeholder" aria-hidden="true">
+                      <Ikon>
+                        <path d="M4 5h16v14H4z" />
+                        <path d="m5 16 5-5 3 3 2-2 4 4" />
+                      </Ikon>
+                    </div>
                   )}
                   <div className="beranda-announcement-copy">
-                    {pengumuman[0].kategori ? <span className="beranda-announcement-category">{pengumuman[0].kategori}</span> : null}
-                    <strong>{pengumuman[0].judul}</strong>
-                    {pengumuman[0].terbitPada ? <time dateTime={pengumuman[0].terbitPada.toISOString()}>{FORMAT_HARI.format(pengumuman[0].terbitPada)}</time> : null}
-                    {pengumuman[0].ringkasan ? <p>{pengumuman[0].ringkasan}</p> : null}
+                    {pengumumanUtama.kategori ? (
+                      <span className="beranda-announcement-category">
+                        {pengumumanUtama.kategori}
+                      </span>
+                    ) : null}
+                    <strong>{pengumumanUtama.judul}</strong>
+                    {pengumumanUtama.terbitPada ? (
+                      <time dateTime={pengumumanUtama.terbitPada.toISOString()}>
+                        {FORMAT_HARI.format(pengumumanUtama.terbitPada)}
+                      </time>
+                    ) : null}
+                    {pengumumanUtama.ringkasan ? <p>{pengumumanUtama.ringkasan}</p> : null}
                     <Link href="/konten/berita">Kelola informasi desa →</Link>
                   </div>
                 </div>
               )}
               {pengumuman.length > 1 ? (
                 <ul className="beranda-announcement-list">
-                  {pengumuman.slice(1, 4).map((item) => <li key={item.id}><span>{item.kategori ?? "Informasi"}</span><strong>{item.judul}</strong></li>)}
+                  {pengumuman.slice(1, 4).map((item) => (
+                    <li key={item.id}>
+                      <span>{item.kategori ?? "Informasi"}</span>
+                      <strong>{item.judul}</strong>
+                    </li>
+                  ))}
                 </ul>
               ) : null}
             </section>
