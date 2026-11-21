@@ -10,6 +10,7 @@ import {
   proyeksikanKelompokRings,
   type KoordinatPeta,
 } from "@/features/gis/domain/peta-cetak";
+import { profilDesaPublik } from "@/features/publik/application/konten-publik";
 import { daftarWilayahPublik } from "@/features/wilayah/application/wilayah-publik";
 
 import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
@@ -54,10 +55,11 @@ function formatNumber(value: number) {
 
 export default async function WilayahPage() {
   const desa = await getIdentitasFromRequest();
-  const [rows, mapData, statistik] = await Promise.all([
+  const [rows, mapData, statistik, profil] = await Promise.all([
     daftarWilayahPublik(desa.id),
     getPetaPublik(),
     getStatistikDesa(desa.id),
+    profilDesaPublik(desa.id),
   ]);
   const location = [desa.namaKecamatan, desa.namaKabupaten, desa.namaPropinsi]
     .filter(Boolean)
@@ -83,7 +85,17 @@ export default async function WilayahPage() {
     ["Kecamatan", desa.namaKecamatan],
     ["Kabupaten", desa.namaKabupaten],
     ["Provinsi", desa.namaPropinsi],
+    ["Utara", profil?.batasUtara],
+    ["Selatan", profil?.batasSelatan],
+    ["Timur", profil?.batasTimur],
+    ["Barat", profil?.batasBarat],
   ].filter((row) => row[1]);
+  const geographyDetails = [
+    ["Ketinggian", profil?.ketinggian],
+    ["Suhu rata-rata", profil?.suhuRataRata],
+    ["Curah hujan", profil?.curahHujan],
+    ["Topografi", profil?.topografi],
+  ].filter((row): row is [string, string] => Boolean(row[1]));
 
   return (
     <main className={styles.site}>
@@ -213,7 +225,10 @@ export default async function WilayahPage() {
                 shapes.map((shape) => (
                   <span key={shape.id}>
                     <i style={{ background: shape.color }} />
-                    {shape.name}
+                    <span className={styles.legendCopy}>
+                      {shape.name}
+                      {shape.description ? <small>{shape.description}</small> : null}
+                    </span>
                   </span>
                 ))
               ) : (
@@ -230,7 +245,11 @@ export default async function WilayahPage() {
               <dl>
                 <div>
                   <dt>⌖ Luas Wilayah</dt>
-                  <dd>Belum tersedia</dd>
+                  <dd>
+                    {profil?.luasWilayah
+                      ? `${formatNumber(Number(profil.luasWilayah))} Ha`
+                      : "Belum tersedia"}
+                  </dd>
                 </div>
                 <div>
                   <dt>▧ Jumlah Dusun</dt>
@@ -254,19 +273,19 @@ export default async function WilayahPage() {
                 </div>
                 <div>
                   <dt>⌁ Ketinggian</dt>
-                  <dd>Belum tersedia</dd>
+                  <dd>{profil?.ketinggian ?? "Belum tersedia"}</dd>
                 </div>
                 <div>
                   <dt>♨ Suhu Rata-rata</dt>
-                  <dd>Belum tersedia</dd>
+                  <dd>{profil?.suhuRataRata ?? "Belum tersedia"}</dd>
                 </div>
                 <div>
                   <dt>≋ Curah Hujan</dt>
-                  <dd>Belum tersedia</dd>
+                  <dd>{profil?.curahHujan ?? "Belum tersedia"}</dd>
                 </div>
                 <div>
                   <dt>▱ Topografi</dt>
-                  <dd>Belum tersedia</dd>
+                  <dd>{profil?.topografi ?? "Belum tersedia"}</dd>
                 </div>
               </dl>
             </section>
@@ -320,7 +339,11 @@ export default async function WilayahPage() {
                           {group.name}
                         </td>
                         <td>—</td>
-                        <td>{new Set(group.items.map((r) => r.rt).filter(Boolean)).size || "—"}</td>
+                        <td>
+                          {new Set(
+                            group.items.filter((r) => r.rt).map((r) => `${r.rw ?? ""}::${r.rt}`),
+                          ).size || "—"}
+                        </td>
                         <td>—</td>
                         <td>
                           {residentsByDusun.get(group.name) !== undefined
@@ -352,9 +375,20 @@ export default async function WilayahPage() {
               <span>⌁</span> Kondisi Geografis
             </h2>
             <p>
-              Informasi kondisi geografis {desa.namaDesa ?? "desa"} belum dipublikasikan oleh
-              pemerintah desa.
+              {geographyDetails.length
+                ? `Kondisi geografis ${desa.namaDesa ?? "desa"} berdasarkan informasi yang dikelola pemerintah desa.`
+                : `Informasi kondisi geografis ${desa.namaDesa ?? "desa"} belum dilengkapi oleh pemerintah desa.`}
             </p>
+            {geographyDetails.length ? (
+              <dl className={styles.boundaries}>
+                {geographyDetails.map(([label, value]) => (
+                  <div key={label}>
+                    <dt>{label}</dt>
+                    <dd>{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
             {mapPhoto ? (
               <div className={styles.geoPhoto}>
                 <Image

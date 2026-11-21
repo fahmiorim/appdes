@@ -1,8 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
-import { createPenduduk, updatePenduduk } from "@/features/penduduk/application/use-cases";
+import {
+  createPenduduk,
+  deletePenduduk,
+  updatePenduduk,
+} from "@/features/penduduk/application/use-cases";
 import { pendudukFormSchema } from "@/features/penduduk/domain/penduduk";
 import { errorState, successState, toErrorState, type ActionState } from "@/lib/action-state";
 
@@ -85,4 +90,16 @@ export async function ubahPendudukAction(
   } catch (error) {
     return toErrorState(error);
   }
+}
+
+export async function hapusPendudukAction(formData: FormData): Promise<never> {
+  const id = Number(teks(formData, "id"));
+  if (!Number.isSafeInteger(id) || id <= 0) throw new Error("Data penduduk tidak valid.");
+  await deletePenduduk(id);
+  revalidatePath(HALAMAN);
+  revalidatePath("/penduduk/dashboard");
+  revalidatePath("/keluarga");
+  revalidatePath("/statistik/penduduk");
+  revalidatePath("/mutasi-penduduk");
+  redirect("/penduduk?deleted=1");
 }

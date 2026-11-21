@@ -11,6 +11,7 @@ import {
   ubahMenuWebsiteDetailAction,
   ubahStatusHalamanWebsiteAction,
   ubahStatusWidgetWebsiteAction,
+  ubahWidgetWebsiteAction,
 } from "@/features/publik/application/website-admin-actions";
 
 import { WebsiteAdminShell, WebsiteSection } from "../website-admin-shell";
@@ -249,6 +250,37 @@ export default async function WebsitePagesPage() {
                   <span>Urutan {item.urut}</span>
                 </div>
                 <div className="website-row-actions">
+                  <details>
+                    <summary className="website-mini-button">Edit</summary>
+                    <form action={ubahWidgetWebsiteAction} className="website-inline-form">
+                      <input type="hidden" name="id" value={item.id} />
+                      <label>
+                        Judul
+                        <input name="judulWidget" defaultValue={item.judul ?? ""} />
+                      </label>
+                      <label>
+                        Jenis
+                        <select name="jenisWidget" defaultValue={item.jenis}>
+                          {[1, 2, 3, 4, 5, 6].map((value) => (
+                            <option key={value} value={value}>
+                              Widget {value}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        Isi
+                        <textarea name="isiWidget" defaultValue={item.isi ?? ""} />
+                      </label>
+                      <label>
+                        Urutan
+                        <input type="number" min="0" name="urutWidget" defaultValue={item.urut} />
+                      </label>
+                      <button className="website-mini-button" type="submit">
+                        Simpan
+                      </button>
+                    </form>
+                  </details>
                   <form action={ubahStatusWidgetWebsiteAction}>
                     <input type="hidden" name="id" value={item.id} />
                     <input type="hidden" name="aktif" value={String(!item.aktif)} />

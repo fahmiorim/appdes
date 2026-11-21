@@ -2,7 +2,7 @@
   "version": "5",
   "dialect": "mysql",
   "id": "0033_absensi_kepegawaian",
-  "prevId": "0031_pengajuan_layanan_hasil",
+  "prevId": "0032_pemerintahan_desa",
   "tables": {
     "agenda_kegiatan": {
       "name": "agenda_kegiatan",
@@ -4284,6 +4284,69 @@
           "notNull": false,
           "autoincrement": false
         },
+        "pendidikan": {
+          "name": "pendidikan",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "telepon": {
+          "name": "telepon",
+          "type": "varchar(30)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "alamat": {
+          "name": "alamat",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "nomor_sk_pengangkatan": {
+          "name": "nomor_sk_pengangkatan",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tanggal_pengangkatan": {
+          "name": "tanggal_pengangkatan",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "nomor_sk_pemberhentian": {
+          "name": "nomor_sk_pemberhentian",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tanggal_pemberhentian": {
+          "name": "tanggal_pemberhentian",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "atasan_id": {
+          "name": "atasan_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "foto": {
           "name": "foto",
           "type": "varchar(255)",
@@ -4351,6 +4414,22 @@
           "name": "perangkat_desa_village_idx",
           "columns": [
             "village_id"
+          ],
+          "isUnique": false
+        },
+        "perangkat_desa_village_id_uq": {
+          "name": "perangkat_desa_village_id_uq",
+          "columns": [
+            "village_id",
+            "id"
+          ],
+          "isUnique": true
+        },
+        "perangkat_desa_village_atasan_idx": {
+          "name": "perangkat_desa_village_atasan_idx",
+          "columns": [
+            "village_id",
+            "atasan_id"
           ],
           "isUnique": false
         },
@@ -4459,6 +4538,69 @@
         "koordinat": {
           "name": "koordinat",
           "type": "varchar(60)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "luas_wilayah": {
+          "name": "luas_wilayah",
+          "type": "decimal(12,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "batas_utara": {
+          "name": "batas_utara",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "batas_selatan": {
+          "name": "batas_selatan",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "batas_timur": {
+          "name": "batas_timur",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "batas_barat": {
+          "name": "batas_barat",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "ketinggian": {
+          "name": "ketinggian",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "suhu_rata_rata": {
+          "name": "suhu_rata_rata",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "curah_hujan": {
+          "name": "curah_hujan",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "topografi": {
+          "name": "topografi",
+          "type": "varchar(150)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -9730,6 +9872,577 @@
       "compositePrimaryKeys": {
         "mailbox_pesan_id": {
           "name": "mailbox_pesan_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "lembaga_anggota": {
+      "name": "lembaga_anggota",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "village_id": {
+          "name": "village_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lembaga_id": {
+          "name": "lembaga_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nama": {
+          "name": "nama",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "jabatan": {
+          "name": "jabatan",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "foto": {
+          "name": "foto",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "periode_mulai": {
+          "name": "periode_mulai",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "periode_selesai": {
+          "name": "periode_selesai",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "aktif": {
+          "name": "aktif",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "tampil_publik": {
+          "name": "tampil_publik",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "urut": {
+          "name": "urut",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "lembaga_anggota_village_lembaga_idx": {
+          "name": "lembaga_anggota_village_lembaga_idx",
+          "columns": [
+            "village_id",
+            "lembaga_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "lembaga_anggota_village_id_villages_id_fk": {
+          "name": "lembaga_anggota_village_id_villages_id_fk",
+          "tableFrom": "lembaga_anggota",
+          "tableTo": "villages",
+          "columnsFrom": [
+            "village_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "lembaga_anggota_tenant_fk": {
+          "name": "lembaga_anggota_tenant_fk",
+          "tableFrom": "lembaga_anggota",
+          "tableTo": "lembaga_desa",
+          "columnsFrom": [
+            "village_id",
+            "lembaga_id"
+          ],
+          "columnsTo": [
+            "village_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "lembaga_anggota_id": {
+          "name": "lembaga_anggota_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "lembaga_desa": {
+      "name": "lembaga_desa",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "village_id": {
+          "name": "village_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nama": {
+          "name": "nama",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "jenis": {
+          "name": "jenis",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'lainnya'"
+        },
+        "deskripsi": {
+          "name": "deskripsi",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tugas_fungsi": {
+          "name": "tugas_fungsi",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "dasar_hukum": {
+          "name": "dasar_hukum",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "masa_bakti_mulai": {
+          "name": "masa_bakti_mulai",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "masa_bakti_selesai": {
+          "name": "masa_bakti_selesai",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'aktif'"
+        },
+        "tampil_publik": {
+          "name": "tampil_publik",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "urut": {
+          "name": "urut",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "lembaga_desa_village_status_idx": {
+          "name": "lembaga_desa_village_status_idx",
+          "columns": [
+            "village_id",
+            "status"
+          ],
+          "isUnique": false
+        },
+        "lembaga_desa_village_id_uq": {
+          "name": "lembaga_desa_village_id_uq",
+          "columns": [
+            "village_id",
+            "id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "lembaga_desa_village_id_villages_id_fk": {
+          "name": "lembaga_desa_village_id_villages_id_fk",
+          "tableFrom": "lembaga_desa",
+          "tableTo": "villages",
+          "columnsFrom": [
+            "village_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "lembaga_desa_id": {
+          "name": "lembaga_desa_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "pemerintahan_dokumen": {
+      "name": "pemerintahan_dokumen",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "village_id": {
+          "name": "village_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "perangkat_id": {
+          "name": "perangkat_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "lembaga_id": {
+          "name": "lembaga_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "judul": {
+          "name": "judul",
+          "type": "varchar(180)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nomor": {
+          "name": "nomor",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tanggal": {
+          "name": "tanggal",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "berkas": {
+          "name": "berkas",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tampil_publik": {
+          "name": "tampil_publik",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "pemerintahan_dokumen_village_idx": {
+          "name": "pemerintahan_dokumen_village_idx",
+          "columns": [
+            "village_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "pemerintahan_dokumen_village_id_villages_id_fk": {
+          "name": "pemerintahan_dokumen_village_id_villages_id_fk",
+          "tableFrom": "pemerintahan_dokumen",
+          "tableTo": "villages",
+          "columnsFrom": [
+            "village_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pemerintahan_dokumen_perangkat_tenant_fk": {
+          "name": "pemerintahan_dokumen_perangkat_tenant_fk",
+          "tableFrom": "pemerintahan_dokumen",
+          "tableTo": "perangkat_desa",
+          "columnsFrom": [
+            "village_id",
+            "perangkat_id"
+          ],
+          "columnsTo": [
+            "village_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "pemerintahan_dokumen_lembaga_tenant_fk": {
+          "name": "pemerintahan_dokumen_lembaga_tenant_fk",
+          "tableFrom": "pemerintahan_dokumen",
+          "tableTo": "lembaga_desa",
+          "columnsFrom": [
+            "village_id",
+            "lembaga_id"
+          ],
+          "columnsTo": [
+            "village_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "pemerintahan_dokumen_id": {
+          "name": "pemerintahan_dokumen_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "perangkat_riwayat_jabatan": {
+      "name": "perangkat_riwayat_jabatan",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "village_id": {
+          "name": "village_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "perangkat_id": {
+          "name": "perangkat_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "jabatan": {
+          "name": "jabatan",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nomor_sk": {
+          "name": "nomor_sk",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "mulai": {
+          "name": "mulai",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "selesai": {
+          "name": "selesai",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "keterangan": {
+          "name": "keterangan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tampil_publik": {
+          "name": "tampil_publik",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "perangkat_riwayat_village_perangkat_idx": {
+          "name": "perangkat_riwayat_village_perangkat_idx",
+          "columns": [
+            "village_id",
+            "perangkat_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "perangkat_riwayat_jabatan_village_id_villages_id_fk": {
+          "name": "perangkat_riwayat_jabatan_village_id_villages_id_fk",
+          "tableFrom": "perangkat_riwayat_jabatan",
+          "tableTo": "villages",
+          "columnsFrom": [
+            "village_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "perangkat_riwayat_tenant_fk": {
+          "name": "perangkat_riwayat_tenant_fk",
+          "tableFrom": "perangkat_riwayat_jabatan",
+          "tableTo": "perangkat_desa",
+          "columnsFrom": [
+            "village_id",
+            "perangkat_id"
+          ],
+          "columnsTo": [
+            "village_id",
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "perangkat_riwayat_jabatan_id": {
+          "name": "perangkat_riwayat_jabatan_id",
           "columns": [
             "id"
           ]

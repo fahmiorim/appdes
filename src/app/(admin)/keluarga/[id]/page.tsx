@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
+import { hapusKeluargaAction, lepasAnggotaKeluargaAction } from "@/app/(admin)/keluarga/actions";
 import { getKeluargaDetail } from "@/features/keluarga/application/use-cases";
 import { AKSI_LOG_LABELS, KELUARGA_RESOURCE } from "@/features/keluarga/domain/keluarga";
 import { LIFE_STATUS_LABELS, PENDUDUK_RESOURCE } from "@/features/penduduk/domain/penduduk";
@@ -18,6 +19,7 @@ export default async function DetailKeluargaPage({ params }: { params: Promise<{
   if (!Number.isInteger(id) || id <= 0) notFound();
   const [detail, user] = await Promise.all([getKeluargaDetail(id), verifySession()]);
   const bolehUbahKk = hasPermission(user.permissions, KELUARGA_RESOURCE, "update");
+  const bolehHapusKk = hasPermission(user.permissions, KELUARGA_RESOURCE, "delete");
   const bolehUbahPenduduk = hasPermission(user.permissions, PENDUDUK_RESOURCE, "update");
   return (
     <div className="modul-page data-kependudukan-page">
@@ -40,6 +42,14 @@ export default async function DetailKeluargaPage({ params }: { params: Promise<{
           <Link className="button button-primary" href={`/keluarga/${id}/pdf`}>
             Cetak KK
           </Link>
+          {bolehHapusKk && detail.members.length === 0 ? (
+            <form action={hapusKeluargaAction}>
+              <input type="hidden" name="id" value={id} />
+              <button className="button button-danger" type="submit">
+                Hapus KK Kosong
+              </button>
+            </form>
+          ) : null}
         </div>
       </header>
       <section className="data-kependudukan-kpis">
@@ -99,6 +109,16 @@ export default async function DetailKeluargaPage({ params }: { params: Promise<{
                       <>
                         {" "}
                         · <Link href={`/penduduk/${member.id}/ubah`}>Ubah</Link>
+                        {member.relationName?.toLowerCase().includes("kepala") &&
+                        detail.members.length > 1 ? null : (
+                          <form action={lepasAnggotaKeluargaAction} className="inline-form">
+                            <input type="hidden" name="id" value={member.id} />
+                            <input type="hidden" name="familyId" value={id} />
+                            <button className="button button-danger" type="submit">
+                              Lepas dari KK
+                            </button>
+                          </form>
+                        )}
                       </>
                     ) : null}
                   </td>

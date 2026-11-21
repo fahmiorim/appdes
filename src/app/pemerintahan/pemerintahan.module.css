@@ -673,3 +673,35 @@
     font-size: 9px;
   }
 }
+
+/* Hierarki perangkat mengikuti relasi atasanId dari data pemerintahan. */
+.orgNestedChildren {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #cbd8ee;
+}
+.orgNestedChildren .orgChild {
+  min-width: 0;
+  min-height: 0;
+  padding: 8px 5px;
+  background: #fff;
+}
+.orgNestedChildren .orgChild:before,
+.orgNestedChildren .orgChild:after {
+  display: none;
+}
+.orgNestedChildren .orgChild strong {
+  font-size: 9px;
+}
+.orgNestedChildren .orgChild > span:last-of-type {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 640px) {
+  .orgNestedChildren {
+    grid-template-columns: 1fr;
+  }
+}

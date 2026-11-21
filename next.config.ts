@@ -16,8 +16,8 @@ const nextConfig: NextConfig = {
    */
   experimental: {
     authInterrupts: true,
-    // Lampiran surat dinas, cuti, dan arsip pegawai dapat berupa PDF hingga
-    // 20 MB, ditambah sedikit ruang untuk overhead multipart.
+    // Lampiran surat dinas, cuti, arsip pegawai, dan upload pemerintahan
+    // menerima PDF hingga 20 MB, ditambah sedikit ruang untuk overhead multipart.
     serverActions: { bodySizeLimit: "25mb" },
   },
 

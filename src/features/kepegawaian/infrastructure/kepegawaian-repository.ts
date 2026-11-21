@@ -89,11 +89,7 @@ export async function insertPegawai(villageId: number, values: PegawaiValues) {
   return Number(result[0].insertId);
 }
 
-export async function updatePegawai(
-  villageId: number,
-  id: number,
-  values: Partial<PegawaiValues>,
-) {
+export async function updatePegawai(villageId: number, id: number, values: Partial<PegawaiValues>) {
   await db
     .update(kepegawaianPegawai)
     .set(values)
@@ -213,9 +209,7 @@ export async function listPegawaiAktifRingkas(villageId: number) {
       jabatan: kepegawaianPegawai.jabatan,
     })
     .from(kepegawaianPegawai)
-    .where(
-      and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.status, "aktif")),
-    )
+    .where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.status, "aktif")))
     .orderBy(asc(kepegawaianPegawai.nama));
 }
 
@@ -260,10 +254,7 @@ export async function listRiwayatPegawai(villageId: number, pegawaiId: number) {
     .select()
     .from(kepegawaianRiwayat)
     .where(
-      and(
-        eq(kepegawaianRiwayat.villageId, villageId),
-        eq(kepegawaianRiwayat.pegawaiId, pegawaiId),
-      ),
+      and(eq(kepegawaianRiwayat.villageId, villageId), eq(kepegawaianRiwayat.pegawaiId, pegawaiId)),
     )
     .orderBy(desc(kepegawaianRiwayat.mulai));
 }
@@ -295,9 +286,7 @@ export async function updateRiwayatPegawai(
   await db
     .update(kepegawaianRiwayat)
     .set(values)
-    .where(
-      and(eq(kepegawaianRiwayat.villageId, villageId), eq(kepegawaianRiwayat.id, id)),
-    );
+    .where(and(eq(kepegawaianRiwayat.villageId, villageId), eq(kepegawaianRiwayat.id, id)));
 }
 
 export async function deleteRiwayatPegawai(villageId: number, id: number) {
@@ -311,10 +300,7 @@ export async function listDokumenPegawai(villageId: number, pegawaiId: number) {
     .select()
     .from(kepegawaianDokumen)
     .where(
-      and(
-        eq(kepegawaianDokumen.villageId, villageId),
-        eq(kepegawaianDokumen.pegawaiId, pegawaiId),
-      ),
+      and(eq(kepegawaianDokumen.villageId, villageId), eq(kepegawaianDokumen.pegawaiId, pegawaiId)),
     )
     .orderBy(desc(kepegawaianDokumen.createdAt));
 }
@@ -432,11 +418,7 @@ export async function updateStatusCuti(
     .where(and(eq(cutiPegawai.villageId, villageId), eq(cutiPegawai.id, id)));
 }
 
-export async function sumCutiTahunanDisetujui(
-  villageId: number,
-  pegawaiId: number,
-  tahun: number,
-) {
+export async function sumCutiTahunanDisetujui(villageId: number, pegawaiId: number, tahun: number) {
   const [row] = await db
     .select({ total: sql<number>`coalesce(sum(${cutiPegawai.durasi}),0)` })
     .from(cutiPegawai)
@@ -504,10 +486,7 @@ export async function getPengaturanKehadiran(villageId: number) {
   return row ?? null;
 }
 
-export async function upsertPengaturanKehadiran(
-  villageId: number,
-  values: PengaturanValues,
-) {
+export async function upsertPengaturanKehadiran(villageId: number, values: PengaturanValues) {
   const [existing] = await db
     .select({ id: kehadiranPengaturan.id })
     .from(kehadiranPengaturan)
@@ -517,7 +496,9 @@ export async function upsertPengaturanKehadiran(
     await db
       .update(kehadiranPengaturan)
       .set(values)
-      .where(and(eq(kehadiranPengaturan.villageId, villageId), eq(kehadiranPengaturan.id, existing.id)));
+      .where(
+        and(eq(kehadiranPengaturan.villageId, villageId), eq(kehadiranPengaturan.id, existing.id)),
+      );
     return;
   }
   await db.insert(kehadiranPengaturan).values({ ...values, villageId });
@@ -566,9 +547,7 @@ export async function listAbsensiDashboard(villageId: number, tanggal: string, l
         eq(kehadiranPerangkat.tanggal, tanggal),
       ),
     )
-    .where(
-      and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.status, "aktif")),
-    )
+    .where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.status, "aktif")))
     .orderBy(asc(kepegawaianPegawai.nama))
     .limit(limit);
 }
@@ -611,17 +590,11 @@ export async function listAbsensiTanggal(villageId: number, tanggal: string) {
         eq(kehadiranPerangkat.tanggal, tanggal),
       ),
     )
-    .where(
-      and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.status, "aktif")),
-    )
+    .where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.status, "aktif")))
     .orderBy(asc(kepegawaianPegawai.nama));
 }
 
-export async function listCatatanAbsensiRentang(
-  villageId: number,
-  mulai: string,
-  selesai: string,
-) {
+export async function listCatatanAbsensiRentang(villageId: number, mulai: string, selesai: string) {
   return db
     .select({
       pegawaiId: kehadiranPerangkat.pegawaiId,
@@ -641,11 +614,7 @@ export async function listCatatanAbsensiRentang(
     );
 }
 
-export async function getAbsensiHarian(
-  villageId: number,
-  pegawaiId: number,
-  tanggal: string,
-) {
+export async function getAbsensiHarian(villageId: number, pegawaiId: number, tanggal: string) {
   const [row] = await db
     .select()
     .from(kehadiranPerangkat)
@@ -674,24 +643,14 @@ export async function insertAbsensi(villageId: number, values: AbsensiValues) {
   await db.insert(kehadiranPerangkat).values({ ...values, villageId });
 }
 
-export async function updateAbsensi(
-  villageId: number,
-  id: number,
-  values: Partial<AbsensiValues>,
-) {
+export async function updateAbsensi(villageId: number, id: number, values: Partial<AbsensiValues>) {
   await db
     .update(kehadiranPerangkat)
     .set(values)
-    .where(
-      and(eq(kehadiranPerangkat.villageId, villageId), eq(kehadiranPerangkat.id, id)),
-    );
+    .where(and(eq(kehadiranPerangkat.villageId, villageId), eq(kehadiranPerangkat.id, id)));
 }
 
-export async function listKehadiranBulanan(
-  villageId: number,
-  mulai: string,
-  akhir: string,
-) {
+export async function listKehadiranBulanan(villageId: number, mulai: string, akhir: string) {
   return db
     .select({
       tanggal: kehadiranPerangkat.tanggal,

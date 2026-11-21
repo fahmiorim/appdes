@@ -57,6 +57,8 @@ export const RESOURCES = {
   dokumenPublik: "dokumen-publik",
   profilDesa: "profil-desa",
   perangkatDesa: "perangkat-desa",
+  lembagaDesa: "lembaga-desa",
+  pemerintahanDashboard: "pemerintahan-dashboard",
   identitasDesa: "identitas-desa",
   auditLog: "audit-log",
   database: "database",

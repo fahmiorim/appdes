@@ -16,7 +16,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     if (!Number.isSafeInteger(id) || id < 1)
       return NextResponse.json({ error: "Bukti absensi tidak ditemukan." }, { status: 404 });
     const bukti = await bacaBuktiAbsensiData(id);
-    if (!bukti) return NextResponse.json({ error: "Bukti absensi tidak ditemukan." }, { status: 404 });
+    if (!bukti)
+      return NextResponse.json({ error: "Bukti absensi tidak ditemukan." }, { status: 404 });
     return new Response(new Uint8Array(bukti.isi), {
       headers: {
         "Content-Type": MIME[bukti.ekstensi] ?? "application/octet-stream",

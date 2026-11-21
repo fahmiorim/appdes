@@ -2,6 +2,7 @@ import "server-only";
 
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import {
+  getPengaturanKehadiran as ambilPengaturanKehadiran,
   countCutiAktif,
   countKehadiranHarian,
   deleteDokumenPegawai,
@@ -17,12 +18,11 @@ import {
   getPegawai,
   getPegawaiAktif,
   getPegawaiByEmail,
-  getPegawaiByNip,
   getPegawaiByNik,
+  getPegawaiByNip,
   getPegawaiByPerangkat,
   getPegawaiByPerangkatId,
   getPegawaiByUserEmail,
-  getPengaturanKehadiran as ambilPengaturanKehadiran,
   getRiwayatPegawai,
   insertAbsensi,
   insertCuti,
@@ -281,7 +281,10 @@ export async function daftarAbsensiRentang(mulai: string, selesai: string) {
   let hariLibur: number[] = [0, 6];
   try {
     const parsed = JSON.parse(setting?.hariLibur ?? "[0,6]");
-    if (Array.isArray(parsed) && parsed.every((day) => Number.isInteger(day) && day >= 0 && day <= 6))
+    if (
+      Array.isArray(parsed) &&
+      parsed.every((day) => Number.isInteger(day) && day >= 0 && day <= 6)
+    )
       hariLibur = [...new Set(parsed)];
   } catch {
     /* gunakan akhir pekan sebagai fallback */
@@ -307,11 +310,11 @@ export async function daftarAbsensiRentang(mulai: string, selesai: string) {
           status === "hadir" &&
           Boolean(
             jamMasuk &&
-              setting?.jamMasuk &&
-              Number(jamMasuk.slice(0, 2)) * 60 + Number(jamMasuk.slice(3, 5)) >
-                Number(setting.jamMasuk.slice(0, 2)) * 60 +
-                  Number(setting.jamMasuk.slice(3, 5)) +
-                  (setting.toleransiTerlambatMenit ?? 0),
+            setting?.jamMasuk &&
+            Number(jamMasuk.slice(0, 2)) * 60 + Number(jamMasuk.slice(3, 5)) >
+              Number(setting.jamMasuk.slice(0, 2)) * 60 +
+                Number(setting.jamMasuk.slice(3, 5)) +
+                (setting.toleransiTerlambatMenit ?? 0),
           ),
       });
     }
@@ -376,9 +379,7 @@ export async function ajukanCuti(input: {
   if (!canManage) {
     const pegawaiAkun = await getPegawaiByUserEmail(villageId, user.email);
     if (!pegawaiAkun || pegawaiAkun.id !== input.pegawaiId)
-      throw new Error(
-        "Anda hanya dapat mengajukan cuti/izin untuk akun pegawai yang terhubung.",
-      );
+      throw new Error("Anda hanya dapat mengajukan cuti/izin untuk akun pegawai yang terhubung.");
   }
   if (!input.alasan.trim()) throw new Error("Alasan cuti/izin wajib diisi.");
   if (!tanggalValid(input.mulai) || !tanggalValid(input.selesai))
@@ -390,7 +391,10 @@ export async function ajukanCuti(input: {
   let hariLibur: number[] = [0, 6];
   try {
     const parsed = JSON.parse(pengaturan?.hariLibur ?? "[0,6]");
-    if (Array.isArray(parsed) && parsed.every((day) => Number.isInteger(day) && day >= 0 && day <= 6))
+    if (
+      Array.isArray(parsed) &&
+      parsed.every((day) => Number.isInteger(day) && day >= 0 && day <= 6)
+    )
       hariLibur = [...new Set(parsed)];
   } catch {
     /* gunakan akhir pekan sebagai fallback */
@@ -424,11 +428,7 @@ export async function ajukanCuti(input: {
   });
 }
 
-export async function putuskanCuti(
-  id: number,
-  status: "disetujui" | "ditolak",
-  catatan: string,
-) {
+export async function putuskanCuti(id: number, status: "disetujui" | "ditolak", catatan: string) {
   const { user, villageId } = await village("cuti-izin", "update");
   const request = await getCuti(villageId, id);
   if (!request) throw new Error("Pengajuan tidak ditemukan.");
@@ -483,7 +483,9 @@ export async function opsiPerangkatBelumTerhubung() {
     listPerangkatAktifDenganJabatan(villageId),
     listPerangkatTerhubung(villageId),
   ]);
-  const linkedIds = new Set(linked.map((x) => x.perangkatId).filter((x): x is number => x !== null));
+  const linkedIds = new Set(
+    linked.map((x) => x.perangkatId).filter((x): x is number => x !== null),
+  );
   return officials.filter((x) => !linkedIds.has(x.id));
 }
 
@@ -583,7 +585,8 @@ export async function simpanPengaturanKehadiran(input: {
     throw new Error("Hari libur tidak valid.");
   const lat = input.latitudeKantor?.trim() || null;
   const lng = input.longitudeKantor?.trim() || null;
-  if ((lat === null) !== (lng === null)) throw new Error("Koordinat kantor harus diisi berpasangan.");
+  if ((lat === null) !== (lng === null))
+    throw new Error("Koordinat kantor harus diisi berpasangan.");
   if (
     lat !== null &&
     (!Number.isFinite(Number(lat)) ||
@@ -598,7 +601,11 @@ export async function simpanPengaturanKehadiran(input: {
   const toleransiTerlambatMenit = input.toleransiTerlambatMenit ?? 0;
   if (!Number.isInteger(radiusMeter) || radiusMeter < 20 || radiusMeter > 5000)
     throw new Error("Radius lokasi harus 20–5000 meter.");
-  if (!Number.isInteger(toleransiTerlambatMenit) || toleransiTerlambatMenit < 0 || toleransiTerlambatMenit > 180)
+  if (
+    !Number.isInteger(toleransiTerlambatMenit) ||
+    toleransiTerlambatMenit < 0 ||
+    toleransiTerlambatMenit > 180
+  )
     throw new Error("Toleransi keterlambatan harus 0–180 menit.");
   if (input.wajibGps !== false && (lat === null || lng === null))
     throw new Error("Isi koordinat kantor sebelum mengaktifkan validasi GPS.");
@@ -723,7 +730,8 @@ async function denganKunciAbsensi(
     throw new Error("Foto selfie wajib dilampirkan saat check-in.");
   if (catatan) {
     if (!catatan.jamMasuk) throw new Error("Data absensi hari ini perlu diperiksa administrator.");
-    const masukMenit = Number(catatan.jamMasuk.slice(0, 2)) * 60 + Number(catatan.jamMasuk.slice(3, 5));
+    const masukMenit =
+      Number(catatan.jamMasuk.slice(0, 2)) * 60 + Number(catatan.jamMasuk.slice(3, 5));
     const sekarangMenit = Number(now.slice(0, 2)) * 60 + Number(now.slice(3, 5));
     if (sekarangMenit - masukMenit < 2)
       throw new Error("Check-in baru saja tercatat. Tunggu sebelum melakukan check-out.");
@@ -745,7 +753,14 @@ async function denganKunciAbsensi(
 
 export async function daftarKehadiranBulanan(tahun: number, bulan: number) {
   const { villageId } = await village("kehadiran");
-  if (!Number.isInteger(tahun) || tahun < 2000 || tahun > 2200 || !Number.isInteger(bulan) || bulan < 1 || bulan > 12)
+  if (
+    !Number.isInteger(tahun) ||
+    tahun < 2000 ||
+    tahun > 2200 ||
+    !Number.isInteger(bulan) ||
+    bulan < 1 ||
+    bulan > 12
+  )
     throw new Error("Periode kalender tidak valid.");
   const mulai = `${tahun}-${String(bulan).padStart(2, "0")}-01`;
   const akhir = new Date(Date.UTC(tahun, bulan, 0)).toISOString().slice(0, 10);

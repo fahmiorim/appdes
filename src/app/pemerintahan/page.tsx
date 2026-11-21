@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
+import { daftarLembagaPublik } from "@/features/pemerintahan/application/publik";
 import {
   daftarAlbumGaleri,
   daftarFotoAlbum,
@@ -90,10 +92,11 @@ const fungsiUtama = [
 
 export default async function PemerintahanPage() {
   const desa = await getIdentitasFromRequest();
-  const [perangkat, slides, albums] = await Promise.all([
+  const [perangkat, slides, albums, lembagaPublik] = await Promise.all([
     daftarPerangkatPublik(desa.id),
     daftarSliderBeranda(desa.id),
     daftarAlbumGaleri(desa.id),
+    daftarLembagaPublik(desa.id),
   ]);
   const photoGroups = await Promise.all(
     albums
@@ -112,15 +115,41 @@ export default async function PemerintahanPage() {
   const kepalaDesa = perangkat.find((item) =>
     item.jabatan?.toLocaleLowerCase("id-ID").includes("kepala desa"),
   );
-  const sekretaris = perangkat.find((item) =>
-    item.jabatan?.toLocaleLowerCase("id-ID").includes("sekretaris"),
-  );
-  const lainnya = perangkat.filter(
-    (item) => item.id !== kepalaDesa?.id && item.id !== sekretaris?.id,
-  );
-  const struktur = [kepalaDesa, sekretaris, ...lainnya].filter(
-    (item): item is (typeof perangkat)[number] => Boolean(item),
-  );
+  const struktur = perangkat;
+  const anakPerangkat = (atasanId: number) =>
+    perangkat
+      .filter((item) => item.atasanId === atasanId)
+      .sort((a, b) => a.urut - b.urut || a.nama.localeCompare(b.nama, "id"));
+  const akarStruktur = perangkat
+    .filter(
+      (item) =>
+        item.id === kepalaDesa?.id ||
+        !item.atasanId ||
+        !perangkat.some((parent) => parent.id === item.atasanId),
+    )
+    .sort((a, b) => (a.id === kepalaDesa?.id ? -1 : b.id === kepalaDesa?.id ? 1 : a.urut - b.urut));
+  const renderNode = (
+    item: (typeof perangkat)[number],
+    depth = 0,
+    visited = new Set<number>(),
+  ): ReactNode => {
+    if (visited.has(item.id)) return null;
+    const nextVisited = new Set(visited);
+    nextVisited.add(item.id);
+    const children = anakPerangkat(item.id).filter((child) => !nextVisited.has(child.id));
+    return (
+      <article className={styles.orgChild} key={item.id} data-depth={depth}>
+        <span className={styles.orgIcon}>♙</span>
+        <strong>{item.jabatan ?? "Perangkat Desa"}</strong>
+        <span>{namaLengkap(item)}</span>
+        {children.length ? (
+          <div className={styles.orgNestedChildren}>
+            {children.map((child) => renderNode(child, depth + 1, nextVisited))}
+          </div>
+        ) : null}
+      </article>
+    );
+  };
 
   function fotoPerangkat(item: (typeof perangkat)[number], className: string | undefined) {
     const src = mediaUrl(item.foto, desa.id);
@@ -219,25 +248,19 @@ export default async function PemerintahanPage() {
                     Kepala Desa belum tercatat sebagai perangkat aktif.
                   </div>
                 )}
-                {sekretaris ? (
-                  <div className={styles.secretaryNode}>
-                    {fotoPerangkat(sekretaris, styles.smallPhoto)}
-                    <div>
-                      <strong>{sekretaris.jabatan}</strong>
-                      <span>{namaLengkap(sekretaris)}</span>
-                    </div>
-                  </div>
+                {akarStruktur.some((item) => item.id !== kepalaDesa?.id) ? (
+                  <div className={styles.orgLine} aria-hidden="true" />
                 ) : null}
-                {lainnya.length ? <div className={styles.orgLine} aria-hidden="true" /> : null}
                 <div className={styles.orgChildren}>
-                  {lainnya.map((item) => (
-                    <article className={styles.orgChild} key={item.id}>
-                      <span className={styles.orgIcon}>♙</span>
-                      <strong>{item.jabatan ?? "Perangkat Desa"}</strong>
-                      <span>{namaLengkap(item)}</span>
-                    </article>
-                  ))}
+                  {(kepalaDesa ? anakPerangkat(kepalaDesa.id) : akarStruktur).map((item) =>
+                    renderNode(item),
+                  )}
                 </div>
+                {kepalaDesa
+                  ? akarStruktur
+                      .filter((item) => item.id !== kepalaDesa.id)
+                      .map((item) => renderNode(item))
+                  : null}
               </div>
             ) : (
               <div className={styles.emptyState}>
@@ -293,42 +316,74 @@ export default async function PemerintahanPage() {
               <h2>
                 <span>♧</span> Badan Permusyawaratan Desa (BPD)
               </h2>
-              <p>Lembaga yang menampung dan menyalurkan aspirasi masyarakat desa.</p>
+              <p>Lembaga permusyawaratan desa yang menyalurkan aspirasi masyarakat.</p>
             </div>
             <span className={styles.sectionHint}>Informasi BPD</span>
           </div>
-          <div className={styles.bpdContent}>
-            {galleryPhotos[1] && mediaUrl(galleryPhotos[1].gambar, desa.id) ? (
-              <div className={styles.bpdImage}>
-                <Image
-                  src={mediaUrl(galleryPhotos[1].gambar, desa.id)!}
-                  alt={galleryPhotos[1].judul || "Dokumentasi desa"}
-                  fill
-                  unoptimized
-                  sizes="280px"
-                />
-              </div>
-            ) : (
-              <div className={styles.bpdIllustration}>
-                <span>♧</span>
-                <strong>BPD</strong>
-                <small>Badan Permusyawaratan Desa</small>
-              </div>
-            )}
-            <p className={styles.bpdDescription}>
-              BPD merupakan lembaga permusyawaratan desa yang menjalankan fungsi sesuai ketentuan
-              peraturan perundang-undangan dan menyalurkan aspirasi masyarakat desa.
-            </p>
-            <div className={styles.bpdEmpty}>
-              <span>♙</span>
-              <strong>Data pimpinan dan anggota BPD belum tersedia</strong>
+          {lembagaPublik.filter((item) => item.jenis === "bpd").length ? (
+            lembagaPublik
+              .filter((item) => item.jenis === "bpd")
+              .map((item) => (
+                <article className={styles.bpdContent} key={item.id}>
+                  <div>
+                    <h3>{item.nama}</h3>
+                    {item.deskripsi ? (
+                      <p className={styles.bpdDescription}>{item.deskripsi}</p>
+                    ) : null}
+                    {item.tugasFungsi ? <p>{item.tugasFungsi}</p> : null}
+                    {item.dasarHukum ? <small>Dasar hukum: {item.dasarHukum}</small> : null}
+                    {item.dokumen.length ? (
+                      <ul>
+                        {item.dokumen.map((doc) => (
+                          <li key={doc.id}>
+                            <a href={`/api/pemerintahan/dokumen/${doc.id}`}>{doc.judul}</a>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    <p>
+                      Masa bakti: {item.masaBaktiMulai ?? "—"} – {item.masaBaktiSelesai ?? "—"}
+                    </p>
+                  </div>
+                  {item.anggota.length ? (
+                    <div className={styles.officialGrid}>
+                      {item.anggota.map((person) => (
+                        <article className={styles.officialCard} key={person.id}>
+                          <div className={styles.officialPhoto}>
+                            {mediaUrl(person.foto, desa.id) ? (
+                              <Image
+                                src={mediaUrl(person.foto, desa.id)!}
+                                alt={person.nama}
+                                fill
+                                unoptimized
+                                sizes="100px"
+                              />
+                            ) : (
+                              <span>{person.nama.slice(0, 1)}</span>
+                            )}
+                          </div>
+                          <div className={styles.officialBody}>
+                            <h3>{person.nama}</h3>
+                            <span className={styles.rolePill}>{person.jabatan ?? "Anggota"}</span>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className={styles.emptyState}>Susunan anggota belum dipublikasikan.</p>
+                  )}
+                </article>
+              ))
+          ) : (
+            <div className={styles.emptyState}>
+              <strong>Data BPD belum dipublikasikan</strong>
               <p>
-                Informasi anggota BPD akan ditampilkan setelah dipublikasikan oleh pemerintah desa.
+                Informasi BPD akan muncul setelah pemerintah desa mengaktifkan publikasi lembaga dan
+                anggotanya.
               </p>
             </div>
-          </div>
+          )}
         </section>
-
         <section className={styles.sectionCard} id="lembaga">
           <div className={styles.sectionHeading}>
             <div>
@@ -338,10 +393,52 @@ export default async function PemerintahanPage() {
               <p>Informasi kelembagaan yang mendukung penyelenggaraan pemerintahan desa.</p>
             </div>
           </div>
-          <div className={styles.emptyState}>
-            <strong>Informasi lembaga desa belum dipublikasikan</strong>
-            <p>Daftar lembaga desa akan ditampilkan setelah datanya tersedia.</p>
-          </div>
+          {lembagaPublik.filter((item) => item.jenis !== "bpd").length ? (
+            <div className={styles.officialGrid}>
+              {lembagaPublik
+                .filter((item) => item.jenis !== "bpd")
+                .map((item) => (
+                  <article className={styles.officialCard} key={item.id}>
+                    <div className={styles.officialBody}>
+                      <h3>{item.nama}</h3>
+                      <span className={styles.rolePill}>{item.jenis.toUpperCase()}</span>
+                      {item.deskripsi ? <p>{item.deskripsi}</p> : null}
+                      {item.tugasFungsi ? <p>{item.tugasFungsi}</p> : null}
+                      <small>
+                        Masa bakti: {item.masaBaktiMulai ?? "—"} – {item.masaBaktiSelesai ?? "—"}
+                      </small>
+                      {item.anggota.length ? (
+                        <ul>
+                          {item.anggota.map((person) => (
+                            <li key={person.id}>
+                              {person.nama}
+                              {person.jabatan ? ` — ${person.jabatan}` : ""}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                      {item.dokumen.length ? (
+                        <ul>
+                          {item.dokumen.map((doc) => (
+                            <li key={doc.id}>
+                              <a href={`/api/pemerintahan/dokumen/${doc.id}`}>{doc.judul}</a>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
+                  </article>
+                ))}
+            </div>
+          ) : (
+            <div className={styles.emptyState}>
+              <strong>Belum ada lembaga yang dipublikasikan</strong>
+              <p>
+                Data lembaga akan tampil setelah status publikasi diaktifkan oleh administrator
+                desa.
+              </p>
+            </div>
+          )}
         </section>
 
         <section className={styles.sectionCard} id="tugas">
