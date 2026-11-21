@@ -219,7 +219,7 @@ export async function assignAnggotaRumahTangga(
   residentId: number,
   level: number,
 ): Promise<void> {
-  const user = await requirePermission(RUMAH_TANGGA_RESOURCE, "update");
+  const user = await requirePermission(RUMAH_TANGGA_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const rtm = await findRumahTanggaById(villageId, rtmId);
@@ -230,7 +230,7 @@ export async function assignAnggotaRumahTangga(
 
 /** Lepaskan seorang penduduk dari rumah tangganya. */
 export async function removeAnggotaRumahTangga(residentId: number): Promise<void> {
-  const user = await requirePermission(RUMAH_TANGGA_RESOURCE, "update");
+  const user = await requirePermission(RUMAH_TANGGA_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
 
   await setAnggotaRumahTangga(villageId, residentId, null, null);
