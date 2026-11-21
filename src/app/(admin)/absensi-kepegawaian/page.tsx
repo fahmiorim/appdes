@@ -12,7 +12,6 @@ const angka = new Intl.NumberFormat("id-ID");
 export default async function DashboardAbsensiPage() {
   const data = await getDashboardAbsensiData();
   const statusLabel: Record<string, string> = { hadir: "Hadir", izin: "Izin", cuti: "Cuti", tidak_hadir: "Tidak Hadir" };
-  const maxTrend = Math.max(1, ...data.trendRows.map((x) => Number(x.total)));
   const totalStatus = Math.max(1, data.hadir + data.izin + data.cuti + data.tidakHadir);
   const hadirPct = data.hadir / totalStatus * 100;
   const izinPct = data.izin / totalStatus * 100;
@@ -81,5 +80,15 @@ export default async function DashboardAbsensiPage() {
         <div className={styles["ak-actions"]}><Link className={styles["ak-button"]} href="/absensi-kepegawaian/pegawai">Kelola Data Pegawai →</Link></div>
       </section>
     </div>
+    <section className={styles["ak-card"] + " " + styles["ak-quick-actions"]} style={{marginTop:16}}>
+      <h2>Aksi Cepat</h2>
+      <div className={styles["ak-quick-grid"]}>
+        <Link href="/absensi-kepegawaian/absensi"><span>◉</span>Absensi Manual</Link>
+        <Link href="/absensi-kepegawaian/pegawai"><span>＋</span>Tambah Pegawai</Link>
+        <Link href="/absensi-kepegawaian/cuti-izin"><span>▣</span>Ajukan Cuti / Izin</Link>
+        <Link href="/absensi-kepegawaian/absensi"><span>▤</span>Rekap Kehadiran</Link>
+        <Link href="/absensi-kepegawaian/pegawai"><span>▥</span>Laporan Pegawai</Link>
+      </div>
+    </section>
   </div>;
 }
