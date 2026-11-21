@@ -113,7 +113,7 @@ async function getScopedProyek(villageId: number, id: number): Promise<Pembangun
 }
 
 export async function createPembangunan(input: PembangunanFormInput): Promise<{ id: number }> {
-  const user = await requirePermission(PEMBANGUNAN_RESOURCE, "update");
+  const user = await requirePermission(PEMBANGUNAN_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const slug = await slugBebas(villageId, input.judul, null);
