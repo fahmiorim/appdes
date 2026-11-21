@@ -3,7 +3,7 @@ import { requirePermission } from "@/lib/dal";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { getSecuritySettings, listBlockedIps } from "@/features/pengguna/infrastructure/keamanan-repository";
-import { hapusBlokirIpAction, blokirIpAction, simpanKeamananAction } from "../keamanan-actions";
+import { hapusBlokirIpAction, blokirIpAction, resetKeamananAction, simpanKeamananAction } from "../keamanan-actions";
 import styles from "./keamanan.module.css";
 
 export const metadata = { title: "Pengaturan Keamanan" };
@@ -30,7 +30,7 @@ export default async function KeamananPage() {
         <label>IP yang diizinkan (satu per baris)<textarea name="allowedIps" defaultValue={settings.allowedIps.join("\n")} placeholder="203.0.113.10&#10;2001:db8::1"/></label>
         <p className={styles.note}>Whitelist IP hanya mengandalkan alamat dari proxy tepercaya yang dikonfigurasi server. Pastikan IP administrator masuk daftar sebelum mengaktifkan.</p>
       </section>
-      <div className={styles.actions}><button type="submit">Simpan Pengaturan</button></div>
+      <div className={styles.actions}><button type="submit">Simpan Pengaturan</button><button formAction={resetKeamananAction} className={styles.reset} type="submit">Reset ke Default</button></div>
     </form>
     <section className={styles.card}><h2>🚫 Daftar IP Diblokir</h2><form action={blokirIpAction} className={styles.inline}><input name="ipAddress" placeholder="Alamat IP" required/><input name="reason" placeholder="Alasan pemblokiran" required/><button type="submit">Blokir IP</button></form>
       <div className={styles.list}>{blockedIps.map((ip)=><form action={hapusBlokirIpAction} key={ip.id}><input type="hidden" name="id" value={ip.id}/><span><b>{ip.ipAddress}</b><small>{ip.reason}</small></span><button type="submit">Cabut blokir</button></form>)}{blockedIps.length===0?<p>Belum ada IP yang diblokir.</p>:null}</div>
