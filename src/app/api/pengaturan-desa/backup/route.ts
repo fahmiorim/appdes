@@ -77,7 +77,7 @@ const restoreSchema = z.object({
     persyaratan: z.string().nullable(), estimasiHari: z.number().int().min(0), biaya: z.number().int().min(0),
     metode: z.string().max(80), aktif: z.boolean(),
   })).max(500),
-  kontak: z.unknown(), integrasi: z.unknown(), favicon: z.unknown(), template: z.unknown(),
+  kontak: z.record(z.string(),z.unknown()).nullable(), integrasi: z.record(z.string(),z.unknown()).nullable(), favicon: z.string().nullable(), template: z.string().nullable(),
   umum: z.object({
     komentarAktif: z.boolean(), beritaBeranda: z.number().int().min(1).max(12),
     pendaftaranWargaAktif: z.boolean(), penomoranSurat: z.number().int().min(1).max(4),
