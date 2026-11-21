@@ -8,6 +8,7 @@ import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { requirePermission } from "@/lib/dal";
 import { appErrorStatus, isAppError } from "@/lib/errors";
 import { ambilPengaturanAdmin, simpanPengaturanAdmin } from "@/features/pengaturan/application/pengaturan-use-cases";
+import { tokenTemplateSchema } from "@/features/multi-desa/domain/template-website";
 
 export const runtime = "nodejs";
 const json = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { "Cache-Control": "private, no-store" } });
@@ -111,9 +112,11 @@ export async function PUT(request:Request) {
       if(!s.success)return json({error:"Template tidak valid."},422);
       const [template]=await db.select().from(websiteTemplates).where(and(eq(websiteTemplates.slug,s.data.templateSlug),eq(websiteTemplates.status,"published"))).limit(1);
       if(!template)return json({error:"Template tidak tersedia atau belum diterbitkan."},404);
-      let templateTokens: unknown;
-      try { templateTokens=JSON.parse(template.tokens); } catch { return json({error:"Token template tidak valid."},422); }
-      const options={templateSlug:template.slug,templateTokens};
+      let rawTokens: unknown;
+      try { rawTokens=JSON.parse(template.tokens); } catch { return json({error:"Token template tidak valid."},422); }
+      const validatedTokens=tokenTemplateSchema.safeParse(rawTokens);
+      if(!validatedTokens.success)return json({error:"Token template tidak sesuai skema tampilan."},422);
+      const options={templateSlug:template.slug,templateTokens:validatedTokens.data};
       await db.transaction(async tx=>{
         const [currentActive]=await tx.select({opsi:theme.opsi}).from(theme).where(and(eq(theme.villageId,villageId),eq(theme.aktif,true))).limit(1);
         await tx.update(theme).set({aktif:false}).where(eq(theme.villageId,villageId));
