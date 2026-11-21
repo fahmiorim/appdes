@@ -173,3 +173,10 @@
 :global(.modul-page > .page-heading h1:before){content:"▦";display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;border-radius:13px;background:linear-gradient(145deg,#f1e8ff,#e1d1ff);color:#6a20e1;font-size:28px;line-height:1;box-shadow:inset 0 0 0 1px #e3d4ff}
 :global(.modul-page > .page-heading p){padding-left:60px}
 @media(max-width:760px){.ak-subnav{grid-template-columns:repeat(2,minmax(0,1fr))}.ak-subnav a:nth-child(2){border-right:0}.ak-subnav a:nth-child(-n+2){border-bottom:1px solid #eeeaf6}.ak-subnav a{font-size:10px}:global(.modul-page > .page-heading h1:before){flex-basis:40px;width:40px;height:40px;font-size:23px}:global(.modul-page > .page-heading p){padding-left:0}}
+
+.ak-calendar-day.hadir{background:#e5f8e9;border-color:#c9efcf}
+.ak-calendar-day.menunggu{background:#fff4df;border-color:#ffe3ac}
+.ak-calendar-day.ditolak{background:#ffe9ec;border-color:#ffd0d7}
+.hadir{background:#dcfce7;color:#16733a}
+.menunggu{background:#fff0d7;color:#a35b00}
+.ditolak{background:#ffe2e5;color:#b42335}
