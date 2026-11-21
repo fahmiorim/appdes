@@ -562,6 +562,7 @@ export async function listPemeliharaan(villageId: number) {
     tanggalRencana: inventarisPemeliharaan.tanggalRencana,
     tanggalSelesai: inventarisPemeliharaan.tanggalSelesai,
     status: inventarisPemeliharaan.status,
+    kondisiSetelah: inventarisPemeliharaan.kondisiSetelah,
     biaya: inventarisPemeliharaan.biaya,
     pelaksana: inventarisPemeliharaan.pelaksana,
     deskripsi: inventarisPemeliharaan.deskripsi,
@@ -590,6 +591,7 @@ export async function createPemeliharaan(villageId:number,input:{
 
 export async function updateStatusPemeliharaan(villageId:number,id:number,input:{
   status:"terjadwal"|"dalam_proses"|"selesai"|"dibatalkan";
+  kondisiSetelah?:"baik"|"rusak_ringan"|"rusak_berat"|"dalam_perbaikan"|null;
   jenis?:string;tanggalRencana?:string;biaya?:string;pelaksana?:string|null;deskripsi?:string|null;
   tanggalSelesai:string|null;hasil:string|null;
 },actorName:string) {
@@ -601,10 +603,15 @@ export async function updateStatusPemeliharaan(villageId:number,id:number,input:
     await tx.update(inventarisPemeliharaan).set(input).where(and(
       eq(inventarisPemeliharaan.villageId,villageId),eq(inventarisPemeliharaan.id,id),
     ));
+    if(input.status==="selesai"&&input.kondisiSetelah){
+      await tx.update(inventaris).set({kondisi:input.kondisiSetelah}).where(and(
+        eq(inventaris.villageId,villageId),eq(inventaris.id,before.inventarisId),eq(inventaris.isDeleted,false),
+      ));
+    }
     await tx.insert(inventarisPemeliharaanRiwayat).values({
       villageId,pemeliharaanId:id,inventarisId:before.inventarisId,aksi:"diperbarui",
       statusSebelum:before.status,statusSesudah:input.status,
-      ringkasan:input.hasil??input.deskripsi??input.jenis??"Data pemeliharaan diperbarui",
+      ringkasan:[input.hasil??input.deskripsi??input.jenis??"Data pemeliharaan diperbarui",input.kondisiSetelah?"Kondisi aset: "+input.kondisiSetelah:""].filter(Boolean).join(" · "),
       dilakukanOleh:actorName,
     });
   });
