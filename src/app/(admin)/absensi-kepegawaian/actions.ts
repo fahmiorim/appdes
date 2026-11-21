@@ -143,7 +143,7 @@ export async function unggahDokumenPegawaiAction(fd: FormData) {
 
 export async function simpanPengaturanKehadiranAction(fd: FormData) {
   const hariLibur=fd.getAll("hariLibur").map((x)=>Number(x));
-  await simpanPengaturanKehadiran({jamMasuk:text(fd,"jamMasuk"),jamKeluar:text(fd,"jamKeluar"),hariLibur});
+  await simpanPengaturanKehadiran({jamMasuk:text(fd,"jamMasuk"),jamKeluar:text(fd,"jamKeluar"),hariLibur,latitudeKantor:nullable(fd,"latitudeKantor"),longitudeKantor:nullable(fd,"longitudeKantor"),radiusMeter:Number(text(fd,"radiusMeter")||100),toleransiTerlambatMenit:Number(text(fd,"toleransiTerlambatMenit")||0),wajibGps:fd.get("wajibGps")==="1",wajibFoto:fd.get("wajibFoto")==="1"});
   refresh();
 }
 
