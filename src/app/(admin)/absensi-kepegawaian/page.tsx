@@ -72,11 +72,13 @@ export default async function DashboardAbsensiPage() {
         <h2>Informasi Kepegawaian</h2><p>Ringkasan pegawai aktif yang terhubung ke data Perangkat Desa.</p>
         <div className={styles["ak-info-list"]}>
           <div><span>♙</span><label>Pegawai Aktif</label><b>{data.totalPegawai} orang</b></div>
-          <div><span>♂</span><label>Laki-laki</label><b>{data.komposisi.tetap + data.komposisi.kontrak} orang</b></div>
-          <div><span>♀</span><label>Perempuan</label><b>{data.komposisi.purnaTugas} orang</b></div>
+          <div><span>♂</span><label>Laki-laki</label><b>{data.jenisKelamin.lakiLaki} orang</b></div>
+          <div><span>♀</span><label>Perempuan</label><b>{data.jenisKelamin.perempuan} orang</b></div>
+          <div><span>◷</span><label>Rata-rata Masa Kerja</label><b>{Math.floor(data.rataMasaKerjaBulan/12)} thn {data.rataMasaKerjaBulan%12} bln</b></div>
           <div><span>▣</span><label>Pegawai Kontrak</label><b>{data.komposisi.kontrak} orang</b></div>
+          <div><span>♙</span><label>Akan Purna Tugas</label><b>{data.komposisi.purnaTugas} orang</b></div>
         </div>
-        <p className={styles["ak-note"]}>Data biodata dan status kepegawaian dikelola pada menu Data Pegawai.</p>
+        <div className={styles["ak-actions"]}><Link className={styles["ak-button"]} href="/absensi-kepegawaian/pegawai">Kelola Data Pegawai →</Link></div>
       </section>
     </div>
   </div>;
