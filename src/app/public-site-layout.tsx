@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { muatMenuPublik } from "@/features/publik/application/website-admin";
+
 import styles from "./public-site-layout.module.css";
 
 export type PublicVillageIdentity = {
@@ -65,7 +67,25 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
   { href: "/kontak", label: "Kontak" },
 ];
 
-export function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Props) {
+export async function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Props) {
+  const configuredMenu = await muatMenuPublik(desa.id);
+  const menu =
+    configuredMenu.length > 0
+      ? configuredMenu
+          .filter((item) => item.parentId === null)
+          .map((item) => {
+            const children = configuredMenu.filter((child) => child.parentId === item.id);
+            return children.length > 0
+              ? {
+                  label: item.nama,
+                  children: [
+                    { href: item.link, label: item.nama },
+                    ...children.map((child) => ({ href: child.link, label: child.nama })),
+                  ],
+                }
+              : { href: item.link, label: item.nama };
+          })
+      : navigation;
   return (
     <>
       <header className={styles.header}>
@@ -93,7 +113,7 @@ export function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Props) {
           </Link>
 
           <nav className={styles.nav} aria-label="Navigasi utama">
-            {navigation.map((item) =>
+            {menu.map((item) =>
               "href" in item ? (
                 <Link
                   key={item.href}
