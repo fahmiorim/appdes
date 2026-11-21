@@ -8,7 +8,11 @@ import { verifySession } from "@/lib/dal";
 
 export const metadata: Metadata = { title: "Cuti & Izin" };
 
-export default async function CutiIzinPage() {
+export default async function CutiIzinPage({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
+  const params=await searchParams;
+  const query=Array.isArray(params.q)?params.q[0]??"":params.q??"";
+  const jenisFilter=Array.isArray(params.jenis)?params.jenis[0]??"":params.jenis??"";
+  const statusFilter=Array.isArray(params.status)?params.status[0]??"":params.status??"";
   const [rows, pegawai, kuota, user] = await Promise.all([daftarCuti(), daftarPegawai(), ringkasanKuotaCuti(), verifySession()]);
   const canManage = hasPermission(user.permissions, "cuti-izin", "update");
   const disetujui = rows.filter((x) => x.status === "disetujui").length;
@@ -37,6 +41,11 @@ export default async function CutiIzinPage() {
   const monthLabel = new Intl.DateTimeFormat("id-ID", { month: "long", year: "numeric", timeZone: "Asia/Jakarta" }).format(new Date(Date.UTC(tahun, bulan - 1, 1)));
   const jenisLabel: Record<string, string> = { cuti_tahunan: "Cuti Tahunan", cuti_sakit: "Cuti Sakit", izin: "Izin", cuti_penting: "Cuti Penting" };
   const statusClass: Record<string, string> = { disetujui: styles.hadir, menunggu: styles.menunggu, ditolak: styles.ditolak };
+  const filteredRows=rows.filter((x)=>
+    (!query||x.nama.toLocaleLowerCase("id-ID").includes(query.toLocaleLowerCase("id-ID"))) &&
+    (!jenisFilter||x.jenis===jenisFilter) &&
+    (!statusFilter||x.status===statusFilter)
+  );
 
   return <div className="modul-page">
     <div className="page-heading"><div><span className="eyebrow">ABSENSI & KEPEGAWAIAN</span><h1>Cuti & Izin</h1><p>Kelola pengajuan, persetujuan, dan riwayat cuti serta izin perangkat desa.</p></div></div>
@@ -67,9 +76,15 @@ export default async function CutiIzinPage() {
             <button className={styles["ak-button"]}>Ajukan Cuti / Izin</button>
           </form>
         </details> : null}
+        <form className={styles["ak-filter"]} method="get">
+          <label>Cari pegawai<input type="search" name="q" placeholder="Cari nama pegawai..." defaultValue={query}/></label>
+          <label>Jenis<select name="jenis" defaultValue={jenisFilter}><option value="">Semua Jenis</option><option value="cuti_tahunan">Cuti Tahunan</option><option value="cuti_sakit">Cuti Sakit</option><option value="izin">Izin</option><option value="cuti_penting">Cuti Penting</option></select></label>
+          <label>Status<select name="status" defaultValue={statusFilter}><option value="">Semua Status</option><option value="disetujui">Disetujui</option><option value="menunggu">Menunggu</option><option value="ditolak">Ditolak</option></select></label>
+          <button className={styles["ak-button"]} type="submit">⌕ Filter</button>
+        </form>
         <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}>
           <thead><tr><th>Nama Pegawai</th><th>Jenis</th><th>Tanggal / Durasi</th><th>Alasan</th><th>Status</th><th>Aksi</th></tr></thead>
-          <tbody>{rows.map((x) => <tr key={x.id}>
+          <tbody>{filteredRows.map((x) => <tr key={x.id}>
             <td><strong>{x.nama}</strong><br/><small>{x.jabatan ?? "—"}</small></td>
             <td>{jenisLabel[x.jenis] ?? x.jenis}</td>
             <td>{x.mulai} – {x.selesai}<br/><small>{x.durasi} hari kerja</small></td>
@@ -83,7 +98,7 @@ export default async function CutiIzinPage() {
             </form></details> : "—"}</td>
           </tr>)}</tbody>
         </table></div>
-        {!rows.length ? <div className={styles["ak-empty"]}>Belum ada pengajuan cuti atau izin.</div> : null}
+        {!filteredRows.length ? <div className={styles["ak-empty"]}>{rows.length?"Tidak ada pengajuan yang sesuai filter.":"Belum ada pengajuan cuti atau izin."}</div> : null}
       </section>
 
       <div className={styles["ak-side-stack"]}>
