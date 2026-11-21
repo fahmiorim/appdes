@@ -5,7 +5,7 @@ import { requirePermission } from "@/lib/dal";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { keamananSchema } from "@/features/pengguna/domain/keamanan";
-import { createBlockedIp, deleteBlockedIp, saveSecuritySettings } from "@/features/pengguna/infrastructure/keamanan-repository";
+import { createBlockedIp, DEFAULT_SECURITY_SETTINGS, deleteBlockedIp, saveSecuritySettings } from "@/features/pengguna/infrastructure/keamanan-repository";
 import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
 import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 
@@ -51,5 +51,13 @@ export async function hapusBlokirIpAction(formData: FormData): Promise<void> {
   if (!Number.isInteger(id) || id < 1) throw new Error("ID blokir IP tidak valid.");
   await deleteBlockedIp(villageId, id);
   await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.pengaturanUpdate, resource: RESOURCES.pengguna, details: { blockedIpRemoved: true } });
+  revalidatePath("/pengaturan/pengguna/keamanan");
+}
+
+export async function resetKeamananAction(): Promise<void> {
+  const user = await requirePermission(RESOURCES.pengguna, "update");
+  const villageId = await resolveVillageId(user);
+  await saveSecuritySettings(villageId, user.id, DEFAULT_SECURITY_SETTINGS);
+  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.pengaturanUpdate, resource: RESOURCES.pengguna, details: { securityPolicyReset: true } });
   revalidatePath("/pengaturan/pengguna/keamanan");
 }
