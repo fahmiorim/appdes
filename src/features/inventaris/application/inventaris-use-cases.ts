@@ -452,6 +452,17 @@ export async function ubahStatusPemeliharaan(input:{
   const user=await requirePermission(INVENTARIS_RESOURCE,"update");
   const villageId=await resolveVillageId(user);
   if(input.biaya!==undefined&&(!Number.isFinite(input.biaya)||input.biaya<0)) throw validationError("Biaya pemeliharaan tidak valid.");
+  if(input.tanggalRencana){
+    const rencana=new Date(input.tanggalRencana+"T00:00:00Z");
+    if(Number.isNaN(rencana.getTime())||rencana.toISOString().slice(0,10)!==input.tanggalRencana) throw validationError("Tanggal rencana tidak valid.");
+  }
+  if(input.status==="selesai"){
+    if(!input.tanggalSelesai) throw validationError("Tanggal selesai wajib diisi untuk pemeliharaan yang selesai.");
+    const selesai=new Date(input.tanggalSelesai+"T00:00:00Z");
+    const rencana=new Date((input.tanggalRencana??"")+"T00:00:00Z");
+    if(Number.isNaN(selesai.getTime())||selesai.toISOString().slice(0,10)!==input.tanggalSelesai||selesai<rencana) throw validationError("Tanggal selesai tidak boleh lebih awal dari tanggal rencana.");
+    if(!input.hasil?.trim()) throw validationError("Hasil pekerjaan wajib diisi ketika pemeliharaan selesai.");
+  }
   await updateStatusPemeliharaan(villageId,input.id,{
     status:input.status,jenis:input.jenis?.trim(),tanggalRencana:input.tanggalRencana,
     biaya:input.biaya?.toFixed(2),pelaksana:input.pelaksana?.trim()||null,
