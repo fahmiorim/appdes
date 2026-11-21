@@ -28,7 +28,7 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
     </section>
     <section className={styles["ak-card"]}>
       <h2>Rekap Absensi Pegawai</h2><p>Atur tanggal untuk melihat catatan kehadiran dan melakukan koreksi manual.</p>
-      <form className={styles["ak-filter"]} method="get"><label>Tanggal <input type="date" name="tanggal" defaultValue={tanggal}/></label><button className={styles["ak-button"]} type="submit">Tampilkan</button></form>
+      <form className={styles["ak-filter"]} method="get"><label>Tanggal <input type="date" name="tanggal" defaultValue={tanggal}/></label><button className={styles["ak-button"]} type="submit">Tampilkan</button><a className={styles["ak-button"]} href={"/absensi-kepegawaian/absensi/ekspor?tanggal="+tanggal}>Export CSV</a></form>
       <div className={styles["ak-table-wrap"]}><table className={styles["ak-table"]}><thead><tr><th>No.</th><th>Nama Pegawai</th><th>Jabatan</th><th>Jam Masuk</th><th>Jam Pulang</th><th>Status</th><th>Aksi</th></tr></thead><tbody>
         {rows.map((row,i)=><tr key={row.pegawaiId}><td>{i+1}</td><td>{row.nama}</td><td>{row.jabatan??"—"}</td><td>{row.jamMasuk??"—"}</td><td>{row.jamKeluar??"—"}</td><td><span className={`${styles["ak-badge"]} ${styles[row.status??"tidak_hadir"]??""}`}>{statusLabel[row.status??"tidak_hadir"]??"Tidak Hadir"}</span></td><td><details><summary>Ubah</summary>
           <form action={absensiManualAction} className={styles["ak-form"]}>
