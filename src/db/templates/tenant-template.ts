@@ -223,6 +223,9 @@ export const TENANT_TEMPLATE = {
     { roleSlug: "administrator", moduleSlug: "website-dokumen", access: "manage" },
 
     { roleSlug: "administrator", moduleSlug: "pemerintahan-desa", access: "manage" },
+    { roleSlug: "sekretaris", moduleSlug: "pemerintahan-desa", access: "read" },
+    { roleSlug: "operator", moduleSlug: "pemerintahan-desa", access: "read" },
+    { roleSlug: "kepala-desa", moduleSlug: "pemerintahan-desa", access: "read" },
     { roleSlug: "administrator", moduleSlug: "pemerintahan-dashboard", access: "manage" },
     { roleSlug: "administrator", moduleSlug: "perangkat-desa", access: "manage" },
     { roleSlug: "administrator", moduleSlug: "lembaga-desa", access: "manage" },
