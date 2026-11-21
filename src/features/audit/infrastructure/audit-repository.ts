@@ -185,3 +185,10 @@ export async function listAuditLogsLintasDesa(
     pageCount: Math.max(1, Math.ceil(total / pageSize)),
   };
 }
+
+export async function countAuditEvents(villageId: number, createdAfter: Date): Promise<Record<string, number>> {
+  const rows = await db.select({ event: auditLogs.event, total: count() }).from(auditLogs)
+    .where(and(eq(auditLogs.villageId, villageId), gte(auditLogs.createdAt, createdAfter)))
+    .groupBy(auditLogs.event);
+  return Object.fromEntries(rows.map((row) => [row.event, Number(row.total)]));
+}
