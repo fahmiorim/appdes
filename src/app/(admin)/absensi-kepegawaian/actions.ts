@@ -16,6 +16,7 @@ import {
   simpanDokumenPegawai,
   simpanPengaturanKehadiran,
   hapusRiwayatPegawai,
+  ubahRiwayatPegawai,
   hapusDokumenPegawai,
 } from "@/features/kepegawaian/application/use-cases";
 
@@ -129,5 +130,15 @@ export async function hapusRiwayatPegawaiAction(fd:FormData) {
 
 export async function hapusDokumenPegawaiAction(fd:FormData) {
   await hapusDokumenPegawai(number(fd,"id"));
+  refresh();
+}
+
+
+export async function ubahRiwayatPegawaiAction(fd:FormData) {
+  await ubahRiwayatPegawai({
+    id:number(fd,"id"),pegawaiId:number(fd,"pegawaiId"),jabatan:text(fd,"jabatan"),
+    unitKerja:nullable(fd,"unitKerja"),nomorSk:nullable(fd,"nomorSk"),
+    mulai:text(fd,"mulai"),selesai:nullable(fd,"selesai"),keterangan:nullable(fd,"keterangan"),
+  });
   refresh();
 }
