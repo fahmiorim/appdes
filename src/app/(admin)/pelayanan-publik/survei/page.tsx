@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getHasilSurveiData, getSurveiPageData } from "@/features/pelayanan/application/survei-use-cases";
+import { klasifikasiSkor } from "@/features/analisis/domain/skor";
 import { hapusSurveiAction } from "./actions";
 
 export const metadata = { title: "Survei & Kepuasan Masyarakat" };
@@ -21,7 +22,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ t
     <nav className="quick-actions" aria-label="Navigasi survei"><span className="button button-primary">Dashboard Survei</span><Link className="button button-secondary" href="#daftar-survei">Kelola Survei</Link><Link className="button button-secondary" href="#hasil-survei">Hasil Survei</Link><Link className="button button-secondary" href="#ulasan">Ulasan & Saran</Link></nav>
     <div className="dashboard-grid">
       <section className="modul-card"><h2>Komposisi Penilaian Kepuasan</h2><p>Distribusi klasifikasi dari responden yang memiliki skor terukur.</p><div className="survey-results-bars">{distribution.map(item=><div className="survey-result-row" key={item.label}><div><strong>{item.label}</strong><span>{item.total.toLocaleString("id-ID")} responden</span></div><div className="survey-result-track"><i style={{width:(item.total/maxDistribution*100)+"%"}}/></div></div>)}</div>{scored===0?<p className="modul-empty">Belum ada penilaian terukur.</p>:null}</section>
-      <section className="modul-card"><h2>Ringkasan Analisis</h2><div className="activity-list"><p><strong>Indeks Kepuasan:</strong> {average===null?"Belum tersedia":average.toFixed(1)+" / 100"}</p><p><strong>Kategori:</strong> {average===null?"Belum tersedia":average>=88.31?"Sangat Baik":average>=76.61?"Baik":average>=65?"Cukup":"Kurang"}</p><p><strong>Responden terukur:</strong> {scored.toLocaleString("id-ID")}</p><p><strong>Survei aktif:</strong> {active.toLocaleString("id-ID")}</p></div></section>
+      <section className="modul-card"><h2>Ringkasan Analisis</h2><div className="activity-list"><p><strong>Indeks Kepuasan:</strong> {average===null?"Belum tersedia":average.toFixed(1)+" / 100"}</p><p><strong>Kategori:</strong> {average===null?"Belum tersedia":klasifikasiSkor(average)}</p><p><strong>Responden terukur:</strong> {scored.toLocaleString("id-ID")}</p><p><strong>Survei aktif:</strong> {active.toLocaleString("id-ID")}</p></div></section>
     </div>
     {params.tersimpan ? <div className="alert alert-info">Survei berhasil disimpan.</div> : null}
     {params.dihapus ? <div className="alert alert-info">Survei berhasil dihapus.</div> : null}
