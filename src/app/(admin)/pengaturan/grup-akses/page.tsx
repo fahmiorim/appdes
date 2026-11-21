@@ -6,6 +6,8 @@ import { getGrupAksesAdminData } from "@/features/pengguna/application/pengguna-
 
 import { buatRoleAction, hapusRoleAction, simpanIzinAction, ubahRoleAction } from "./actions";
 import { DialogRole } from "./dialog-role";
+import { DialogSalinRole } from "./dialog-salin-role";
+import { salinRoleAction } from "./salin-role-action";
 import { FormIzin } from "./form-izin";
 
 export const metadata: Metadata = {
@@ -108,6 +110,7 @@ export default async function GrupAksesPage({
                     </span>
                   </Link>
                   <div className="pengguna-role-aksi">
+                    {data.canUpdate ? <DialogSalinRole role={{ id: role.id, name: role.name }} aksi={salinRoleAction} /> : null}
                     {data.canUpdate && !role.isSystem ? (
                       <DialogRole
                         aksi={ubahRoleAction}
