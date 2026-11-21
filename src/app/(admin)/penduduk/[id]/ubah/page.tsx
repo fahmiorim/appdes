@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
 import { getPendudukFormData } from "@/features/penduduk/application/use-cases";
 import { PENDUDUK_RESOURCE } from "@/features/penduduk/domain/penduduk";
 import { hasPermission } from "@/features/rbac/application/authorization";
@@ -27,7 +28,8 @@ export default async function UbahPendudukPage({ params }: { params: Promise<{ i
   if (!penduduk) notFound();
 
   return (
-    <div className="modul-page penduduk-page">
+    <div className="modul-page penduduk-page data-kependudukan-page">
+      <DataKependudukanNav active="/penduduk" />
       <Link className="penduduk-back" href={`/penduduk/${penduduk.id}`}>
         ← Kembali ke Detail Penduduk
       </Link>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { DataKependudukanNav } from "@/app/(admin)/data-kependudukan-nav";
 import { getPendudukDetailData } from "@/features/penduduk/application/use-cases";
 import {
   calculateAge,
@@ -59,7 +60,8 @@ export default async function PendudukDetailPage({ params }: { params: Promise<{
     data.region && (data.region.dusun || data.region.rw || data.region.rt) ? wilayah : null;
 
   return (
-    <div className="modul-page penduduk-page">
+    <div className="modul-page penduduk-page data-kependudukan-page">
+      <DataKependudukanNav active="/penduduk" />
       <Link className="penduduk-back" href="/penduduk">
         ← Kembali ke Data Penduduk
       </Link>

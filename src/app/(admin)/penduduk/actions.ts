@@ -51,6 +51,9 @@ export async function buatPendudukAction(
     const hasil = await createPenduduk(input);
 
     revalidatePath(HALAMAN);
+    revalidatePath("/penduduk/dashboard");
+    revalidatePath("/keluarga");
+    revalidatePath("/statistik/penduduk");
     revalidatePath(`${HALAMAN}/${hasil.id}`);
 
     return successState("Data penduduk berhasil ditambahkan.", hasil);
@@ -73,6 +76,9 @@ export async function ubahPendudukAction(
     await updatePenduduk(id, input);
 
     revalidatePath(HALAMAN);
+    revalidatePath("/penduduk/dashboard");
+    revalidatePath("/keluarga");
+    revalidatePath("/statistik/penduduk");
     revalidatePath(`${HALAMAN}/${id}`);
 
     return successState("Perubahan data penduduk disimpan.", { id });
