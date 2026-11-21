@@ -83,6 +83,7 @@ export const inventaris = mysqlTable(
     satuan: varchar("satuan", { length: 20 }).default("buah"),
     hargaSatuan: decimal("harga_satuan", { precision: 15, scale: 2 }),
     nilaiAkhir: decimal("nilai_akhir", { precision: 15, scale: 2 }),
+    akumulasiPenyusutan: decimal("akumulasi_penyusutan", { precision: 15, scale: 2 }).notNull().default("0"),
     tahunPembelian: int("tahun_pembelian"),
     tanggalPembelian: date("tanggal_pembelian", { mode: "string" }),
     asal: mysqlEnum("asal", INVENTARIS_ASAL),
