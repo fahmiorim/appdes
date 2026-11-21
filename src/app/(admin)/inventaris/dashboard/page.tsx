@@ -26,7 +26,7 @@ export default async function InventarisDashboardPage() {
       <article className={styles.metric}><span>Rusak Ringan / Berat</span><strong>{(count("rusak_ringan")+count("rusak_berat")).toLocaleString("id-ID")} Unit</strong><small>Perlu tindak lanjut</small></article>
       <article className={styles.metric}><span>Dalam Perbaikan</span><strong>{count("dalam_perbaikan").toLocaleString("id-ID")} Unit</strong><small>Status kondisi dalam perbaikan</small></article>
     </section>
-    <nav className={styles.tabs}><Link className={styles.active} href="/inventaris/dashboard">Dashboard</Link><Link href="/inventaris">Daftar Inventaris</Link><Link href="/inventaris/laporan">Laporan &amp; Statistik</Link><Link href="/inventaris/mutasi">Mutasi &amp; Pemeliharaan</Link></nav>
+    <nav className={styles.tabs}><Link className={styles.active} href="/inventaris/dashboard">Dashboard</Link><Link href="/inventaris">Daftar Inventaris</Link><Link href="/inventaris/pengelolaan">Pengelolaan Aset</Link><Link href="/inventaris/laporan">Laporan &amp; Statistik</Link><Link href="/inventaris/mutasi">Mutasi &amp; Pemeliharaan</Link></nav>
     <div className={styles.grid}>
       <section className={styles.panel}><div className={styles.panelHead}><div><h2>Komposisi Aset per Kategori</h2><p>Jumlah unit berdasarkan kelompok aset.</p></div><Link className={styles.secondary} href="/inventaris/laporan">Lihat Laporan</Link></div>
         {categories.length?categories.map((x)=><div key={x.kategoriId??x.nama} className={styles.statLine}><span>{x.nama}</span><strong>{Number(x.totalUnit).toLocaleString("id-ID")} unit</strong></div>):<p className={styles.empty}>Belum ada data aset.</p>}
