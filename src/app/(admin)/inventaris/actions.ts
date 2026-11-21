@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 
 import {
   ajukanMutasi,
-  hapusInventaris,
   hapusInventarisKategori,
   unggahDokumenInventaris,
   hapusDokumenInventarisUseCase,
@@ -58,12 +57,6 @@ export async function simpanInventarisAction(fd: FormData) {
   const result = await saveInventaris(parsed,id);
   refresh();
   redirect(id ? "/inventaris/"+id+"?saved=1" : "/inventaris?created=1");
-}
-
-export async function hapusInventarisAction(fd: FormData) {
-  await hapusInventaris(positiveId(text(fd,"id")));
-  refresh();
-  redirect("/inventaris?deleted=1");
 }
 
 export async function simpanKategoriInventarisAction(fd: FormData) {
