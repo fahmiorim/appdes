@@ -22,6 +22,7 @@ export async function simpanKeamananAction(formData: FormData): Promise<void> {
     sessionTimeoutMinutes: formData.get("sessionTimeoutMinutes"),
     autoLogoutInactive: formData.get("autoLogoutInactive") === "on",
     concurrentLogin: formData.get("concurrentLogin") === "on",
+    requireTwoFactorForAllUsers: formData.get("requireTwoFactorForAllUsers") === "on",
     ipRestrictionEnabled: formData.get("ipRestrictionEnabled") === "on",
     allowedIps: rawIps,
   });
