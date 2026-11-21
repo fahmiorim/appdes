@@ -19,13 +19,13 @@ const pct = (realisasi: string, pagu: string) => {
 };
 
 export default async function KeuanganPage() {
-  const tahun = new Date().getFullYear();
-  const [keuangan, pembangunan, bulanan] = await Promise.all([
-    listKeuangan(tahun),
-    getKeuanganBulanan(tahun),
+  const keuangan = await listKeuangan();
+  const tahun = keuangan.tahun;
+  const [pembangunan, bulanan] = await Promise.all([
     listPembangunan({ search: "", tahun, status: "", page: 1, pageSize: 1000 }).catch(() => ({
-      rows: [], total: 0, page: 1, pageSize: 5, pageCount: 1,
+      rows: [], total: 0, page: 1, pageSize: 1000, pageCount: 1,
     })),
+    getKeuanganBulanan(tahun),
   ]);
   const akun = new Map(keuangan.rows.map((row) => [row.templateUuid, row]));
   const pendapatan = akun.get("4");
