@@ -146,3 +146,20 @@
 .ak-side-stack .ak-calendar-day{min-height:43px}
 @media(max-width:1250px){.ak-side-stack{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.ak-side-stack{grid-template-columns:1fr}}
+
+.ak-profile-head{display:flex;align-items:center;gap:14px;padding:5px 0 15px}
+.ak-profile-avatar{display:grid;place-items:center;flex:0 0 84px;width:84px;height:96px;border-radius:14px;background:linear-gradient(145deg,#f4edff,#d9c8ff);color:#5b20ca;font-size:24px;font-weight:850;box-shadow:inset 0 0 0 1px #e3d5ff}
+.ak-profile-head h2{font-size:18px;margin:0 0 4px}
+.ak-profile-head h2:before{display:none}
+.ak-profile-head p{margin:0 0 8px}
+.ak-profile-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;margin:8px 0 13px;padding:4px;border:1px solid #e8e1f5;border-radius:11px;background:#faf8ff}
+.ak-profile-tabs a{padding:9px 4px;border-radius:8px;color:#51496b;text-align:center;text-decoration:none;font-size:10px;font-weight:750}
+.ak-profile-tabs a:hover{background:#eee7ff;color:#5720c9}
+.ak-calendar-month-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#f1eaff;color:#6722df;font-size:20px}
+.ak-inline-form{display:flex;align-items:center;gap:5px;min-width:95px}
+.ak-inline-form input[type=number]{width:54px;min-width:0;height:31px;padding:4px 6px;border:1px solid #ddd6ef;border-radius:7px;background:#fff;color:#211943;font-size:11px}
+.ak-icon-button{display:grid;place-items:center;width:30px;height:30px;border:0;border-radius:8px;background:#eee7ff;color:#5d20d0;font-weight:900;cursor:pointer}
+.ak-quick-actions{margin-top:16px}
+.ak-quick-actions h2{margin-bottom:12px}
+.ak-quick-actions h2:before{display:none}
+@media(max-width:760px){.ak-profile-avatar{flex-basis:64px;width:64px;height:74px}.ak-profile-tabs a{font-size:9px}}
