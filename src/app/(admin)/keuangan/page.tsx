@@ -86,7 +86,7 @@ export default async function KeuanganPage() {
           <div className={styles.statusGrid}>
             <div><strong>{selesai}</strong><span>Selesai</span></div><div><strong>{berjalan}</strong><span>Berjalan</span></div><div><strong>{persiapan}</strong><span>Persiapan</span></div><div><strong>{tertunda}</strong><span>Tertunda</span></div>
           </div>
-          <p className={styles.note}>Angka status dihitung dari kegiatan yang ditampilkan pada daftar terbaru.</p>
+          <p className={styles.note}>Ringkasan status dihitung dari maksimal 1.000 kegiatan terbaru pada tahun anggaran ini.</p>
         </article>
 
         <article className={styles.panel}>
