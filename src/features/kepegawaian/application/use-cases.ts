@@ -437,18 +437,20 @@ function jarakMeter(lat1:number, lon1:number, lat2:number, lon2:number):number {
 }
 
 /** Catat check-in/check-out mandiri untuk akun yang emailnya terhubung ke master pegawai. */
-export async function catatAbsensiMandiri(input:{latitude:number;longitude:number;fotoMasuk?:string|null}) {
+export async function catatAbsensiMandiri(input:{latitude:number|null;longitude:number|null;fotoMasuk?:string|null}) {
   const user=await requireUser();
   const villageId=await resolveVillageId(user);
-  if(!Number.isFinite(input.latitude)||input.latitude < -90||input.latitude > 90||!Number.isFinite(input.longitude)||input.longitude < -180||input.longitude > 180) throw new Error("Koordinat GPS tidak valid.");
+  if((input.latitude===null)!==(input.longitude===null)) throw new Error("Koordinat GPS harus diisi berpasangan.");
+  if(input.latitude!==null&&(!Number.isFinite(input.latitude)||input.latitude < -90||input.latitude > 90||!Number.isFinite(input.longitude)||input.longitude! < -180||input.longitude! > 180)) throw new Error("Koordinat GPS tidak valid.");
   const [pegawai]=await db.select({id:kepegawaianPegawai.id,nama:kepegawaianPegawai.nama}).from(kepegawaianPegawai)
     .where(and(eq(kepegawaianPegawai.villageId,villageId),eq(kepegawaianPegawai.status,"aktif"),eq(kepegawaianPegawai.email,user.email))).limit(1);
   if(!pegawai) throw new Error("Akun belum ditautkan ke data pegawai. Hubungi administrator desa untuk mengisi email akun pada profil pegawai.");
   const [setting]=await db.select().from(kehadiranPengaturan).where(eq(kehadiranPengaturan.villageId,villageId)).limit(1);
   const wajibGps=setting?.wajibGps??true;
   const wajibFoto=setting?.wajibFoto??true;
+  if(wajibGps && (input.latitude===null||input.longitude===null)) throw new Error("Ambil lokasi GPS sebelum mengirim absensi.");
   if(wajibGps && (!setting?.latitudeKantor||!setting?.longitudeKantor)) throw new Error("Lokasi kantor belum dikonfigurasi administrator.");
-  if(wajibGps && setting?.latitudeKantor && setting.longitudeKantor) {
+  if(wajibGps && input.latitude!==null && input.longitude!==null && setting?.latitudeKantor && setting.longitudeKantor) {
     const distance=jarakMeter(input.latitude,input.longitude,Number(setting.latitudeKantor),Number(setting.longitudeKantor));
     if(distance>(setting.radiusMeter??100)) throw new Error(`Anda berada di luar area absensi kantor (jarak sekitar ${Math.round(distance)} meter).`);
   }
@@ -466,7 +468,7 @@ export async function catatAbsensiMandiri(input:{latitude:number;longitude:numbe
   }
   await db.insert(kehadiranPerangkat).values({
     villageId,pegawaiId:pegawai.id,perangkatId:null,tanggal,jamMasuk:now,status:"hadir",
-    latitudeMasuk:String(input.latitude),longitudeMasuk:String(input.longitude),fotoMasuk:input.fotoMasuk??null,
+    latitudeMasuk:input.latitude===null?null:String(input.latitude),longitudeMasuk:input.longitude===null?null:String(input.longitude),fotoMasuk:input.fotoMasuk??null,
   });
   return {aksi:"check_in" as const,nama:pegawai.nama,jam:now};
 }
