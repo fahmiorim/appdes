@@ -5,7 +5,7 @@ import Link from "next/link";
 import styles from "../laporan-statistik.module.css";
 
 type SavedReport = { id: number; judul: string; jenis: string; tahun: number; deskripsi: string | null; createdAt: string };
-const labels: Record<string, string> = { penduduk: "Kependudukan", keuangan: "Keuangan Desa", pembangunan: "Pembangunan", bantuan: "Program Bantuan" };
+const labels: Record<string, string> = { penduduk: "Kependudukan", keuangan: "Keuangan Desa", pembangunan: "Pembangunan", bantuan: "Program Bantuan", aset: "Inventaris & Aset", layanan: "Pelayanan Publik", "surat-masuk": "Surat Masuk", "surat-keluar": "Surat Keluar" };
 
 export function SavedReports({ jenis, tahun }: { jenis: string; tahun: number }) {
   const [items, setItems] = useState<SavedReport[]>([]);
