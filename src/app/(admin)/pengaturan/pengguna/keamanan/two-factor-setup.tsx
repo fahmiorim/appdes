@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import styles from "./keamanan.module.css";
 
-export function TwoFactorSetup({enabled}:{enabled:boolean}){
+export function TwoFactorSetup({enabled,hasEmail,canEmailOtp}:{enabled:boolean;hasEmail:boolean;canEmailOtp:boolean}){
  const [password,setPassword]=useState("");const [method,setMethod]=useState<"totp"|"otp">("totp");const [uri,setUri]=useState("");const [code,setCode]=useState("");const [backup,setBackup]=useState<string[]>([]);const [error,setError]=useState("");const [busy,setBusy]=useState(false);const router=useRouter();
  async function start(){setError("");setBusy(true);try{
   const result=await authClient.twoFactor.enable({password,method,issuer:"FlexiDesa"});
@@ -20,7 +20,7 @@ export function TwoFactorSetup({enabled}:{enabled:boolean}){
  if(enabled)return <section className={styles.card}><h2>🛡️ Autentikasi Dua Faktor (2FA)</h2><p>2FA aktif. Login akun ini memerlukan kode dari metode verifikasi yang telah didaftarkan.</p><span className={styles.enabled}>Aktif dan terverifikasi</span></section>;
  return <section className={styles.card}><h2>🛡️ Autentikasi Dua Faktor (2FA)</h2><p>Tambahkan lapisan keamanan dengan kode email atau aplikasi autentikator.</p>
   {!uri?<div className={styles.setupForm}>
-   <label>Metode verifikasi<select value={method} onChange={e=>setMethod(e.target.value as "totp"|"otp")}><option value="totp">Aplikasi autentikator (TOTP)</option><option value="otp">Kode sekali pakai melalui email</option></select></label>
+   <label>Metode verifikasi<select value={method} onChange={e=>setMethod(e.target.value as "totp"|"otp")}><option value="totp">Aplikasi autentikator (TOTP)</option><option value="otp" disabled={!hasEmail||!canEmailOtp}>Kode sekali pakai melalui email{!hasEmail?" (email akun belum tersedia)":!canEmailOtp?" (layanan email belum dikonfigurasi)":""}</option></select></label>
    <label>Kata sandi akun<input type="password" autoComplete="current-password" placeholder="Kata sandi akun" value={password} onChange={e=>setPassword(e.target.value)}/></label>
    <button type="button" disabled={busy||!password} onClick={start}>{busy?"Memproses...":"Aktifkan 2FA"}</button>
   </div>:<>
