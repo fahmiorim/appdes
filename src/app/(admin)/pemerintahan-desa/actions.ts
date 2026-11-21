@@ -7,8 +7,8 @@ import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-m
 import { requirePermission } from "@/lib/dal";
 
 import {
-  hapusAnggotaLembaga, hapusAreaPeta, hapusJabatanPerangkat, hapusLembagaDesa, hapusPerangkatDesa,
-  simpanAnggotaLembaga, simpanAreaPeta, simpanJabatanPerangkat, simpanLembagaDesa, simpanPerangkatDesa, simpanRiwayatJabatan, hapusRiwayatJabatan, unggahDokumenPemerintahan, hapusDokumenPemerintahan,
+  hapusAnggotaLembaga, hapusAreaPeta, hapusLayerPeta, hapusJabatanPerangkat, hapusLembagaDesa, hapusPerangkatDesa,
+  simpanAnggotaLembaga, simpanAreaPeta, simpanLayerPeta, simpanJabatanPerangkat, simpanLembagaDesa, simpanPerangkatDesa, simpanRiwayatJabatan, hapusRiwayatJabatan, unggahDokumenPemerintahan, hapusDokumenPemerintahan,
 } from "@/features/pemerintahan/application/use-cases";
 import { hapusWilayah, simpanWilayah } from "@/features/wilayah/application/use-cases";
 
@@ -195,5 +195,24 @@ export async function hapusDokumenPemerintahanAction(fd: FormData) {
   const id = numberOrNull(value(fd, "id"));
   if (!id) throw new Error("ID dokumen tidak valid.");
   await hapusDokumenPemerintahan(id);
+  refresh();
+}
+
+export async function simpanLayerPetaAction(fd: FormData) {
+  const id = numberOrNull(value(fd, "id"));
+  const nama = value(fd, "nama");
+  if (!nama) throw new Error("Nama layer wajib diisi.");
+  await simpanLayerPeta(id, {
+    nama, color: value(fd, "color") || "#7c3aed",
+    enabled: value(fd, "enabled") === "on" ? 1 : 0,
+    sortOrder: Number(value(fd, "sortOrder") || 0),
+  });
+  refresh();
+}
+
+export async function hapusLayerPetaAction(fd: FormData) {
+  const id = numberOrNull(value(fd, "id"));
+  if (!id) throw new Error("ID layer tidak valid.");
+  await hapusLayerPeta(id);
   refresh();
 }
