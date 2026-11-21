@@ -46,14 +46,14 @@ export async function sinkronkanPegawaiPerangkat(villageId: number) {
     id: perangkatDesa.id, nama: perangkatDesa.nama, nip: perangkatDesa.nip,
     nik: perangkatDesa.nik, jenisKelamin: perangkatDesa.jenisKelamin,
     tempatLahir: perangkatDesa.tempatLahir, tanggalLahir: perangkatDesa.tanggalLahir,
-    foto: perangkatDesa.foto, jabatan: jabatanPerangkat.nama,
+    foto: perangkatDesa.foto, jabatan: jabatanPerangkat.nama, status: perangkatDesa.status,
   }).from(perangkatDesa)
     .leftJoin(jabatanPerangkat, and(eq(perangkatDesa.jabatanId, jabatanPerangkat.id), eq(jabatanPerangkat.villageId, villageId)))
-    .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.status, "aktif")));
+    .where(eq(perangkatDesa.villageId, villageId));
   for (const item of perangkat) {
     const [existing] = await db.select({ id: kepegawaianPegawai.id }).from(kepegawaianPegawai)
       .where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.perangkatId, item.id))).limit(1);
-    if (!existing) {
+    if (!existing && item.status === "aktif") {
       await db.insert(kepegawaianPegawai).values({
         villageId, perangkatId: item.id, nama: item.nama, nip: item.nip, nik: item.nik,
         jenisKelamin: item.jenisKelamin, tempatLahir: item.tempatLahir,
@@ -64,7 +64,7 @@ export async function sinkronkanPegawaiPerangkat(villageId: number) {
       await db.update(kepegawaianPegawai).set({
         nama: item.nama, nip: item.nip, nik: item.nik, jenisKelamin: item.jenisKelamin,
         tempatLahir: item.tempatLahir, tanggalLahir: item.tanggalLahir,
-        foto: item.foto, jabatan: item.jabatan,
+        foto: item.foto, jabatan: item.jabatan, status: item.status === "aktif" ? "aktif" : "nonaktif",
       }).where(and(eq(kepegawaianPegawai.villageId, villageId), eq(kepegawaianPegawai.id, existing.id)));
     }
   }
