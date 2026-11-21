@@ -13,7 +13,6 @@ import {
   kepegawaianDokumen,
   perangkatDesa,
   jabatanPerangkat,
-  users,
 } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { requirePermission, requireUser } from "@/lib/dal";
@@ -210,7 +209,7 @@ export async function daftarAbsensiRentang(mulai: string, selesai: string) {
       status: kehadiranPerangkat.status, catatan: kehadiranPerangkat.catatan,
     }).from(kehadiranPerangkat)
       .where(and(eq(kehadiranPerangkat.villageId, villageId), gte(kehadiranPerangkat.tanggal, mulai), lte(kehadiranPerangkat.tanggal, selesai))),
-    db.select({ jamMasuk: kehadiranPengaturan.jamMasuk, hariLibur: kehadiranPengaturan.hariLibur })
+    db.select({ jamMasuk: kehadiranPengaturan.jamMasuk, hariLibur: kehadiranPengaturan.hariLibur, toleransiTerlambatMenit: kehadiranPengaturan.toleransiTerlambatMenit })
       .from(kehadiranPengaturan).where(eq(kehadiranPengaturan.villageId, villageId)).limit(1),
   ]);
   let hariLibur: number[] = [0, 6];
@@ -230,7 +229,7 @@ export async function daftarAbsensiRentang(mulai: string, selesai: string) {
       hasil.push({
         tanggal, nama: person.nama, jabatan: person.jabatan, jamMasuk,
         jamKeluar: row?.jamKeluar ?? null, status, catatan: row?.catatan ?? null,
-        terlambat: status === "hadir" && Boolean(jamMasuk && setting[0]?.jamMasuk && jamMasuk > setting[0].jamMasuk),
+        terlambat: status === "hadir" && Boolean(jamMasuk && setting[0]?.jamMasuk && (Number(jamMasuk.slice(0,2))*60+Number(jamMasuk.slice(3,5))) > (Number(setting[0].jamMasuk.slice(0,2))*60+Number(setting[0].jamMasuk.slice(3,5))+(setting[0].toleransiTerlambatMenit??0))),
       });
     }
   }
@@ -446,8 +445,8 @@ export async function catatAbsensiMandiri(input:{latitude:number;longitude:numbe
     .where(and(eq(kepegawaianPegawai.villageId,villageId),eq(kepegawaianPegawai.status,"aktif"),eq(kepegawaianPegawai.email,user.email))).limit(1);
   if(!pegawai) throw new Error("Akun belum ditautkan ke data pegawai. Hubungi administrator desa untuk mengisi email akun pada profil pegawai.");
   const [setting]=await db.select().from(kehadiranPengaturan).where(eq(kehadiranPengaturan.villageId,villageId)).limit(1);
-  if(setting?.wajibGps && (!setting.latitudeKantor||!setting.longitudeKantor)) throw new Error("Lokasi kantor belum dikonfigurasi administrator.");
-  if(setting?.wajibGps && setting.latitudeKantor && setting.longitudeKantor) {
+  const wajibGps=setting?.wajibGps??true;\n  const wajibFoto=setting?.wajibFoto??true;\n  if(wajibGps && (!setting?.latitudeKantor||!setting?.longitudeKantor)) throw new Error("Lokasi kantor belum dikonfigurasi administrator.");
+  if(wajibGps && setting?.latitudeKantor && setting.longitudeKantor) {
     const distance=jarakMeter(input.latitude,input.longitude,Number(setting.latitudeKantor),Number(setting.longitudeKantor));
     if(distance>(setting.radiusMeter??100)) throw new Error(`Anda berada di luar area absensi kantor (jarak sekitar ${Math.round(distance)} meter).`);
   }
@@ -456,7 +455,7 @@ export async function catatAbsensiMandiri(input:{latitude:number;longitude:numbe
   const [existing]=await db.select().from(kehadiranPerangkat)
     .where(and(eq(kehadiranPerangkat.villageId,villageId),eq(kehadiranPerangkat.pegawaiId,pegawai.id),eq(kehadiranPerangkat.tanggal,tanggal))).limit(1);
   if(existing?.jamKeluar) throw new Error("Absensi hari ini sudah lengkap. Check-in dan check-out sudah tercatat.");
-  if(!existing && setting?.wajibFoto && !input.fotoMasuk) throw new Error("Foto selfie wajib dilampirkan saat check-in.");
+  if(!existing && wajibFoto && !input.fotoMasuk) throw new Error("Foto selfie wajib dilampirkan saat check-in.");
   if(existing) {
     if(!existing.jamMasuk) throw new Error("Data absensi hari ini perlu diperiksa administrator.");
     await db.update(kehadiranPerangkat).set({jamKeluar:now})
