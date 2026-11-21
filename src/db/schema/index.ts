@@ -87,5 +87,6 @@ export * from "./pengguna-shortcut";
 export * from "./pengguna-menu-urutan";
 export * from "./plugin-registry";
 export * from "./login-otp";
+export * from "./keamanan";
 export * from "./umpan-balik";
 export * from "./laporan-statistik";
