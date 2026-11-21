@@ -8,8 +8,7 @@ function pilihanText(value: string | null, skor: string | null) {
   try { const parsed: unknown = JSON.parse(value); if (!Array.isArray(parsed)) return "";
     let scoreMap: Record<string, number> = {};
     try { const scoreParsed: unknown = skor ? JSON.parse(skor) : {}; if (scoreParsed && typeof scoreParsed === "object" && !Array.isArray(scoreParsed)) scoreMap = scoreParsed as Record<string, number>; } catch { /* skor belum dikonfigurasi */ }
-    return parsed.map((item) => String(item) + "|" + (scoreMap[String(item)] ?? "")).join("
-"); }
+    return parsed.map((item) => String(item) + "|" + (scoreMap[String(item)] ?? "")).join(String.fromCharCode(10)); }
   catch { return ""; }
 }
 export default async function Page({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ soal?: string }> }) {
