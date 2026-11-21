@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
+import { daftarLembagaPublik } from "@/features/pemerintahan/application/publik";
 import {
   daftarAlbumGaleri,
   daftarFotoAlbum,
@@ -90,10 +91,11 @@ const fungsiUtama = [
 
 export default async function PemerintahanPage() {
   const desa = await getIdentitasFromRequest();
-  const [perangkat, slides, albums] = await Promise.all([
+  const [perangkat, slides, albums, lembagaPublik] = await Promise.all([
     daftarPerangkatPublik(desa.id),
     daftarSliderBeranda(desa.id),
     daftarAlbumGaleri(desa.id),
+    daftarLembagaPublik(desa.id),
   ]);
   const photoGroups = await Promise.all(
     albums
@@ -288,60 +290,15 @@ export default async function PemerintahanPage() {
         </section>
 
         <section className={styles.sectionCard} id="bpd">
-          <div className={styles.sectionHeading}>
-            <div>
-              <h2>
-                <span>♧</span> Badan Permusyawaratan Desa (BPD)
-              </h2>
-              <p>Lembaga yang menampung dan menyalurkan aspirasi masyarakat desa.</p>
-            </div>
-            <span className={styles.sectionHint}>Informasi BPD</span>
-          </div>
-          <div className={styles.bpdContent}>
-            {galleryPhotos[1] && mediaUrl(galleryPhotos[1].gambar, desa.id) ? (
-              <div className={styles.bpdImage}>
-                <Image
-                  src={mediaUrl(galleryPhotos[1].gambar, desa.id)!}
-                  alt={galleryPhotos[1].judul || "Dokumentasi desa"}
-                  fill
-                  unoptimized
-                  sizes="280px"
-                />
-              </div>
-            ) : (
-              <div className={styles.bpdIllustration}>
-                <span>♧</span>
-                <strong>BPD</strong>
-                <small>Badan Permusyawaratan Desa</small>
-              </div>
-            )}
-            <p className={styles.bpdDescription}>
-              BPD merupakan lembaga permusyawaratan desa yang menjalankan fungsi sesuai ketentuan
-              peraturan perundang-undangan dan menyalurkan aspirasi masyarakat desa.
-            </p>
-            <div className={styles.bpdEmpty}>
-              <span>♙</span>
-              <strong>Data pimpinan dan anggota BPD belum tersedia</strong>
-              <p>
-                Informasi anggota BPD akan ditampilkan setelah dipublikasikan oleh pemerintah desa.
-              </p>
-            </div>
-          </div>
+          <div className={styles.sectionHeading}><div><h2><span>♧</span> Badan Permusyawaratan Desa (BPD)</h2><p>Lembaga permusyawaratan desa yang menyalurkan aspirasi masyarakat.</p></div><span className={styles.sectionHint}>Informasi BPD</span></div>
+          {lembagaPublik.filter((item) => item.jenis === "bpd").length ? lembagaPublik.filter((item) => item.jenis === "bpd").map((item) => (
+            <article className={styles.bpdContent} key={item.id}><div><h3>{item.nama}</h3>{item.deskripsi ? <p className={styles.bpdDescription}>{item.deskripsi}</p> : null}{item.tugasFungsi ? <p>{item.tugasFungsi}</p> : null}{item.dasarHukum ? <small>Dasar hukum: {item.dasarHukum}</small> : null}<p>Masa bakti: {item.masaBaktiMulai ?? "—"} – {item.masaBaktiSelesai ?? "—"}</p></div>
+              {item.anggota.length ? <div className={styles.officialGrid}>{item.anggota.map((person) => <article className={styles.officialCard} key={person.id}><div className={styles.officialPhoto}>{person.foto ? <Image src={mediaUrl(person.foto,desa.id) ?? ""} alt={person.nama} fill unoptimized sizes="100px"/> : <span>{person.nama.slice(0,1)}</span>}</div><div className={styles.officialBody}><h3>{person.nama}</h3><span className={styles.rolePill}>{person.jabatan ?? "Anggota"}</span></div></article>)}</div> : <p className={styles.emptyState}>Susunan anggota belum dipublikasikan.</p>}
+            </article>)) : <div className={styles.emptyState}><strong>Data BPD belum dipublikasikan</strong><p>Informasi BPD akan muncul setelah pemerintah desa mengaktifkan publikasi lembaga dan anggotanya.</p></div>}
         </section>
-
         <section className={styles.sectionCard} id="lembaga">
-          <div className={styles.sectionHeading}>
-            <div>
-              <h2>
-                <span>♧</span> Lembaga Desa
-              </h2>
-              <p>Informasi kelembagaan yang mendukung penyelenggaraan pemerintahan desa.</p>
-            </div>
-          </div>
-          <div className={styles.emptyState}>
-            <strong>Informasi lembaga desa belum dipublikasikan</strong>
-            <p>Daftar lembaga desa akan ditampilkan setelah datanya tersedia.</p>
-          </div>
+          <div className={styles.sectionHeading}><div><h2><span>♧</span> Lembaga Desa</h2><p>Informasi kelembagaan yang mendukung penyelenggaraan pemerintahan desa.</p></div></div>
+          {lembagaPublik.filter((item) => item.jenis !== "bpd").length ? <div className={styles.officialGrid}>{lembagaPublik.filter((item) => item.jenis !== "bpd").map((item) => <article className={styles.officialCard} key={item.id}><div className={styles.officialBody}><h3>{item.nama}</h3><span className={styles.rolePill}>{item.jenis.toUpperCase()}</span>{item.deskripsi ? <p>{item.deskripsi}</p> : null}{item.tugasFungsi ? <p>{item.tugasFungsi}</p> : null}<small>Masa bakti: {item.masaBaktiMulai ?? "—"} – {item.masaBaktiSelesai ?? "—"}</small>{item.anggota.length ? <ul>{item.anggota.map((person) => <li key={person.id}>{person.nama}{person.jabatan ? ` — ${person.jabatan}` : ""}</li>)}</ul> : null}</div></article>)}</div> : <div className={styles.emptyState}><strong>Belum ada lembaga yang dipublikasikan</strong><p>Data lembaga akan tampil setelah status publikasi diaktifkan oleh administrator desa.</p></div>}
         </section>
 
         <section className={styles.sectionCard} id="tugas">
