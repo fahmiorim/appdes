@@ -2,7 +2,7 @@ import "server-only";
 
 import { randomUUID } from "node:crypto";
 import { hashPassword } from "better-auth/crypto";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { accounts, roles, sessions, users } from "@/db/schema";
@@ -184,4 +184,9 @@ export async function updatePengguna(
 
 export async function deletePengguna(id: string): Promise<void> {
   await db.delete(users).where(eq(users.id, id));
+}
+
+export async function countPenggunaDenganRole(villageId: number, roleId: number): Promise<number> {
+  const [row] = await db.select({ total: count() }).from(users).where(and(eq(users.villageId, villageId), eq(users.roleId, roleId)));
+  return row?.total ?? 0;
 }
