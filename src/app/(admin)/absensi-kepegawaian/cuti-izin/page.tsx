@@ -122,6 +122,6 @@ export default async function CutiIzinPage({searchParams}:{searchParams:Promise<
         </section>
       </div>
     </div>
-    <section className={styles["ak-card"]} style={{marginTop:16}}><h2>Informasi Singkat</h2><ul><li>Pengajuan cuti diproses melalui persetujuan pejabat berwenang.</li><li>Cuti tahunan memiliki kuota default 12 hari per tahun.</li><li>Durasi pengajuan dihitung berdasarkan hari kerja Senin–Jumat.</li><li>Status persetujuan dan catatan keputusan tersimpan pada sistem.</li></ul></section>
+    <section className={styles["ak-card"]} style={{marginTop:16}}><h2>Informasi Singkat</h2><ul><li>Pengajuan cuti diproses melalui persetujuan pejabat berwenang.</li><li>Cuti tahunan memiliki kuota default 12 hari per tahun.</li><li>Durasi pengajuan dihitung berdasarkan hari kerja dan konfigurasi hari libur desa.</li><li>Status persetujuan dan catatan keputusan tersimpan pada sistem.</li></ul></section>
   </div>;
 }
