@@ -11,7 +11,7 @@ CREATE TABLE `inventaris_pemeliharaan` (
   `tanggal_rencana` date NOT NULL,
   `tanggal_selesai` date NULL,
   `status` enum('terjadwal','dalam_proses','selesai','dibatalkan') NOT NULL DEFAULT 'terjadwal',
-  `biaya` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `biaya` decimal(15,2) NOT NULL DEFAULT '0',
   `pelaksana` varchar(150) NULL,
   `deskripsi` text NULL,
   `hasil` text NULL,
