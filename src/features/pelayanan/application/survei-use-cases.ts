@@ -59,8 +59,9 @@ export async function simpanSurveiData(id: number | null, raw: {
     mulai: raw.mulai || null, selesai: raw.selesai || null, aktif: raw.aktif ? 1 : 0,
   };
   if (id === null) {
-    const [created] = await db.insert(survey).values({ villageId, ...values });
-    return Number(created.insertId);
+    const [created] = await db.insert(survey).values({ villageId, ...values }).$returningId();
+    if (!created) throw new Error("Gagal membuat survei.");
+    return created.id;
   }
   const [existing] = await db.select({ id: survey.id }).from(survey)
     .where(and(eq(survey.villageId, villageId), eq(survey.id, id))).limit(1);
@@ -114,8 +115,9 @@ export async function simpanSoalSurveiData(surveyId: number, questionId: number 
   const bobot = Math.max(1, Math.min(100, Math.trunc(raw.bobot || 1)));
   const values = { pertanyaan, tipe: raw.tipe, pilihan: raw.tipe === "choice" ? JSON.stringify(choices) : null, bobot };
   if (questionId === null) {
-    const [created] = await db.insert(surveySoal).values({ villageId, surveyId, ...values });
-    return Number(created.insertId);
+    const [created] = await db.insert(surveySoal).values({ villageId, surveyId, ...values }).$returningId();
+    if (!created) throw new Error("Gagal menambahkan pertanyaan.");
+    return created.id;
   }
   const [existing] = await db.select({ id: surveySoal.id }).from(surveySoal)
     .where(and(eq(surveySoal.villageId, villageId), eq(surveySoal.surveyId, surveyId), eq(surveySoal.id, questionId))).limit(1);
