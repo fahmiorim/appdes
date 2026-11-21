@@ -34,7 +34,9 @@ export default async function DetailInventarisPage({params,searchParams}:Props){
         <div className={styles.statLine}><span>Nilai Perolehan / Satuan</span><strong>{formatRupiah(x.hargaSatuan??"0")}</strong></div>
         <div className={styles.statLine}><span>Jumlah Unit</span><strong>{Number(x.jumlah).toLocaleString("id-ID")}</strong></div>
         <div className={styles.statLine}><span>Nilai Total Aset</span><strong>{formatRupiah(x.nilaiAkhir??"0")}</strong></div>
-        <p className={styles.notice} style={{marginTop:12}}>Nilai buku bersih dan akumulasi penyusutan belum tersedia pada skema inventaris saat ini. Nilai yang ditampilkan adalah nilai tercatat.</p>
+        <div className={styles.statLine}><span>Akumulasi Penyusutan</span><strong>{formatRupiah(x.akumulasiPenyusutan??"0")}</strong></div>
+        <div className={styles.statLine}><span>Nilai Buku Saat Ini</span><strong>{formatRupiah((Number(x.nilaiAkhir??0)-Number(x.akumulasiPenyusutan??0)).toFixed(2))}</strong></div>
+        <p className={styles.notice} style={{marginTop:12}}>Akumulasi penyusutan dicatat manual. Nilai buku dihitung dari nilai perolehan dikurangi akumulasi penyusutan.</p>
       </article>
     </section>
     {data.dokumen.some(doc=>doc.mime.startsWith("image/"))?<section className={styles.panel}><div className={styles.panelHead}><div><h2>Foto Aset</h2><p>Foto kondisi dan dokumentasi visual aset yang tersimpan privat.</p></div></div><div className={styles.assetGallery}>{data.dokumen.filter(doc=>doc.mime.startsWith("image/")).map(doc=><a key={doc.id} href={"/inventaris/dokumen/"+doc.id}><img src={"/inventaris/dokumen/"+doc.id+"?inline=1"} alt={doc.nama} loading="lazy"/><span>{doc.nama}</span></a>)}</div></section>:null}
