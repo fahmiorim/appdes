@@ -18,7 +18,7 @@ export async function getDashboardLaporan(tahun?: number) {
   const villageId = await tenant(), year = yearOf(tahun);
   const [pop, finance, project, programs, participants, latest] = await Promise.all([
     db.select({ total: count(), male: sql<number>`SUM(CASE WHEN ${residents.gender}='male' THEN 1 ELSE 0 END)`, female: sql<number>`SUM(CASE WHEN ${residents.gender}='female' THEN 1 ELSE 0 END)` }).from(residents).where(and(eq(residents.villageId, villageId), eq(residents.lifeStatus, "alive"))),
-    db.select({ budget: sql<string>`COALESCE(SUM(${keuangan.anggaran}),0)`, actual: sql<string>`COALESCE(SUM(${keuangan.realisasi}),0)` }).from(keuangan).where(and(eq(keuangan.villageId, villageId), eq(keuangan.tahun, year))),
+    db.select({ budget: sql<string>`COALESCE(SUM(${keuangan.anggaran}),0)`, actual: sql<string>`COALESCE(SUM(${keuangan.realisasi}),0)` }).from(keuangan).where(and(eq(keuangan.villageId, villageId), eq(keuangan.tahun, year), eq(keuangan.templateUuid, "5"))),
     db.select({ total: count(), done: sql<number>`SUM(CASE WHEN ${pembangunanProyek.status}='selesai' THEN 1 ELSE 0 END)`, active: sql<number>`SUM(CASE WHEN ${pembangunanProyek.status}='berjalan' THEN 1 ELSE 0 END)`, avg: sql<number>`COALESCE(AVG(${pembangunanProyek.progres}),0)` }).from(pembangunanProyek).where(and(eq(pembangunanProyek.villageId, villageId), eq(pembangunanProyek.tahunAnggaran, year))),
     db.select({ total: count() }).from(bantuanProgram).where(eq(bantuanProgram.villageId, villageId)),
     db.select({ total: count() }).from(bantuanPeserta).where(eq(bantuanPeserta.villageId, villageId)),
@@ -82,7 +82,7 @@ export async function getRekapAnalisis(tahun?: number) {
   const villageId = await tenant(), year = yearOf(tahun);
   const trend = await Promise.all([year - 2, year - 1, year].map(async y => {
     const [f, p] = await Promise.all([
-      db.select({ budget: sql<string>`COALESCE(SUM(${keuangan.anggaran}),0)`, actual: sql<string>`COALESCE(SUM(${keuangan.realisasi}),0)` }).from(keuangan).where(and(eq(keuangan.villageId, villageId), eq(keuangan.tahun, y))),
+      db.select({ budget: sql<string>`COALESCE(SUM(${keuangan.anggaran}),0)`, actual: sql<string>`COALESCE(SUM(${keuangan.realisasi}),0)` }).from(keuangan).where(and(eq(keuangan.villageId, villageId), eq(keuangan.tahun, y), eq(keuangan.templateUuid, "5"))),
       db.select({ total: count(), done: sql<number>`SUM(CASE WHEN ${pembangunanProyek.status}='selesai' THEN 1 ELSE 0 END)`, progress: sql<number>`COALESCE(AVG(${pembangunanProyek.progres}),0)` }).from(pembangunanProyek).where(and(eq(pembangunanProyek.villageId, villageId), eq(pembangunanProyek.tahunAnggaran, y))),
     ]);
     return { year: y, budget: Number(f[0]?.budget ?? 0), actual: Number(f[0]?.actual ?? 0), projects: Number(p[0]?.total ?? 0), done: Number(p[0]?.done ?? 0), progress: Number(p[0]?.progress ?? 0) };
