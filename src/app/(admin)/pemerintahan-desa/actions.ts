@@ -8,7 +8,7 @@ import { requirePermission } from "@/lib/dal";
 
 import {
   hapusAnggotaLembaga, hapusAreaPeta, hapusLayerPeta, hapusJabatanPerangkat, hapusLembagaDesa, hapusPerangkatDesa,
-  simpanAnggotaLembaga, simpanAreaPeta, simpanLayerPeta, simpanJabatanPerangkat, simpanLembagaDesa, simpanPerangkatDesa, simpanRiwayatJabatan, hapusRiwayatJabatan, unggahDokumenPemerintahan, hapusDokumenPemerintahan, ubahMetadataDokumenPemerintahan,
+  simpanAnggotaLembaga, simpanAreaPeta, simpanLayerPeta, simpanJabatanPerangkat, simpanLembagaDesa, simpanPerangkatDesa, simpanRiwayatJabatan, hapusRiwayatJabatan, unggahDokumenPemerintahan, hapusDokumenPemerintahan, ubahMetadataDokumenPemerintahan, simpanProfilWilayah,
 } from "@/features/pemerintahan/application/use-cases";
 import { hapusWilayah, simpanWilayah } from "@/features/wilayah/application/use-cases";
 
@@ -226,6 +226,21 @@ export async function ubahDokumenPemerintahanAction(fd: FormData) {
   await ubahMetadataDokumenPemerintahan(id, {
     judul, nomor: value(fd, "nomor") || null, tanggal: value(fd, "tanggal") || null,
     tampilPublik: value(fd, "tampilPublik") === "on",
+  });
+  refresh();
+}
+
+export async function simpanProfilWilayahAction(fd: FormData) {
+  await simpanProfilWilayah({
+    luasWilayah: value(fd, "luasWilayah") || null,
+    batasUtara: value(fd, "batasUtara") || null,
+    batasSelatan: value(fd, "batasSelatan") || null,
+    batasTimur: value(fd, "batasTimur") || null,
+    batasBarat: value(fd, "batasBarat") || null,
+    ketinggian: value(fd, "ketinggian") || null,
+    suhuRataRata: value(fd, "suhuRataRata") || null,
+    curahHujan: value(fd, "curahHujan") || null,
+    topografi: value(fd, "topografi") || null,
   });
   refresh();
 }
