@@ -84,6 +84,8 @@ export async function simpanPegawai(input: {
 }) {
   const { villageId } = await village("kepegawaian", "update");
   if (!input.nama.trim()) throw new Error("Nama pegawai wajib diisi.");
+  if (!["tetap", "kontrak", "purna_tugas"].includes(input.statusPegawai)) throw new Error("Status kepegawaian tidak valid.");
+  if (!["aktif", "nonaktif"].includes(input.status)) throw new Error("Status pegawai tidak valid.");
   if (input.nik && !/^\d{16}$/.test(input.nik)) throw new Error("NIK harus 16 digit.");
   if (input.tanggalMasuk && input.tanggalKeluar && input.tanggalKeluar < input.tanggalMasuk) throw new Error("Tanggal keluar tidak boleh sebelum tanggal masuk.");
   if (input.perangkatId) {
@@ -270,7 +272,7 @@ export async function daftarRiwayatPegawai(pegawaiId: number) {
 
 
 export async function opsiPerangkatBelumTerhubung() {
-  const { villageId } = await village("kepegawaian", "update");
+  const { villageId } = await village("kepegawaian");
   const [officials, linked] = await Promise.all([
     db.select({ id: perangkatDesa.id, nama: perangkatDesa.nama, jabatan: jabatanPerangkat.nama })
       .from(perangkatDesa)
