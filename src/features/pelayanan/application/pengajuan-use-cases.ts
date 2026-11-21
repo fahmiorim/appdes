@@ -9,7 +9,7 @@ import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
 import type { BerkasUnggahan } from "@/features/publik/domain/media";
 import { PENGAJUAN_RESOURCE, pengajuanInputSchema, statusPengajuanSchema } from "../domain/pengajuan";
-import { buatPengajuanLayanan, getPengajuanLayanan, listLayananAktif, listPengajuanLayanan, listRiwayatPengajuan, updateStatusPengajuan, listBerkasPengajuan, getBerkasPengajuan, buatBerkasHasilPengajuan } from "../infrastructure/pengajuan-repository";
+import { buatPengajuanLayanan, getPengajuanLayanan, listLayananAktif, listPengajuanLayanan, listRiwayatPengajuan, updateStatusPengajuan, listBerkasPengajuan, getBerkasPengajuan, buatBerkasHasilPengajuan, getRingkasanStatusPengajuan } from "../infrastructure/pengajuan-repository";
 
 export async function getLayananPublikWargaData() {
   const user = await requireWargaAktif();
@@ -59,8 +59,8 @@ export async function ajukanLayananWargaData(raw: unknown, unggahan: BerkasUngga
 export async function getPengajuanPageData(status?: string, cari = "", page = 1) {
   const user = await requirePermission(PENGAJUAN_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
-  const data = await listPengajuanLayanan(villageId, status, cari, page, 10);
-  return { ...data, canUpdate: hasPermission(user.permissions, PENGAJUAN_RESOURCE, "update") };
+  const [data, statusSummary] = await Promise.all([listPengajuanLayanan(villageId, status, cari, page, 10), getRingkasanStatusPengajuan(villageId)]);
+  return { ...data, statusSummary, canUpdate: hasPermission(user.permissions, PENGAJUAN_RESOURCE, "update") };
 }
 
 export async function getPengajuanDetailData(id: number) {
