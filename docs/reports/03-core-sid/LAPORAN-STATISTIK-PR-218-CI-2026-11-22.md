@@ -8,7 +8,8 @@
 - **Base branch PR:** `main`.
 - **Commit awal task / head PR saat pemeriksaan:** `9bec3c85b537abbba472c47dbd0b5e86a5fd1914`.
 - **Merge-base dengan `origin/main`:** `a70254baaf38547f5b71282c8e1a836538ead963`.
-- **Commit hasil:** dicatat pada commit final laporan setelah perubahan kode di-commit.
+- **Commit hasil perubahan kode:** `d553119825a0d4791c96f334db07e894ab5855ef`.
+- **Commit koreksi laporan setelah push:** akan dicatat setelah laporan diperbarui dengan status workflow.
 - **PR:** [#218](https://github.com/fahmiorim/appdes/pull/218), terbuka dan draft saat laporan dibuat.
 
 ## Kondisi awal dan analisis
@@ -61,7 +62,8 @@ Pemeriksaan lokal yang telah dijalankan pada perubahan akhir sebelum commit:
 | PASS | `git diff --cached --check` | Tidak ada whitespace error pada staged diff. |
 | FAIL (run lama) | GitHub Actions `44932651952` | Format check dan production build gagal sebelum perbaikan lokal; integration job lulus. |
 | FAIL (run lama) | GitHub Actions `44932651929` | Visual QA job gagal; log menunjukkan build typecheck PR gagal pada error yang sama. |
-| SKIPPED | CI GitHub Actions pada commit hasil | Belum ada run baru sebelum branch di-push; perlu diperiksa setelah push. |
+| PENDING | CI GitHub Actions pada commit hasil | Run CI `44936904611` sedang berjalan setelah push; status final belum tersedia saat laporan diperbarui. |
+| PENDING | Visual QA pada commit hasil | Run Visual QA `44936904617` sedang berjalan setelah push; status final belum tersedia saat laporan diperbarui. |
 | SKIPPED | `db:migrate` / migration integration lokal | Sengaja tidak dijalankan; tidak diperlukan untuk cek unit/build dan dilarang untuk database production. |
 
 **Peringatan yang tersisa:** dua warning lint dan dua warning Turbopack berasal dari area lain dan tidak diperbaiki dalam task ini.
@@ -72,11 +74,11 @@ Sebelum commit, perubahan kode yang dipilih mencakup 25 file dengan kira-kira 69
 
 ## Risiko dan keterbatasan
 
-- CI remote terbaru yang tersedia ketika laporan dibuat adalah run lama pada head `9bec3c85`; hasil CI setelah commit/push belum diketahui.
+- Run CI dan Visual QA baru terpicu pada head `d553119825a0d4791c96f334db07e894ab5855ef`; saat pembaruan ini dibuat keduanya masih `in_progress`, jadi belum ada verdict remote.
 - PR #218 tetap draft dan tidak di-merge.
 - Integration behavior database selain yang dijalankan oleh job remote lama tidak diverifikasi secara lokal; tidak menjalankan migration lokal.
 - Isi snapshot besar namun diperlukan agar urutan snapshot metadata cocok dengan journal 0040–0042; schema generation melaporkan tidak ada migration lanjutan.
 
 ## Kesimpulan dan langkah berikutnya
 
-Penyebab format/typecheck yang tercatat pada CI lama telah diperbaiki dan seluruh pemeriksaan lokal yang disebut di atas lulus. Commit perubahan dan laporan pada branch task, push ke branch sumber PR #218, lalu periksa run CI/Visual QA baru. Jangan merge selama PR masih draft atau ada check gagal/pending.
+Penyebab format/typecheck yang tercatat pada CI lama telah diperbaiki dan seluruh pemeriksaan lokal yang disebut di atas lulus. Commit `d5531198` telah di-push ke branch sumber PR #218 dan memicu run CI/Visual QA baru yang masih berjalan saat laporan ini diperbarui. Jangan merge selama PR masih draft atau ada check gagal/pending.
