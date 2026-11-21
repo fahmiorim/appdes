@@ -47,7 +47,7 @@ export async function getLaporanDesa(jenis: JenisLaporan, tahun?: number) {
       .leftJoin(regions, and(eq(residents.regionId, regions.id), eq(regions.villageId, villageId)))
       .where(and(eq(residents.villageId, villageId), eq(residents.lifeStatus, "alive")))
       .groupBy(residents.gender, educations.name, occupations.name, regions.dusun).orderBy(asc(regions.dusun));
-    return { year, columns: ["Jenis Kelamin", "Pendidikan", "Pekerjaan", "Dusun", "Jumlah"], rows: rows.map(r => [r.gender === "male" ? "Laki-laki" : "Perempuan", r.education ?? "Belum diisi", r.occupation ?? "Belum diisi", r.dusun ?? "Belum diisi", Number(r.total)]) };
+    return { year, columns: ["Jenis Kelamin", "Pendidikan", "Pekerjaan", "Dusun", "Jumlah"], rows: rows.map(r => [r.gender === "male" ? "Laki-laki" : r.gender === "female" ? "Perempuan" : "Tidak diketahui", r.education ?? "Belum diisi", r.occupation ?? "Belum diisi", r.dusun ?? "Belum diisi", Number(r.total)]) };
   }
   if (jenis === "keuangan") {
     const rows = await db.select({ code: keuangan.templateUuid, name: keuanganTemplate.uraian, budget: keuangan.anggaran, actual: keuangan.realisasi }).from(keuangan)
@@ -73,7 +73,7 @@ export async function getStatistikDesa(kategori: KategoriStatistik) {
   const villageId = await tenant();
   if (kategori === "gender") {
     const rows = await db.select({ label: residents.gender, total: count() }).from(residents).where(and(eq(residents.villageId, villageId), eq(residents.lifeStatus, "alive"))).groupBy(residents.gender).orderBy(desc(count()));
-    return rows.map(r => ({ label: r.label === "male" ? "Laki-laki" : "Perempuan", total: Number(r.total) }));
+    return rows.map(r => ({ label: r.label === "male" ? "Laki-laki" : r.label === "female" ? "Perempuan" : "Tidak diketahui", total: Number(r.total) }));
   }
   if (kategori === "pendidikan") {
     const rows = await db.select({ label: educations.name, total: count() }).from(residents).leftJoin(educations, eq(residents.educationId, educations.id)).where(and(eq(residents.villageId, villageId), eq(residents.lifeStatus, "alive"))).groupBy(educations.name).orderBy(desc(count()));
