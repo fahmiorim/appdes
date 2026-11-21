@@ -38,6 +38,8 @@ export type KategoriMedia =
   | "surat-tte"
   | "surat"
   | "inventaris"
+  | "kehadiran"
+  | "kepegawaian"
   | "umum";
 
 export function akarPenyimpananMedia(): string {
