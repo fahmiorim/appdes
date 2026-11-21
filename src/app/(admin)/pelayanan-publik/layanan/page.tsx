@@ -4,8 +4,8 @@ import { hapusLayananAction } from "./actions";
 export const metadata={title:"Daftar Layanan Publik"};
 const money=(value:number)=>value===0?"Gratis":new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(value);
 export default async function LayananPage({searchParams}:{searchParams:Promise<{q?:string;tersimpan?:string;dihapus?:string}>}) {
- const p=await searchParams,q=(p.q??"").slice(0,100);const d=await getLayananPageData(q);
- const active=d.rows.filter(r=>r.aktif).length, inactive=d.rows.length-active;
+ const p=await searchParams,q=(p.q??"").slice(0,100);const [d,all]=await Promise.all([getLayananPageData(q),getLayananPageData()]);
+ const active=all.rows.filter(r=>r.aktif).length, inactive=all.rows.length-active;
  const selected=d.rows[0];
  const categories=[["Semua",""],["Administrasi","administrasi"],["Kependudukan","kependudukan"],["Sosial","sosial"],["Pemerintahan","pemerintahan"],["Lainnya","lainnya"]] as const;
  return <div className="modul-page"><div className="page-heading"><div><span className="eyebrow">Pelayanan Publik</span><h1>Daftar Layanan</h1><p>Kelola jenis layanan publik desa, persyaratan, estimasi waktu, biaya, dan status layanan.</p></div>{d.canCreate?<Link className="button button-primary" href="/pelayanan-publik/layanan/baru">＋ Tambah Layanan</Link>:null}</div>
