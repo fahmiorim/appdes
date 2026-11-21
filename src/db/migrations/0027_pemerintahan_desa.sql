@@ -64,6 +64,7 @@ CREATE TABLE `perangkat_riwayat_jabatan` (
   `mulai` date NULL,
   `selesai` date NULL,
   `keterangan` text NULL,
+  `tampil_publik` boolean NOT NULL DEFAULT false,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `perangkat_riwayat_village_perangkat_idx` (`village_id`, `perangkat_id`),
