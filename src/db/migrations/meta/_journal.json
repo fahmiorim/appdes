@@ -253,6 +253,13 @@
       "when": 1795701000000,
       "tag": "0040_laporan_statistik_menu",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "5",
+      "when": 1795702000000,
+      "tag": "0041_laporan_desa_tersimpan",
+      "breakpoints": true
     }
   ]
 }
