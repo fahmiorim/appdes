@@ -119,7 +119,7 @@ export default async function KontakPage() {
                   <b>Telepon / WhatsApp</b>
                   <p>{phone || "Nomor telepon belum tersedia"}</p>
                 </div>
-                {phoneDigits ? (
+                {whatsappDigits ? (
                   <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer">
                     ↗
                   </a>
@@ -159,7 +159,7 @@ export default async function KontakPage() {
                 pengaduan yang telah disetujui untuk ditampilkan kepada publik.
               </p>
               <div>
-                {phoneDigits ? (
+                {whatsappDigits ? (
                   <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer">
                     Hubungi via WhatsApp　→
                   </a>
@@ -206,7 +206,7 @@ export default async function KontakPage() {
                 </div>
               </div>
               <p className={styles.hoursNote}>
-                {settings.jamLayanan || "{settings.jamLayanan || "Jadwal operasional belum dicantumkan pada profil desa."}"}
+                {settings.jamLayanan || "Jadwal operasional belum dicantumkan pada profil desa."}
               </p>
             </section>
             <section className={styles.tracking}>
@@ -240,7 +240,7 @@ export default async function KontakPage() {
           </div>
           <a
             href={
-              phoneDigits
+              whatsappDigits
                 ? `https://wa.me/${whatsappNumber}`
                 : email
                   ? `mailto:${email}`
