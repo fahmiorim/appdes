@@ -245,7 +245,7 @@ export const auth = betterAuth({
     }),
     twoFactor({
       issuer: APP_NAME,
-      twoFactorTable: "two_factor",
+      twoFactorTable: "twoFactor",
       otpOptions: {
         async sendOTP({ user, otp }) {
           if (!user.email || !env.RESEND_API_KEY || !env.RESEND_FROM) throw new Error("Email OTP belum dikonfigurasi untuk akun ini.");
