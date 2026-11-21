@@ -189,7 +189,7 @@ export async function hapusJabatanPerangkat(id: number) {
   await db.delete(jabatanPerangkat).where(and(eq(jabatanPerangkat.villageId, villageId), eq(jabatanPerangkat.id, id)));
 }
 
-export async function simpanRiwayatJabatan(id: number | null, input: { perangkatId: number; jabatan: string; nomorSk: string | null; mulai: string | null; selesai: string | null; keterangan: string | null }) {
+export async function simpanRiwayatJabatan(id: number | null, input: { perangkatId: number; jabatan: string; nomorSk: string | null; mulai: string | null; selesai: string | null; keterangan: string | null; tampilPublik: boolean }) {
   const villageId = await tenant("perangkat-desa", id ? "update" : "create");
   const [owner] = await db.select({ id: perangkatDesa.id }).from(perangkatDesa)
     .where(and(eq(perangkatDesa.villageId, villageId), eq(perangkatDesa.id, input.perangkatId))).limit(1);
