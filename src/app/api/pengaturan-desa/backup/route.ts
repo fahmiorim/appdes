@@ -16,7 +16,7 @@ async function saveSetting(villageId:number,key:string,value:unknown){await db.i
 function handle(e:unknown){if(isAppError(e))return response({error:e.message},appErrorStatus(e.code));console.error("Backup konfigurasi desa gagal:",e);return response({error:"Backup konfigurasi gagal diproses."},500);}
 export async function GET(){
  try{
-  const user=await requirePermission("pengaturan","read"),villageId=await resolveVillageId(user);
+  const user=await requirePermission("pengaturan-desa","read"),villageId=await resolveVillageId(user);
   const [[desa],[profil],settings,layanan,tema,umum]=await Promise.all([
    db.select({nama:villages.name,kode:villages.code,kecamatan:villages.district,kabupaten:villages.regency,provinsi:villages.province,kodePos:villages.postalCode,alamat:villages.officeAddress,email:villages.email,telepon:villages.phone,website:villages.website,logo:villages.logo,kepalaDesa:villages.headName,nip:villages.headNip}).from(villages).where(eq(villages.id,villageId)).limit(1),
    db.select().from(profilDesa).where(eq(profilDesa.villageId,villageId)).limit(1),
@@ -37,7 +37,7 @@ const restoreSchema=z.object({
 });
 export async function POST(request:Request){
  try{
-  const user=await requirePermission("pengaturan","update"),villageId=await resolveVillageId(user);
+  const user=await requirePermission("pengaturan-desa","update"),villageId=await resolveVillageId(user);
   const raw=await request.text();if(raw.length>2_000_000)return response({error:"Berkas backup maksimal 2 MB."},413);
   let parsedJson:unknown;try{parsedJson=JSON.parse(raw)}catch{return response({error:"Berkas JSON tidak valid."},400);}
   const parsed=restoreSchema.safeParse(parsedJson);if(!parsed.success)return response({error:parsed.error.issues[0]?.message??"Format backup tidak sesuai."},422);
