@@ -1,6 +1,7 @@
 import {
   boolean,
   date,
+  decimal,
   foreignKey,
   index,
   int,
@@ -41,6 +42,15 @@ export const profilDesa = mysqlTable(
     sambutan: text("sambutan"),
     /** Koordinat peta, mis. `-6.200000, 106.816666`. */
     koordinat: varchar("koordinat", { length: 60 }),
+    luasWilayah: decimal("luas_wilayah", { precision: 12, scale: 2 }),
+    batasUtara: varchar("batas_utara", { length: 150 }),
+    batasSelatan: varchar("batas_selatan", { length: 150 }),
+    batasTimur: varchar("batas_timur", { length: 150 }),
+    batasBarat: varchar("batas_barat", { length: 150 }),
+    ketinggian: varchar("ketinggian", { length: 100 }),
+    suhuRataRata: varchar("suhu_rata_rata", { length: 100 }),
+    curahHujan: varchar("curah_hujan", { length: 100 }),
+    topografi: varchar("topografi", { length: 150 }),
 
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at")
