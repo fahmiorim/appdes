@@ -339,16 +339,18 @@ export async function getMutasiPageData(inventarisId?: number) {
 export async function getInventarisDetailPageData(id: number) {
   const user = await requirePermission(INVENTARIS_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
-  const [item, kategori, riwayat] = await Promise.all([
+  const [item, kategori, riwayat, dokumen] = await Promise.all([
     getInventaris(villageId, id),
     listInventarisKategori(villageId),
     listMutasi(villageId, id),
+    listDokumenInventaris(villageId, id),
   ]);
   if (!item) throw notFound("Data inventaris tidak ditemukan.");
   return {
     item,
     kategori,
     riwayat,
+    dokumen,
     canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canDelete: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
   };
