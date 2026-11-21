@@ -109,10 +109,29 @@ CROSS JOIN (
 WHERE NOT EXISTS (SELECT 1 FROM `modules` m WHERE m.`village_id`=v.`id` AND m.`slug`=child.`slug`);
 --> statement-breakpoint
 
+-- Pastikan modul lama dipindahkan ke grup Pemerintahan Desa.
+UPDATE `modules` child
+INNER JOIN `modules` parent ON parent.`village_id`=child.`village_id` AND parent.`slug`='pemerintahan-desa'
+SET child.`parent_id`=parent.`id`, child.`is_group`=0, child.`is_hidden`=0, child.`is_active`=1,
+    child.`url`=CASE child.`slug`
+      WHEN 'pemerintahan-dashboard' THEN '/pemerintahan-desa'
+      WHEN 'perangkat-desa' THEN '/pemerintahan-desa/perangkat'
+      WHEN 'lembaga-desa' THEN '/pemerintahan-desa/lembaga'
+      WHEN 'wilayah' THEN '/pemerintahan-desa/wilayah'
+    END,
+    child.`name`=CASE child.`slug`
+      WHEN 'pemerintahan-dashboard' THEN 'Dashboard Pemerintahan'
+      WHEN 'perangkat-desa' THEN 'Perangkat Desa'
+      WHEN 'lembaga-desa' THEN 'Lembaga & BPD'
+      WHEN 'wilayah' THEN 'Wilayah & Organisasi'
+    END
+WHERE child.`slug` IN ('pemerintahan-dashboard','perangkat-desa','lembaga-desa','wilayah');
+--> statement-breakpoint
+
 INSERT INTO `role_permissions` (`role_id`, `module_id`, `access`)
 SELECT r.`id`, m.`id`, 'manage'
 FROM `roles` r
 INNER JOIN `modules` m ON m.`village_id`=r.`village_id`
 WHERE r.`slug`='administrator'
   AND m.`slug` IN ('pemerintahan-desa','pemerintahan-dashboard','perangkat-desa','lembaga-desa','wilayah')
-  AND NOT EXISTS (SELECT 1 FROM `role_permissions` rp WHERE rp.`role_id`=r.`id` AND rp.`module_id`=m.`id`);
+  ON DUPLICATE KEY UPDATE `access`=VALUES(`access`);
