@@ -17,6 +17,10 @@
  */
 export const RUTE_ADMIN_TERSEDIA: readonly string[] = [
   "/beranda",
+  "/pelayanan-publik",
+  "/pelayanan-publik/layanan",
+  "/pelayanan-publik/pengajuan",
+  "/pelayanan-publik/survei",
   "/penduduk",
   "/persuratan/dashboard",
   "/permohonan-surat",
