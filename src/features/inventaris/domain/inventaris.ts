@@ -153,6 +153,9 @@ export const inventarisFormSchema = z.object({
   if (value.nilaiResidu > nilaiPerolehan + 0.005) {
     ctx.addIssue({code:"custom",path:["nilaiResidu"],message:"Nilai residu tidak boleh melebihi nilai perolehan."});
   }
+  if (value.tanggalMulaiPenyusutan && value.tanggalPembelian && value.tanggalMulaiPenyusutan < value.tanggalPembelian) {
+    ctx.addIssue({code:"custom",path:["tanggalMulaiPenyusutan"],message:"Tanggal mulai penyusutan tidak boleh sebelum tanggal perolehan."});
+  }
   if (value.akumulasiPenyusutan + value.nilaiResidu > nilaiPerolehan + 0.005) {
     ctx.addIssue({code:"custom",path:["akumulasiPenyusutan"],message:"Akumulasi penyusutan dan nilai residu tidak boleh melebihi nilai perolehan."});
   }
@@ -216,13 +219,13 @@ export interface HasilPenyusutanAset {
 /** Penyusutan garis lurus; nilai awal akumulasi menjadi saldo pembuka. */
 export function hitungPenyusutanAset(input:{
   hargaSatuan:string|null;jumlah:string;akumulasiPenyusutan?:string|null;
-  umurManfaatBulan?:number|null;nilaiResidu?:string|null;tanggalMulaiPenyusutan?:string|null;
+  umurManfaatBulan?:number|null;nilaiResidu?:string|null;tanggalMulaiPenyusutan?:string|null;tanggalPembelian?:string|null;
 },asOf=new Date()):HasilPenyusutanAset {
   const nilaiPerolehan=Math.max(0,Number(input.hargaSatuan??0)*Number(input.jumlah??0));
   const residu=Math.min(nilaiPerolehan,Math.max(0,Number(input.nilaiResidu??0)));
   const saldoAwal=Math.min(Math.max(0,Number(input.akumulasiPenyusutan??0)),Math.max(0,nilaiPerolehan-residu));
   const umur=input.umurManfaatBulan??null;
-  const mulai=input.tanggalMulaiPenyusutan??null;
+  const mulai=input.tanggalMulaiPenyusutan??input.tanggalPembelian??null;
   let bulanTerpakai=0;
   if(umur&&mulai){
     const start=new Date(mulai+"T00:00:00Z");
