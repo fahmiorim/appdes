@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS `village_security_settings` (
   `session_timeout_minutes` int NOT NULL DEFAULT 30,
   `auto_logout_inactive` boolean NOT NULL DEFAULT true,
   `concurrent_login` boolean NOT NULL DEFAULT false,
+  `require_two_factor_for_all_users` boolean NOT NULL DEFAULT false,
   `ip_restriction_enabled` boolean NOT NULL DEFAULT false,
   `allowed_ips` text,
   `updated_by` varchar(36),
