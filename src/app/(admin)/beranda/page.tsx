@@ -6,7 +6,6 @@ import type { ReactNode } from "react";
 
 import {
   dashboardAktivitasTerbaru,
-  dashboardPermohonanTerbaru,
   dashboardStatistikUmur,
   dashboardStats,
   dashboardTrenPermohonan,
@@ -15,8 +14,10 @@ import { labelAktivitas, toneAktivitas } from "@/features/dashboard/domain/aktiv
 import { waktuRelatif } from "@/features/dashboard/domain/waktu-relatif";
 import { getStatistikDesa } from "@/features/desa/application/statistik-desa";
 import { getIdentitasDesaUseCase } from "@/features/desa/application/use-cases";
-import { labelPermohonanStatus } from "@/features/layanan-mandiri/domain/layanan-mandiri";
+import { getLaporanKeuangan } from "@/features/keuangan/application/keuangan-use-cases";
 import { isSuperAdminUser } from "@/features/multi-desa/application/provisioning-use-cases";
+import { getBukuPembangunan } from "@/features/pembangunan/application/use-cases";
+import { listBeritaAdminData } from "@/features/publik/application/konten-admin";
 import { hasPermission } from "@/features/rbac/application/authorization";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { verifySession } from "@/lib/dal";
@@ -34,24 +35,6 @@ const FORMAT_HARI = new Intl.DateTimeFormat("id-ID", {
   month: "long",
   year: "numeric",
 });
-
-/**
- * Pintasan beranda hanya menautkan halaman yang benar-benar tersedia.
- * Setiap pintasan memakai izin baca modulnya agar tidak menjadi tautan 403.
- */
-const AKSES_CEPAT = [
-  { label: "Data Penduduk", href: "/penduduk", ikon: "penduduk", resource: RESOURCES.penduduk },
-  { label: "Arsip Surat", href: "/persuratan/surat", ikon: "surat", resource: RESOURCES.surat },
-  { label: "Berita Desa", href: "/konten/berita", ikon: "berita", resource: RESOURCES.berita },
-  { label: "Galeri Desa", href: "/konten/galeri", ikon: "galeri", resource: RESOURCES.galeri },
-  { label: "Keuangan Desa", href: "/keuangan", ikon: "apbdes", resource: RESOURCES.keuangan },
-  {
-    label: "Pengaduan Warga",
-    href: "/pengaduan-admin",
-    ikon: "pengaduan",
-    resource: RESOURCES.pengaduan,
-  },
-] as const;
 
 function Ikon({ children }: { children: ReactNode }) {
   return (
@@ -225,10 +208,6 @@ export default async function AdminHomePage() {
   }
 
   const villageId = user.villageId;
-  const aksesCepat = AKSES_CEPAT.filter((item) =>
-    hasPermission(user.permissions, item.resource, "read"),
-  );
-
   const data =
     villageId === null
       ? null
@@ -238,8 +217,16 @@ export default async function AdminHomePage() {
           getStatistikDesa(villageId),
           dashboardStatistikUmur(villageId),
           dashboardTrenPermohonan(villageId),
-          dashboardPermohonanTerbaru(villageId),
           dashboardAktivitasTerbaru(villageId),
+          hasPermission(user.permissions, RESOURCES.laporanKeuangan, "read")
+            ? getLaporanKeuangan()
+            : Promise.resolve(null),
+          hasPermission(user.permissions, RESOURCES.pembangunan, "read")
+            ? getBukuPembangunan(new Date().getFullYear())
+            : Promise.resolve([]),
+          hasPermission(user.permissions, RESOURCES.berita, "read")
+            ? listBeritaAdminData(4)
+            : Promise.resolve([]),
         ]);
 
   const identitas = data?.[0] ?? null;
@@ -247,13 +234,13 @@ export default async function AdminHomePage() {
   const statistik = data?.[2] ?? null;
   const perUmur = data?.[3] ?? [];
   const tren = data?.[4] ?? [];
-  const permohonan = data?.[5] ?? [];
-  const aktivitas = data?.[6] ?? [];
+  const aktivitas = data?.[5] ?? [];
+  const laporanApbdes = data?.[6] ?? null;
+  const programPrioritas = data?.[7] ?? [];
+  const pengumuman = data?.[8] ?? [];
+  const pengumumanUtama = pengumuman[0];
 
   const namaDesa = identitas?.namaDesa ?? "Desa";
-  const wilayah = [identitas?.namaKecamatan, identitas?.namaKabupaten]
-    .map((bagian) => bagian?.trim())
-    .filter((bagian): bagian is string => Boolean(bagian));
 
   const sekarang = new Date();
 
@@ -272,7 +259,7 @@ export default async function AdminHomePage() {
       <div className="beranda-head">
         <div>
           <h1>Dashboard Admin Desa</h1>
-          <p>Selamat datang, {user.name}. Kelola data, layanan, dan informasi desa di sini.</p>
+          <p>Kelola layanan, data, dan pembangunan {namaDesa} dengan mudah dan terintegrasi.</p>
         </div>
         <span className="beranda-date">
           <Ikon>
@@ -287,7 +274,7 @@ export default async function AdminHomePage() {
 
       {stats && statistik ? (
         <>
-          <div className="beranda-kpi-grid">
+          <div className="beranda-kpi-grid beranda-kpi-grid-lima">
             <article className="beranda-card beranda-kpi" data-tone="biru">
               <span className="beranda-kpi-icon">{ikonKpi("penduduk")}</span>
               <div className="beranda-kpi-body">
@@ -344,6 +331,22 @@ export default async function AdminHomePage() {
                 </span>
               </div>
             </article>
+            {laporanApbdes ? (
+              <article className="beranda-card beranda-kpi" data-tone="ungu">
+                <span className="beranda-kpi-icon">{ikonAksesCepat("apbdes")}</span>
+                <div className="beranda-kpi-body">
+                  <span className="beranda-kpi-label">Realisasi APBDes {laporanApbdes.tahun}</span>
+                  <strong className="beranda-kpi-value">
+                    {laporanApbdes.total.anggaran !== "0.00"
+                      ? `${Math.round((Number(laporanApbdes.total.realisasi) / Math.max(Number(laporanApbdes.total.anggaran), 1)) * 1000) / 10}%`
+                      : "—"}
+                  </strong>
+                  <span className="beranda-chip" data-tone="ungu">
+                    Rp {Number(laporanApbdes.total.realisasi).toLocaleString("id-ID")}
+                  </span>
+                </div>
+              </article>
+            ) : null}
           </div>
 
           <div className="beranda-grid">
@@ -353,7 +356,6 @@ export default async function AdminHomePage() {
               perDusun={statistik.perDusun}
               perUmur={perUmur}
             />
-
             <section className="beranda-card" aria-labelledby="tren-layanan-surat">
               <div className="beranda-card-head">
                 <h2 className="beranda-card-title" id="tren-layanan-surat">
@@ -370,51 +372,84 @@ export default async function AdminHomePage() {
               </div>
               <TrenLayananSurat titik={tren} />
             </section>
+          </div>
 
-            <section className="beranda-card" aria-labelledby="permohonan-terbaru">
-              <div className="beranda-card-head">
-                <h2 className="beranda-card-title" id="permohonan-terbaru">
-                  <span className="beranda-title-icon" aria-hidden="true">
-                    <Ikon>
-                      <path d="M6 3.5h8.2L19 8.3V20.5H6z" />
-                      <path d="M14 3.5v5h5" />
-                      <path d="M9 13h6" />
-                    </Ikon>
-                  </span>
-                  Permohonan Surat Terbaru
-                </h2>
-              </div>
+          <div className="beranda-grid beranda-grid-dashboard-extra">
+            {laporanApbdes ? (
+              <section className="beranda-card" aria-labelledby="dashboard-apbdes">
+                <div className="beranda-card-head">
+                  <h2 className="beranda-card-title" id="dashboard-apbdes">
+                    Realisasi APBDes Tahun {laporanApbdes.tahun}
+                  </h2>
+                  <Link href="/keuangan">Detail →</Link>
+                </div>
+                <div className="beranda-apbdes-summary">
+                  <div
+                    className="beranda-apbdes-ring"
+                    style={
+                      {
+                        "--realisasi": `${Math.min(100, Math.max(0, Number(laporanApbdes.total.anggaran) > 0 ? (Number(laporanApbdes.total.realisasi) / Number(laporanApbdes.total.anggaran)) * 100 : 0))}%`,
+                      } as React.CSSProperties
+                    }
+                  >
+                    <strong>
+                      {Number(laporanApbdes.total.anggaran) > 0
+                        ? `${((Number(laporanApbdes.total.realisasi) / Number(laporanApbdes.total.anggaran)) * 100).toLocaleString("id-ID", { maximumFractionDigits: 1 })}%`
+                        : "—"}
+                    </strong>
+                    <span>Realisasi</span>
+                  </div>
+                  <dl>
+                    <div>
+                      <dt>Pagu Anggaran</dt>
+                      <dd>Rp {Number(laporanApbdes.total.anggaran).toLocaleString("id-ID")}</dd>
+                    </div>
+                    <div>
+                      <dt>Realisasi</dt>
+                      <dd>Rp {Number(laporanApbdes.total.realisasi).toLocaleString("id-ID")}</dd>
+                    </div>
+                    <div>
+                      <dt>Sisa Anggaran</dt>
+                      <dd>Rp {Number(laporanApbdes.total.selisih).toLocaleString("id-ID")}</dd>
+                    </div>
+                  </dl>
+                </div>
+              </section>
+            ) : null}
+            {hasPermission(user.permissions, RESOURCES.pembangunan, "read") ? (
+              <section className="beranda-card" aria-labelledby="dashboard-program">
+                <div className="beranda-card-head">
+                  <h2 className="beranda-card-title" id="dashboard-program">
+                    Program & Kegiatan Prioritas
+                  </h2>
+                  <Link href="/pembangunan">Detail →</Link>
+                </div>
+                {programPrioritas.length === 0 ? (
+                  <p className="beranda-empty">
+                    Belum ada program pembangunan untuk tahun berjalan.
+                  </p>
+                ) : (
+                  <ul className="beranda-program-list">
+                    {programPrioritas.slice(0, 4).map((item) => (
+                      <li key={item.id}>
+                        <div>
+                          <strong>{item.judul}</strong>
+                          <span>{item.lokasi ?? "Lokasi belum diisi"}</span>
+                        </div>
+                        <div className="beranda-program-progress">
+                          <span style={{ width: `${Math.min(100, Math.max(0, item.progres))}%` }} />
+                        </div>
+                        <strong>{item.progres}%</strong>
+                        <span className="beranda-program-status">{item.status}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            ) : null}
+          </div>
 
-              {permohonan.length === 0 ? (
-                <p className="beranda-empty">Belum ada permohonan surat yang masuk.</p>
-              ) : (
-                <ul className="beranda-doc-list">
-                  {permohonan.map((baris) => (
-                    <li key={baris.id}>
-                      <span className="beranda-doc-icon" aria-hidden="true">
-                        <Ikon>
-                          <path d="M6 3.5h8.2L19 8.3V20.5H6z" />
-                          <path d="M14 3.5v5h5" />
-                          <path d="M9 13h6" />
-                          <path d="M9 16.5h4.5" />
-                        </Ikon>
-                      </span>
-                      <div className="beranda-doc-main">
-                        <strong>{baris.jenisSurat}</strong>
-                        <span>{baris.pemohon}</span>
-                      </div>
-                      <span className="beranda-doc-time">
-                        {waktuRelatif(baris.diajukanPada, sekarang)}
-                      </span>
-                      <span className="beranda-chip" data-status={baris.status}>
-                        {labelPermohonanStatus(baris.status)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-
+          <div className="beranda-bottom beranda-bottom-dashboard">
             <section className="beranda-card" aria-labelledby="aktivitas-terbaru">
               <div className="beranda-card-head">
                 <h2 className="beranda-card-title" id="aktivitas-terbaru">
@@ -426,12 +461,11 @@ export default async function AdminHomePage() {
                   Aktivitas Terbaru
                 </h2>
               </div>
-
               {aktivitas.length === 0 ? (
                 <p className="beranda-empty">Belum ada aktivitas tercatat.</p>
               ) : (
                 <ol className="beranda-feed">
-                  {aktivitas.map((catatan) => (
+                  {aktivitas.slice(0, 5).map((catatan) => (
                     <li key={catatan.id}>
                       <span
                         className="beranda-feed-icon"
@@ -452,56 +486,75 @@ export default async function AdminHomePage() {
                 </ol>
               )}
             </section>
-          </div>
 
-          <div className="beranda-bottom">
-            <section className="beranda-card" aria-labelledby="akses-cepat">
+            <section className="beranda-card" aria-labelledby="pengumuman-informasi">
               <div className="beranda-card-head">
-                <h2 className="beranda-card-title" id="akses-cepat">
+                <h2 className="beranda-card-title" id="pengumuman-informasi">
                   <span className="beranda-title-icon" aria-hidden="true">
                     <Ikon>
-                      <path d="M13 3 5 13.5h5L9.5 21 19 10h-5.5z" />
+                      <path d="M4 7h16v13H4z" />
+                      <path d="M8 7V4h8v3M8 12h8M8 16h5" />
                     </Ikon>
                   </span>
-                  Akses Cepat
+                  Pengumuman & Informasi
                 </h2>
+                {hasPermission(user.permissions, RESOURCES.berita, "read") ? (
+                  <Link href="/konten/berita">Lihat Semua →</Link>
+                ) : null}
               </div>
-
-              {aksesCepat.length === 0 ? (
-                <p className="beranda-empty">Belum ada modul yang dapat diakses oleh akun ini.</p>
+              {!hasPermission(user.permissions, RESOURCES.berita, "read") ? (
+                <p className="beranda-empty">Akun ini tidak memiliki akses membaca berita desa.</p>
+              ) : !pengumumanUtama ? (
+                <p className="beranda-empty">
+                  Belum ada berita atau pengumuman yang dipublikasikan.
+                </p>
               ) : (
-                <ul className="beranda-quick">
-                  {aksesCepat.map((item) => (
-                    <li key={item.label}>
-                      <Link className="beranda-quick-tile" href={item.href}>
-                        <span className="beranda-quick-icon">{ikonAksesCepat(item.ikon)}</span>
-                        <span className="beranda-quick-label">{item.label}</span>
-                      </Link>
+                <div className="beranda-announcement">
+                  {pengumumanUtama.gambar ? (
+                    <Image
+                      alt=""
+                      className="beranda-announcement-image"
+                      height={150}
+                      src={pengumumanUtama.gambar}
+                      unoptimized
+                      width={190}
+                    />
+                  ) : (
+                    <div className="beranda-announcement-placeholder" aria-hidden="true">
+                      <Ikon>
+                        <path d="M4 5h16v14H4z" />
+                        <path d="m5 16 5-5 3 3 2-2 4 4" />
+                      </Ikon>
+                    </div>
+                  )}
+                  <div className="beranda-announcement-copy">
+                    {pengumumanUtama.kategori ? (
+                      <span className="beranda-announcement-category">
+                        {pengumumanUtama.kategori}
+                      </span>
+                    ) : null}
+                    <strong>{pengumumanUtama.judul}</strong>
+                    {pengumumanUtama.terbitPada ? (
+                      <time dateTime={pengumumanUtama.terbitPada.toISOString()}>
+                        {FORMAT_HARI.format(pengumumanUtama.terbitPada)}
+                      </time>
+                    ) : null}
+                    {pengumumanUtama.ringkasan ? <p>{pengumumanUtama.ringkasan}</p> : null}
+                    <Link href="/konten/berita">Kelola informasi desa →</Link>
+                  </div>
+                </div>
+              )}
+              {pengumuman.length > 1 ? (
+                <ul className="beranda-announcement-list">
+                  {pengumuman.slice(1, 4).map((item) => (
+                    <li key={item.id}>
+                      <span>{item.kategori ?? "Informasi"}</span>
+                      <strong>{item.judul}</strong>
                     </li>
                   ))}
                 </ul>
-              )}
+              ) : null}
             </section>
-
-            <aside className="beranda-profil" aria-labelledby="profil-desa">
-              <div className="beranda-profil-head">
-                <Image
-                  alt=""
-                  className="beranda-profil-logo"
-                  height={56}
-                  src={identitas?.logo ?? "/images/logo.png"}
-                  unoptimized
-                  width={56}
-                />
-                <div>
-                  <strong id="profil-desa">{namaDesa}</strong>
-                  <span>{wilayah.length > 0 ? wilayah.join(", ") : "Wilayah belum diisi"}</span>
-                </div>
-              </div>
-              <Link className="beranda-profil-link" href="/profil">
-                Lihat Profil Desa <span aria-hidden="true">→</span>
-              </Link>
-            </aside>
           </div>
         </>
       ) : (
