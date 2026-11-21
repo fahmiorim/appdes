@@ -5,15 +5,7 @@ export * from "./riwayat-pengajuan-layanan";
 export * from "./pengajuan-layanan-berkas";
 export * from "./pendapat";
 export * from "./kontak";
-/**
- * Titik kumpul definisi skema Drizzle.
- *
- * Skema dipecah per-domain di folder ini. Setiap file mengekspor tabelnya, dan
- * file ini menggabungkannya agar dapat dipakai oleh Drizzle (`db`) maupun
- * better-auth (adapter Drizzle membutuhkan referensi ke tabel `users`,
- * `sessions`, dst.).
- */
-
+/** Titik kumpul definisi skema Drizzle untuk db dan adapter autentikasi. */
 export * from "./audit";
 export * from "./agenda-kegiatan";
 export * from "./auth";
@@ -96,3 +88,4 @@ export * from "./pengguna-menu-urutan";
 export * from "./plugin-registry";
 export * from "./login-otp";
 export * from "./umpan-balik";
+export * from "./laporan-statistik";
