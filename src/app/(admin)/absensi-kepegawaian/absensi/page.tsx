@@ -34,10 +34,10 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
     <AbsensiKepegawaianNav active="/absensi-kepegawaian/absensi"/>
     <section className={styles["ak-kpi-grid"]}>
       <article className={`${styles["ak-kpi"]} ${styles.primary}`}><span>Kehadiran Hari Ini</span><strong>{counts.hadir} orang</strong><span>{tingkatKehadiran.toLocaleString("id-ID")}% tingkat kehadiran</span></article>
+      <article className={styles["ak-kpi"]}><span>Hadir</span><strong>{counts.hadir} orang</strong></article>
       <article className={styles["ak-kpi"]}><span>Izin</span><strong>{counts.izin} orang</strong></article>
       <article className={styles["ak-kpi"]}><span>Cuti</span><strong>{counts.cuti} orang</strong></article>
       <article className={styles["ak-kpi"]}><span>Tidak Hadir</span><strong>{counts.tidak} orang</strong></article>
-      <article className={styles["ak-kpi"]}><span>Total Pegawai</span><strong>{rows.length} orang</strong></article>
     </section>
     <div className={styles["ak-grid"]}>
       <section className={styles["ak-card"]}>
