@@ -6,7 +6,8 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { db } from "@/db";
-import { users, villages } from "@/db/schema";
+import { sessions, users, villages } from "@/db/schema";
+import { villageSecuritySettings } from "@/db/schema/village-security";
 import {
   computeEffectivePermissions,
   hasPermission,
@@ -77,6 +78,20 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     .limit(1);
 
   if (!account?.active) return null;
+
+  if (account.villageId !== null) {
+    const [security] = await db.select({ timeout: villageSecuritySettings.sessionTimeoutMinutes, enabled: villageSecuritySettings.autoLogoutInactive })
+      .from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
+    if (security?.enabled) {
+      const lastActivity = new Date(session.session.updatedAt ?? session.session.createdAt).getTime();
+      if (Date.now() - lastActivity > security.timeout * 60_000) {
+        await db.delete(sessions).where(eq(sessions.id, session.session.id));
+        return null;
+      }
+      // Touch session on authenticated server requests to implement an actual idle timeout.
+      await db.update(sessions).set({ updatedAt: new Date() }).where(eq(sessions.id, session.session.id));
+    }
+  }
 
   // Desa nonaktif (arsip lunak) memblokir seluruh akun staf & warga miliknya.
   // Super admin (villageId null) tetap bisa masuk untuk mengelola desa.
