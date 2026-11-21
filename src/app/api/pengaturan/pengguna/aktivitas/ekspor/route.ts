@@ -6,7 +6,7 @@ import { RESOURCES } from "@/features/rbac/domain/resources";
 
 function cell(value: unknown): string {
   const raw = String(value ?? "");
-  const protectedValue = /^[\\s]*[=+@-]/.test(raw) ? "'" + raw : raw;
+  const protectedValue = /^[=+@-]/.test(raw.trimStart()) ? "'" + raw : raw;
   const escaped = protectedValue.replace(/"/g, '""');
   return /[",\r\n]/.test(escaped) ? '"' + escaped + '"' : escaped;
 }
