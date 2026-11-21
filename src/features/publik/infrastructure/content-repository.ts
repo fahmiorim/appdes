@@ -369,6 +369,15 @@ export interface ProfilRingkas {
   sejarah: string | null;
   sambutan: string | null;
   koordinat: string | null;
+  luasWilayah: string | null;
+  batasUtara: string | null;
+  batasSelatan: string | null;
+  batasTimur: string | null;
+  batasBarat: string | null;
+  ketinggian: string | null;
+  suhuRataRata: string | null;
+  curahHujan: string | null;
+  topografi: string | null;
 }
 
 export async function getProfilDesa(villageId: number): Promise<ProfilRingkas | null> {
@@ -379,6 +388,15 @@ export async function getProfilDesa(villageId: number): Promise<ProfilRingkas | 
       sejarah: profilDesa.sejarah,
       sambutan: profilDesa.sambutan,
       koordinat: profilDesa.koordinat,
+      luasWilayah: profilDesa.luasWilayah,
+      batasUtara: profilDesa.batasUtara,
+      batasSelatan: profilDesa.batasSelatan,
+      batasTimur: profilDesa.batasTimur,
+      batasBarat: profilDesa.batasBarat,
+      ketinggian: profilDesa.ketinggian,
+      suhuRataRata: profilDesa.suhuRataRata,
+      curahHujan: profilDesa.curahHujan,
+      topografi: profilDesa.topografi,
     })
     .from(profilDesa)
     .where(eq(profilDesa.villageId, villageId))
