@@ -156,6 +156,10 @@ export async function saveRolePermissions(
   const modules = await listModules(villageId);
   const validModuleIds = new Set(modules.map((modul) => modul.id));
 
+  if (perms.some((p) => !p.read && (p.create || p.update || p.delete))) {
+    throw conflict("Izin Lihat wajib aktif sebelum Tambah, Ubah, atau Hapus diberikan.");
+  }
+
   const mapped = perms.flatMap((p) => {
     if (!validModuleIds.has(p.moduleId)) return [];
 
