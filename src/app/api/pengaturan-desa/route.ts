@@ -9,6 +9,7 @@ import { requirePermission } from "@/lib/dal";
 import { appErrorStatus, isAppError } from "@/lib/errors";
 import { ambilPengaturanAdmin, simpanPengaturanAdmin } from "@/features/pengaturan/application/pengaturan-use-cases";
 import { tokenTemplateSchema } from "@/features/multi-desa/domain/template-website";
+import { hitungUkuranMedia } from "@/features/publik/infrastructure/media-storage";
 
 export const runtime = "nodejs";
 const json = (data: unknown, status = 200) => NextResponse.json(data, { status, headers: { "Cache-Control": "private, no-store" } });
@@ -55,7 +56,7 @@ function handleError(error:unknown) {
 export async function GET() {
   try {
     const user=await requirePermission("pengaturan-desa","read"), villageId=await resolveVillageId(user);
-    const [[desa],[profil],layanan,settings,templates,[activeTheme],general]=await Promise.all([
+    const [[desa],[profil],layanan,settings,templates,[activeTheme],general,mediaUsage,[mediaQuota]]=await Promise.all([
       db.select({id:villages.id,namaDesa:villages.name,kodeDesa:villages.code,namaKecamatan:villages.district,namaKabupaten:villages.regency,namaPropinsi:villages.province,kodePos:villages.postalCode,alamat:villages.officeAddress,email:villages.email,telepon:villages.phone,website:villages.website,logo:villages.logo,namaKepalaDesa:villages.headName,nipKepalaDesa:villages.headNip,updatedAt:villages.updatedAt}).from(villages).where(eq(villages.id,villageId)).limit(1),
       db.select().from(profilDesa).where(eq(profilDesa.villageId,villageId)).limit(1),
       db.select({id:layananPublik.id,nama:layananPublik.nama,kategori:layananPublik.kategori,deskripsi:layananPublik.deskripsi,persyaratan:layananPublik.persyaratan,estimasiHari:layananPublik.estimasiHari,biaya:layananPublik.biaya,metode:layananPublik.metode,aktif:layananPublik.aktif}).from(layananPublik).where(eq(layananPublik.villageId,villageId)).orderBy(asc(layananPublik.nama)),
@@ -64,7 +65,7 @@ export async function GET() {
       db.select({id:theme.id,slug:theme.slug,nama:theme.nama,versi:theme.versi,opsi:theme.opsi}).from(theme).where(and(eq(theme.villageId,villageId),eq(theme.aktif,true))).limit(1),
       ambilPengaturanAdmin(),
     ]);
-    return json({desa:desa??null,profil:profil??null,layanan,kontak:settings[0]??{},integrasi:settings[1]??{},favicon:settings[2],templates:templates.map(t=>({...t,tokens:(()=>{try{return JSON.parse(t.tokens)}catch{return {}}})(),tags:(()=>{try{return JSON.parse(t.tags)}catch{return []}})()})),temaAktif:activeTheme??null,umum:general,media:{}})
+    return json({desa:desa??null,profil:profil??null,layanan,kontak:settings[0]??{},integrasi:settings[1]??{},favicon:settings[2],templates:templates.map(t=>({...t,tokens:(()=>{try{return JSON.parse(t.tokens)}catch{return {}}})(),tags:(()=>{try{return JSON.parse(t.tags)}catch{return []}})()})),temaAktif:activeTheme??null,umum:general,media:{usedBytes:mediaUsage,quotaMb:mediaQuota?.kuotaMediaMb??null}})
   } catch(error){return handleError(error);}
 }
 export async function PUT(request:Request) {
