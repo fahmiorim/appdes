@@ -21,19 +21,19 @@ const schema=z.object({
 const response=(data:unknown,status=200)=>NextResponse.json(data,{status,headers:{"Cache-Control":"private, no-store"}});
 function error(e:unknown){if(isAppError(e))return response({error:e.message},appErrorStatus(e.code));console.error("Pengaturan layanan desa gagal:",e);return response({error:"Pengaturan layanan gagal diproses."},500);}
 export async function GET(){
- try{const user=await requirePermission("pengaturan","read"),villageId=await resolveVillageId(user);
+ try{const user=await requirePermission("pengaturan-desa","read"),villageId=await resolveVillageId(user);
  const data=await db.select().from(layananPublik).where(eq(layananPublik.villageId,villageId)).orderBy(asc(layananPublik.nama));
  return response({data});}catch(e){return error(e);}
 }
 export async function POST(request:Request){
- try{const user=await requirePermission("pengaturan","update"),villageId=await resolveVillageId(user),body=await request.json(),parsed=schema.safeParse(body);
+ try{const user=await requirePermission("pengaturan-desa","update"),villageId=await resolveVillageId(user),body=await request.json(),parsed=schema.safeParse(body);
  if(!parsed.success)return response({error:parsed.error.issues[0]?.message??"Data layanan tidak valid."},422);
  const d=parsed.data;const [created]=await db.insert(layananPublik).values({villageId,nama:d.nama,kategori:d.kategori,deskripsi:d.deskripsi||null,persyaratan:d.persyaratan||null,estimasiHari:d.estimasiHari,biaya:d.biaya,metode:d.metode,aktif:d.aktif}).$returningId();
  return response({message:"Layanan berhasil ditambahkan.",id:created?.id},201);
  }catch(e){return error(e);}
 }
 export async function PUT(request:Request){
- try{const user=await requirePermission("pengaturan","update"),villageId=await resolveVillageId(user),body=await request.json(),id=Number(body.id),parsed=schema.safeParse(body.data);
+ try{const user=await requirePermission("pengaturan-desa","update"),villageId=await resolveVillageId(user),body=await request.json(),id=Number(body.id),parsed=schema.safeParse(body.data);
  if(!Number.isInteger(id)||id<1)return response({error:"ID layanan tidak valid."},400);
  if(!parsed.success)return response({error:parsed.error.issues[0]?.message??"Data layanan tidak valid."},422);
  const d=parsed.data,result=await db.update(layananPublik).set({nama:d.nama,kategori:d.kategori,deskripsi:d.deskripsi||null,persyaratan:d.persyaratan||null,estimasiHari:d.estimasiHari,biaya:d.biaya,metode:d.metode,aktif:d.aktif}).where(and(eq(layananPublik.id,id),eq(layananPublik.villageId,villageId)));
@@ -42,7 +42,7 @@ export async function PUT(request:Request){
  }catch(e){return error(e);}
 }
 export async function DELETE(request:Request){
- try{const user=await requirePermission("pengaturan","delete"),villageId=await resolveVillageId(user),id=Number(new URL(request.url).searchParams.get("id"));
+ try{const user=await requirePermission("pengaturan-desa","delete"),villageId=await resolveVillageId(user),id=Number(new URL(request.url).searchParams.get("id"));
  if(!Number.isInteger(id)||id<1)return response({error:"ID layanan tidak valid."},400);
  const result=await db.delete(layananPublik).where(and(eq(layananPublik.id,id),eq(layananPublik.villageId,villageId)));
  if(!result.affectedRows)return response({error:"Layanan tidak ditemukan."},404);
