@@ -168,20 +168,25 @@ export async function muatTemaPublik(villageId: number) {
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
     const root = parsed as Record<string, unknown>;
     const raw = root.templateTokens;
-    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
-    const token = raw as Record<string, unknown>;
-    const color = (key: string, fallback: string) =>
-      typeof token[key] === "string" && /^#[0-9a-fA-F]{6}$/.test(token[key] as string)
-        ? token[key] as string
-        : fallback;
+    const token = raw && typeof raw === "object" && !Array.isArray(raw)
+      ? raw as Record<string, unknown>
+      : {};
+    const brandingRaw = root.branding;
+    const branding = brandingRaw && typeof brandingRaw === "object" && !Array.isArray(brandingRaw)
+      ? brandingRaw as Record<string, unknown>
+      : {};
+    const color = (key: string, fallback: string, brandingKey?: string) => {
+      const value = brandingKey && typeof branding[brandingKey] === "string" ? branding[brandingKey] : token[key];
+      return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value) ? value : fallback;
+    };
     return {
-      primary: color("primary", "#075cf0"),
+      primary: color("primary", "#075cf0", "warnaUtama"),
       secondary: color("secondary", "#0d2136"),
-      accent: color("accent", "#7a20f0"),
+      accent: color("accent", "#7a20f0", "warnaAksen"),
       background: color("background", "#f1f6ff"),
       surface: color("surface", "#ffffff"),
       text: color("text", "#101b4b"),
-      fontHeading: token.fontHeading === "serif" ? "serif" : "sans",
+      fontHeading: branding.font === "serif" || token.fontHeading === "serif" ? "serif" : "sans",
       radius: token.radius === "kecil" ? "10px" : token.radius === "besar" ? "22px" : "15px",
       style: token.style === "gelap" ? "gelap" : "terang",
       templateName: active.nama,
