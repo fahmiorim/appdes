@@ -77,7 +77,7 @@
   justify-content: center;
   gap: clamp(10px, 1.65vw, 24px);
   height: 54px;
-  color: #101a3b;
+  color: var(--public-text, #101a3b);
   font-size: 10px;
   font-weight: 800;
   white-space: nowrap;
@@ -94,7 +94,7 @@
 .nav > a:hover,
 .dropdown > summary:hover,
 .nav .active {
-  color: #075cf0;
+  color: var(--public-primary, #075cf0);
 }
 .nav .active:after {
   position: absolute;
@@ -136,7 +136,7 @@
 }
 .dropdownMenu a:hover {
   background: #f0f5ff;
-  color: #075cf0;
+  color: var(--public-primary, #075cf0);
 }
 .headerActions {
   display: flex;
@@ -147,22 +147,22 @@
   font-size: 23px;
   font-weight: 700;
   line-height: 1;
-  color: #101a3b;
+  color: var(--public-text, #101a3b);
 }
 .login {
   display: flex;
   align-items: center;
   gap: 7px;
   padding: 9px 14px;
-  border-radius: 9px;
-  background: #075cf0;
+  border-radius: var(--public-radius, 9px);
+  background: var(--public-primary, #075cf0);
   color: #fff;
   font-size: 10px;
   font-weight: 800;
   white-space: nowrap;
 }
 .footer {
-  background: #0d2136;
+  background: var(--public-secondary, #0d2136);
   color: #fff;
 }
 .footerMain {
