@@ -169,7 +169,7 @@ export async function unggahDokumenPemerintahanAction(fd: FormData) {
   const villageId = await resolveVillageId(user);
   const berkas = await simpanBerkasMedia(villageId, {
     nama: file.name, mime: file.type, ukuran: file.size, isi: new Uint8Array(await file.arrayBuffer()),
-  }, "dokumen", "berkas");
+  }, "pemerintahan", "berkas");
   await unggahDokumenPemerintahan({
     perangkatId, lembagaId, judul: value(fd, "judul"), nomor: value(fd, "nomor") || null,
     tanggal: value(fd, "tanggal") || null, berkas, tampilPublik: value(fd, "tampilPublik") === "on",
