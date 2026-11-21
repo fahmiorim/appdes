@@ -190,6 +190,13 @@
       "when": 1795538163264,
       "tag": "0026_website_desa_menu",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "5",
+      "when": 1795626000000,
+      "tag": "0027_pemerintahan_desa",
+      "breakpoints": true
     }
   ]
 }
