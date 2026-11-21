@@ -8,6 +8,7 @@ import { hasPermission } from "@/features/rbac/application/authorization";
 import { requirePermission } from "@/lib/dal";
 import { notFound, validationError, conflict } from "@/lib/errors";
 import { RESOURCES } from "@/features/rbac/domain/resources";
+import { hitungSkorResponden, klasifikasiSkor } from "@/features/analisis/domain/skor";
 
 const RESOURCE = RESOURCES.analisisSurvei;
 
@@ -137,4 +138,62 @@ export async function hapusSoalSurveiData(surveyId: number, questionId: number) 
     .where(and(eq(surveyJawaban.villageId, villageId), eq(surveyJawaban.soalId, questionId)));
   if (Number(used?.total ?? 0) > 0) throw conflict("Pertanyaan sudah memiliki jawaban. Pertanyaan tidak dapat dihapus agar hasil survei tetap utuh.");
   await db.delete(surveySoal).where(and(eq(surveySoal.villageId, villageId), eq(surveySoal.surveyId, surveyId), eq(surveySoal.id, questionId)));
+}
+
+
+export async function getHasilSurveiData(id: number) {
+  const user = await requirePermission(RESOURCE, "read");
+  const villageId = await resolveVillageId(user);
+  const [row] = await db.select().from(survey)
+    .where(and(eq(survey.villageId, villageId), eq(survey.id, id))).limit(1);
+  if (!row) throw notFound("Survei tidak ditemukan.");
+  const [questions, respondents, answers] = await Promise.all([
+    db.select().from(surveySoal).where(and(eq(surveySoal.villageId, villageId), eq(surveySoal.surveyId, id))).orderBy(surveySoal.urutan, surveySoal.id),
+    db.select().from(surveyResponden).where(and(eq(surveyResponden.villageId, villageId), eq(surveyResponden.surveyId, id))).orderBy(desc(surveyResponden.createdAt)),
+    db.select().from(surveyJawaban).where(eq(surveyJawaban.villageId, villageId)),
+  ]);
+  const respondentIds = new Set(respondents.map((item) => item.id));
+  const surveyAnswers = answers.filter((answer) => respondentIds.has(answer.respondenId));
+  const byRespondent = new Map<number, Map<number, string>>();
+  for (const answer of surveyAnswers) {
+    const map = byRespondent.get(answer.respondenId) ?? new Map<number, string>();
+    map.set(answer.soalId, answer.jawaban ?? "");
+    byRespondent.set(answer.respondenId, map);
+  }
+  const scoreQuestions = questions.map((question) => {
+    let skorPilihan: Record<string, number> = {};
+    try {
+      const parsed: unknown = question.skorPilihan ? JSON.parse(question.skorPilihan) : {};
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) skorPilihan = parsed as Record<string, number>;
+    } catch { /* Skor pilihan belum dikonfigurasi. */ }
+    return { id: question.id, tipe: question.tipe ?? "text", bobot: question.bobot, skorPilihan, indikatorId: question.indikatorId };
+  });
+  const scores = respondents.map((respondent) => hitungSkorResponden(scoreQuestions, {
+    respondenId: respondent.id, nama: respondent.nama, jawaban: byRespondent.get(respondent.id) ?? new Map(),
+  }));
+  const scored = scores.filter((score) => {
+    const map = byRespondent.get(score.respondenId);
+    return scoreQuestions.some((question) => {
+      const answer = map?.get(question.id)?.trim();
+      return !!answer && (question.tipe === "choice" ? typeof question.skorPilihan[answer] === "number" : question.tipe === "number" && Number.isFinite(Number(answer)));
+    });
+  });
+  const average = scored.length ? Math.round(scored.reduce((sum, score) => sum + score.skor, 0) / scored.length * 10) / 10 : null;
+  const distribution = ["Sangat Baik", "Baik", "Cukup", "Kurang"].map((label) => ({
+    label, total: scored.filter((score) => score.klasifikasi === label).length,
+  }));
+  const questionStats = questions.map((question) => {
+    const items = surveyAnswers.filter((answer) => answer.soalId === question.id && (answer.jawaban ?? "").trim());
+    const counts = new Map<string, number>();
+    for (const item of items) counts.set(item.jawaban ?? "", (counts.get(item.jawaban ?? "") ?? 0) + 1);
+    return { id: question.id, pertanyaan: question.pertanyaan, tipe: question.tipe ?? "text", total: items.length,
+      pilihan: [...counts.entries()].sort((a,b) => b[1]-a[1]).slice(0,10).map(([jawaban,total])=>({jawaban,total})) };
+  });
+  const comments = questions.filter((question) => question.tipe === "text").flatMap((question) =>
+    surveyAnswers.filter((answer) => answer.soalId === question.id && (answer.jawaban ?? "").trim())
+      .map((answer) => ({ pertanyaan: question.pertanyaan, jawaban: answer.jawaban ?? "" })))
+    .slice(0,100);
+  return { row, totalResponden: respondents.length, scoredCount: scored.length, average,
+    klasifikasi: average === null ? "Belum ada penilaian" : klasifikasiSkor(average),
+    distribution, questionStats, comments, canExport: hasPermission(user.permissions, RESOURCE, "read") };
 }
