@@ -21,7 +21,7 @@ export const INVENTARIS_ASAL = [
 ] as const;
 export type InventarisAsal = (typeof INVENTARIS_ASAL)[number];
 
-export const INVENTARIS_KONDISI = ["baik", "rusak_ringan", "rusak_berat"] as const;
+export const INVENTARIS_KONDISI = ["baik", "rusak_ringan", "rusak_berat", "dalam_perbaikan"] as const;
 export type InventarisKondisi = (typeof INVENTARIS_KONDISI)[number];
 
 export const MUTASI_JENIS = ["pindah", "rusak", "hapus", "perbaikan"] as const;
@@ -104,6 +104,7 @@ export const INVENTARIS_KONDISI_LABELS: Record<InventarisKondisi, string> = {
   baik: "Baik",
   rusak_ringan: "Rusak Ringan",
   rusak_berat: "Rusak Berat",
+  dalam_perbaikan: "Dalam Perbaikan",
 };
 
 export const MUTASI_JENIS_LABELS: Record<MutasiJenis, string> = {
@@ -133,6 +134,10 @@ export const inventarisFormSchema = z.object({
   jumlah: z.coerce.number().min(0.01).max(999999).default(1),
   satuan: z.string().trim().max(20).default("buah"),
   hargaSatuan: z.coerce.number().min(0).max(999999999999).optional(),
+  akumulasiPenyusutan: z.coerce.number().min(0).max(999999999999).default(0),
+  umurManfaatBulan: z.coerce.number().int().min(1).max(1200).optional(),
+  nilaiResidu: z.coerce.number().min(0).max(999999999999).default(0),
+  tanggalMulaiPenyusutan: z.iso.date().optional().or(z.literal("")),
   tahunPembelian: z.coerce.number().int().min(1900).max(2100).optional(),
   tanggalPembelian: z.iso.date().optional().or(z.literal("")),
   asal: z.enum(INVENTARIS_ASAL).optional(),
@@ -140,6 +145,20 @@ export const inventarisFormSchema = z.object({
   kondisi: z.enum(INVENTARIS_KONDISI).default("baik"),
   lokasi: z.string().trim().max(150).optional().or(z.literal("")),
   keterangan: z.string().trim().max(500).optional().or(z.literal("")),
+  penanggungJawab: z.string().trim().max(150).optional().or(z.literal("")),
+  jabatanPenanggungJawab: z.string().trim().max(100).optional().or(z.literal("")),
+  teleponPenanggungJawab: z.string().trim().max(30).optional().or(z.literal("")),
+}).superRefine((value, ctx) => {
+  const nilaiPerolehan = (value.hargaSatuan ?? 0) * value.jumlah;
+  if (value.nilaiResidu > nilaiPerolehan + 0.005) {
+    ctx.addIssue({code:"custom",path:["nilaiResidu"],message:"Nilai residu tidak boleh melebihi nilai perolehan."});
+  }
+  if (value.tanggalMulaiPenyusutan && value.tanggalPembelian && value.tanggalMulaiPenyusutan < value.tanggalPembelian) {
+    ctx.addIssue({code:"custom",path:["tanggalMulaiPenyusutan"],message:"Tanggal mulai penyusutan tidak boleh sebelum tanggal perolehan."});
+  }
+  if (value.akumulasiPenyusutan + value.nilaiResidu > nilaiPerolehan + 0.005) {
+    ctx.addIssue({code:"custom",path:["akumulasiPenyusutan"],message:"Akumulasi penyusutan dan nilai residu tidak boleh melebihi nilai perolehan."});
+  }
 });
 
 export type InventarisInput = z.infer<typeof inventarisFormSchema>;
@@ -171,6 +190,10 @@ export interface InventarisRow {
   satuan: string | null;
   hargaSatuan: string | null;
   nilaiAkhir: string | null;
+  akumulasiPenyusutan?: string;
+  umurManfaatBulan?: number | null;
+  nilaiResidu?: string;
+  tanggalMulaiPenyusutan?: string | null;
   tahunPembelian: number | null;
   tanggalPembelian: string | null;
   asal: InventarisAsal | null;
@@ -178,9 +201,46 @@ export interface InventarisRow {
   kondisi: InventarisKondisi;
   lokasi: string | null;
   keterangan: string | null;
+  penanggungJawab?: string | null;
+  jabatanPenanggungJawab?: string | null;
+  teleponPenanggungJawab?: string | null;
 }
 
 /** Kategori inventaris untuk pilihan formulir dan halaman kategori. */
+
+export interface HasilPenyusutanAset {
+  nilaiPerolehan: number;
+  akumulasiPenyusutan: number;
+  nilaiBuku: number;
+  penyusutanBulanan: number;
+  bulanTerpakai: number;
+}
+
+/** Penyusutan garis lurus; nilai awal akumulasi menjadi saldo pembuka. */
+export function hitungPenyusutanAset(input:{
+  hargaSatuan:string|null;jumlah:string;akumulasiPenyusutan?:string|null;
+  umurManfaatBulan?:number|null;nilaiResidu?:string|null;tanggalMulaiPenyusutan?:string|null;tanggalPembelian?:string|null;
+},asOf=new Date()):HasilPenyusutanAset {
+  const nilaiPerolehan=Math.max(0,Number(input.hargaSatuan??0)*Number(input.jumlah??0));
+  const residu=Math.min(nilaiPerolehan,Math.max(0,Number(input.nilaiResidu??0)));
+  const saldoAwal=Math.min(Math.max(0,Number(input.akumulasiPenyusutan??0)),Math.max(0,nilaiPerolehan-residu));
+  const umur=input.umurManfaatBulan??null;
+  const mulai=input.tanggalMulaiPenyusutan??input.tanggalPembelian??null;
+  let bulanTerpakai=0;
+  if(umur&&mulai){
+    const start=new Date(mulai+"T00:00:00Z");
+    const end=new Date(Date.UTC(asOf.getUTCFullYear(),asOf.getUTCMonth(),asOf.getUTCDate()));
+    if(!Number.isNaN(start.getTime())&&end>=start){
+      bulanTerpakai=Math.max(0,(end.getUTCFullYear()-start.getUTCFullYear())*12+end.getUTCMonth()-start.getUTCMonth()-(end.getUTCDate()<start.getUTCDate()?1:0));
+      bulanTerpakai=Math.min(umur,bulanTerpakai);
+    }
+  }
+  const dasar=Math.max(0,nilaiPerolehan-residu-saldoAwal);
+  const penyusutanBulanan=umur?dasar/umur:0;
+  const akumulasiPenyusutan=Math.min(nilaiPerolehan-residu,saldoAwal+penyusutanBulanan*bulanTerpakai);
+  return {nilaiPerolehan,akumulasiPenyusutan,nilaiBuku:Math.max(residu,nilaiPerolehan-akumulasiPenyusutan),penyusutanBulanan,bulanTerpakai};
+}
+
 export interface InventarisKategoriRow {
   id: number;
   kode: string;
@@ -226,6 +286,8 @@ export interface MutasiAssetSnapshot {
   jumlah: string;
   hargaSatuan: string | null;
   nilaiAkhir: string | null;
+  akumulasiPenyusutan?: string | null;
+  nilaiResidu?: string | null;
   kondisi: InventarisKondisi;
   lokasi: string | null;
   isDeleted: boolean;
@@ -241,6 +303,8 @@ export interface MutasiDetailSnapshot {
 export interface InventarisAssetPatch {
   jumlah?: string;
   nilaiAkhir?: string | null;
+  akumulasiPenyusutan?: string;
+  nilaiResidu?: string;
   kondisi?: InventarisKondisi;
   lokasi?: string | null;
   isDeleted?: boolean;
@@ -288,15 +352,26 @@ export function hitungPerubahanAset(
       return {
         jumlah: "0.00",
         nilaiAkhir: "0.00",
+        akumulasiPenyusutan: "0.00",
+        nilaiResidu: "0.00",
         isDeleted: true,
         deletedAt: new Date(),
       };
     }
 
-    return {
+    const patch: InventarisAssetPatch = {
       jumlah: sisa.toFixed(2),
       nilaiAkhir: nilaiAkhirBaru(aset.hargaSatuan, sisa),
     };
+    if (aset.nilaiResidu !== undefined && aset.nilaiResidu !== null) {
+      patch.nilaiResidu = jumlahAset > 0 ? (Number(aset.nilaiResidu) * sisa / jumlahAset).toFixed(2) : "0.00";
+    }
+    if (aset.akumulasiPenyusutan !== undefined && aset.akumulasiPenyusutan !== null) {
+      patch.akumulasiPenyusutan = jumlahAset > 0
+        ? (Number(aset.akumulasiPenyusutan) * sisa / jumlahAset).toFixed(2)
+        : "0.00";
+    }
+    return patch;
   }
 
   if (Math.abs(jumlahMutasi - jumlahAset) > TOLERANSI_JUMLAH) {
@@ -313,11 +388,13 @@ export function hitungPerubahanAset(
 
   if (mutasi.jenis === "rusak") {
     if (!mutasi.kondisiBaru || mutasi.kondisiBaru === "baik") {
-      throw conflict("Kondisi baru harus rusak ringan atau rusak berat untuk mutasi rusak.");
+      throw conflict("Kondisi baru harus rusak ringan atau rusak berat, atau dalam perbaikan untuk mutasi rusak.");
     }
     return { kondisi: mutasi.kondisiBaru };
   }
 
-  const kondisiBaru = mutasi.kondisiBaru ?? "baik";
-  return { kondisi: kondisiBaru };
+  if(mutasi.kondisiBaru && mutasi.kondisiBaru!=="dalam_perbaikan") {
+    throw conflict("Kondisi akhir perbaikan ditetapkan setelah jadwal pemeliharaan selesai.");
+  }
+  return { kondisi: "dalam_perbaikan" };
 }

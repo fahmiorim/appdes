@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   inventarisMutasiFormSchema,
+  inventarisFormSchema,
+  hitungPenyusutanAset,
   MUTASI_JENIS,
   MUTASI_JENIS_LABELS,
   MUTASI_STATUS,
@@ -112,5 +114,50 @@ describe("MutasiStatus dan MUTASI_STATUS", () => {
     expect(typeof MUTASI_STATUS[0]).toBe("string");
     expect(typeof MUTASI_STATUS[1]).toBe("string");
     expect(typeof MUTASI_STATUS[2]).toBe("string");
+  });
+});
+
+describe("penyusutan aset metode garis lurus",()=>{
+  const tanggalUji=new Date("2026-01-01T00:00:00.000Z");
+  it("menghitung penyusutan bulanan dari nilai perolehan dikurangi residu",()=>{
+    const hasil=hitungPenyusutanAset({
+      hargaSatuan:"60000000",jumlah:"1",umurManfaatBulan:60,nilaiResidu:"6000000",
+      tanggalPembelian:"2025-01-01",
+    },tanggalUji);
+    expect(hasil.bulanTerpakai).toBe(12);
+    expect(hasil.penyusutanBulanan).toBe(900000);
+    expect(hasil.akumulasiPenyusutan).toBe(10800000);
+    expect(hasil.nilaiBuku).toBe(49200000);
+  });
+  it("tidak menyusut sebelum tanggal mulai",()=>{
+    const hasil=hitungPenyusutanAset({
+      hargaSatuan:"12000000",jumlah:"1",umurManfaatBulan:24,nilaiResidu:"0",
+      tanggalMulaiPenyusutan:"2026-02-01",
+    },tanggalUji);
+    expect(hasil.bulanTerpakai).toBe(0);
+    expect(hasil.akumulasiPenyusutan).toBe(0);
+    expect(hasil.nilaiBuku).toBe(12000000);
+  });
+  it("membatasi akumulasi pada nilai yang dapat disusutkan",()=>{
+    const hasil=hitungPenyusutanAset({
+      hargaSatuan:"12000000",jumlah:"1",umurManfaatBulan:12,nilaiResidu:"2000000",
+      tanggalMulaiPenyusutan:"2024-01-01",akumulasiPenyusutan:"1000000",
+    },tanggalUji);
+    expect(hasil.akumulasiPenyusutan).toBe(10000000);
+    expect(hasil.nilaiBuku).toBe(2000000);
+  });
+  it("menolak residu dan saldo penyusutan yang melebihi nilai perolehan",()=>{
+    const hasil=inventarisFormSchema.safeParse({
+      namaBarang:"Laptop",jumlah:1,hargaSatuan:1000000,akumulasiPenyusutan:500000,
+      nilaiResidu:600000,
+    });
+    expect(hasil.success).toBe(false);
+  });
+  it("menolak tanggal mulai penyusutan sebelum tanggal perolehan",()=>{
+    const hasil=inventarisFormSchema.safeParse({
+      namaBarang:"Laptop",jumlah:1,hargaSatuan:1000000,tanggalPembelian:"2025-01-01",
+      tanggalMulaiPenyusutan:"2024-12-31",
+    });
+    expect(hasil.success).toBe(false);
   });
 });
