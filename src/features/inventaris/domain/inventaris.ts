@@ -119,14 +119,6 @@ export const inventarisKategoriFormSchema = z.object({
   nama: z.string().trim().min(1, "Nama wajib diisi").max(150),
   golongan: z.enum(INVENTARIS_KATEGORI),
   keterangan: z.string().trim().max(500).optional().or(z.literal("")),
-  penanggungJawab: z.string().trim().max(150).optional().or(z.literal("")),
-  jabatanPenanggungJawab: z.string().trim().max(100).optional().or(z.literal("")),
-  teleponPenanggungJawab: z.string().trim().max(30).optional().or(z.literal("")),
-}).superRefine((value, ctx) => {
-  const nilaiPerolehan = (value.hargaSatuan ?? 0) * value.jumlah;
-  if (value.akumulasiPenyusutan > nilaiPerolehan + 0.005) {
-    ctx.addIssue({code:"custom",path:["akumulasiPenyusutan"],message:"Akumulasi penyusutan tidak boleh melebihi nilai perolehan."});
-  }
 });
 
 export type InventarisKategoriInput = z.infer<typeof inventarisKategoriFormSchema>;
@@ -150,6 +142,14 @@ export const inventarisFormSchema = z.object({
   kondisi: z.enum(INVENTARIS_KONDISI).default("baik"),
   lokasi: z.string().trim().max(150).optional().or(z.literal("")),
   keterangan: z.string().trim().max(500).optional().or(z.literal("")),
+  penanggungJawab: z.string().trim().max(150).optional().or(z.literal("")),
+  jabatanPenanggungJawab: z.string().trim().max(100).optional().or(z.literal("")),
+  teleponPenanggungJawab: z.string().trim().max(30).optional().or(z.literal("")),
+}).superRefine((value, ctx) => {
+  const nilaiPerolehan = (value.hargaSatuan ?? 0) * value.jumlah;
+  if (value.akumulasiPenyusutan > nilaiPerolehan + 0.005) {
+    ctx.addIssue({code:"custom",path:["akumulasiPenyusutan"],message:"Akumulasi penyusutan tidak boleh melebihi nilai perolehan."});
+  }
 });
 
 export type InventarisInput = z.infer<typeof inventarisFormSchema>;
