@@ -1,0 +1,15 @@
+import type { Metadata } from "next";
+import { getRekapAnalisis } from "@/features/laporan-statistik/application/laporan-statistik-use-cases";
+import { LaporanStatistikNav } from "../nav";
+import { PrintButton } from "../print-button";
+import styles from "../laporan-statistik.module.css";
+export const metadata: Metadata = { title: "Rekapitulasi & Analisis Kinerja" };
+const rp=(v:number)=>new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(v);
+export default async function Page({searchParams}:{searchParams:Promise<{tahun?:string}>}) {
+ const q=await searchParams, year=Number(q.tahun), d=await getRekapAnalisis(Number.isInteger(year)?year:undefined);
+ const tips=[d.trend[2]!.budget===0?"Lengkapi data APBDes tahun berjalan agar realisasi dapat dianalisis.":d.realization<70?"Tinjau kegiatan dengan realisasi rendah dan catat kendala pelaksanaannya.":"Pertahankan pemantauan realisasi anggaran secara berkala.",d.trend[2]!.projects===0?"Lengkapi data pembangunan agar progres fisik desa dapat dipantau.":d.completion<50?"Evaluasi proyek yang belum selesai dan perbarui progres lapangan.":"Pastikan proyek selesai memiliki catatan hasil dan dokumentasi."];
+ return <div className={styles["ls-page"]}><header className={styles["ls-heading"]}><div><span className={styles["ls-eyebrow"]}>EVALUASI KINERJA PEMERINTAHAN</span><h1>Rekapitulasi & Analisis Kinerja</h1><p>Perbandingan anggaran, realisasi, dan progres pembangunan tiga tahun.</p></div><PrintButton/></header><LaporanStatistikNav active="/laporan-statistik/rekap-analisis"/>
+ <section className={styles["ls-kpis"]}><article className={styles["ls-primary"]}><span>Realisasi Anggaran {d.year}</span><strong>{d.realization.toLocaleString("id-ID",{maximumFractionDigits:1})}%</strong><small>Realisasi dibandingkan pagu</small></article><article><span>Penyelesaian Proyek</span><strong>{d.completion.toLocaleString("id-ID",{maximumFractionDigits:1})}%</strong><small>Proyek selesai</small></article><article><span>Periode Analisis</span><strong>{d.year-2}–{d.year}</strong><small>Tiga tahun anggaran</small></article></section>
+ <section className={styles["ls-card"]}><header><div><h2>Tren Kinerja Tiga Tahun</h2><p>Data bersumber dari APBDes dan modul pembangunan.</p></div></header><div className={styles["ls-table"]}><table><thead><tr><th>Tahun</th><th>Anggaran</th><th>Realisasi</th><th>Proyek</th><th>Selesai</th><th>Progres Rata-rata</th></tr></thead><tbody>{d.trend.map(r=><tr key={r.year}><td>{r.year}</td><td>{rp(r.budget)}</td><td>{rp(r.actual)}</td><td>{r.projects}</td><td>{r.done}</td><td>{r.progress.toLocaleString("id-ID",{maximumFractionDigits:1})}%</td></tr>)}</tbody></table></div></section>
+ <section className={styles["ls-card"]}><header><div><h2>Catatan Analisis & Rekomendasi</h2><p>Indikator otomatis berdasarkan data tersedia, bukan audit regulatif.</p></div></header><ol className={styles["ls-note"]}>{tips.map((tip,i)=><li key={i}>{tip}</li>)}</ol></section></div>;
+}

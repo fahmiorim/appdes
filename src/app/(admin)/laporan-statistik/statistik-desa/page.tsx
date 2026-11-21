@@ -1,0 +1,15 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { getStatistikDesa, type KategoriStatistik } from "@/features/laporan-statistik/application/laporan-statistik-use-cases";
+import { LaporanStatistikNav } from "../nav";
+import { PrintButton } from "../print-button";
+import styles from "../laporan-statistik.module.css";
+export const metadata: Metadata = { title: "Statistik Desa" };
+const options: {value:KategoriStatistik;label:string}[]=[{value:"gender",label:"Jenis Kelamin"},{value:"umur",label:"Kelompok Umur"},{value:"pendidikan",label:"Pendidikan"},{value:"pekerjaan",label:"Pekerjaan"},{value:"dusun",label:"Sebaran Dusun"}];
+export default async function Page({searchParams}:{searchParams:Promise<{kategori?:string}>}) {
+ const q=await searchParams, kind=options.some(x=>x.value===q.kategori)?q.kategori as KategoriStatistik:"gender", rows=await getStatistikDesa(kind), total=rows.reduce((s,r)=>s+r.total,0), max=Math.max(1,...rows.map(r=>r.total));
+ return <div className={styles["ls-page"]}><header className={styles["ls-heading"]}><div><span className={styles["ls-eyebrow"]}>DEMOGRAFI DAN PROFIL DESA</span><h1>Statistik Desa</h1><p>Visualisasi dan rincian data penduduk berdasarkan kategori.</p></div><PrintButton/></header><LaporanStatistikNav active="/laporan-statistik/statistik-desa"/>
+ <section className={styles["ls-card"]}><form method="get" className={styles["ls-filters"]}><label>Kategori Statistik<select name="kategori" defaultValue={kind}>{options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}</select></label><button className="button button-primary">Tampilkan</button></form><header><div><h2>{options.find(x=>x.value===kind)?.label}</h2><p>Total {total.toLocaleString("id-ID")} penduduk aktif</p></div></header>
+ {rows.length?rows.map(r=><div className={styles["ls-bar"]} key={r.label}><span>{r.label}</span><div><i style={{width:(r.total/max*100)+"%"}}/></div><strong>{r.total.toLocaleString("id-ID")} · {total?((r.total/total)*100).toLocaleString("id-ID",{maximumFractionDigits:1}):0}%</strong></div>):<p className={styles["ls-empty"]}>Belum ada data statistik.</p>}</section>
+ <section className={styles["ls-card"]}><header><div><h2>Rincian Statistik</h2><p>Jumlah dan persentase tiap kategori.</p></div><Link href="/statistik/penduduk">Statistik kependudukan lengkap</Link></header><div className={styles["ls-table"]}><table><thead><tr><th>Kategori</th><th>Jumlah</th><th>Persentase</th></tr></thead><tbody>{rows.map(r=><tr key={r.label}><td>{r.label}</td><td>{r.total.toLocaleString("id-ID")}</td><td>{total?((r.total/total)*100).toLocaleString("id-ID",{maximumFractionDigits:1}):0}%</td></tr>)}</tbody><tfoot><tr><th>Total</th><th>{total.toLocaleString("id-ID")}</th><th>{total?"100%":"0%"}</th></tr></tfoot></table></div></section></div>;
+}

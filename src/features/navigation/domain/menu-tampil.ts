@@ -17,6 +17,10 @@
  */
 export const RUTE_ADMIN_TERSEDIA: readonly string[] = [
   "/beranda",
+  "/laporan-statistik",
+  "/laporan-statistik/laporan-desa",
+  "/laporan-statistik/statistik-desa",
+  "/laporan-statistik/rekap-analisis",
   "/pelayanan-publik",
   "/pelayanan-publik/layanan",
   "/pelayanan-publik/pengajuan",
