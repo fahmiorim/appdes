@@ -274,6 +274,13 @@
       "when": 1795700000004,
       "tag": "0037_inventaris_riwayat_pemeliharaan",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "5",
+      "when": 1795700000005,
+      "tag": "0038_inventaris_kondisi_setelah_pemeliharaan",
+      "breakpoints": true
     }
   ]
 }
