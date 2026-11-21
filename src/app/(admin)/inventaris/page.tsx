@@ -13,7 +13,7 @@ export default async function DaftarInventarisPage({searchParams}:Props){
   const pageRaw=Number(p.page); const page=Number.isInteger(pageRaw)&&pageRaw>0?pageRaw:1; const pageSize=10;
   const kategoriId=p.kategori&&/^\\d+$/.test(p.kategori)?Number(p.kategori):undefined;
   const data=await getInventarisTablePageData({search:q,kategoriId,lokasi:p.lokasi,kondisi:p.kondisi,page,pageSize});
-  const pageCount=Math.max(1,Math.ceil(data.total/pageSize)); const current=Math.min(page,pageCount);
+  const pageCount=Math.max(1,Math.ceil(data.total/pageSize)); const current=data.currentPage;
   const rows=data.rows;
   const totalUnit=data.summaryRows.reduce((s,x)=>s+Number(x.jumlah),0);
   const totalValue=data.summaryRows.reduce((s,x)=>s+Number(x.nilaiAkhir??0),0);
@@ -22,10 +22,10 @@ export default async function DaftarInventarisPage({searchParams}:Props){
   return <main className={styles.page}>
     <header className={styles.heading}><div className={styles.headingIcon}>▤</div><div><span className={styles.eyebrow}>INVENTARIS &amp; ASET DESA</span><h1>Daftar Inventaris</h1><p>Data seluruh barang inventaris dan aset milik desa, lengkap dengan kategori, lokasi, kondisi, dan nilai aset.</p></div></header>
     <section className={styles.metrics}>
-      <article className={`${styles.metric} ${styles.metricPrimary}`}><span>Total Inventaris</span><strong>{totalUnit.toLocaleString("id-ID")} Unit</strong><small>{data.total} catatan barang aktif</small></article>
+      <article className={`${styles.metric} ${styles.metricPrimary}`}><span>Total Inventaris</span><strong>{totalUnit.toLocaleString("id-ID")} Unit</strong><small>{data.summaryRows.length} catatan barang aktif</small></article>
       <article className={styles.metric}><span>Baik</span><strong>{count("baik").toLocaleString("id-ID")} Unit</strong><small>{totalUnit?((count("baik")/totalUnit)*100).toFixed(1):"0"}%</small></article>
       <article className={styles.metric}><span>Rusak Ringan</span><strong>{count("rusak_ringan").toLocaleString("id-ID")} Unit</strong><small>Perlu pemantauan</small></article>
-      <article className={styles.metric}><span>Rusak Berat</span><strong>{count("rusak_berat").toLocaleString("id-ID")} Unit</strong><small>Perlu tindakan</small></article>
+      <article className={styles.metric}><span>Rusak Berat</span><strong>{count("rusak_berat").toLocaleString("id-ID")} Unit</strong><small>Perlu tindakan</small></article><article className={styles.metric}><span>Dalam Perbaikan</span><strong>{count("dalam_perbaikan").toLocaleString("id-ID")} Unit</strong><small>Sedang ditangani</small></article>
       <article className={styles.metric}><span>Nilai Total Aset</span><strong>{formatRupiah(totalValue.toFixed(2))}</strong><small>Akumulasi nilai tercatat</small></article>
     </section>
     <nav className={styles.tabs}><Link href="/inventaris/dashboard">Dashboard</Link><Link className={styles.active} href="/inventaris">Daftar Inventaris</Link><Link href="/inventaris/pengelolaan">Pengelolaan Aset</Link><Link href="/inventaris/laporan">Rekap Nilai Aset</Link><Link href="/inventaris/mutasi">Mutasi &amp; Pemeliharaan</Link></nav>
