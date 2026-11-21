@@ -27,3 +27,30 @@ export async function hapusSurveiAction(formData: FormData) {
   revalidatePath("/pelayanan-publik/survei");
   redirect("/pelayanan-publik/survei?dihapus=1");
 }
+
+
+import { hapusSoalSurveiData, simpanSoalSurveiData } from "@/features/pelayanan/application/survei-use-cases";
+
+export async function simpanSoalSurveiAction(formData: FormData) {
+  const surveyId = Number(formData.get("surveyId"));
+  const rawId = String(formData.get("questionId") ?? "");
+  const questionId = rawId ? Number(rawId) : null;
+  if (!Number.isSafeInteger(surveyId) || surveyId < 1 || (questionId !== null && (!Number.isSafeInteger(questionId) || questionId < 1))) throw new Error("ID survei atau pertanyaan tidak valid.");
+  await simpanSoalSurveiData(surveyId, questionId, {
+    pertanyaan: String(formData.get("pertanyaan") ?? ""),
+    tipe: String(formData.get("tipe") ?? "text"),
+    pilihan: String(formData.get("pilihan") ?? ""),
+    bobot: Number(formData.get("bobot") ?? 1),
+  });
+  revalidatePath("/pelayanan-publik/survei/" + surveyId);
+  redirect("/pelayanan-publik/survei/" + surveyId + "?soal=tersimpan");
+}
+
+export async function hapusSoalSurveiAction(formData: FormData) {
+  const surveyId = Number(formData.get("surveyId"));
+  const questionId = Number(formData.get("questionId"));
+  if (!Number.isSafeInteger(surveyId) || surveyId < 1 || !Number.isSafeInteger(questionId) || questionId < 1) throw new Error("ID pertanyaan tidak valid.");
+  await hapusSoalSurveiData(surveyId, questionId);
+  revalidatePath("/pelayanan-publik/survei/" + surveyId);
+  redirect("/pelayanan-publik/survei/" + surveyId + "?soal=dihapus");
+}
