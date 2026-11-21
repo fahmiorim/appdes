@@ -27,7 +27,6 @@ export default async function GrupAksesPage({
     Number.isInteger(roleParam) && roleParam > 0 ? roleParam : undefined,
   );
 
-  const sistem = data.roles.filter((role) => role.isSystem).length;
   const kustom = data.roles.length - sistem;
 
   return (
