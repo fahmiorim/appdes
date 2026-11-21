@@ -4,7 +4,7 @@ import { useState } from "react";
 import { absensiMandiriAction } from "../actions";
 import styles from "../absensi-kepegawaian.module.css";
 
-export function AbsensiMandiri() {
+export function AbsensiMandiri({wajibGps=true}:{wajibGps?:boolean}) {
   const [coords,setCoords]=useState<{latitude:number;longitude:number}|null>(null);
   const [status,setStatus]=useState("Lokasi belum diambil.");
   const [loading,setLoading]=useState(false);
@@ -35,13 +35,13 @@ export function AbsensiMandiri() {
         <button type="button" className={styles["ak-button"]} onClick={ambilLokasi} disabled={loading}>
           {loading?"Mengambil lokasi…":"◎ Ambil Lokasi GPS"}
         </button>
-        <p aria-live="polite">{status}</p>
+        <p aria-live="polite">{status}</p>{!wajibGps?<small>Validasi GPS dinonaktifkan oleh administrator; koordinat tetap dapat dilampirkan jika tersedia.</small>:null}
       </div>
       <label className={styles.wide}>Foto Selfie
         <input type="file" name="foto" accept="image/jpeg,image/png,image/webp" capture="user"/>
         <small>JPG, PNG, atau WEBP. Maksimal 5 MB.</small>
       </label>
-      <button className={styles["ak-button"]} type="submit" disabled={!coords}>Kirim Absensi</button>
+      <button className={styles["ak-button"]} type="submit" disabled={wajibGps&&!coords}>Kirim Absensi</button>
     </form>
   </section>;
 }
