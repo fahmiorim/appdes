@@ -223,6 +223,9 @@ export const galeriAlbum = mysqlTable(
     nama: varchar("nama", { length: 150 }).notNull(),
     slug: varchar("slug", { length: 150 }).notNull(),
     keterangan: text("keterangan"),
+    kategori: varchar("kategori", { length: 80 }),
+    /** Tanggal publikasi album untuk pengurutan dan label publik. */
+    publishedAt: timestamp("published_at"),
     /** Gambar sampul album (jalur relatif media). */
     sampul: varchar("sampul", { length: 255 }),
     aktif: boolean("aktif").notNull().default(true),
@@ -237,6 +240,11 @@ export const galeriAlbum = mysqlTable(
   (table) => [
     uniqueIndex("galeri_album_village_slug_unique").on(table.villageId, table.slug),
     uniqueIndex("galeri_album_village_id_uq").on(table.villageId, table.id),
+    index("galeri_album_village_category_published_idx").on(
+      table.villageId,
+      table.kategori,
+      table.publishedAt,
+    ),
   ],
 );
 

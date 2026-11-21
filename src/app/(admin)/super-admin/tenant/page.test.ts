@@ -132,6 +132,16 @@ describe("SuperAdminTenantPage", () => {
     expect(html).toContain("Kuota media");
     expect(html).toContain("Tegar");
     expect(html).toContain("v1.0.0");
+    expect(html).toContain("Total tenant");
+    expect(html).toContain("Total pengguna desa");
+    expect(html).toContain("Total penduduk");
+    expect(html).toContain("Domain terdaftar");
+    expect(html).toContain("tenant-table tenant-table-list");
+    expect(html).toContain("tenant-search-dengan-ikon");
+    expect(html).toContain("Semua tenant");
+    expect(html).toContain("Tambah tenant");
+    expect(html).toContain("Kembali");
+    expect(html).toContain("Kelola Desa Sukamaju");
   });
 
   it("memfilter daftar sesuai status pada query param", async () => {

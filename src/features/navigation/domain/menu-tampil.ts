@@ -40,6 +40,9 @@ export const RUTE_ADMIN_TERSEDIA: readonly string[] = [
   "/super-admin/pengguna",
   "/super-admin/audit",
   "/super-admin/template",
+  "/super-admin/template/baru",
+  "/super-admin/template/penggunaan",
+  "/super-admin/template/fondasi",
   "/super-admin/pengaturan",
 ];
 

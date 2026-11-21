@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { muatMenuPublik } from "@/features/publik/application/website-admin";
+
 import styles from "./public-site-layout.module.css";
-import { listMenuPublik } from "@/features/publik/infrastructure/content-repository";
 
 export type PublicVillageIdentity = {
   id: number;
@@ -35,6 +36,7 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
       { href: "/sejarah", label: "Sejarah Desa" },
       { href: "/visi-misi", label: "Visi & Misi" },
       { href: "/wilayah", label: "Wilayah Desa" },
+      { href: "/potensi", label: "Potensi Desa" },
     ],
   },
   {
@@ -52,10 +54,13 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
   {
     label: "Informasi",
     children: [
+      { href: "/informasi", label: "Informasi Desa" },
       { href: "/berita", label: "Berita" },
       { href: "/pengumuman", label: "Pengumuman" },
       { href: "/agenda", label: "Agenda Kegiatan" },
       { href: "/statistik", label: "Statistik Desa" },
+      { href: "/transparansi/apbdes", label: "APBDes & Transparansi Anggaran" },
+      { href: "/transparansi/laporan-keuangan", label: "Laporan Keuangan Desa" },
     ],
   },
   { href: "/galeri", label: "Galeri" },
@@ -63,15 +68,24 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
 ];
 
 export async function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Props) {
-  const configuredMenu = await listMenuPublik(desa.id);
-  const menu = configuredMenu.length > 0
-    ? configuredMenu.filter((item) => item.parentId === null).map((item) => {
-        const children = configuredMenu.filter((child) => child.parentId === item.id);
-        return children.length > 0
-          ? { label: item.nama, children: [{ href: item.link, label: item.nama }, ...children.map((child) => ({ href: child.link, label: child.nama }))] }
-          : { href: item.link, label: item.nama };
-      })
-    : navigation;
+  const configuredMenu = await muatMenuPublik(desa.id);
+  const menu =
+    configuredMenu.length > 0
+      ? configuredMenu
+          .filter((item) => item.parentId === null)
+          .map((item) => {
+            const children = configuredMenu.filter((child) => child.parentId === item.id);
+            return children.length > 0
+              ? {
+                  label: item.nama,
+                  children: [
+                    { href: item.link, label: item.nama },
+                    ...children.map((child) => ({ href: child.link, label: child.nama })),
+                  ],
+                }
+              : { href: item.link, label: item.nama };
+          })
+      : navigation;
   return (
     <>
       <header className={styles.header}>
@@ -168,10 +182,12 @@ export function PublicSiteFooter({ desa, location, logoUrl }: Props) {
         </div>
         <div className={styles.footerColumn}>
           <strong>Informasi</strong>
+          <Link href="/informasi">Informasi Desa</Link>
           <Link href="/berita">Berita Desa</Link>
           <Link href="/pengumuman">Pengumuman</Link>
           <Link href="/agenda">Agenda Kegiatan</Link>
           <Link href="/galeri">Galeri</Link>
+          <Link href="/transparansi/laporan-keuangan">Laporan Keuangan</Link>
         </div>
         <div className={styles.footerColumn + " " + styles.contactColumn}>
           <strong>Kontak Desa</strong>

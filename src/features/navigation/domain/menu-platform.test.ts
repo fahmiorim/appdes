@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { grupMenuPlatform, MENU_PLATFORM, menuPlatformAktif } from "./menu-platform";
+import {
+  grupMenuPlatform,
+  MENU_PLATFORM,
+  menuPlatformAktif,
+  submenuPlatformAktif,
+} from "./menu-platform";
 
 describe("menuPlatformAktif", () => {
   it("hanya menandai Ringkasan aktif tepat di /super-admin", () => {
@@ -9,9 +14,9 @@ describe("menuPlatformAktif", () => {
   });
 
   it("menandai halaman menu aktif pada sub-rutenya", () => {
-    expect(menuPlatformAktif("/super-admin/tenant", "/super-admin/tenant")).toBe(true);
-    expect(menuPlatformAktif("/super-admin/tenant", "/super-admin/tenant/12")).toBe(true);
-    expect(menuPlatformAktif("/super-admin/domain", "/super-admin/tenant")).toBe(false);
+    expect(menuPlatformAktif("/super-admin/domain", "/super-admin/domain")).toBe(true);
+    expect(menuPlatformAktif("/super-admin/domain", "/super-admin/domain/12")).toBe(true);
+    expect(menuPlatformAktif("/super-admin/tenant", "/super-admin/domain")).toBe(false);
   });
 
   it("tidak salah mencocokkan prefiks yang mirip", () => {
@@ -19,10 +24,29 @@ describe("menuPlatformAktif", () => {
   });
 });
 
+describe("submenuPlatformAktif", () => {
+  const anak = [
+    { href: "/super-admin/domain", label: "Daftar Domain" },
+    { href: "/super-admin/domain/tambah", label: "Tambah Domain" },
+  ];
+
+  it("memilih submenu paling spesifik", () => {
+    expect(submenuPlatformAktif(anak, "/super-admin/domain/tambah")).toBe(
+      "/super-admin/domain/tambah",
+    );
+    expect(submenuPlatformAktif(anak, "/super-admin/domain/12")).toBe("/super-admin/domain");
+    expect(submenuPlatformAktif(anak, "/super-admin/domain")).toBe("/super-admin/domain");
+  });
+
+  it("tidak menandai submenu pada halaman di luar prefiksnya", () => {
+    expect(submenuPlatformAktif(anak, "/super-admin/audit")).toBeNull();
+  });
+});
+
 describe("MENU_PLATFORM", () => {
-  it("memuat ketujuh menu konsol dengan tautan unik", () => {
-    expect(MENU_PLATFORM).toHaveLength(7);
-    expect(new Set(MENU_PLATFORM.map((item) => item.href)).size).toBe(7);
+  it("memuat keenam menu konsol dengan tautan unik", () => {
+    expect(MENU_PLATFORM).toHaveLength(6);
+    expect(new Set(MENU_PLATFORM.map((item) => item.href)).size).toBe(6);
     expect(MENU_PLATFORM[0]?.href).toBe("/super-admin");
     expect(MENU_PLATFORM.every((item) => item.href.startsWith("/super-admin"))).toBe(true);
   });
@@ -30,13 +54,38 @@ describe("MENU_PLATFORM", () => {
   it("memberi grup berlabel pada setiap item", () => {
     expect(MENU_PLATFORM.every((item) => item.grup.trim().length > 0)).toBe(true);
   });
+
+  it("menyediakan submenu Daftar Domain dan Tambah Domain", () => {
+    const desaDomain = MENU_PLATFORM.find((item) => item.href === "/super-admin/domain");
+
+    expect(desaDomain?.label).toBe("Desa & Domain");
+    expect(desaDomain?.submenu).toEqual([
+      { href: "/super-admin/domain", label: "Daftar Domain" },
+      { href: "/super-admin/domain/tambah", label: "Tambah Domain" },
+    ]);
+    expect(desaDomain?.submenu?.every((item) => item.href.startsWith("/super-admin"))).toBe(true);
+    expect(MENU_PLATFORM.some((item) => item.href === "/super-admin/tenant")).toBe(false);
+  });
+
+  it("menautkan katalog, penggunaan, dan fondasi template pada submenu", () => {
+    const template = MENU_PLATFORM.find((item) => item.href === "/super-admin/template");
+    expect(template?.submenu?.map((item) => item.href)).toEqual([
+      "/super-admin/template",
+      "/super-admin/template/penggunaan",
+      "/super-admin/template/fondasi",
+    ]);
+  });
 });
 
 describe("grupMenuPlatform", () => {
   it("mengelompokkan menu sesuai urutan tanpa kehilangan item", () => {
     const grup = grupMenuPlatform();
 
-    expect(grup.map((kelompok) => kelompok.grup)).toEqual(["Menu utama", "Tenant", "Platform"]);
+    expect(grup.map((kelompok) => kelompok.grup)).toEqual([
+      "Menu utama",
+      "Desa & Domain",
+      "Platform",
+    ]);
     expect(grup.flatMap((kelompok) => kelompok.item)).toHaveLength(MENU_PLATFORM.length);
   });
 });
