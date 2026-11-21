@@ -26,11 +26,18 @@ export async function simpanPerangkatAction(fd: FormData) {
   const id = numberOrNull(value(fd, "id"));
   const nama = value(fd, "nama");
   if (!nama) throw new Error("Nama perangkat wajib diisi.");
+  let foto = value(fd, "foto") || null;
+  const fotoFile = fd.get("fotoFile");
+  if (fotoFile instanceof File && fotoFile.size > 0) {
+    const user = await requirePermission("perangkat-desa", id ? "update" : "create");
+    const villageId = await resolveVillageId(user);
+    foto = await simpanBerkasMedia(villageId, { nama: fotoFile.name, mime: fotoFile.type, ukuran: fotoFile.size, isi: new Uint8Array(await fotoFile.arrayBuffer()) }, "perangkat", "fotoFile");
+  }
   await simpanPerangkatDesa(id, {
     nama, gelarDepan: value(fd, "gelarDepan") || null, gelarBelakang: value(fd, "gelarBelakang") || null,
     jabatanId: numberOrNull(value(fd, "jabatanId")), nip: value(fd, "nip") || null, nik: value(fd, "nik") || null,
     jenisKelamin: value(fd, "jenisKelamin") || null, tempatLahir: value(fd, "tempatLahir") || null,
-    tanggalLahir: dateOrNull(value(fd, "tanggalLahir")), foto: value(fd, "foto") || null,
+    tanggalLahir: dateOrNull(value(fd, "tanggalLahir")), foto,
     status: value(fd, "status") || "aktif", periode: value(fd, "periode") || null,
     pendidikan: value(fd, "pendidikan") || null, telepon: value(fd, "telepon") || null,
     email: value(fd, "email") || null, alamat: value(fd, "alamat") || null,
@@ -74,8 +81,15 @@ export async function simpanAnggotaLembagaAction(fd: FormData) {
   const lembagaId = numberOrNull(value(fd, "lembagaId"));
   const nama = value(fd, "nama");
   if (!lembagaId || !nama) throw new Error("Lembaga dan nama anggota wajib diisi.");
+  let foto = value(fd, "foto") || null;
+  const fotoFile = fd.get("fotoFile");
+  if (fotoFile instanceof File && fotoFile.size > 0) {
+    const user = await requirePermission("lembaga-desa", id ? "update" : "create");
+    const villageId = await resolveVillageId(user);
+    foto = await simpanBerkasMedia(villageId, { nama: fotoFile.name, mime: fotoFile.type, ukuran: fotoFile.size, isi: new Uint8Array(await fotoFile.arrayBuffer()) }, "perangkat", "fotoFile");
+  }
   await simpanAnggotaLembaga(id, {
-    lembagaId, nama, jabatan: value(fd, "jabatan") || null, foto: value(fd, "foto") || null,
+    lembagaId, nama, jabatan: value(fd, "jabatan") || null, foto,
     periodeMulai: dateOrNull(value(fd, "periodeMulai")), periodeSelesai: dateOrNull(value(fd, "periodeSelesai")),
     aktif: value(fd, "aktif") !== "off", tampilPublik: value(fd, "tampilPublik") === "on",
     urut: Number(value(fd, "urut") || 0),
