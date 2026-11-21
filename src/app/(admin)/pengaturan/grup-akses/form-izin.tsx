@@ -10,7 +10,7 @@ interface Props {
   permissions: ModulePermissionRow[];
   readOnly: boolean;
   aksi: (state: ActionState<null>, formData: FormData) => Promise<ActionState<null>>;
-  resetAction: (state: ActionState<null>, formData: FormData) => Promise<ActionState<null>>;
+  resetAction: (formData: FormData) => Promise<void>;
 }
 
 export function FormIzin({ roleId, permissions, readOnly, aksi, resetAction }: Props) {
