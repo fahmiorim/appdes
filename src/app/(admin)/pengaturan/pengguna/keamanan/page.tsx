@@ -25,7 +25,6 @@ export default async function KeamananPage() {
       <section className={styles.card}><h2>🖥️ Pengaturan Sesi & Akses</h2>
         <label>Durasi sesi tidak aktif (menit)<input type="number" min="5" max="720" name="sessionTimeoutMinutes" defaultValue={settings.sessionTimeoutMinutes}/></label>
         <label className={styles.check}><input type="checkbox" name="autoLogoutInactive" defaultChecked={settings.autoLogoutInactive}/> Logout otomatis setelah tidak aktif</label>
-        <label className={styles.check}><input type="checkbox" name="warnBeforeSessionEnd" defaultChecked={settings.warnBeforeSessionEnd}/> Peringatan sebelum sesi berakhir</label>
         <label className={styles.check}><input type="checkbox" name="concurrentLogin" defaultChecked={settings.concurrentLogin}/> Batasi satu sesi per akun</label>
         <label className={styles.check}><input type="checkbox" name="ipRestrictionEnabled" defaultChecked={settings.ipRestrictionEnabled}/> Aktifkan whitelist IP</label>
         <label>IP yang diizinkan (satu per baris)<textarea name="allowedIps" defaultValue={settings.allowedIps.join("\n")} placeholder="203.0.113.10&#10;2001:db8::1"/></label>
