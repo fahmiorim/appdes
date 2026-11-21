@@ -437,7 +437,8 @@ export async function buatJadwalPemeliharaan(input:{
   const villageId=await resolveVillageId(user);
   const item=await getInventaris(villageId,input.inventarisId);
   if(!item) throw notFound("Aset tidak ditemukan.");
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(input.tanggalRencana)||Number.isNaN(Date.parse(input.tanggalRencana))) throw validationError("Tanggal jadwal tidak valid.");
+  const tanggalRencana=new Date(input.tanggalRencana+"T00:00:00Z");
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(input.tanggalRencana)||Number.isNaN(tanggalRencana.getTime())||tanggalRencana.toISOString().slice(0,10)!==input.tanggalRencana) throw validationError("Tanggal jadwal tidak valid.");
   if(!input.jenis.trim()||input.jenis.length>100||input.biaya<0||!Number.isFinite(input.biaya)) throw validationError("Data pemeliharaan tidak valid.");
   await createPemeliharaan(villageId,{
     inventarisId:input.inventarisId,jenis:input.jenis.trim(),tanggalRencana:input.tanggalRencana,
