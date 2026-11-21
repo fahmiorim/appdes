@@ -28,14 +28,16 @@ export default async function AbsensiPage({searchParams}:{searchParams:Promise<R
   const monthLabel=new Intl.DateTimeFormat("id-ID",{month:"long",year:"numeric",timeZone:"Asia/Jakarta"}).format(new Date(Date.UTC(tahun,bulan-1,1)));
 
   const counts={hadir:rows.filter(x=>x.status==="hadir").length,izin:rows.filter(x=>x.status==="izin").length,cuti:rows.filter(x=>x.status==="cuti").length,tidak:rows.filter(x=>!x.status||x.status==="tidak_hadir").length};
+  const tingkatKehadiran=rows.length?Math.round(counts.hadir/rows.length*1000)/10:0;
   return <div className="modul-page">
     <div className="page-heading"><div><span className="eyebrow">ABSENSI & KEPEGAWAIAN</span><h1>Absensi Pegawai</h1><p>Kelola dan pantau kehadiran perangkat desa serta staf secara terpusat.</p></div></div>
     <AbsensiKepegawaianNav active="/absensi-kepegawaian/absensi"/>
     <section className={styles["ak-kpi-grid"]}>
-      <article className={styles["ak-kpi"]}><span>Hadir</span><strong>{counts.hadir} orang</strong></article>
+      <article className={`${styles["ak-kpi"]} ${styles.primary}`}><span>Kehadiran Hari Ini</span><strong>{counts.hadir} orang</strong><span>{tingkatKehadiran.toLocaleString("id-ID")}% tingkat kehadiran</span></article>
       <article className={styles["ak-kpi"]}><span>Izin</span><strong>{counts.izin} orang</strong></article>
       <article className={styles["ak-kpi"]}><span>Cuti</span><strong>{counts.cuti} orang</strong></article>
       <article className={styles["ak-kpi"]}><span>Tidak Hadir</span><strong>{counts.tidak} orang</strong></article>
+      <article className={styles["ak-kpi"]}><span>Total Pegawai</span><strong>{rows.length} orang</strong></article>
     </section>
     <section className={styles["ak-card"]}>
       <h2>Rekap Absensi Pegawai</h2><p>Atur tanggal untuk melihat catatan kehadiran dan melakukan koreksi manual.</p>
