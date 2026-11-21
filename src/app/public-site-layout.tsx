@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { muatMenuPublik } from "@/features/publik/application/website-admin";
+
 import styles from "./public-site-layout.module.css";
-import { listMenuPublik } from "@/features/publik/infrastructure/content-repository";
 
 export type PublicVillageIdentity = {
   id: number;
@@ -63,15 +64,24 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
 ];
 
 export async function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Props) {
-  const configuredMenu = await listMenuPublik(desa.id);
-  const menu = configuredMenu.length > 0
-    ? configuredMenu.filter((item) => item.parentId === null).map((item) => {
-        const children = configuredMenu.filter((child) => child.parentId === item.id);
-        return children.length > 0
-          ? { label: item.nama, children: [{ href: item.link, label: item.nama }, ...children.map((child) => ({ href: child.link, label: child.nama }))] }
-          : { href: item.link, label: item.nama };
-      })
-    : navigation;
+  const configuredMenu = await muatMenuPublik(desa.id);
+  const menu =
+    configuredMenu.length > 0
+      ? configuredMenu
+          .filter((item) => item.parentId === null)
+          .map((item) => {
+            const children = configuredMenu.filter((child) => child.parentId === item.id);
+            return children.length > 0
+              ? {
+                  label: item.nama,
+                  children: [
+                    { href: item.link, label: item.nama },
+                    ...children.map((child) => ({ href: child.link, label: child.nama })),
+                  ],
+                }
+              : { href: item.link, label: item.nama };
+          })
+      : navigation;
   return (
     <>
       <header className={styles.header}>
