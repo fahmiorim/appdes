@@ -181,6 +181,7 @@ export async function unggahDokumenPemerintahanAction(fd: FormData) {
   const lembagaId = numberOrNull(value(fd, "lembagaId"));
   const file = fd.get("berkas");
   if (!(file instanceof File) || file.size === 0) throw new Error("Pilih dokumen PDF atau gambar terlebih dahulu.");
+  if (!(["application/pdf", "image/jpeg", "image/png", "image/webp"] as string[]).includes(file.type)) throw new Error("Dokumen hanya boleh berupa PDF, JPG, PNG, atau WEBP.");
   const user = await requirePermission(perangkatId ? "perangkat-desa" : "lembaga-desa", "create");
   const villageId = await resolveVillageId(user);
   const berkas = await simpanBerkasMedia(villageId, {
