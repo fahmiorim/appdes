@@ -43,6 +43,8 @@ export const RESOURCES = {
   kesehatan: "kesehatan",
   widget: "widget",
   kehadiran: "kehadiran",
+  kepegawaian: "kepegawaian",
+  cutiIzin: "cuti-izin",
   analisis: "analisis",
   analisisSurvei: "analisis-survei",
   berita: "berita",
