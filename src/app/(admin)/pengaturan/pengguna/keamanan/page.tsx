@@ -17,7 +17,7 @@ export default async function KeamananPage() {
   const villageId = await resolveVillageId(user);
   const [settings, blockedIps, account] = await Promise.all([getSecuritySettings(villageId), listBlockedIps(villageId), db.select({twoFactorEnabled:users.twoFactorEnabled}).from(users).where(eq(users.id,user.id)).limit(1)]);
   return <main className={styles.page}>
-    <header><div><small>Pengaturan Desa / Manajemen Pengguna</small><h1>Pengaturan Keamanan</h1><p>Kebijakan kata sandi, sesi login, dan pembatasan akses jaringan.</p></div></header>
+    <header><div><small>Pengaturan Desa / Manajemen Pengguna</small><h1>Pengaturan Keamanan</h1><p>Kebijakan kata sandi, sesi login, dan pembatasan akses jaringan.</p><Link href="/profil/keamanan">Kelola 2FA akun sendiri →</Link></div></header>
     <nav className={styles.tabs}><Link href="/pengaturan/pengguna">Pengguna</Link><Link href="/pengaturan/grup-akses">Peran & Hak Akses</Link>{hasPermission(user.permissions,RESOURCES.auditLog,"read")?<Link href="/pengaturan/pengguna/aktivitas">Aktivitas Pengguna</Link>:null}<Link aria-current="page" href="/pengaturan/pengguna/keamanan">Pengaturan Keamanan</Link></nav>
     <TwoFactorSetup enabled={account[0]?.twoFactorEnabled ?? false}/>
     <form action={simpanKeamananAction} className={styles.grid}>
