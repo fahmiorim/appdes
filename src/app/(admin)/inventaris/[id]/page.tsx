@@ -397,8 +397,8 @@ export default async function DetailInventarisPage({ params, searchParams }: Pro
               <input name="kodeBarang" defaultValue={x.kodeBarang ?? ""} />
             </label>
             <label>
-              Jumlah
-              <input name="jumlah" type="number" min="0.01" step="0.01" defaultValue={x.jumlah} />
+              Jumlah (perubahan melalui Mutasi)
+              <input value={x.jumlah} readOnly />
             </label>
             <label>
               Satuan
