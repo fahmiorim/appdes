@@ -27,6 +27,8 @@ export async function getSecuritySettings(villageId: number): Promise<KeamananIn
 export async function saveSecuritySettings(villageId: number, actorId: string, input: KeamananInput): Promise<void> {
   await db.insert(villageSecuritySettings).values({
     villageId, updatedBy: actorId, passwordMinLength: input.passwordMinLength,
+    passwordExpiryDays: input.passwordExpiryDays, passwordReuseCount: input.passwordReuseCount,
+    passwordExpiryDays: input.passwordExpiryDays, passwordReuseCount: input.passwordReuseCount,
     requireUppercase: input.requireUppercase, requireLowercase: input.requireLowercase,
     requireNumber: input.requireNumber, requireSymbol: input.requireSymbol,
     sessionTimeoutMinutes: input.sessionTimeoutMinutes, autoLogoutInactive: input.autoLogoutInactive,
