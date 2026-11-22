@@ -73,7 +73,7 @@ export async function PUT(request:Request) {
     const user=await requirePermission("pengaturan-desa","update"), villageId=await resolveVillageId(user);
     const body=await request.json() as {section?:string;data?:unknown};
     if(body.section==="profil") {
-      const s=z.object({namaDesa:z.string().trim().min(2).max(100),kodeDesa:z.string().trim().regex(/^\\d{10}$/,"Kode desa harus 10 digit."),namaKecamatan:z.string().trim().min(2).max(100),namaKabupaten:z.string().trim().min(2).max(100),namaPropinsi:z.string().trim().min(2).max(100),kodePos:z.string().trim().regex(/^\\d{5}$/,"Kode pos harus 5 digit.").or(z.literal("")),namaKepalaDesa:z.string().trim().max(100),nipKepalaDesa:z.string().trim().max(25),visi:z.string().trim().max(5000),misi:z.string().trim().max(10000),sejarah:z.string().trim().max(10000),sambutan:z.string().trim().max(5000)}).safeParse(body.data);
+      const s=z.object({namaDesa:z.string().trim().min(2).max(100),kodeDesa:z.string().trim().regex(/^\d{10}$/,"Kode desa harus 10 digit."),namaKecamatan:z.string().trim().min(2).max(100),namaKabupaten:z.string().trim().min(2).max(100),namaPropinsi:z.string().trim().min(2).max(100),kodePos:z.string().trim().regex(/^\d{5}$/,"Kode pos harus 5 digit.").or(z.literal("")),namaKepalaDesa:z.string().trim().max(100),nipKepalaDesa:z.string().trim().max(25),visi:z.string().trim().max(5000),misi:z.string().trim().max(10000),sejarah:z.string().trim().max(10000),sambutan:z.string().trim().max(5000)}).safeParse(body.data);
       if(!s.success)return json({error:s.error.issues[0]?.message??"Profil tidak valid."},422);
       const d=s.data;
       await db.transaction(async tx=>{
