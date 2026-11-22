@@ -60,7 +60,7 @@ export async function balasPesanMailbox(input: unknown): Promise<{
   dilewati: boolean;
   error?: string;
 }> {
-  const user = await requirePermission(RESOURCES.notifikasi, "update");
+  const user = await requirePermission(RESOURCES.notifikasi, "create");
   const parsed = balasPesanSchema.safeParse(input);
   if (!parsed.success) {
     throw validationError(parsed.error.issues[0]?.message ?? "Data balasan tidak valid.");

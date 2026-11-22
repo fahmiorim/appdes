@@ -27,8 +27,9 @@ export interface ModulePermissionRow {
   isGroup: boolean;
   isActive: boolean;
   read: boolean;
-  write: boolean;
-  manage: boolean;
+  create: boolean;
+  update: boolean;
+  delete: boolean;
 }
 
 export interface RoleDetail {

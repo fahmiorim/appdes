@@ -2,12 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import * as repository from "@/features/rbac/infrastructure/rbac-repository";
 
-import { computeEffectivePermissions } from "./authorization";
+import { computeEffectivePermissions, hasPermission } from "./authorization";
 
 vi.mock("server-only", () => ({}));
 vi.mock("react", () => ({ cache: <T>(fn: T): T => fn }));
 vi.mock("@/features/rbac/infrastructure/rbac-repository", () => ({
   findRoleById: vi.fn(),
+  listActionsByRole: vi.fn(),
   listLevelsByRole: vi.fn(),
   listModules: vi.fn(),
 }));
@@ -21,13 +22,14 @@ const role = (overrides: Partial<repository.RoleRecord>): repository.RoleRecord 
   ...overrides,
 });
 
-const EMPTY = { isSuperadmin: false, levelByResource: new Map() };
+const EMPTY = { isSuperadmin: false, levelByResource: new Map(), actionByResource: new Map() };
 
 describe("computeEffectivePermissions kepemilikan tenant", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(repository.listModules).mockResolvedValue([]);
     vi.mocked(repository.listLevelsByRole).mockResolvedValue(new Map());
+    vi.mocked(repository.listActionsByRole).mockResolvedValue(new Map());
   });
 
   it("memuat izin role desa dengan villageId sesi", async () => {
@@ -39,6 +41,7 @@ describe("computeEffectivePermissions kepemilikan tenant", () => {
     expect(repository.findRoleById).toHaveBeenCalledWith(1, 7);
     expect(repository.listModules).toHaveBeenCalledWith(7);
     expect(repository.listLevelsByRole).toHaveBeenCalledWith(1, 7);
+    expect(repository.listActionsByRole).toHaveBeenCalledWith(1, 7);
   });
 
   it("tidak memuat izin saat role tidak ditemukan pada desa sesi", async () => {
@@ -49,6 +52,7 @@ describe("computeEffectivePermissions kepemilikan tenant", () => {
     expect(result).toEqual(EMPTY);
     expect(repository.listModules).not.toHaveBeenCalled();
     expect(repository.listLevelsByRole).not.toHaveBeenCalled();
+    expect(repository.listActionsByRole).not.toHaveBeenCalled();
   });
 
   it("tidak menjadikan role administrator desa sebagai superadmin", async () => {
@@ -71,5 +75,19 @@ describe("computeEffectivePermissions kepemilikan tenant", () => {
 
     expect(result.isSuperadmin).toBe(true);
     expect(repository.listModules).not.toHaveBeenCalled();
+  });
+});
+
+describe("hasPermission granular CRUD", () => {
+  it("membatasi tambah, ubah, hapus, dan lihat secara independen", () => {
+    const permissions = {
+      isSuperadmin: false,
+      levelByResource: new Map([["penduduk", "write" as const]]),
+      actionByResource: new Map([["penduduk", { read: false, create: true, update: false, delete: false }]]),
+    };
+    expect(hasPermission(permissions, "penduduk", "create")).toBe(true);
+    expect(hasPermission(permissions, "penduduk", "read")).toBe(false);
+    expect(hasPermission(permissions, "penduduk", "update")).toBe(false);
+    expect(hasPermission(permissions, "penduduk", "delete")).toBe(false);
   });
 });
