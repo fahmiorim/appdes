@@ -89,11 +89,11 @@ function tabelMigrasi(): Set<string> {
  */
 const POLA_CREATE_TABLE = new RegExp(
   "CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)` \\(\\n" +
-    "([\\s\\S]*?)\\n\\)(?:\\s*[A-Z][A-Z0-9_]*(?:\\s*=\\s*[^;]+)?)*\\s*;",
+    "([\s\S]*?)\\n\\)(?:\s*[A-Z][A-Z0-9_]*(?:\s*=\s*[^;]+)?)*\s*;",
   "gi",
 );
-const POLA_ALTER_TABLE = /ALTER TABLE `([a-z0-9_]+)`([\\s\\S]*?);/gi;
-const POLA_ADD_COLUMN = /\\bADD (?:COLUMN )?`([a-z0-9_]+)`/gi;
+const POLA_ALTER_TABLE = /ALTER TABLE `([a-z0-9_]+)`([\s\S]*?);/gi;
+const POLA_ADD_COLUMN = /\bADD (?:COLUMN )?`([a-z0-9_]+)`/gi;
 
 function kolomMigrasi(): Map<string, Set<string>> {
   const hasil = new Map<string, Set<string>>();
@@ -117,13 +117,13 @@ function kolomMigrasi(): Map<string, Set<string>> {
 
     // Satu ALTER TABLE dapat menambahkan beberapa kolom; proses tiap ADD.
     for (const pernyataan of isi.matchAll(
-      /ALTER TABLE `([a-z0-9_]+)`([\\s\\S]*?);/gi,
+      /ALTER TABLE `([a-z0-9_]+)`([\s\S]*?);/gi,
     )) {
       const nama = pernyataan[1];
       const badan = pernyataan[2] ?? "";
       if (!nama) continue;
       for (const tambahan of badan.matchAll(
-        /\\bADD (?:COLUMN )?`([a-z0-9_]+)`/gi,
+        /\bADD (?:COLUMN )?`([a-z0-9_]+)`/gi,
       )) {
         const kolom = tambahan[1];
         if (kolom) tambah(nama, kolom);
@@ -175,7 +175,7 @@ function namaIndexSkema(): Set<string> {
     }
     const isi = fs.readFileSync(SCHEMA_DIR + berkas, "utf8");
     for (const cocok of isi.matchAll(
-      /(?:unique)?index\\(\\s*"([^"]+)"/gi,
+      /(?:unique)?index\\(\s*"([^"]+)"/gi,
     )) {
       hasil.add(cocok[1]!);
     }

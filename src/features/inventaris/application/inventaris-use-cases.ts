@@ -555,7 +555,10 @@ export async function getPemeliharaanPageData() {
   );
   const canMutate = hasPermission(user.permissions, MUTASI_RESOURCE, "update");
   const mutasi = canReadMutation ? await listMutasi(villageId) : [];
-  const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
+  const role =
+    user.roleId === null
+      ? null
+      : await findRoleById(user.roleId, user.villageId);
   const approverSteps = canMutate
     ? MUTASI_STEPS.filter((step) =>
         roleCanApproveMutasiStep(
