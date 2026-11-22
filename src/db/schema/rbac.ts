@@ -85,6 +85,10 @@ export const rolePermissions = mysqlTable(
       .notNull()
       .references(() => modules.id, { onDelete: "cascade" }),
     access: mysqlEnum("access", ACCESS_LEVELS).notNull(),
+    canRead: boolean("can_read").notNull().default(false),
+    canCreate: boolean("can_create").notNull().default(false),
+    canUpdate: boolean("can_update").notNull().default(false),
+    canDelete: boolean("can_delete").notNull().default(false),
   },
   (t) => [
     uniqueIndex("role_permissions_role_module_uq").on(t.roleId, t.moduleId),

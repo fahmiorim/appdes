@@ -30,6 +30,7 @@ export function LoginForm({ nextPath }: { nextPath: string }) {
         return;
       }
 
+      if (result.data && "twoFactorRedirect" in result.data && result.data.twoFactorRedirect) return;
       window.location.assign(nextPath);
     } catch {
       setError("Tidak dapat menghubungi layanan autentikasi. Silakan coba lagi.");

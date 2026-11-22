@@ -137,7 +137,7 @@ export interface PendudukFormData {
  * `villageId` dari sesi sehingga ID milik desa lain diperlakukan tidak ada.
  */
 export async function getPendudukFormData(id: number | null = null): Promise<PendudukFormData> {
-  const user = await requirePermission(PENDUDUK_RESOURCE, "update");
+  const user = await requirePermission(PENDUDUK_RESOURCE, id === null ? "create" : "update");
   const villageId = await resolveVillageId(user);
 
   const [references, penduduk] = await Promise.all([
@@ -164,7 +164,7 @@ async function ensureSingleHeadOfFamily(
 }
 
 export async function createPenduduk(input: PendudukFormInput): Promise<{ id: number }> {
-  const user = await requirePermission(PENDUDUK_RESOURCE, "update");
+  const user = await requirePermission(PENDUDUK_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   if (input.nationalId !== null && (await nationalIdExists(villageId, input.nationalId, null))) {
@@ -198,7 +198,7 @@ export async function createPenduduk(input: PendudukFormInput): Promise<{ id: nu
 }
 
 export async function updatePenduduk(id: number, input: PendudukFormInput): Promise<void> {
-  const user = await requirePermission(PENDUDUK_RESOURCE, "update");
+  const user = await requirePermission(PENDUDUK_RESOURCE, id === null ? "create" : "update");
   const villageId = await resolveVillageId(user);
 
   const existing = await findPendudukById(villageId, id);

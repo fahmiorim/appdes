@@ -323,6 +323,48 @@
       "when": 1795719600000,
       "tag": "0050_inventaris_kondisi_setelah_pemeliharaan",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "5",
+      "when": 1795719700000,
+      "tag": "0051_pengaturan_desa_menu",
+      "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "5",
+      "when": 1795719800000,
+      "tag": "0052_manajemen_pengguna_keamanan",
+      "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "5",
+      "when": 1795719900000,
+      "tag": "0053_better_auth_two_factor",
+      "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "5",
+      "when": 1795720000000,
+      "tag": "0054_rbac_crud_permissions",
+      "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "5",
+      "when": 1795720100000,
+      "tag": "0055_password_history",
+      "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "5",
+      "when": 1795720200000,
+      "tag": "0056_pendaftaran_warga",
+      "breakpoints": true
     }
   ]
 }

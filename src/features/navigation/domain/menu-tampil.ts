@@ -68,6 +68,7 @@ export const RUTE_ADMIN_TERSEDIA: readonly string[] = [
   "/pemerintahan-desa/perangkat",
   "/pemerintahan-desa/lembaga",
   "/pemerintahan-desa/wilayah",
+  "/pengaturan-desa",
   "/pengaturan/pengguna",
   "/pengaturan/grup-akses",
   "/super-admin",
