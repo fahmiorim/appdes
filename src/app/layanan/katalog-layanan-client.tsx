@@ -73,7 +73,13 @@ export function KatalogLayanan({ layanan }: Props) {
           " " +
           (item.kode ?? "") +
           " " +
-          (item.klasifikasi ?? "")
+          (item.klasifikasi ?? "") +
+          " " +
+          (item.kategori ?? "") +
+          " " +
+          (item.deskripsi ?? "") +
+          " " +
+          (item.persyaratan ?? "")
         ).toLocaleLowerCase("id-ID");
         return matchesCategory && search.includes(query.trim().toLocaleLowerCase("id-ID"));
       }),
