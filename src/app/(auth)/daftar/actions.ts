@@ -9,6 +9,8 @@ import { alamatIpDariHeader } from "@/lib/client-ip";
 import { env } from "@/lib/env";
 import { AppError } from "@/lib/errors";
 import { kirimPengajuanRegistrasiWarga } from "@/features/registrasi-warga/application/registrasi-warga-use-cases";
+import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
+import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 import { toErrorState } from "@/lib/action-state";
 
 export async function ajukanAkunWargaAction(input: { nik: string; nama: string; noHp: string }) {
@@ -22,6 +24,7 @@ export async function ajukanAkunWargaAction(input: { nik: string; nama: string; 
       if (quotaIP.dibatasi) throw new AppError("RATE_LIMITED", "Terlalu banyak pengajuan dari jaringan ini. Coba kembali 15 menit lagi.");
     }
     await kirimPengajuanRegistrasiWarga(desa.id, input);
+    await recordAuditEvent({ villageId: desa.id, event: AUDIT_EVENTS.registrasiWargaDiajukan, resource: "registrasi-warga", ipAddress: ip, userAgent: (await headers()).get("user-agent"), details: { status: "menunggu" } });
     revalidatePath("/daftar");
     return { ok: true, message: "Pengajuan terkirim. Administrator desa akan memeriksa data Anda sebelum akun diaktifkan." };
   } catch (error) {
