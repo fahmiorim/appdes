@@ -33,18 +33,15 @@ const dateLabel = (value: string | null) =>
         new Date(value + "T00:00:00Z"),
       )
     : "—";
+const ASAL_LABELS: Record<string, string> = {
+  pembelian: "Pembelian",
+  hibah: "Hibah",
+  bantuan_pemerintah: "Bantuan Pemerintah",
+  sumbangan: "Sumbangan",
+  lainnya: "Lainnya",
+};
 const asalLabel = (value: string | null) =>
-  value
-    ? ((
-        {
-          pembelian: "Pembelian",
-          hibah: "Hibah",
-          bantuan_pemerintah: "Bantuan Pemerintah",
-          sumbangan: "Sumbangan",
-          lainnya: "Lainnya",
-        } as Record<string, string>
-      )[value] ?? value)
-    : "—";
+  value ? (ASAL_LABELS[value] ?? value) : "—";
 
 export default async function DetailInventarisPage({ params, searchParams }: Props) {
   const p = await params;

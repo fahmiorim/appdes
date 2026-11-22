@@ -84,6 +84,7 @@ const POLA_CREATE_TABLE = new RegExp(
 );
 const POLA_ALTER_TABLE = /ALTER TABLE `([a-z0-9_]+)`([\\s\\S]*?);/gi;
 const POLA_ADD_COLUMN = /\\bADD (?:COLUMN )?`([a-z0-9_]+)`/gi;
+
 function kolomMigrasi(): Map<string, Set<string>> {
   const hasil = new Map<string, Set<string>>();
   const tambah = (tabel: string, kolom: string) => {
