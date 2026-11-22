@@ -178,7 +178,7 @@ export function KatalogLayanan({ layanan }: Props) {
               <h3>Jenis Layanan Tersedia</h3>
               <p>Daftar layanan aktif dari pemerintah desa.</p>
               {layanan.slice(0, 6).map((item, index) => (
-                <div className={styles.sideItem} key={item.id}>
+                <div className={styles.sideItem} key={item.source + "-" + item.id}>
                   <b>{index + 1}</b>
                   <span>{item.nama}</span>
                 </div>
