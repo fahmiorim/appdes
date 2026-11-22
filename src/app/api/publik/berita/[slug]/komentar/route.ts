@@ -33,7 +33,8 @@ export async function GET(request: Request, context: Context) {
     return error(400, "Desa tidak valid.");
   }
   if (!resolved.article || !resolved.halaman) return error(404, "Berita tidak ditemukan.");
-  if (!resolved.article.bolehKomentar)
+  const settings = await bacaPengaturan(resolved.desa.id);
+  if (!resolved.article.bolehKomentar || !settings.komentarAktif)
     return NextResponse.json({ daftar: [], total: 0, komentarAktif: false });
   const page = Number(new URL(request.url).searchParams.get("page") ?? "1");
   if (!Number.isInteger(page) || page < 1 || page > 10_000)

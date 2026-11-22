@@ -38,7 +38,7 @@ export interface KunciApiBaru {
 }
 
 export async function buatKunciApi(input: unknown): Promise<KunciApiBaru> {
-  const user = await requirePermission(RESOURCES.pengaturan, "create");
+  const user = await requirePermission(RESOURCES.pengaturanDesa, "update");
   const villageId = await resolveVillageId(user);
   const parsed = buatKunciSchema.parse(input);
 
@@ -57,6 +57,15 @@ export async function buatKunciApi(input: unknown): Promise<KunciApiBaru> {
     prefix,
     rateLimit,
     expiresAt,
+  });
+
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.apiKeyCreate,
+    resource: "api-key",
+    resourceId: String(id),
+    details: { name: parsed.name, prefix, rateLimit, expiresAt: expiresAt?.toISOString() ?? null },
   });
 
   return {
@@ -79,7 +88,7 @@ export async function buatKunciApi(input: unknown): Promise<KunciApiBaru> {
 export async function cabutKunciApi(
   id: number,
 ): Promise<{ id: number; name: string; active: false }> {
-  const user = await requirePermission(RESOURCES.pengaturan, "delete");
+  const user = await requirePermission(RESOURCES.pengaturanDesa, "update");
   const villageId = await resolveVillageId(user);
 
   if (!Number.isInteger(id) || id < 1) throw validationError("ID kunci tidak valid.");
@@ -104,7 +113,7 @@ export async function cabutKunciApi(
 }
 
 export async function daftarKunciApi() {
-  const user = await requirePermission(RESOURCES.pengaturan, "read");
+  const user = await requirePermission(RESOURCES.pengaturanDesa, "read");
   const villageId = await resolveVillageId(user);
 
   return listKunciApi(villageId);

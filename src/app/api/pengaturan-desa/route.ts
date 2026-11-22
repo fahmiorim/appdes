@@ -7,7 +7,7 @@ import { layananPublik, pengaturanDesa, profilDesa, theme, villages, websiteTemp
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { requirePermission } from "@/lib/dal";
 import { appErrorStatus, isAppError } from "@/lib/errors";
-import { ambilPengaturanAdmin, simpanPengaturanAdmin } from "@/features/pengaturan/application/pengaturan-use-cases";
+import { bacaPengaturan, simpanPengaturanTenant } from "@/features/pengaturan/application/pengaturan-use-cases";
 import { tokenTemplateSchema } from "@/features/multi-desa/domain/template-website";
 import { hitungUkuranMedia } from "@/features/publik/infrastructure/media-storage";
 
@@ -61,7 +61,7 @@ export async function GET() {
       Promise.all([bacaNilai(villageId,"pengaturan.kontak"),bacaNilai(villageId,"pengaturan.integrasi"),bacaNilai(villageId,"pengaturan.favicon")]),
       db.select({id:websiteTemplates.id,slug:websiteTemplates.slug,nama:websiteTemplates.name,kategori:websiteTemplates.category,deskripsi:websiteTemplates.description,versi:websiteTemplates.version,tokens:websiteTemplates.tokens,tags:websiteTemplates.tags}).from(websiteTemplates).where(eq(websiteTemplates.status,"published")).orderBy(asc(websiteTemplates.name)),
       db.select({id:theme.id,slug:theme.slug,nama:theme.nama,versi:theme.versi,opsi:theme.opsi}).from(theme).where(and(eq(theme.villageId,villageId),eq(theme.aktif,true))).limit(1),
-      ambilPengaturanAdmin(),
+      bacaPengaturan(villageId),
       hitungUkuranMedia(villageId),
       db.select({kuotaMediaMb:villages.kuotaMediaMb}).from(villages).where(eq(villages.id,villageId)).limit(1),
     ]);
@@ -73,12 +73,12 @@ export async function PUT(request:Request) {
     const user=await requirePermission("pengaturan-desa","update"), villageId=await resolveVillageId(user);
     const body=await request.json() as {section?:string;data?:unknown};
     if(body.section==="profil") {
-      const s=z.object({namaDesa:z.string().trim().min(2).max(100),kodeDesa:z.string().trim().regex(/^\\d{10}$/,"Kode desa harus 10 digit."),namaKecamatan:z.string().trim().min(2).max(100),namaKabupaten:z.string().trim().min(2).max(100),namaPropinsi:z.string().trim().min(2).max(100),kodePos:z.string().trim().regex(/^\\d{5}$/,"Kode pos harus 5 digit.").or(z.literal("")),namaKepalaDesa:z.string().trim().max(100),nipKepalaDesa:z.string().trim().max(25),visi:z.string().trim().max(5000),misi:z.string().trim().max(10000),sejarah:z.string().trim().max(10000),sambutan:z.string().trim().max(5000)}).safeParse(body.data);
+      const s=z.object({namaDesa:z.string().trim().min(2).max(100),kodeDesa:z.string().trim().regex(/^\d{10}$/,"Kode desa harus 10 digit."),namaKecamatan:z.string().trim().min(2).max(100),namaKabupaten:z.string().trim().min(2).max(100),namaPropinsi:z.string().trim().min(2).max(100),kodePos:z.string().trim().regex(/^\d{5}$/,"Kode pos harus 5 digit.").or(z.literal("")),namaKepalaDesa:z.string().trim().max(100),nipKepalaDesa:z.string().trim().max(25),visi:z.string().trim().max(5000),misi:z.string().trim().max(10000),sejarah:z.string().trim().max(10000),sambutan:z.string().trim().max(5000),luasWilayah:z.string().trim().max(100),batasUtara:z.string().trim().max(255),batasSelatan:z.string().trim().max(255),batasTimur:z.string().trim().max(255),batasBarat:z.string().trim().max(255)}).safeParse(body.data);
       if(!s.success)return json({error:s.error.issues[0]?.message??"Profil tidak valid."},422);
       const d=s.data;
       await db.transaction(async tx=>{
         await tx.update(villages).set({name:d.namaDesa,code:d.kodeDesa||null,district:d.namaKecamatan||null,regency:d.namaKabupaten||null,province:d.namaPropinsi||null,postalCode:d.kodePos||null,headName:d.namaKepalaDesa||null,headNip:d.nipKepalaDesa||null}).where(eq(villages.id,villageId));
-        await tx.insert(profilDesa).values({villageId,visi:d.visi||null,misi:d.misi||null,sejarah:d.sejarah||null,sambutan:d.sambutan||null}).onDuplicateKeyUpdate({set:{visi:d.visi||null,misi:d.misi||null,sejarah:d.sejarah||null,sambutan:d.sambutan||null}});
+        await tx.insert(profilDesa).values({villageId,visi:d.visi||null,misi:d.misi||null,sejarah:d.sejarah||null,sambutan:d.sambutan||null,luasWilayah:d.luasWilayah||null,batasUtara:d.batasUtara||null,batasSelatan:d.batasSelatan||null,batasTimur:d.batasTimur||null,batasBarat:d.batasBarat||null}).onDuplicateKeyUpdate({set:{visi:d.visi||null,misi:d.misi||null,sejarah:d.sejarah||null,sambutan:d.sambutan||null,luasWilayah:d.luasWilayah||null,batasUtara:d.batasUtara||null,batasSelatan:d.batasSelatan||null,batasTimur:d.batasTimur||null,batasBarat:d.batasBarat||null}});
       });
       return json({message:"Profil dan identitas desa berhasil disimpan."});
     }
@@ -113,7 +113,7 @@ export async function PUT(request:Request) {
     if(body.section==="umum") {
       const s=umumSchema.safeParse(body.data);
       if(!s.success)return json({error:s.error.issues[0]?.message??"Pengaturan umum tidak valid."},422);
-      await simpanPengaturanAdmin(s.data);
+      await simpanPengaturanTenant(villageId, s.data, user.id);
       return json({message:"Preferensi umum berhasil disimpan."});
     }
     if(body.section==="tampilan") {
@@ -133,7 +133,7 @@ export async function PUT(request:Request) {
         if(same) {
           let previous: Record<string, unknown> = {};
           try {
-            const rawPrevious = same.opsi ?? currentActive?.opsi;
+            const rawPrevious = currentActive?.opsi ?? same.opsi;
             const parsed: unknown = rawPrevious ? JSON.parse(rawPrevious) : {};
             if(parsed && typeof parsed==="object" && !Array.isArray(parsed)) previous=parsed as Record<string,unknown>;
           } catch {}

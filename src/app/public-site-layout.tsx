@@ -94,7 +94,7 @@ export async function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Prop
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <Link href="/" className={styles.brand} aria-label={`Beranda ${desa.namaDesa ?? "desa"}`}>
-            {logoUrl ? (
+            {tema?.logoTampil === false ? null : logoUrl ? (
               <Image
                 src={logoUrl}
                 alt=""
@@ -158,13 +158,14 @@ export async function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Prop
   );
 }
 
-export function PublicSiteFooter({ desa, location, logoUrl }: Props) {
+export async function PublicSiteFooter({ desa, location, logoUrl }: Props) {
+  const tema = await muatTemaPublik(desa.id);
   return (
     <footer className={styles.footer}>
       <div className={styles.footerMain}>
         <div className={styles.footerBrand}>
           <div className={styles.footerIdentity}>
-            {logoUrl ? <Image src={logoUrl} alt="" width={44} height={44} unoptimized /> : null}
+            {logoUrl && tema?.logoTampil !== false ? <Image src={logoUrl} alt="" width={44} height={44} unoptimized /> : null}
             <div>
               <strong>Sistem Informasi Desa</strong>
               <b>{desa.namaDesa ?? "Pemerintah Desa"}</b>

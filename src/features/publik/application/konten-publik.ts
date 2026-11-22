@@ -1,8 +1,8 @@
 import "server-only";
 
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { pengaturanDesa } from "@/db/schema";
+import { layananPublik, pengaturanDesa } from "@/db/schema";
 
 import {
   countBerita,
@@ -107,6 +107,24 @@ export async function daftarVideoGaleriPublik(villageId: number, limit = 8) {
 
 export async function daftarPotensiDesa(villageId: number, includeInactive = false) {
   return listPotensiDesa(villageId, includeInactive);
+}
+
+/** Katalog layanan tambahan milik tenant yang boleh ditampilkan pada situs publik. */
+export async function daftarLayananDesaPublik(villageId: number) {
+  return db
+    .select({
+      id: layananPublik.id,
+      nama: layananPublik.nama,
+      kategori: layananPublik.kategori,
+      deskripsi: layananPublik.deskripsi,
+      persyaratan: layananPublik.persyaratan,
+      estimasiHari: layananPublik.estimasiHari,
+      biaya: layananPublik.biaya,
+      metode: layananPublik.metode,
+    })
+    .from(layananPublik)
+    .where(and(eq(layananPublik.villageId, villageId), eq(layananPublik.aktif, true)))
+    .orderBy(asc(layananPublik.nama));
 }
 
 /** Pengaturan kontak publik tenant; hanya field kontak nonrahasia yang dibaca. */

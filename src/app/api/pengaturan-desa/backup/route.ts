@@ -7,7 +7,7 @@ import { layananPublik, pengaturanDesa, profilDesa, theme, villages } from "@/db
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { requirePermission } from "@/lib/dal";
 import { appErrorStatus, isAppError } from "@/lib/errors";
-import { ambilPengaturanAdmin, simpanPengaturanAdmin } from "@/features/pengaturan/application/pengaturan-use-cases";
+import { bacaPengaturan, simpanPengaturanTenant } from "@/features/pengaturan/application/pengaturan-use-cases";
 
 export const runtime = "nodejs";
 const response = (data: unknown, status = 200) =>
@@ -38,7 +38,7 @@ export async function GET() {
         metode: layananPublik.metode, aktif: layananPublik.aktif }).from(layananPublik).where(eq(layananPublik.villageId, villageId)),
       db.select({ slug: theme.slug, nama: theme.nama, versi: theme.versi, opsi: theme.opsi })
         .from(theme).where(and(eq(theme.villageId, villageId), eq(theme.aktif, true))).limit(1),
-      ambilPengaturanAdmin(),
+      bacaPengaturan(villageId),
     ]);
     const backup = {
       format: "flexidesa-village-settings", version: 1, createdAt: new Date().toISOString(),
@@ -83,6 +83,14 @@ const restoreSchema = z.object({
     pendaftaranWargaAktif: z.boolean(), penomoranSurat: z.number().int().min(1).max(4),
   }),
 });
+function mediaBackupValid(path: string | null, villageId: number, extensions: readonly string[]) {
+  if (path === null) return true;
+  const parts = path.split("/");
+  if (parts.length !== 3 || parts[0] !== String(villageId) || parts[1] !== "umum") return false;
+  if (parts.some((part) => part === "." || part === ".." || part.includes("\\"))) return false;
+  const extensionPattern = extensions.join("|");
+  return new RegExp("^\\d+-[a-z0-9-]+\\.(" + extensionPattern + ")$", "i").test(parts[2]);
+}
 export async function POST(request: Request) {
   try {
     const user = await requirePermission("pengaturan-desa", "update");
@@ -94,10 +102,10 @@ export async function POST(request: Request) {
     const parsed = restoreSchema.safeParse(input);
     if (!parsed.success) return response({ error: parsed.error.issues[0]?.message ?? "Format backup tidak sesuai." }, 422);
     const backup = parsed.data;
-    if (backup.desa.logo && !backup.desa.logo.startsWith(`${villageId}/umum/`))
-      return response({ error: "Logo backup bukan milik tenant ini. Unggah ulang logo setelah pemulihan." }, 422);
-    if (typeof backup.favicon === "string" && backup.favicon && !backup.favicon.startsWith(`${villageId}/umum/`))
-      return response({ error: "Favicon backup bukan milik tenant ini. Unggah ulang favicon setelah pemulihan." }, 422);
+    if (!mediaBackupValid(backup.desa.logo, villageId, ["jpg", "png", "svg"]))
+      return response({ error: "Referensi logo backup tidak valid atau bukan milik tenant ini. Unggah ulang logo setelah pemulihan." }, 422);
+    if (!mediaBackupValid(backup.favicon, villageId, ["png"]))
+      return response({ error: "Referensi favicon backup tidak valid atau bukan milik tenant ini. Unggah ulang favicon setelah pemulihan." }, 422);
     await db.transaction(async tx => {
       await tx.update(villages).set({
         name: backup.desa.nama, code: backup.desa.kode, district: backup.desa.kecamatan,
@@ -145,7 +153,7 @@ export async function POST(request: Request) {
         }
       }
     });
-    await simpanPengaturanAdmin(backup.umum);
+    await simpanPengaturanTenant(villageId, backup.umum, user.id);
     return response({ message: "Konfigurasi berhasil dipulihkan. Data transaksi, akun, dan isi berkas media tidak diubah." });
   } catch (error) { return handle(error); }
 }

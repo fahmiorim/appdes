@@ -186,7 +186,15 @@ export async function muatTemaPublik(villageId: number) {
       background: color("background", "#f1f6ff"),
       surface: color("surface", "#ffffff"),
       text: color("text", "#101b4b"),
-      fontHeading: branding.font === "serif" || token.fontHeading === "serif" ? "serif" : "sans",
+      fontHeading:
+        branding.font === "serif"
+          ? "serif"
+          : branding.font === "sans" || branding.font === "system"
+            ? "sans"
+            : token.fontHeading === "serif"
+              ? "serif"
+              : "sans",
+      logoTampil: typeof branding.logoTampil === "boolean" ? branding.logoTampil : true,
       radius: token.radius === "kecil" ? "10px" : token.radius === "besar" ? "22px" : "15px",
       style: token.style === "gelap" ? "gelap" : "terang",
       templateName: active.nama,
