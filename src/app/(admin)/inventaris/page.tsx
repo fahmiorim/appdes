@@ -397,7 +397,8 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
           <div>
             {data.kategori.map((k) => (
               <div className={styles.statLine} key={k.id}>
-                {data.canUpdate ? <form action={simpanKategoriInventarisAction} className={styles.actions}>
+                {data.canUpdate ? (
+                  <form action={simpanKategoriInventarisAction} className={styles.actions}>
                   <input type="hidden" name="id" value={k.id} />
                   <input
                     name="kode"
@@ -421,7 +422,8 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
                     ))}
                   </select>
                   <button className={styles.secondary}>Simpan</button>
-                </form> : null}
+                  </form>
+                ) : null}
                 {data.canManage ? (
                   <form action={hapusKategoriInventarisAction}>
                     <input type="hidden" name="id" value={k.id} />
@@ -431,11 +433,12 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
               </div>
             ))}
           </div>
-          {data.canCreate ? <form
-            action={simpanKategoriInventarisAction}
-            className={styles.form}
-            style={{ marginTop: 14 }}
-          >
+          {data.canCreate ? (
+            <form
+              action={simpanKategoriInventarisAction}
+              className={styles.form}
+              style={{ marginTop: 14 }}
+            >
             <label>
               Kode Kategori
               <input name="kode" required maxLength={20} />
@@ -459,7 +462,8 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
               <input name="keterangan" />
             </label>
             <button className={styles.primary}>Tambah Kategori</button>
-          </form> : null}
+            </form>
+          ) : null}
         </section>
       ) : null}
     </main>
