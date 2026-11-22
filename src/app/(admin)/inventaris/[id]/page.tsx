@@ -356,7 +356,7 @@ export default async function DetailInventarisPage({ params, searchParams }: Pro
           )}
         </article>
       </section>
-      {data.canWrite && query.edit === "1" ? (
+      {data.canUpdate && query.edit === "1" ? (
         <section className={styles.panel}>
           <div className={styles.panelHead}>
             <div>
