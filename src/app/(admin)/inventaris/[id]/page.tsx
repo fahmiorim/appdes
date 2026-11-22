@@ -488,17 +488,12 @@ export default async function DetailInventarisPage({ params, searchParams }: Pro
               <input name="teleponPenanggungJawab" defaultValue={x.teleponPenanggungJawab ?? ""} />
             </label>
             <label>
-              Lokasi
-              <input name="lokasi" defaultValue={x.lokasi ?? ""} />
+              Lokasi (perubahan melalui Mutasi)
+              <input value={x.lokasi ?? "Belum ditentukan"} readOnly />
             </label>
             <label>
-              Kondisi
-              <select name="kondisi" defaultValue={x.kondisi}>
-                <option value="baik">Baik</option>
-                <option value="rusak_ringan">Rusak Ringan</option>
-                <option value="rusak_berat">Rusak Berat</option>
-                <option value="dalam_perbaikan">Dalam Perbaikan</option>
-              </select>
+              Kondisi (perubahan melalui Mutasi)
+              <input value={INVENTARIS_KONDISI_LABELS[x.kondisi]} readOnly />
             </label>
             <label className={styles.wide}>
               Spesifikasi
