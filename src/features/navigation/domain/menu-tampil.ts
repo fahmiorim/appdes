@@ -108,7 +108,16 @@ export function pathMenu(url: string | null | undefined): string | null {
 export function ruteTersedia(url: string | null | undefined): boolean {
   const path = pathMenu(url);
   if (!path) return false;
-  return RUTE_ADMIN_TERSEDIA.includes(path);
+  return RUTE_ADMIN_TERSEDIA.some((route) => {
+    const pattern = route.split("/");
+    const segments = path.split("/");
+    return (
+      pattern.length === segments.length &&
+      pattern.every((segment, index) =>
+        /^\[[^/]+\]$/.test(segment) ? Boolean(segments[index]) : segment === segments[index],
+      )
+    );
+  });
 }
 
 /**
