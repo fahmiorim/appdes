@@ -104,7 +104,9 @@ export async function getInventarisPageData(search: string) {
     kategori,
     rows: denganPenyusutan(data.rows),
     total: data.total,
-    canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create") || hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
+    canWrite:
+      hasPermission(user.permissions, INVENTARIS_RESOURCE, "create") ||
+      hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create"),
     canUpdate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canManage: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
@@ -144,7 +146,9 @@ export async function getInventarisTablePageData(input: {
     canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create"),
     canUpdate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canManage: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
-    canMutate: hasPermission(user.permissions, MUTASI_RESOURCE, "create") || hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
+    canMutate:
+      hasPermission(user.permissions, MUTASI_RESOURCE, "create") ||
+      hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
     canMutateCreate: hasPermission(user.permissions, MUTASI_RESOURCE, "create"),
     canMutateUpdate: hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
   };
