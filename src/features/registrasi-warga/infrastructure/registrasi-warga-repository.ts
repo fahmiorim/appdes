@@ -1,10 +1,12 @@
 import "server-only";
 
+import { randomUUID } from "node:crypto";
+import { hashPassword } from "better-auth/crypto";
 import { and, desc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { registrasiWarga, residents, users } from "@/db/schema";
-import { createWargaAccount, findWargaAccount, generatePin } from "@/features/warga/infrastructure/warga-repository";
+import { generatePin } from "@/features/warga/infrastructure/warga-repository";
 import type { PengajuanRegistrasiWargaInput, RegistrasiWargaDTO } from "@/features/registrasi-warga/domain/registrasi-warga";
 import { conflict, notFound } from "@/lib/errors";
 
@@ -73,23 +75,48 @@ export async function prosesRegistrasiWarga(
   if (!resident || resident.lifeStatus !== "alive" || resident.name.trim().toLocaleLowerCase("id-ID") !== request.nama.trim().toLocaleLowerCase("id-ID")) {
     throw conflict("Data penduduk tidak lagi cocok. Periksa data penduduk sebelum menyetujui.");
   }
-  if (await findWargaAccount(villageId, resident.id)) {
-    throw conflict("Penduduk ini sudah memiliki akun layanan mandiri.");
-  }
-
   const pin = generatePin();
-  await createWargaAccount({
-    villageId,
-    residentId: resident.id,
-    name: resident.name,
-    nationalId: request.nik,
-    pin,
+  const passwordHash = await hashPassword(pin);
+  const userId = randomUUID();
+  const email = `${request.nik}.${villageId}@warga.desa.local`;
+
+  await db.transaction(async (tx) => {
+    const [pending] = await tx.select({ id: registrasiWarga.id })
+      .from(registrasiWarga)
+      .where(and(eq(registrasiWarga.id, requestId), eq(registrasiWarga.villageId, villageId), eq(registrasiWarga.status, "menunggu")))
+      .limit(1);
+    if (!pending) throw conflict("Pengajuan sudah diproses oleh administrator lain.");
+
+    const [existingAccount] = await tx.select({ id: users.id }).from(users)
+      .where(and(eq(users.villageId, villageId), eq(users.residentId, resident.id))).limit(1);
+    if (existingAccount) throw conflict("Penduduk ini sudah memiliki akun layanan mandiri.");
+
+    await tx.insert(users).values({
+      id: userId,
+      name: resident.name,
+      email,
+      username: request.nik,
+      displayUsername: request.nik,
+      emailVerified: true,
+      villageId,
+      roleId: null,
+      active: true,
+      residentId: resident.id,
+      mustChangePin: true,
+    });
+    await tx.insert(accounts).values({
+      id: randomUUID(),
+      accountId: userId,
+      providerId: "credential",
+      userId,
+      password: passwordHash,
+    });
+    await tx.update(registrasiWarga).set({
+      status: "disetujui",
+      catatan: catatan?.trim().slice(0, 500) || null,
+      reviewedAt: new Date(),
+    }).where(and(eq(registrasiWarga.id, requestId), eq(registrasiWarga.villageId, villageId), eq(registrasiWarga.status, "menunggu")));
   });
 
-  const updated = await db.update(registrasiWarga).set({
-    status: "disetujui",
-    catatan: catatan?.trim().slice(0, 500) || null,
-    reviewedAt: new Date(),
-  }).where(and(eq(registrasiWarga.id, requestId), eq(registrasiWarga.villageId, villageId), eq(registrasiWarga.status, "menunggu")));
   return { username: request.nik, pin };
 }
