@@ -1,0 +1,185 @@
+import Link from "next/link";
+
+import {
+  getLaporanInventaris,
+  getNeracaAset,
+} from "@/features/inventaris/application/inventaris-use-cases";
+import { INVENTARIS_KONDISI_LABELS } from "@/features/inventaris/domain/inventaris";
+import { formatRupiah } from "@/features/keuangan/domain/keuangan";
+
+import styles from "../inventaris.module.css";
+
+export const metadata = { title: "Laporan & Statistik Inventaris" };
+
+export default async function LaporanInventarisPage() {
+  const [laporan, neracaData] = await Promise.all([getLaporanInventaris(), getNeracaAset()]);
+  const n = neracaData.neraca;
+  const totalDepresiasi = laporan.items.reduce((s, x) => s + Number(x.akumulasiPenyusutan ?? 0), 0);
+  const totalNilaiBuku = laporan.items.reduce(
+    (s, x) => s + Number(x.nilaiBuku ?? x.nilaiAkhir ?? 0),
+    0,
+  );
+  return (
+    <main className={styles.page}>
+      <header className={styles.heading}>
+        <div className={styles.headingIcon}>▥</div>
+        <div>
+          <span className={styles.eyebrow}>INVENTARIS &amp; ASET DESA</span>
+          <h1>Laporan &amp; Statistik Aset</h1>
+          <p>Rekap jumlah, kondisi, nilai perolehan, dan neraca kekayaan aset desa.</p>
+        </div>
+      </header>
+      <section className={styles.metrics}>
+        <article className={`${styles.metric} ${styles.metricPrimary}`}>
+          <span>Total Nilai Aset</span>
+          <strong>{formatRupiah(n.grandTotal)}</strong>
+          <small>Nilai tercatat</small>
+        </article>
+        <article className={styles.metric}>
+          <span>Jumlah Barang</span>
+          <strong>{laporan.rekap.total.jumlahBarang}</strong>
+          <small>Catatan inventaris aktif</small>
+        </article>
+        <article className={styles.metric}>
+          <span>Total Unit</span>
+          <strong>{Number(laporan.rekap.total.totalUnit).toLocaleString("id-ID")}</strong>
+          <small>Akumulasi jumlah barang</small>
+        </article>
+        <article className={styles.metric}>
+          <span>Nilai Kondisi Baik</span>
+          <strong>{formatRupiah(n.totalPerKondisi.baik)}</strong>
+          <small>{INVENTARIS_KONDISI_LABELS.baik}</small>
+        </article>
+        <article className={styles.metric}>
+          <span>Akumulasi Penyusutan</span>
+          <strong>{formatRupiah(totalDepresiasi.toFixed(2))}</strong>
+          <small>Saldo penyusutan berjalan</small>
+        </article>
+        <article className={styles.metric}>
+          <span>Nilai Buku Bersih</span>
+          <strong>{formatRupiah(totalNilaiBuku.toFixed(2))}</strong>
+          <small>Nilai perolehan dikurangi penyusutan</small>
+        </article>
+      </section>
+      <nav className={styles.tabs}>
+        <Link href="/inventaris/dashboard">Dashboard</Link>
+        <Link href="/inventaris">Daftar Inventaris</Link>
+        <Link href="/inventaris/pengelolaan">Pengelolaan Aset</Link>
+        <Link className={styles.active} href="/inventaris/laporan">
+          Laporan &amp; Statistik
+        </Link>
+        <Link href="/inventaris/mutasi">Mutasi &amp; Pemeliharaan</Link>
+      </nav>
+      <section className={styles.panel}>
+        <div className={styles.panelHead}>
+          <div>
+            <h2>Neraca Aset per Kategori &amp; Kondisi</h2>
+            <p>Nilai tercatat aset berdasarkan klasifikasi dan kondisi terakhir.</p>
+          </div>
+          <Link className={styles.primary} href="/inventaris/laporan/ekspor">
+            Export CSV ↓
+          </Link>
+        </div>
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Kategori</th>
+                <th>Jumlah Barang</th>
+                <th>Total Unit</th>
+                <th>Baik (Rp)</th>
+                <th>Rusak Ringan (Rp)</th>
+                <th>Rusak Berat (Rp)</th>
+                <th>Dalam Perbaikan (Rp)</th>
+                <th>Akumulasi Penyusutan</th>
+                <th>Nilai Buku</th>
+                <th>Total Nilai</th>
+              </tr>
+            </thead>
+            <tbody>
+              {n.baris.map((x) => {
+                const group = laporan.items.filter(
+                  (item) => (item.kategoriId ?? null) === (x.kategoriId ?? null),
+                );
+                const depresiasi = group.reduce(
+                  (s, item) => s + Number(item.akumulasiPenyusutan ?? 0),
+                  0,
+                );
+                const buku = group.reduce(
+                  (s, item) => s + Number(item.nilaiBuku ?? item.nilaiAkhir ?? 0),
+                  0,
+                );
+                return (
+                  <tr key={x.kategoriId ?? x.nama}>
+                    <td>
+                      <strong>{x.nama}</strong>
+                    </td>
+                    <td>{x.jumlahBarang}</td>
+                    <td>{Number(x.totalUnit).toLocaleString("id-ID")}</td>
+                    <td>{formatRupiah(x.nilaiPerKondisi.baik)}</td>
+                    <td>{formatRupiah(x.nilaiPerKondisi.rusak_ringan)}</td>
+                    <td>{formatRupiah(x.nilaiPerKondisi.rusak_berat)}</td>
+                    <td>{formatRupiah(x.nilaiPerKondisi.dalam_perbaikan)}</td>
+                    <td>{formatRupiah(depresiasi.toFixed(2))}</td>
+                    <td>{formatRupiah(buku.toFixed(2))}</td>
+                    <td>
+                      <strong>{formatRupiah(x.totalNilai)}</strong>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th>Total</th>
+                <th>{n.baris.reduce((s, x) => s + x.jumlahBarang, 0)}</th>
+                <th>{Number(laporan.rekap.total.totalUnit).toLocaleString("id-ID")}</th>
+                <th>{formatRupiah(n.totalPerKondisi.baik)}</th>
+                <th>{formatRupiah(n.totalPerKondisi.rusak_ringan)}</th>
+                <th>{formatRupiah(n.totalPerKondisi.rusak_berat)}</th>
+                <th>{formatRupiah(n.totalPerKondisi.dalam_perbaikan)}</th>
+                <th>{formatRupiah(totalDepresiasi.toFixed(2))}</th>
+                <th>{formatRupiah(totalNilaiBuku.toFixed(2))}</th>
+                <th>{formatRupiah(n.grandTotal)}</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </section>
+      <section className={styles.grid}>
+        <article className={styles.panel}>
+          <h2>Rekap per Kategori</h2>
+          {laporan.rekap.baris.map((x) => (
+            <div key={x.kategoriId ?? x.nama} className={styles.statLine}>
+              <span>
+                {x.nama} · {x.jumlahBarang} barang
+              </span>
+              <strong>{formatRupiah(x.totalNilai)}</strong>
+            </div>
+          ))}
+        </article>
+        <article className={styles.panel}>
+          <h2>Komposisi Nilai per Kondisi</h2>
+          {(["baik", "rusak_ringan", "rusak_berat", "dalam_perbaikan"] as const).map((k) => (
+            <div key={k} style={{ marginBottom: 14 }}>
+              <div className={styles.statLine}>
+                <span>{INVENTARIS_KONDISI_LABELS[k]}</span>
+                <strong>{formatRupiah(n.totalPerKondisi[k])}</strong>
+              </div>
+              <div className={styles.bar}>
+                <i
+                  style={{
+                    width:
+                      (Number(n.grandTotal)
+                        ? (Number(n.totalPerKondisi[k]) / Number(n.grandTotal)) * 100
+                        : 0) + "%",
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </article>
+      </section>
+    </main>
+  );
+}
