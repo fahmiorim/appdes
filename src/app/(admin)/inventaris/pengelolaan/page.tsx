@@ -62,7 +62,11 @@ export default async function PengelolaanAsetPage() {
               riwayatnya.
             </p>
           </div>
-          {data.canCreate ? <Link className={styles.primary} href="/inventaris#tambah">＋ Tambah Aset</Link> : null}
+          {data.canCreate ? (
+            <Link className={styles.primary} href="/inventaris#tambah">
+              ＋ Tambah Aset
+            </Link>
+          ) : null}
         </div>
         <div className={styles.tableWrap}>
           <table className={styles.table}>
