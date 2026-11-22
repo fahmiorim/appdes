@@ -28,7 +28,6 @@ export async function saveSecuritySettings(villageId: number, actorId: string, i
   await db.insert(villageSecuritySettings).values({
     villageId, updatedBy: actorId, passwordMinLength: input.passwordMinLength,
     passwordExpiryDays: input.passwordExpiryDays, passwordReuseCount: input.passwordReuseCount,
-    passwordExpiryDays: input.passwordExpiryDays, passwordReuseCount: input.passwordReuseCount,
     requireUppercase: input.requireUppercase, requireLowercase: input.requireLowercase,
     requireNumber: input.requireNumber, requireSymbol: input.requireSymbol,
     sessionTimeoutMinutes: input.sessionTimeoutMinutes, autoLogoutInactive: input.autoLogoutInactive,
@@ -36,6 +35,7 @@ export async function saveSecuritySettings(villageId: number, actorId: string, i
     ipRestrictionEnabled: input.ipRestrictionEnabled, allowedIps: JSON.stringify(input.allowedIps),
   }).onDuplicateKeyUpdate({ set: {
     updatedBy: actorId, passwordMinLength: input.passwordMinLength,
+    passwordExpiryDays: input.passwordExpiryDays, passwordReuseCount: input.passwordReuseCount,
     requireUppercase: input.requireUppercase, requireLowercase: input.requireLowercase,
     requireNumber: input.requireNumber, requireSymbol: input.requireSymbol,
     sessionTimeoutMinutes: input.sessionTimeoutMinutes, autoLogoutInactive: input.autoLogoutInactive,
