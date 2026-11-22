@@ -52,6 +52,7 @@ export const RUTE_ADMIN_TERSEDIA: readonly string[] = [
   "/keuangan/laporan",
   "/keuangan/dokumen",
   "/inventaris",
+  "/inventaris/[id]",
   "/inventaris/dashboard",
   "/inventaris/pengelolaan",
   "/inventaris/mutasi",
