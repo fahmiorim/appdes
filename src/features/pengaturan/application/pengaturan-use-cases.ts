@@ -40,7 +40,7 @@ export async function ambilPengaturanAdmin(): Promise<Pengaturan> {
 export async function simpanPengaturanTenant(
   villageId: number,
   input: unknown,
-  actorId?: number,
+  actorId?: string,
 ): Promise<Pengaturan> {
   const parsed = pengaturanSchema.safeParse(input);
   if (!parsed.success) {
