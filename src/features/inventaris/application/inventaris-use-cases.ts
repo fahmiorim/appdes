@@ -437,7 +437,10 @@ export async function getInventarisDetailPageData(id: number) {
     riwayatPenanggungJawab,
     canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canDelete: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
-    canMutate: hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
+    canMutate: hasPermission(user.permissions, MUTASI_RESOURCE, "create") || hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
+    canMutateCreate: hasPermission(user.permissions, MUTASI_RESOURCE, "create"),
+    canMutateUpdate: hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
+    canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create"),
   };
 }
 
@@ -470,8 +473,11 @@ export async function getPemeliharaanPageData() {
     pemeliharaan,
     riwayatPemeliharaan,
     canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
+    canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create"),
     canManage: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
-    canMutate,
+    canMutate: hasPermission(user.permissions, MUTASI_RESOURCE, "create") || canMutate,
+    canMutateCreate: hasPermission(user.permissions, MUTASI_RESOURCE, "create"),
+    canMutateUpdate: canMutate,
     canReadMutation,
     approverSteps: approverSteps as MutasiStep[],
   };
