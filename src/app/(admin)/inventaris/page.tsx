@@ -121,7 +121,7 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
             <Link className={styles.secondary} href="/inventaris/laporan/ekspor">
               Export CSV ↓
             </Link>
-            {data.canWrite ? (
+            {data.canCreate ? (
               <a className={styles.primary} href="#tambah">
                 ＋ Tambah Inventaris
               </a>
@@ -207,7 +207,7 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
                   <td>
                     <div className={styles.actions}>
                       <Link href={"/inventaris/" + x.id}>Detail</Link>
-                      {data.canWrite ? (
+                      {data.canUpdate ? (
                         <Link href={"/inventaris/" + x.id + "?edit=1"}>Edit</Link>
                       ) : null}
                       {data.canMutateCreate ? (
@@ -247,7 +247,7 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
           </div>
         </div>
       </section>
-      {data.canWrite ? (
+      {data.canCreate ? (
         <section className={styles.panel} id="tambah">
           <div className={styles.panelHead}>
             <div>
