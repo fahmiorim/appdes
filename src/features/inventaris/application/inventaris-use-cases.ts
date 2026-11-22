@@ -107,7 +107,7 @@ export async function getInventarisPageData(search: string) {
     canWrite:
       hasPermission(user.permissions, INVENTARIS_RESOURCE, "update") ||
       hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
-    canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
+    canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create"),
     canUpdate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canManage: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
   };
@@ -145,13 +145,13 @@ export async function getInventarisTablePageData(input: {
     canWrite:
       hasPermission(user.permissions, INVENTARIS_RESOURCE, "update") ||
       hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
-    canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
+    canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create"),
     canUpdate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canManage: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
     canMutate:
       hasPermission(user.permissions, MUTASI_RESOURCE, "update") ||
       hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
-    canMutateCreate: hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
+    canMutateCreate: hasPermission(user.permissions, MUTASI_RESOURCE, "create"),
     canMutateUpdate: hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
   };
 }
@@ -221,7 +221,7 @@ export async function getLaporanInventarisCsv(kategoriId?: number) {
 }
 
 export async function saveInventarisKategori(input: InventarisKategoriInput, id?: number) {
-  const user = await requirePermission(INVENTARIS_RESOURCE, id ? "update" : "update");
+  const user = await requirePermission(INVENTARIS_RESOURCE, id ? "update" : "create");
   const villageId = await resolveVillageId(user);
 
   if (await inventarisKategoriKodeExists(villageId, input.kode, id)) {
@@ -458,9 +458,9 @@ export async function getInventarisDetailPageData(id: number) {
     canMutate:
       hasPermission(user.permissions, MUTASI_RESOURCE, "update") ||
       hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
-    canMutateCreate: hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
+    canMutateCreate: hasPermission(user.permissions, MUTASI_RESOURCE, "create"),
     canMutateUpdate: hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
-    canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
+    canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create"),
   };
 }
 
@@ -493,10 +493,10 @@ export async function getPemeliharaanPageData() {
     pemeliharaan,
     riwayatPemeliharaan,
     canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
-    canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
+    canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create"),
     canManage: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
-    canMutate: hasPermission(user.permissions, MUTASI_RESOURCE, "update") || canMutate,
-    canMutateCreate: hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
+    canMutate: hasPermission(user.permissions, MUTASI_RESOURCE, "create") || canMutate,
+    canMutateCreate: hasPermission(user.permissions, MUTASI_RESOURCE, "create"),
     canMutateUpdate: canMutate,
     canReadMutation,
     approverSteps: approverSteps as MutasiStep[],
@@ -511,7 +511,7 @@ export async function buatJadwalPemeliharaan(input: {
   pelaksana?: string;
   deskripsi?: string;
 }) {
-  const user = await requirePermission(INVENTARIS_RESOURCE, "update");
+  const user = await requirePermission(INVENTARIS_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
   const item = await getInventaris(villageId, input.inventarisId);
   if (!item) throw notFound("Aset tidak ditemukan.");
@@ -621,7 +621,7 @@ export async function unggahDokumenInventaris(input: {
   ukuran: number;
   isi: Uint8Array;
 }) {
-  const user = await requirePermission(INVENTARIS_RESOURCE, "update");
+  const user = await requirePermission(INVENTARIS_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
   const asset = await getInventaris(villageId, input.inventarisId);
   if (!asset) throw notFound("Aset tidak ditemukan.");
