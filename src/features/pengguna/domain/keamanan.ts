@@ -3,6 +3,8 @@ import { z } from "zod";
 
 export const keamananSchema = z.object({
   passwordMinLength: z.coerce.number().int().min(8).max(72),
+  passwordExpiryDays: z.coerce.number().int().min(0).max(3650),
+  passwordReuseCount: z.coerce.number().int().min(0).max(10),
   requireUppercase: z.boolean(),
   requireLowercase: z.boolean(),
   requireNumber: z.boolean(),
