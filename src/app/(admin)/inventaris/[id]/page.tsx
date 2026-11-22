@@ -255,7 +255,7 @@ export default async function DetailInventarisPage({ params, searchParams }: Pro
         ) : (
           <p className={styles.empty}>Belum ada dokumen untuk aset ini.</p>
         )}
-        {data.canWrite ? (
+        {data.canCreate ? (
           <form
             action={unggahDokumenInventarisAction}
             className={styles.form}
@@ -516,15 +516,13 @@ export default async function DetailInventarisPage({ params, searchParams }: Pro
         </section>
       ) : null}
       <div className={styles.actions}>
-        {data.canWrite ? (
+        {data.canUpdate ? (
           <Link className={styles.primary} href={"/inventaris/" + id + "?edit=1"}>
             ✎ Edit Aset
           </Link>
         ) : null}
-        <Link className={styles.secondary} href={"/inventaris/mutasi?inventarisId=" + id}>
-          ＋ Ajukan Mutasi / Perawatan
-        </Link>
-        {data.canWrite ? (
+        {data.canMutateCreate ? <Link className={styles.secondary} href={"/inventaris/mutasi?inventarisId=" + id}>＋ Ajukan Mutasi / Perawatan</Link> : null}
+        {data.canMutateCreate ? (
           <Link
             className={styles.secondary}
             href={"/inventaris/mutasi?inventarisId=" + id + "&jenis=hapus"}
