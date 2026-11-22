@@ -279,66 +279,66 @@ export default async function MutasiPemeliharaanPage({ searchParams }: Props) {
                     <div className={styles.actions} style={{ marginTop: 8 }}>
                       {data.canWrite && x.status !== "selesai" && x.status !== "dibatalkan" ? (
                         <form action={ubahStatusPemeliharaanAction}>
-                        <input type="hidden" name="id" value={x.id} />
-                        <input
-                          name="jenis"
-                          aria-label="Jenis pemeliharaan"
-                          defaultValue={x.jenis}
-                        />
-                        <input
-                          type="date"
-                          name="tanggalRencana"
-                          aria-label="Tanggal rencana"
-                          defaultValue={x.tanggalRencana}
-                        />
-                        <input
-                          name="biaya"
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          aria-label="Biaya"
-                          defaultValue={x.biaya}
-                        />
-                        <input
-                          name="pelaksana"
-                          aria-label="Pelaksana"
-                          defaultValue={x.pelaksana ?? ""}
-                        />
-                        <input
-                          name="deskripsi"
-                          aria-label="Deskripsi"
-                          defaultValue={x.deskripsi ?? ""}
-                        />
-                        <select name="status" defaultValue={x.status}>
-                          <option value="terjadwal">Terjadwal</option>
-                          <option value="dalam_proses">Dalam Proses</option>
-                          <option value="selesai">Selesai</option>
-                          <option value="dibatalkan">Dibatalkan</option>
-                        </select>
-                        <input
-                          type="date"
-                          name="tanggalSelesai"
-                          defaultValue={x.tanggalSelesai ?? ""}
-                        />
-                        <input
-                          name="hasil"
-                          placeholder="Hasil pekerjaan"
-                          defaultValue={x.hasil ?? ""}
-                        />
-                        <select name="kondisiSetelah" defaultValue={x.kondisiSetelah ?? ""}>
-                          <option value="">Pilih kondisi akhir (wajib jika selesai)</option>
-                          <option value="baik">Baik</option>
-                          <option value="rusak_ringan">Rusak Ringan</option>
-                          <option value="rusak_berat">Rusak Berat</option>
-                          <option value="dalam_perbaikan">Dalam Perbaikan</option>
-                        </select>
-                        <button className={styles.secondary}>Perbarui</button>
+                          <input type="hidden" name="id" value={x.id} />
+                          <input
+                            name="jenis"
+                            aria-label="Jenis pemeliharaan"
+                            defaultValue={x.jenis}
+                          />
+                          <input
+                            type="date"
+                            name="tanggalRencana"
+                            aria-label="Tanggal rencana"
+                            defaultValue={x.tanggalRencana}
+                          />
+                          <input
+                            name="biaya"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            aria-label="Biaya"
+                            defaultValue={x.biaya}
+                          />
+                          <input
+                            name="pelaksana"
+                            aria-label="Pelaksana"
+                            defaultValue={x.pelaksana ?? ""}
+                          />
+                          <input
+                            name="deskripsi"
+                            aria-label="Deskripsi"
+                            defaultValue={x.deskripsi ?? ""}
+                          />
+                          <select name="status" defaultValue={x.status}>
+                            <option value="terjadwal">Terjadwal</option>
+                            <option value="dalam_proses">Dalam Proses</option>
+                            <option value="selesai">Selesai</option>
+                            <option value="dibatalkan">Dibatalkan</option>
+                          </select>
+                          <input
+                            type="date"
+                            name="tanggalSelesai"
+                            defaultValue={x.tanggalSelesai ?? ""}
+                          />
+                          <input
+                            name="hasil"
+                            placeholder="Hasil pekerjaan"
+                            defaultValue={x.hasil ?? ""}
+                          />
+                          <select name="kondisiSetelah" defaultValue={x.kondisiSetelah ?? ""}>
+                            <option value="">Pilih kondisi akhir (wajib jika selesai)</option>
+                            <option value="baik">Baik</option>
+                            <option value="rusak_ringan">Rusak Ringan</option>
+                            <option value="rusak_berat">Rusak Berat</option>
+                            <option value="dalam_perbaikan">Dalam Perbaikan</option>
+                          </select>
+                          <button className={styles.secondary}>Perbarui</button>
                         </form>
                       ) : null}
                       {data.canManage ? (
                         <form action={hapusJadwalPemeliharaanAction}>
-                        <input type="hidden" name="id" value={x.id} />
-                        <button className={styles.secondary}>Hapus</button>
+                          <input type="hidden" name="id" value={x.id} />
+                          <button className={styles.secondary}>Hapus</button>
                         </form>
                       ) : null}
                     </div>
