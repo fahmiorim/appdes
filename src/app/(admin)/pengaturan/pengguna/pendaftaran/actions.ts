@@ -17,6 +17,6 @@ export async function tinjauRegistrasiWargaAction(input: { id: number; keputusan
   } catch (error) {
     const { toErrorState } = await import("@/lib/action-state");
     const state = toErrorState(error);
-    return { ok: false, message: state.message || "Pengajuan tidak dapat diproses.", credential: null };
+    return { ok: false, message: "message" in state ? state.message : "Pengajuan tidak dapat diproses.", credential: null };
   }
 }
