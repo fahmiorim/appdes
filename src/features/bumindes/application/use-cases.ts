@@ -160,7 +160,7 @@ export async function simpanItemBukuData(
   id: number | null,
   input: ItemBukuInput,
 ): Promise<{ id: number; bukuId: number }> {
-  const user = await requirePermission(RESOURCES.bumindes, "update");
+  const user = await requirePermission(RESOURCES.bumindes, id === null ? "create" : "update");
   const villageId = await resolveVillageId(user);
 
   // Pada pengubahan, buku mengikuti item tersimpan — bukan nilai form.
@@ -215,7 +215,7 @@ export async function sinkronisasiBumindesDariPenduduk(): Promise<{
   pesan: string;
   detail: Record<string, number>;
 }> {
-  const user = await requirePermission(RESOURCES.bumindes, "update");
+  const user = await requirePermission(RESOURCES.bumindes, "create");
   const villageId = await resolveVillageId(user);
 
   const [data, daftarBuku] = await Promise.all([
@@ -329,7 +329,7 @@ export async function getDaftarTanahKasData() {
 }
 
 export async function simpanTanahKasData(id: number | null, input: TanahKasInput) {
-  const user = await requirePermission(RESOURCES.bumindes, "update");
+  const user = await requirePermission(RESOURCES.bumindes, id === null ? "create" : "update");
   const villageId = await resolveVillageId(user);
   const values = {
     nomorPersil: input.nomorPersil.trim(),
@@ -361,7 +361,7 @@ export async function hapusTanahKasData(id: number) {
 }
 
 export async function simpanMutasiTanahKasData(input: TanahKasMutasiInput) {
-  const user = await requirePermission(RESOURCES.bumindes, "update");
+  const user = await requirePermission(RESOURCES.bumindes, "create");
   const villageId = await resolveVillageId(user);
   const persil = await getBumindesTanahKas(villageId, input.tanahKasId);
   if (!persil) throw notFound("Persil tanah kas tidak ditemukan.");
@@ -492,7 +492,7 @@ export async function getDaftarPembangunanData(tahun?: number) {
 }
 
 export async function simpanPembangunanData(id: number | null, input: PembangunanInput) {
-  const user = await requirePermission(RESOURCES.bumindes, "update");
+  const user = await requirePermission(RESOURCES.bumindes, id === null ? "create" : "update");
   const villageId = await resolveVillageId(user);
   const values = {
     tahun: Number(input.tahun),
@@ -526,7 +526,7 @@ export async function hapusPembangunanData(id: number) {
 }
 
 export async function simpanKaderData(id: number | null, input: KaderInput) {
-  const user = await requirePermission(RESOURCES.bumindes, "update");
+  const user = await requirePermission(RESOURCES.bumindes, id === null ? "create" : "update");
   const villageId = await resolveVillageId(user);
   const values = {
     nama: input.nama.trim(),
@@ -659,7 +659,7 @@ export async function getDaftarSekretariatData(jenis?: string) {
 }
 
 export async function simpanPeraturanData(id: number | null, input: PeraturanInput) {
-  const user = await requirePermission(RESOURCES.bumindes, "update");
+  const user = await requirePermission(RESOURCES.bumindes, id === null ? "create" : "update");
   const villageId = await resolveVillageId(user);
   const values = {
     jenis: input.jenis || "peraturan_desa",
@@ -688,7 +688,7 @@ export async function hapusPeraturanData(id: number) {
 }
 
 export async function simpanAparatData(id: number | null, input: AparatInput) {
-  const user = await requirePermission(RESOURCES.bumindes, "update");
+  const user = await requirePermission(RESOURCES.bumindes, id === null ? "create" : "update");
   const villageId = await resolveVillageId(user);
   const values = {
     nama: input.nama.trim(),
@@ -722,7 +722,7 @@ export async function hapusAparatData(id: number) {
 }
 
 export async function simpanAgendaData(id: number | null, input: AgendaInput) {
-  const user = await requirePermission(RESOURCES.bumindes, "update");
+  const user = await requirePermission(RESOURCES.bumindes, id === null ? "create" : "update");
   const villageId = await resolveVillageId(user);
   const values = {
     jenis: input.jenis || "masuk",

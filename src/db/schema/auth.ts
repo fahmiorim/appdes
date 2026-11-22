@@ -42,6 +42,7 @@ export const users = mysqlTable(
     lastLoginAt: timestamp("last_login_at"),
     mustChangePin: boolean("must_change_pin").notNull().default(true),
     otpLoginAktif: boolean("otp_login_aktif").notNull().default(false),
+    twoFactorEnabled: boolean("two_factor_enabled").notNull().default(false),
     residentId: int("resident_id"),
 
     createdAt: timestamp("created_at").notNull().defaultNow(),

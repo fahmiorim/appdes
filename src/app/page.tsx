@@ -5,6 +5,7 @@ import Link from "next/link";
 import { hostPlatform } from "@/features/desa/application/platform-host";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { getStatistikDesa } from "@/features/desa/application/statistik-desa";
+import { bacaPengaturan } from "@/features/pengaturan/application/pengaturan-use-cases";
 import { adalahHostPlatform } from "@/features/desa/domain/host";
 import {
   daftarAlbumGaleri,
@@ -71,9 +72,10 @@ export default async function PublicHomePage() {
   if (adalahHostPlatform((await headers()).get("host"), hostPlatform)) return <PlatformLanding />;
 
   const desa = await getIdentitasFromRequest();
-  const [profil, berita, slider, statistik, perangkat, albums, announcements] = await Promise.all([
+  const [pengaturan, profil, berita, slider, statistik, perangkat, albums, announcements] = await Promise.all([
+    bacaPengaturan(desa.id),
     profilDesaPublik(desa.id),
-    daftarBerita(desa.id, { limit: 4 }),
+    daftarBerita(desa.id, { limit: 12 }),
     daftarSliderBeranda(desa.id),
     getStatistikDesa(desa.id),
     daftarPerangkatPublik(desa.id),
@@ -93,7 +95,7 @@ export default async function PublicHomePage() {
     cleanText(profil?.sambutan) ||
     `Selamat datang di portal resmi ${desa.namaDesa ?? "desa"}. Media informasi, layanan publik, dan keterbukaan data desa.`;
   const newsMain = berita[0];
-  const newsSide = berita.slice(1, 4);
+  const newsSide = berita.slice(1, pengaturan.beritaBeranda);
   const gallery = galleryPhotos.slice(0, 5);
   const quickLinks = [
     {
