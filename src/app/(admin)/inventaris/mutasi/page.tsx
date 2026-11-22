@@ -179,7 +179,7 @@ export default async function MutasiPemeliharaanPage({ searchParams }: Props) {
           ) : null}
         </div>
       </section>
-      {data.canMutate ? (
+      {data.canMutateCreate ? (
         <section className={styles.panel} id="pengajuan-mutasi">
           <div className={styles.panelHead}>
             <div>
@@ -345,7 +345,7 @@ export default async function MutasiPemeliharaanPage({ searchParams }: Props) {
               <p className={styles.empty}>Belum ada jadwal pemeliharaan.</p>
             )}
           </div>
-          {data.canWrite ? (
+          {data.canCreate ? (
             <div>
               <h2 style={{ fontSize: 13, marginBottom: 10 }}>Tambah Jadwal</h2>
               <form
