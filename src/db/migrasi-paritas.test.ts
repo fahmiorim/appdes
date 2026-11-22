@@ -77,6 +77,13 @@ function tabelMigrasi(): Set<string> {
  * badan `CREATE TABLE` mana pun. Tanpa cabang ini, paritas snapshot vs SQL
  * gagal palsu; dengan cabang ini, kolom tetap wajib ada di suatu migration.
  */
+const POLA_CREATE_TABLE = new RegExp(
+  "CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)` \\(\\n" +
+    "([\\s\\S]*?)\\n\\)(?:\\s*[A-Z][A-Z0-9_]*(?:\\s*=\\s*[^;]+)?)*\\s*;",
+  "gi",
+);
+const POLA_ALTER_TABLE = /ALTER TABLE `([a-z0-9_]+)`([\\s\\S]*?);/gi;
+const POLA_ADD_COLUMN = /\\bADD (?:COLUMN )?`([a-z0-9_]+)`/gi;
 function kolomMigrasi(): Map<string, Set<string>> {
   const hasil = new Map<string, Set<string>>();
   const tambah = (tabel: string, kolom: string) => {
@@ -87,9 +94,7 @@ function kolomMigrasi(): Map<string, Set<string>> {
 
   for (const isi of sqlMigrasi()) {
     // Terima CREATE TABLE yang diakhiri ENGINE/CHARSET, bukan hanya ");".
-    for (const tabel of isi.matchAll(
-      /CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)` \(\n([\s\S]*?)\n\)(?:\s*[A-Z][A-Z0-9_]*(?:\s*=\s*[^;]+)?)*\s*;/gi,
-    )) {
+    for (const tabel of isi.matchAll(POLA_CREATE_TABLE)) {
       const nama = tabel[1];
       const badan = tabel[2];
       if (!nama || badan === undefined) continue;

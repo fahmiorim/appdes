@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import {
-  getInventarisDetailPageData,
-} from "@/features/inventaris/application/inventaris-use-cases";
+import { getInventarisDetailPageData } from "@/features/inventaris/application/inventaris-use-cases";
 import {
   INVENTARIS_ASAL,
   INVENTARIS_KONDISI_LABELS,
@@ -489,11 +487,17 @@ export default async function DetailInventarisPage({ params, searchParams }: Pro
             </label>
             <label>
               Jabatan Penanggung Jawab
-              <input name="jabatanPenanggungJawab" defaultValue={x.jabatanPenanggungJawab ?? ""} />
+              <input
+                name="jabatanPenanggungJawab"
+                defaultValue={x.jabatanPenanggungJawab ?? ""}
+              />
             </label>
             <label>
               Telepon Penanggung Jawab
-              <input name="teleponPenanggungJawab" defaultValue={x.teleponPenanggungJawab ?? ""} />
+              <input
+                name="teleponPenanggungJawab"
+                defaultValue={x.teleponPenanggungJawab ?? ""}
+              />
             </label>
             <label>
               Lokasi (perubahan melalui Mutasi)
