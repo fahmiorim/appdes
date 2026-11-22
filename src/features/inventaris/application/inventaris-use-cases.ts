@@ -255,7 +255,7 @@ export async function hapusInventarisKategori(id: number) {
 }
 
 export async function saveInventaris(input: InventarisInput, id?: number) {
-  const user = await requirePermission(INVENTARIS_RESOURCE, id ? "update" : "update");
+  const user = await requirePermission(INVENTARIS_RESOURCE, id ? "update" : "create");
   const villageId = await resolveVillageId(user);
 
   // `kategoriId` berasal dari formulir. Composite FK juga menegakkan tenant
