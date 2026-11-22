@@ -149,6 +149,14 @@ describe("buildInventarisCsv", () => {
     expect(baris[baris.length - 1]).toContain("1500.00");
   });
 
+  it("menetralkan sel teks yang berpotensi menjadi formula spreadsheet", () => {
+    const csv = buildInventarisCsv([
+      item({ namaBarang: "=HYPERLINK(\"https://example.com\")", lokasi: " @SUM(A1:A2)" }),
+    ]);
+    expect(csv).toContain("'=HYPERLINK");
+    expect(csv).toContain("' @SUM");
+  });
+
   it("melabeli kondisi dengan teks dan membungkus sel bertanda pemisah", () => {
     const csv = buildInventarisCsv([
       item({ namaBarang: "Meja; Kursi", kondisi: "rusak_berat", nilaiAkhir: "10.00" }),
