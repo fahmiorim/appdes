@@ -86,8 +86,9 @@ function kolomMigrasi(): Map<string, Set<string>> {
   };
 
   for (const isi of sqlMigrasi()) {
+    // Terima CREATE TABLE yang diakhiri ENGINE/CHARSET, bukan hanya ");".
     for (const tabel of isi.matchAll(
-      /CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)` \(\n([\s\S]*?)\n\);/g,
+      /CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)` \(\n([\s\S]*?)\n\)(?:\s*[A-Z][A-Z0-9_]*(?:\s*=\s*[^;]+)?)*\s*;/gi,
     )) {
       const nama = tabel[1];
       const badan = tabel[2];
@@ -98,12 +99,15 @@ function kolomMigrasi(): Map<string, Set<string>> {
       }
     }
 
-    for (const tambahan of isi.matchAll(
-      /ALTER TABLE `([a-z0-9_]+)` ADD (?:COLUMN )?`([a-z0-9_]+)`/g,
-    )) {
-      const nama = tambahan[1];
-      const kolom = tambahan[2];
-      if (nama && kolom) tambah(nama, kolom);
+    // Satu ALTER TABLE dapat menambahkan beberapa kolom; proses tiap ADD.
+    for (const pernyataan of isi.matchAll(/ALTER TABLE `([a-z0-9_]+)`([\s\S]*?);/gi)) {
+      const nama = pernyataan[1];
+      const badan = pernyataan[2] ?? "";
+      if (!nama) continue;
+      for (const tambahan of badan.matchAll(/\bADD (?:COLUMN )?`([a-z0-9_]+)`/gi)) {
+        const kolom = tambahan[1];
+        if (kolom) tambah(nama, kolom);
+      }
     }
   }
   return hasil;
@@ -123,6 +127,7 @@ function namaIndexMigrasi(): Set<string> {
     for (const cocok of isi.matchAll(/CREATE (?:UNIQUE )?INDEX `([^`]+)`/g)) hasil.add(cocok[1]!);
     for (const cocok of isi.matchAll(/^[\t ]+KEY `([^`]+)`/gm)) hasil.add(cocok[1]!);
     for (const cocok of isi.matchAll(/CONSTRAINT `([^`]+)` UNIQUE/g)) hasil.add(cocok[1]!);
+    for (const cocok of isi.matchAll(/ALTER TABLE `[^`]+` ADD UNIQUE (?:KEY|INDEX) `([^`]+)`/g)) hasil.add(cocok[1]!);
   }
   return hasil;
 }
