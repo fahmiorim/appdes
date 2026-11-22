@@ -103,7 +103,13 @@ export default async function PengelolaanAsetPage() {
                   <td>{x.lokasi ?? "—"}</td>
                   <td>
                     <span
-                      className={`${styles.tag} ${x.kondisi === "baik" ? styles.good : x.kondisi === "rusak_berat" ? styles.bad : styles.warn}`}
+                      className={`${styles.tag} ${
+                        x.kondisi === "baik"
+                          ? styles.good
+                          : x.kondisi === "rusak_berat"
+                            ? styles.bad
+                            : styles.warn
+                      }`}
                     >
                       {INVENTARIS_KONDISI_LABELS[x.kondisi]}
                     </span>
@@ -113,7 +119,9 @@ export default async function PengelolaanAsetPage() {
                   <td>
                     <div className={styles.actions}>
                       <Link href={"/inventaris/" + x.id}>Detail</Link>
-                      {data.canUpdate ? <Link href={"/inventaris/" + x.id + "?edit=1"}>Edit</Link> : null}
+                      {data.canUpdate ? (
+                        <Link href={"/inventaris/" + x.id + "?edit=1"}>Edit</Link>
+                      ) : null}
                     </div>
                   </td>
                 </tr>
