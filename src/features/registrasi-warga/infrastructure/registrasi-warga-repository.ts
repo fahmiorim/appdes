@@ -11,30 +11,33 @@ import type { PengajuanRegistrasiWargaInput, RegistrasiWargaDTO } from "@/featur
 import { conflict, notFound } from "@/lib/errors";
 
 export async function ajukanRegistrasiWarga(villageId: number, input: PengajuanRegistrasiWargaInput): Promise<void> {
-  const [resident] = await db.select({ id: residents.id, name: residents.name, lifeStatus: residents.lifeStatus })
-    .from(residents)
-    .where(and(eq(residents.villageId, villageId), eq(residents.nationalId, input.nik)))
-    .limit(1);
+  await db.transaction(async (tx) => {
+    const [resident] = await tx.select({ id: residents.id, name: residents.name, lifeStatus: residents.lifeStatus })
+      .from(residents)
+      .where(and(eq(residents.villageId, villageId), eq(residents.nationalId, input.nik)))
+      .limit(1)
+      .for("update");
 
-  // Gunakan pesan generik agar endpoint publik tidak menjadi oracle NIK.
-  if (!resident || resident.lifeStatus !== "alive" || resident.name.trim().toLocaleLowerCase("id-ID") !== input.nama.trim().toLocaleLowerCase("id-ID")) {
-    throw conflict("Data belum dapat diverifikasi. Periksa kembali data atau hubungi kantor desa.");
-  }
+    // Gunakan pesan generik agar endpoint publik tidak menjadi oracle NIK.
+    if (!resident || resident.lifeStatus !== "alive" || resident.name.trim().toLocaleLowerCase("id-ID") !== input.nama.trim().toLocaleLowerCase("id-ID")) {
+      throw conflict("Data belum dapat diverifikasi. Periksa kembali data atau hubungi kantor desa.");
+    }
 
-  const [account] = await db.select({ id: users.id }).from(users)
-    .where(and(eq(users.villageId, villageId), eq(users.residentId, resident.id))).limit(1);
-  if (account) throw conflict("Akun layanan mandiri untuk NIK ini sudah tersedia. Silakan masuk.");
+    const [account] = await tx.select({ id: users.id }).from(users)
+      .where(and(eq(users.villageId, villageId), eq(users.residentId, resident.id))).limit(1);
+    if (account) throw conflict("Akun layanan mandiri untuk NIK ini sudah tersedia. Silakan masuk.");
 
-  const [pending] = await db.select({ id: registrasiWarga.id }).from(registrasiWarga)
-    .where(and(eq(registrasiWarga.villageId, villageId), eq(registrasiWarga.nik, input.nik), eq(registrasiWarga.status, "menunggu"))).limit(1);
-  if (pending) throw conflict("Pengajuan dengan NIK ini sedang menunggu pemeriksaan.");
+    const [pending] = await tx.select({ id: registrasiWarga.id }).from(registrasiWarga)
+      .where(and(eq(registrasiWarga.villageId, villageId), eq(registrasiWarga.nik, input.nik), eq(registrasiWarga.status, "menunggu"))).limit(1);
+    if (pending) throw conflict("Pengajuan dengan NIK ini sedang menunggu pemeriksaan.");
 
-  await db.insert(registrasiWarga).values({
-    villageId,
-    nik: input.nik,
-    nama: input.nama,
-    noHp: input.noHp || null,
-    status: "menunggu",
+    await tx.insert(registrasiWarga).values({
+      villageId,
+      nik: input.nik,
+      nama: input.nama,
+      noHp: input.noHp || null,
+      status: "menunggu",
+    });
   });
 }
 
