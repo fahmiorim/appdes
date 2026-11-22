@@ -6,12 +6,19 @@ import { useMemo, useState } from "react";
 import styles from "./katalog-layanan.module.css";
 
 type Service = {
+  source: "surat" | "desa";
   id: number;
   nama: string;
-  kode: string;
-  klasifikasi: string | null;
-  butuhPenduduk: boolean;
-  masaBerlakuBulan: number;
+  kode?: string;
+  klasifikasi?: string | null;
+  butuhPenduduk?: boolean;
+  masaBerlakuBulan?: number;
+  kategori?: string;
+  deskripsi?: string | null;
+  persyaratan?: string | null;
+  estimasiHari?: number;
+  biaya?: number;
+  metode?: string;
 };
 type Props = { layanan: Service[] };
 
@@ -25,6 +32,14 @@ const categories = [
 ];
 
 function categoryFor(item: Service): string {
+  if (item.source === "desa") {
+    const category = (item.kategori ?? "").toLocaleLowerCase("id-ID");
+    if (category === "sosial") return "Sosial";
+    if (category === "ekonomi" || category === "usaha") return "Ekonomi & Usaha";
+    if (category === "kependudukan") return "Kependudukan";
+    if (category === "administrasi" || category === "surat") return "Administrasi";
+    return "Lainnya";
+  }
   const value =
     (item.klasifikasi ?? "").toLocaleLowerCase("id-ID") +
     " " +
@@ -56,7 +71,7 @@ export function KatalogLayanan({ layanan }: Props) {
         const search = (
           item.nama +
           " " +
-          item.kode +
+          (item.kode ?? "") +
           " " +
           (item.klasifikasi ?? "")
         ).toLocaleLowerCase("id-ID");
@@ -112,19 +127,33 @@ export function KatalogLayanan({ layanan }: Props) {
           <div className={styles.cards}>
             {filtered.length ? (
               filtered.map((item, index) => (
-                <article className={styles.serviceCard} key={item.id}>
+                <article className={styles.serviceCard} key={item.source + "-" + item.id}>
                   <div className={styles.serviceIcon + " " + styles["tone" + (index % 5)]}>
                     {iconFor(item)}
                   </div>
                   <div className={styles.serviceBody}>
                     <h3>{item.nama}</h3>
-                    <span className={styles.category}>{item.klasifikasi ?? categoryFor(item)}</span>
+                    <span className={styles.category}>
+                      {item.source === "desa" ? categoryFor(item) : item.klasifikasi ?? categoryFor(item)}
+                    </span>
                     <p>
-                      {item.butuhPenduduk
-                        ? "Layanan ini memerlukan data penduduk yang terdaftar di desa."
-                        : "Layanan administrasi desa. Periksa persyaratan sebelum mengajukan."}
+                      {item.source === "desa"
+                        ? item.deskripsi || "Informasi layanan yang disediakan oleh pemerintah desa."
+                        : item.butuhPenduduk
+                          ? "Layanan ini memerlukan data penduduk yang terdaftar di desa."
+                          : "Layanan administrasi desa. Periksa persyaratan sebelum mengajukan."}
                     </p>
-                    <Link href="/layanan/surat">Lihat Informasi　→</Link>
+                    {item.source === "desa" ? (
+                      <div className={styles.serviceMeta}>
+                        <small>{item.biaya === 0 ? "Gratis" : "Biaya Rp " + (item.biaya ?? 0).toLocaleString("id-ID")}</small>
+                        <small>Estimasi {item.estimasiHari ?? 0} hari</small>
+                        {item.metode ? <small>{item.metode.replaceAll("_", " ")}</small> : null}
+                        {item.persyaratan ? <small>Persyaratan: {item.persyaratan}</small> : null}
+                      </div>
+                    ) : null}
+                    <Link href={item.source === "desa" ? "/kontak" : "/layanan/surat"}>
+                      {item.source === "desa" ? "Hubungi Kantor Desa" : "Lihat Informasi"}　→
+                    </Link>
                   </div>
                 </article>
               ))
