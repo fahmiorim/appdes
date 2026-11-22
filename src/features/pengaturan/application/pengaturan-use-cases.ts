@@ -33,11 +33,15 @@ export async function ambilPengaturanAdmin(): Promise<Pengaturan> {
   return bacaPengaturan(villageId);
 }
 
-/** Simpan pengaturan dari form admin (validasi + izin ubah + scoping desa). */
-export async function simpanPengaturanAdmin(input: unknown): Promise<Pengaturan> {
-  const user = await requirePermission(RESOURCES.pengaturan, "update");
-  const villageId = await resolveVillageId(user);
-
+/**
+ * Simpan pengaturan untuk tenant yang sudah diotorisasi pemanggil.
+ * Pemanggil wajib memastikan villageId berasal dari sesi/host tepercaya.
+ */
+export async function simpanPengaturanTenant(
+  villageId: number,
+  input: unknown,
+  actorId?: number,
+): Promise<Pengaturan> {
   const parsed = pengaturanSchema.safeParse(input);
   if (!parsed.success) {
     throw validationError(parsed.error.issues[0]?.message ?? "Pengaturan tidak valid.");
@@ -47,7 +51,7 @@ export async function simpanPengaturanAdmin(input: unknown): Promise<Pengaturan>
 
   await recordAuditEvent({
     villageId,
-    actorId: user.id,
+    actorId,
     event: AUDIT_EVENTS.pengaturanUpdate,
     resource: RESOURCES.pengaturan,
     details: {
@@ -59,4 +63,11 @@ export async function simpanPengaturanAdmin(input: unknown): Promise<Pengaturan>
   });
 
   return parsed.data;
+}
+
+/** Simpan pengaturan dari form admin (validasi + izin ubah + scoping desa). */
+export async function simpanPengaturanAdmin(input: unknown): Promise<Pengaturan> {
+  const user = await requirePermission(RESOURCES.pengaturan, "update");
+  const villageId = await resolveVillageId(user);
+  return simpanPengaturanTenant(villageId, input, user.id);
 }
