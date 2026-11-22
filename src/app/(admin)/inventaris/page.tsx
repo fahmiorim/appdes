@@ -397,7 +397,7 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
           <div>
             {data.kategori.map((k) => (
               <div className={styles.statLine} key={k.id}>
-                <form action={simpanKategoriInventarisAction} className={styles.actions}>
+                {data.canUpdate ? <form action={simpanKategoriInventarisAction} className={styles.actions}>
                   <input type="hidden" name="id" value={k.id} />
                   <input
                     name="kode"
@@ -421,7 +421,7 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
                     ))}
                   </select>
                   <button className={styles.secondary}>Simpan</button>
-                </form>
+                </form> : null}
                 {data.canManage ? (
                   <form action={hapusKategoriInventarisAction}>
                     <input type="hidden" name="id" value={k.id} />
@@ -431,7 +431,7 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
               </div>
             ))}
           </div>
-          <form
+          {data.canCreate ? <form
             action={simpanKategoriInventarisAction}
             className={styles.form}
             style={{ marginTop: 14 }}
@@ -459,7 +459,7 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
               <input name="keterangan" />
             </label>
             <button className={styles.primary}>Tambah Kategori</button>
-          </form>
+          </form> : null}
         </section>
       ) : null}
     </main>
