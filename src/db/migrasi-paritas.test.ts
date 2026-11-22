@@ -175,7 +175,7 @@ function namaIndexSkema(): Set<string> {
     }
     const isi = fs.readFileSync(SCHEMA_DIR + berkas, "utf8");
     for (const cocok of isi.matchAll(
-      /(?:unique)?index\\(\s*"([^"]+)"/gi,
+      /(?:unique)?index\(\s*"([^"]+)"/gi,
     )) {
       hasil.add(cocok[1]!);
     }
