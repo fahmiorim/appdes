@@ -56,7 +56,9 @@ import {
   updateInventarisKategori,
   updateStatusPemeliharaan,
 } from "@/features/inventaris/infrastructure/inventaris-repository";
-import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
+import {
+  simpanBerkasMedia,
+} from "@/features/publik/application/simpan-berkas-media";
 import {
   bacaMedia,
   hapusMedia,
@@ -417,7 +419,9 @@ export async function setujuiMutasiData(id: number) {
     );
   }
   if (mutasi.diajukanOlehId === user.id && !user.permissions.isSuperadmin) {
-    throw forbidden("Pengaju mutasi tidak boleh menyetujui pengajuannya sendiri.");
+    throw forbidden(
+      "Pengaju mutasi tidak boleh menyetujui pengajuannya sendiri.",
+    );
   }
 
   await setujuiMutasiTahap(villageId, id, step, namaPengguna(user));
@@ -430,7 +434,9 @@ export async function tolakMutasiData(id: number, catatanPenolakan: string) {
 
   const mutasi = await getMutasi(villageId, id);
   if (!mutasi) throw notFound("Pengajuan mutasi tidak ditemukan.");
-  if (mutasi.status !== "diajukan") throw conflict("Pengajuan mutasi sudah diproses.");
+  if (mutasi.status !== "diajukan") {
+    throw conflict("Pengajuan mutasi sudah diproses.");
+  }
   if (mutasi.diajukanOlehId === user.id && !user.permissions.isSuperadmin) {
     throw forbidden("Pengaju mutasi tidak boleh menolak pengajuannya sendiri.");
   }
@@ -441,9 +447,20 @@ export async function tolakMutasiData(id: number, catatanPenolakan: string) {
   const step = nextMutasiStep(mutasi);
   if (!step) throw conflict("Mutasi sudah selesai diverifikasi.");
 
-  const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
-  if (!roleCanApproveMutasiStep(step, role?.slug ?? null, user.permissions.isSuperadmin)) {
-    throw forbidden(`Tahap ${MUTASI_STEP_LABELS[step]} bukan wewenang role Anda.`);
+  const role =
+    user.roleId === null
+      ? null
+      : await findRoleById(user.roleId, user.villageId);
+  if (
+    !roleCanApproveMutasiStep(
+      step,
+      role?.slug ?? null,
+      user.permissions.isSuperadmin,
+    )
+  ) {
+    throw forbidden(
+      `Tahap ${MUTASI_STEP_LABELS[step]} bukan wewenang role Anda.`,
+    );
   }
 
   await tolakMutasi(
@@ -487,7 +504,8 @@ export async function getMutasiPageData(inventarisId?: number) {
 export async function getInventarisDetailPageData(id: number) {
   const user = await requirePermission(INVENTARIS_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
-  const [item, kategori, riwayat, dokumen, riwayatPenanggungJawab] = await Promise.all([
+  const [item, kategori, riwayat, dokumen, riwayatPenanggungJawab] =
+    await Promise.all([
     getInventaris(villageId, id),
     listInventarisKategori(villageId),
     listMutasi(villageId, id),
@@ -517,7 +535,8 @@ export async function getInventarisDetailPageData(id: number) {
 export async function getPemeliharaanPageData() {
   const user = await requirePermission(INVENTARIS_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
-  const [inventarisData, pemeliharaan, riwayatPemeliharaan] = await Promise.all([
+  const [inventarisData, pemeliharaan, riwayatPemeliharaan] =
+    await Promise.all([
     listInventaris(villageId),
     listPemeliharaan(villageId),
     listRiwayatPemeliharaan(villageId),
@@ -532,7 +551,11 @@ export async function getPemeliharaanPageData() {
   const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
   const approverSteps = canMutate
     ? MUTASI_STEPS.filter((step) =>
-        roleCanApproveMutasiStep(step, role?.slug ?? null, user.permissions.isSuperadmin),
+        roleCanApproveMutasiStep(
+          step,
+          role?.slug ?? null,
+          user.permissions.isSuperadmin,
+        ),
       )
     : [];
   return {
@@ -699,7 +722,9 @@ export async function unggahDokumenInventaris(input: {
     throw validationError("Berkas kosong tidak dapat diunggah.");
   }
   if (
-    !["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(input.mime)
+    !["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(
+      input.mime,
+    )
   )
     throw validationError("Dokumen harus PDF, JPG, PNG, atau WEBP.");
   const batasUkuran = input.mime.startsWith("image/")
@@ -707,7 +732,9 @@ export async function unggahDokumenInventaris(input: {
     : 8 * 1024 * 1024;
   if (input.ukuran > batasUkuran)
     throw validationError(
-      input.mime.startsWith("image/") ? "Ukuran foto maksimal 5 MB." : "Ukuran PDF maksimal 8 MB.",
+      input.mime.startsWith("image/")
+        ? "Ukuran foto maksimal 5 MB."
+        : "Ukuran PDF maksimal 8 MB.",
     );
   const jalurMedia = await simpanBerkasMedia(
     villageId,

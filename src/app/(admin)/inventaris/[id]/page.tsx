@@ -206,7 +206,9 @@ export default async function DetailInventarisPage({
           <div className={styles.statLine}>
             <span>Umur Manfaat</span>
             <strong>
-              {x.umurManfaatBulan ? x.umurManfaatBulan + " bulan" : "Belum diatur"}
+              {x.umurManfaatBulan
+                ? x.umurManfaatBulan + " bulan"
+                : "Belum diatur"}
             </strong>
           </div>
           <div className={styles.statLine}>
@@ -345,9 +347,12 @@ export default async function DetailInventarisPage({
             <div className={styles.timeline}>
               {data.riwayatPenanggungJawab.map((h) => (
                 <article key={h.id}>
-                  <strong>{h.namaSesudah ?? "Tidak ada penanggung jawab"}</strong>
+                  <strong>
+                    {h.namaSesudah ?? "Tidak ada penanggung jawab"}
+                  </strong>
                   <small>
-                    {dateLabel(h.createdAt.toISOString().slice(0, 10))} · Diubah oleh{" "}
+                    {dateLabel(h.createdAt.toISOString().slice(0, 10))}
+                    {" · Diubah oleh "}
                     {h.diubahOleh}
                   </small>
                   <small>

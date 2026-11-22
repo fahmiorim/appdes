@@ -162,7 +162,13 @@ function namaIndexMigrasi(): Set<string> {
 function namaIndexSkema(): Set<string> {
   const hasil = new Set<string>();
   for (const berkas of fs.readdirSync(SCHEMA_DIR)) {
-    if (!berkas.endsWith(".ts") || berkas.endsWith(".test.ts") || berkas === "index.ts") continue;
+    if (
+      !berkas.endsWith(".ts") ||
+      berkas.endsWith(".test.ts") ||
+      berkas === "index.ts"
+    ) {
+      continue;
+    }
     const isi = fs.readFileSync(SCHEMA_DIR + berkas, "utf8");
     for (const cocok of isi.matchAll(/(?:unique)?index\(\s*"([^"]+)"/gi)) hasil.add(cocok[1]!);
   }
@@ -321,7 +327,9 @@ describe("paritas skema vs migrasi", () => {
   });
 
   it("setiap entri journal memiliki berkas snapshot", () => {
-    const journal = JSON.parse(fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8")) as {
+    const journal = JSON.parse(
+      fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8"),
+    ) as {
       entries: Array<{ idx: number; tag: string }>;
     };
     const ada = new Set(
