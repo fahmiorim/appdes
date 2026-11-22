@@ -28,7 +28,7 @@ const TANPA_KATEGORI = "Tanpa kategori";
 
 /** Cegah teks yang diawali karakter formula dieksekusi spreadsheet saat CSV dibuka. */
 function amanUntukSpreadsheet(value: string): string {
-  return /^[\\t\\r ]*[=+\\-@]/.test(value) ? "\u0027" + value : value;
+  return /^[\t\r ]*[=+\-@]/.test(value) ? "\u0027" + value : value;
 }
 
 function kategoriLabel(item: LaporanInventarisItem): string {
