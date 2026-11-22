@@ -133,7 +133,7 @@ export async function PUT(request:Request) {
         if(same) {
           let previous: Record<string, unknown> = {};
           try {
-            const rawPrevious = same.opsi ?? currentActive?.opsi;
+            const rawPrevious = currentActive?.opsi ?? same.opsi;
             const parsed: unknown = rawPrevious ? JSON.parse(rawPrevious) : {};
             if(parsed && typeof parsed==="object" && !Array.isArray(parsed)) previous=parsed as Record<string,unknown>;
           } catch {}
