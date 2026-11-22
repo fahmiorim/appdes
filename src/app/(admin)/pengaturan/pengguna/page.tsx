@@ -101,6 +101,7 @@ export default async function PenggunaPage() {
       <nav aria-label="Bagian manajemen pengguna" className="pengguna-tabs">
         <Link aria-current="page" className="pengguna-tab" href="/pengaturan/pengguna">Pengguna</Link>
         <Link className="pengguna-tab" href="/pengaturan/grup-akses">Peran &amp; Hak Akses</Link>
+        {data.canUpdate ? <Link className="pengguna-tab" href="/pengaturan/pengguna/pendaftaran">Pendaftaran Warga</Link> : null}
         {bolehAudit ? <Link className="pengguna-tab" href="/pengaturan/pengguna/aktivitas">Aktivitas Pengguna</Link> : null}
         <Link className="pengguna-tab" href="/pengaturan/pengguna/keamanan">Pengaturan Keamanan</Link>
       </nav>
