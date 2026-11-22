@@ -161,12 +161,16 @@ export async function updatePengguna(
     }
 
     const [account] = await tx
-      .select({ id: accounts.id })
+      .select({ id: accounts.id, password: accounts.password })
       .from(accounts)
       .where(and(eq(accounts.userId, id), eq(accounts.providerId, "credential")))
       .limit(1);
 
     if (account) {
+      if (account.password) {
+        await tx.insert(passwordHistory).values({ userId: id, passwordHash: account.password })
+          .onDuplicateKeyUpdate({ set: { passwordHash: account.password } });
+      }
       await tx.update(accounts).set({ password: passwordHash }).where(eq(accounts.id, account.id));
     } else {
       await tx.insert(accounts).values({ id: randomUUID(), accountId: id, providerId: "credential", userId: id, password: passwordHash });
