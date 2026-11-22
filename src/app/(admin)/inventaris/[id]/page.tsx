@@ -521,7 +521,11 @@ export default async function DetailInventarisPage({ params, searchParams }: Pro
             ✎ Edit Aset
           </Link>
         ) : null}
-        {data.canMutateCreate ? <Link className={styles.secondary} href={"/inventaris/mutasi?inventarisId=" + id}>＋ Ajukan Mutasi / Perawatan</Link> : null}
+        {data.canMutateCreate ? (
+          <Link className={styles.secondary} href={"/inventaris/mutasi?inventarisId=" + id}>
+            ＋ Ajukan Mutasi / Perawatan
+          </Link>
+        ) : null}
         {data.canMutateCreate ? (
           <Link
             className={styles.secondary}
