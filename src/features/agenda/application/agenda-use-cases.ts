@@ -29,7 +29,7 @@ export async function daftarAgendaAdmin(): Promise<AgendaRow[]> {
 
 /** Simpan agenda baru atau ubah agenda milik desa pengguna. */
 export async function simpanAgenda(input: AgendaFormInput, id?: number): Promise<void> {
-  const user = await requirePermission(AGENDA_RESOURCE, "update");
+  const user = await requirePermission(AGENDA_RESOURCE, id === undefined ? "create" : "update");
   const villageId = await resolveVillageId(user);
   const rows = await listAgendaAdmin(villageId);
 

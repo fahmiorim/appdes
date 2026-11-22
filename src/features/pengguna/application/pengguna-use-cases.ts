@@ -21,6 +21,8 @@ import {
   updatePengguna,
 } from "@/features/pengguna/infrastructure/pengguna-repository";
 import { isPlatformRole } from "@/features/rbac/domain/role";
+import { assertPasswordNotReused, getSecuritySettings } from "@/features/pengguna/infrastructure/keamanan-repository";
+import { validasiKataSandi } from "@/features/pengguna/domain/keamanan";
 import { getRoleById, listRoles } from "@/features/rbac/infrastructure/rbac-repository";
 import { requirePermission, requireUser } from "@/lib/dal";
 import { conflict, notFound } from "@/lib/errors";
@@ -88,11 +90,15 @@ async function getScopedPengguna(id: string, villageId: number) {
 }
 
 export async function createPenggunaData(input: PenggunaCreateInput): Promise<{ id: string }> {
-  const user = await requirePermission(PENGGUNA_RESOURCE, "update");
+  const user = await requirePermission(PENGGUNA_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const username = normalizeUsername(input.username);
   const email = input.email ?? fallbackEmail(username);
+
+  const policy = await getSecuritySettings(villageId);
+  const passwordError = validasiKataSandi(input.password, policy);
+  if (passwordError) throw conflict(passwordError);
 
   await ensureRoleExists(input.roleId, villageId);
   await ensureUsernameAvailable(username);
@@ -134,6 +140,13 @@ export async function updatePenggunaData(id: string, input: PenggunaUpdateInput)
 
   const username = normalizeUsername(input.username);
   const email = input.email ?? target.email;
+
+  if (input.password !== null) {
+    const policy = await getSecuritySettings(villageId);
+    const passwordError = validasiKataSandi(input.password, policy);
+    if (passwordError) throw conflict(passwordError);
+    await assertPasswordNotReused(id, input.password, policy.passwordReuseCount);
+  }
 
   await ensureRoleExists(input.roleId, villageId);
   await ensureUsernameAvailable(username, id);

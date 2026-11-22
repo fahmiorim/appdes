@@ -6,7 +6,8 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { db } from "@/db";
-import { users, villages } from "@/db/schema";
+import { accounts, sessions, users, villages } from "@/db/schema";
+import { villageSecuritySettings } from "@/db/schema/village-security";
 import {
   computeEffectivePermissions,
   hasPermission,
@@ -29,6 +30,8 @@ export interface CurrentUser {
   residentId: number | null;
   /** Warga wajib mengganti PIN sementara sebelum memakai layanan. */
   mustChangePin: boolean;
+  passwordExpired: boolean;
+  mustEnrollTwoFactor: boolean;
   permissions: EffectivePermissions;
 }
 
@@ -67,6 +70,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
       active: users.active,
       residentId: users.residentId,
       mustChangePin: users.mustChangePin,
+      twoFactorEnabled: users.twoFactorEnabled,
       villageActive: villages.active,
       villageId: users.villageId,
       roleId: users.roleId,
@@ -77,6 +81,29 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     .limit(1);
 
   if (!account?.active) return null;
+
+  let passwordExpired = false;
+  let mustEnrollTwoFactor = false;
+  if (account.villageId !== null) {
+    const [[security], [credential]] = await Promise.all([
+      db.select({ timeout: villageSecuritySettings.sessionTimeoutMinutes, enabled: villageSecuritySettings.autoLogoutInactive, passwordExpiryDays: villageSecuritySettings.passwordExpiryDays, requireTwoFactor: villageSecuritySettings.requireTwoFactorForAllUsers })
+        .from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1),
+      db.select({ updatedAt: accounts.updatedAt }).from(accounts).where(and(eq(accounts.userId, user.id), eq(accounts.providerId, "credential"))).limit(1),
+    ]);
+    const expiryDays = security?.passwordExpiryDays ?? 90;
+    passwordExpired = account.residentId === null && expiryDays > 0 && Boolean(credential?.updatedAt) && Date.now() - credential!.updatedAt!.getTime() > expiryDays * 86_400_000;
+    mustEnrollTwoFactor = account.residentId === null && Boolean(security?.requireTwoFactor) && !account.twoFactorEnabled;
+    if (security?.enabled ?? true) {
+      const timeoutMinutes = security?.timeout ?? 30;
+      const lastActivity = (session.session.updatedAt ?? session.session.createdAt).getTime();
+      if (Date.now() - lastActivity > timeoutMinutes * 60_000) {
+        await db.delete(sessions).where(eq(sessions.id, session.session.id));
+        return null;
+      }
+      // Touch session on authenticated server requests to implement an actual idle timeout.
+      await db.update(sessions).set({ updatedAt: new Date() }).where(eq(sessions.id, session.session.id));
+    }
+  }
 
   // Desa nonaktif (arsip lunak) memblokir seluruh akun staf & warga miliknya.
   // Super admin (villageId null) tetap bisa masuk untuk mengelola desa.
@@ -94,6 +121,8 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
     roleId: account.roleId,
     residentId: account.residentId,
     mustChangePin: account.mustChangePin,
+    passwordExpired,
+    mustEnrollTwoFactor,
     permissions,
   };
 });
@@ -108,6 +137,8 @@ export async function verifySession(redirectTo = "/masuk"): Promise<CurrentUser>
   if (!user) {
     redirect(redirectTo);
   }
+  if (user.passwordExpired) redirect("/profil/keamanan?passwordExpired=1");
+  if (user.mustEnrollTwoFactor) redirect("/profil/keamanan?require2fa=1");
 
   return user;
 }
@@ -115,9 +146,10 @@ export async function verifySession(redirectTo = "/masuk"): Promise<CurrentUser>
 /**
  * Ambil pengguna atau lempar `AppError` (untuk Server Action / Route Handler).
  */
-export async function requireUser(): Promise<CurrentUser> {
+export async function requireUser(options: { allowSecurityRecovery?: boolean } = {}): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) throw unauthenticated();
+  if ((user.passwordExpired || user.mustEnrollTwoFactor) && !options.allowSecurityRecovery) throw forbidden();
   return user;
 }
 
@@ -191,6 +223,7 @@ export async function requireWargaAktif(): Promise<WargaUser> {
  */
 export async function requirePermission(resource: string, action: Action): Promise<CurrentUser> {
   const user = await requireUser();
+  if (user.passwordExpired) throw forbidden();
 
   if (!hasPermission(user.permissions, resource, action)) {
     throw forbidden();
