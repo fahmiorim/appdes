@@ -276,7 +276,14 @@ export async function saveInventaris(input: InventarisInput, id?: number) {
   if (id) {
     const existing = await getInventaris(villageId, id);
     if (!existing) throw notFound("Data inventaris tidak ditemukan.");
-    await updateInventaris(villageId, id, input, namaPengguna(user));
+    // Lokasi dan kondisi hanya boleh berubah melalui alur mutasi berjenjang.
+    // Jangan izinkan form edit umum melewati persetujuan operator/sekdes/kades.
+    await updateInventaris(
+      villageId,
+      id,
+      { ...input, lokasi: existing.lokasi ?? "", kondisi: existing.kondisi },
+      namaPengguna(user),
+    );
     await recordAuditEvent({
       villageId,
       actorId: user.id,
