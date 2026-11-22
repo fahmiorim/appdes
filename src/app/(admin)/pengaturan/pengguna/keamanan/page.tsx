@@ -37,6 +37,8 @@ export default async function KeamananPage() {
     {canManage ? <form action={simpanKeamananAction} className={styles.grid}>
       <section className={styles.card}><h2>🔐 Kebijakan Password</h2>
         <label>Minimal panjang password<input type="number" min="8" max="72" name="passwordMinLength" defaultValue={settings.passwordMinLength}/></label>
+        <label>Masa berlaku password (hari, 0 = tanpa batas)<input type="number" min="0" max="3650" name="passwordExpiryDays" defaultValue={settings.passwordExpiryDays}/></label>
+        <label>Riwayat password yang tidak boleh digunakan ulang<input type="number" min="0" max="10" name="passwordReuseCount" defaultValue={settings.passwordReuseCount}/></label>
         <label className={styles.check}><input type="checkbox" name="requireUppercase" defaultChecked={settings.requireUppercase}/> Wajib huruf besar (A–Z)</label>
         <label className={styles.check}><input type="checkbox" name="requireLowercase" defaultChecked={settings.requireLowercase}/> Wajib huruf kecil (a–z)</label>
         <label className={styles.check}><input type="checkbox" name="requireNumber" defaultChecked={settings.requireNumber}/> Wajib angka (0–9)</label>
