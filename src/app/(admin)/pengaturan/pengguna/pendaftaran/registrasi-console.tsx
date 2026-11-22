@@ -22,16 +22,21 @@ export function RegistrasiWargaConsole({ rows }: { rows: Row[] }) {
   function proses(id: number, keputusan: "setujui" | "tolak") {
     setPending(id);
     startTransition(async () => {
-      const result = await tinjauRegistrasiWargaAction({ id, keputusan });
-      setHasil((current) => ({
-        ...current,
-        [id]: {
-          message: result.message,
-          pin: result.credential?.pin,
-          username: result.credential?.username,
-        },
-      }));
-      setPending(null);
+      try {
+        const result = await tinjauRegistrasiWargaAction({ id, keputusan });
+        setHasil((current) => ({
+          ...current,
+          [id]: {
+            message: result.message,
+            pin: result.credential?.pin,
+            username: result.credential?.username,
+          },
+        }));
+      } catch {
+        setHasil((current) => ({ ...current, [id]: { message: "Koneksi bermasalah. Muat ulang halaman sebelum mencoba kembali." } }));
+      } finally {
+        setPending(null);
+      }
     });
   }
 
