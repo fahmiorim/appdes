@@ -1,15 +1,20 @@
 import { betterAuth } from "better-auth";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
-import { username } from "better-auth/plugins";
-import { eq } from "drizzle-orm";
+import { twoFactor, username } from "better-auth/plugins";
+import { and, desc, eq, ne, or, isNull, gt } from "drizzle-orm";
 
 import { db } from "@/db";
-import { users } from "@/db/schema/auth";
+import { accounts, sessions, users } from "@/db/schema/auth";
+import { passwordHistory } from "@/db/schema/password-history";
+import { verifications } from "@/db/schema/auth";
+import { villageBlockedIps, villageSecuritySettings } from "@/db/schema/village-security";
 import { AUDIT_EVENTS, type AuditEventInput } from "@/features/audit/domain/audit";
 import { appendAuditLog } from "@/features/audit/infrastructure/audit-repository";
+import { validasiKataSandi } from "@/features/pengguna/domain/keamanan";
 import { APP_NAME } from "@/lib/app-config";
-import { alamatIp } from "@/lib/client-ip";
+import { alamatIp, alamatIpDariHeader } from "@/lib/client-ip";
 import { env } from "@/lib/env";
 
 /** Audit reset sandi tidak boleh menggagalkan alur pemulihan akun. */
@@ -34,6 +39,25 @@ async function villageIdForUser(userId: string) {
   return row?.villageId ?? null;
 }
 
+const DEFAULT_PASSWORD_POLICY = { passwordMinLength: 8, passwordReuseCount: 3, requireUppercase: true, requireLowercase: true, requireNumber: true, requireSymbol: false };
+
+async function enforceTenantPasswordPolicy(userId: string, newPassword: string) {
+  const [account] = await db.select({ villageId: users.villageId, residentId: users.residentId }).from(users).where(eq(users.id, userId)).limit(1);
+  if (!account?.villageId || account.residentId !== null) return;
+  const [policy] = await db.select().from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
+  const passwordPolicy = policy ?? DEFAULT_PASSWORD_POLICY;
+  const passwordError = validasiKataSandi(newPassword, passwordPolicy);
+  if (passwordError) throw new APIError("BAD_REQUEST", { message: passwordError });
+  if (passwordPolicy.passwordReuseCount <= 0) return;
+  const [[credential], history] = await Promise.all([
+    db.select({ password: accounts.password }).from(accounts).where(and(eq(accounts.accountId, userId), eq(accounts.providerId, "credential"))).limit(1),
+    db.select({ passwordHash: passwordHistory.passwordHash }).from(passwordHistory).where(eq(passwordHistory.userId, userId)).orderBy(desc(passwordHistory.createdAt)).limit(Math.max(0, passwordPolicy.passwordReuseCount - 1)),
+  ]);
+  const hashes = [...new Set([credential?.password, ...history.map((item) => item.passwordHash)].filter((value): value is string => Boolean(value)))];
+  const context = await auth.$context;
+  for (const hash of hashes) if (await context.password.verify({ password: newPassword, hash })) throw new APIError("BAD_REQUEST", { message: "Password tidak boleh sama dengan password terakhir yang pernah digunakan." });
+  if (credential?.password) await db.insert(passwordHistory).values({ userId, passwordHash: credential.password }).onDuplicateKeyUpdate({ set: { passwordHash: credential.password } });
+}
 /**
  * Instans better-auth (server-only).
  *
@@ -52,6 +76,8 @@ export const auth = betterAuth({
   appName: APP_NAME,
   baseURL: env.BETTER_AUTH_URL,
   secret: env.BETTER_AUTH_SECRET,
+  // Login tenant hanya melalui username agar kebijakan tenant tidak dapat dilewati lewat email endpoint.
+  disabledPaths: ["/sign-in/email"],
 
   // `transaction: true` membuat penyimpanan password baru, penandaan token reset,
   // dan pencabutan sesi berjalan atomik saat reset password.
@@ -116,6 +142,83 @@ export const auth = betterAuth({
     },
   },
 
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path === "/reset-password") {
+        const token = typeof ctx.body?.token === "string" ? ctx.body.token : "";
+        const newPassword = typeof ctx.body?.newPassword === "string" ? ctx.body.newPassword : "";
+        if (token && newPassword) {
+          const [verification] = await db.select({ userId: verifications.value, expiresAt: verifications.expiresAt }).from(verifications)
+            .where(eq(verifications.identifier, "reset-password:" + token)).limit(1);
+          if (verification && verification.expiresAt > new Date()) await enforceTenantPasswordPolicy(verification.userId, newPassword);
+        }
+        return;
+      }
+      if (ctx.path === "/two-factor/disable") {
+        const userId = ctx.context.session?.user?.id;
+        if (userId) {
+          const [account] = await db.select({ villageId: users.villageId, residentId: users.residentId }).from(users).where(eq(users.id, userId)).limit(1);
+          if (account?.villageId && account.residentId === null) {
+            const [policy] = await db.select({ required: villageSecuritySettings.requireTwoFactorForAllUsers }).from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
+            if (policy?.required) throw new APIError("FORBIDDEN", { message: "Kebijakan desa mewajibkan 2FA untuk akun staf." });
+          }
+        }
+        return;
+      }
+      if (ctx.path === "/change-password") {
+        const userId = ctx.context.session?.user?.id;
+        const newPassword = typeof ctx.body?.newPassword === "string" ? ctx.body.newPassword : "";
+        if (userId && newPassword) await enforceTenantPasswordPolicy(userId, newPassword);
+        return;
+      }
+      if (ctx.path !== "/sign-in/username") return;
+      const username = typeof ctx.body?.username === "string" ? ctx.body.username.trim().toLowerCase() : "";
+      if (!username) return;
+      const [account] = await db.select({ villageId: users.villageId, residentId: users.residentId, twoFactorEnabled: users.twoFactorEnabled }).from(users).where(eq(users.username, username)).limit(1);
+      if (!account?.villageId) return;
+      const [tenantPolicy] = await db.select({ requireTwoFactor: villageSecuritySettings.requireTwoFactorForAllUsers }).from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
+
+      const ip = alamatIpDariHeader(ctx.headers, env.TRUST_PROXY);
+      const [blocked] = await db.select({ id: villageBlockedIps.id }).from(villageBlockedIps).where(and(
+        eq(villageBlockedIps.villageId, account.villageId), eq(villageBlockedIps.ipAddress, ip),
+        or(isNull(villageBlockedIps.expiresAt), gt(villageBlockedIps.expiresAt, new Date())),
+      )).limit(1);
+      if (blocked) throw new APIError("FORBIDDEN", { message: "Alamat IP ini diblokir oleh administrator desa." });
+      const [policy] = await db.select({ enabled: villageSecuritySettings.ipRestrictionEnabled, allowedIps: villageSecuritySettings.allowedIps })
+        .from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
+      if (policy?.enabled) {
+        let allowed: string[] = [];
+        try { const parsed: unknown = policy.allowedIps ? JSON.parse(policy.allowedIps) : []; if (Array.isArray(parsed)) allowed = parsed.filter((v): v is string => typeof v === "string"); } catch {}
+        if (ip === "tidak-diketahui" || !allowed.includes(ip)) throw new APIError("FORBIDDEN", { message: "Login hanya diizinkan dari alamat IP yang terdaftar." });
+      }
+    }),
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/sign-in/username" && ctx.path !== "/two-factor/verify-totp" && ctx.path !== "/two-factor/verify-otp" && ctx.path !== "/two-factor/verify-backup-code") return;
+      const current = ctx.context.newSession;
+      if (!current) {
+        const returned = ctx.context.returned as { twoFactorRedirect?: boolean } | undefined;
+        if (returned?.twoFactorRedirect) return;
+        const attemptedUsername = typeof ctx.body?.username === "string" ? ctx.body.username.trim().toLowerCase() : "";
+        if (attemptedUsername) {
+          const [failedAccount] = await db.select({ id: users.id, villageId: users.villageId }).from(users).where(eq(users.username, attemptedUsername)).limit(1);
+          if (failedAccount?.villageId) {
+            try { await appendAuditLog({ villageId: failedAccount.villageId, actorId: failedAccount.id, event: AUDIT_EVENTS.loginFailure, resource: "auth", resourceId: failedAccount.id, ipAddress: alamatIpDariHeader(ctx.headers, env.TRUST_PROXY), userAgent: ctx.headers.get("user-agent") }); } catch (error) { console.error("[auth] gagal mencatat login gagal:", error); }
+          }
+        }
+        return;
+      }
+      const userId = current.user.id;
+      const [account] = await db.select({ villageId: users.villageId }).from(users).where(eq(users.id, userId)).limit(1);
+      if (!account?.villageId) return;
+      const now = new Date();
+      await db.update(users).set({ lastLoginAt: now }).where(eq(users.id, userId));
+      const [policy] = await db.select({ concurrentLogin: villageSecuritySettings.concurrentLogin }).from(villageSecuritySettings)
+        .where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1);
+      if (policy?.concurrentLogin) await db.delete(sessions).where(and(eq(sessions.userId, userId), ne(sessions.id, current.session.id)));
+      try { await appendAuditLog({ villageId: account.villageId, actorId: userId, event: AUDIT_EVENTS.loginSuccess, resource: "auth", resourceId: userId, ipAddress: alamatIpDariHeader(ctx.headers, env.TRUST_PROXY), userAgent: ctx.headers.get("user-agent") }); } catch (error) { console.error("[auth] gagal mencatat login:", error); }
+    }),
+  },
+
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 hari
     updateAge: 60 * 60 * 24, // perpanjang bila sesi dipakai setelah 1 hari
@@ -163,6 +266,7 @@ export const auth = betterAuth({
       residentId: { type: "number", required: false, input: false },
       // Warga wajib mengganti PIN sementara sebelum memakai layanan.
       mustChangePin: { type: "boolean", required: false, defaultValue: true, input: false },
+      twoFactorEnabled: { type: "boolean", required: false, defaultValue: false, input: false },
     },
   },
 
@@ -171,6 +275,22 @@ export const auth = betterAuth({
       minUsernameLength: 3,
       maxUsernameLength: 100,
       usernameValidator: (value) => /^[a-zA-Z0-9._-]+$/.test(value),
+    }),
+    twoFactor({
+      issuer: APP_NAME,
+      twoFactorTable: "twoFactor",
+      otpOptions: {
+        async sendOTP({ user, otp }) {
+          if (!user.email || !env.RESEND_API_KEY || !env.RESEND_FROM) throw new Error("Email OTP belum dikonfigurasi untuk akun ini.");
+          const { Resend } = await import("resend");
+          const { error } = await new Resend(env.RESEND_API_KEY).emails.send({
+            from: env.RESEND_FROM, to: user.email, subject: `[${APP_NAME}] Kode verifikasi`,
+            text: `Kode verifikasi Anda: ${otp}. Kode ini hanya berlaku singkat. Jangan bagikan kepada siapa pun.`,
+          });
+          if (error) throw new Error("Gagal mengirim kode verifikasi email.");
+        },
+      },
+      accountLockout: { enabled: true, maxFailedAttempts: 5, durationSeconds: 900 },
     }),
     // WAJIB paling akhir.
     nextCookies(),

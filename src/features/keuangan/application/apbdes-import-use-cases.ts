@@ -48,7 +48,7 @@ export async function validateApbdesFileAction(
     errorCount: number;
   }>
 > {
-  await requirePermission(KEUANGAN_RESOURCE, "update");
+  await requirePermission(KEUANGAN_RESOURCE, "create");
 
   const file = formData.get("file");
   if (!(file instanceof File)) {
@@ -99,7 +99,7 @@ export async function imporApbdesAction(
   _prev: ActionState<ApbdesImportResult>,
   formData: FormData,
 ): Promise<ActionState<ApbdesImportResult>> {
-  const user = await requirePermission(KEUANGAN_RESOURCE, "update");
+  const user = await requirePermission(KEUANGAN_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const file = formData.get("file");

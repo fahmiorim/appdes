@@ -12,6 +12,8 @@ export const PUBLIC_PATHS = [
   "/masuk",
   "/masuk-admin",
   "/super-admin-login",
+  // Verifikasi faktor kedua harus dapat diakses sebelum sesi penuh diterbitkan.
+  "/two-factor",
   // Alur pemulihan kata sandi harus dapat dibuka tanpa sesi.
   "/lupa-sandi",
   "/reset-sandi",

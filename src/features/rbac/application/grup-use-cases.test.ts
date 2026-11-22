@@ -13,6 +13,7 @@ vi.mock("@/features/rbac/infrastructure/rbac-repository", () => ({
   deleteRole: vi.fn(),
   findRoleById: vi.fn(),
   getRoleById: vi.fn(),
+  listActionsByRole: vi.fn(),
   listLevelsByRole: vi.fn(),
   listModules: vi.fn(),
   listRoles: vi.fn(),
@@ -23,7 +24,7 @@ vi.mock("@/features/rbac/infrastructure/rbac-repository", () => ({
 const dal = await import("@/lib/dal");
 const desa = await import("@/features/desa/application/resolve-village");
 
-const izinBaca = { moduleId: 1, read: true, write: false, manage: false };
+const izinBaca = { moduleId: 1, read: true, create: false, update: false, delete: false };
 
 describe("saveRolePermissions", () => {
   beforeEach(() => {
@@ -59,7 +60,7 @@ describe("saveRolePermissions", () => {
 
     await saveRolePermissions(2, [izinBaca]);
 
-    expect(repo.setRolePermissions).toHaveBeenCalledWith(7, 2, [{ moduleId: 1, access: "read" }]);
+    expect(repo.setRolePermissions).toHaveBeenCalledWith(7, 2, [{ moduleId: 1, access: "read", read: true, create: false, update: false, delete: false }]);
     const audit = await import("@/features/audit/application/audit-use-cases");
     expect(audit.recordAuditEvent).toHaveBeenCalledWith(
       expect.objectContaining({ event: "grup-akses.permission", resourceId: "2" }),

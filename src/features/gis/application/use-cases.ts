@@ -101,7 +101,7 @@ export async function getPetaPublik() {
 }
 
 export async function createPolygon(input: PolygonFormInput): Promise<{ id: number }> {
-  const user = await requirePermission(POLYGON_RESOURCE, "update");
+  const user = await requirePermission(POLYGON_RESOURCE, "create");
   const resolvedVillageId = await resolveVillageId(user);
   if (input.parrent !== null && input.parrent !== undefined) {
     const parent = await repoFindPolygonById(resolvedVillageId, input.parrent);
@@ -126,7 +126,7 @@ export async function updatePolygon(id: number, input: PolygonFormInput): Promis
 }
 
 export async function deletePolygon(id: number): Promise<void> {
-  const user = await requirePermission(POLYGON_RESOURCE, "update");
+  const user = await requirePermission(POLYGON_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
   const polygon = await repoFindPolygonById(villageId, id);
   if (!polygon) throw notFound();
@@ -144,7 +144,7 @@ export async function listAreaUseCases(): Promise<AreaDTO[]> {
 export async function createArea(input: AreaFormInput): Promise<{ id: number }> {
   const user = await requireUser();
   const resolvedVillageId = await resolveVillageId(user);
-  await requirePermission(AREA_RESOURCE, "update");
+  await requirePermission(AREA_RESOURCE, "create");
   if (input.refPolygon !== null && input.refPolygon !== undefined) {
     const polygon = await repoFindPolygonById(resolvedVillageId, input.refPolygon);
     if (!polygon) throw notFound("Kategori polygon tidak ditemukan.");
@@ -168,7 +168,7 @@ export async function updateArea(id: number, input: AreaFormInput): Promise<void
 
 export async function deleteArea(id: number): Promise<void> {
   const user = await requireUser();
-  await requirePermission(AREA_RESOURCE, "update");
+  await requirePermission(AREA_RESOURCE, "delete");
   const area = await repoFindAreaById(await resolveVillageId(user), id);
   if (!area) throw notFound();
   await repoDeleteArea(await resolveVillageId(user), id);
@@ -183,7 +183,7 @@ export async function listGarisUseCases(): Promise<GarisDTO[]> {
 }
 
 export async function createGaris(input: GarisFormInput): Promise<{ id: number }> {
-  const user = await requirePermission(GARIS_RESOURCE, "update");
+  const user = await requirePermission(GARIS_RESOURCE, "create");
   const resolvedVillageId = await resolveVillageId(user);
   if (input.refLine !== null && input.refLine !== undefined) {
     const parent = await repoFindGarisById(resolvedVillageId, input.refLine);
@@ -207,7 +207,7 @@ export async function updateGaris(id: number, input: GarisFormInput): Promise<vo
 }
 
 export async function deleteGaris(id: number): Promise<void> {
-  const user = await requirePermission(GARIS_RESOURCE, "update");
+  const user = await requirePermission(GARIS_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
   const garis = await repoFindGarisById(villageId, id);
   if (!garis) throw notFound();
@@ -223,7 +223,7 @@ export async function listPointUseCases(): Promise<PointDTO[]> {
 }
 
 export async function createPoint(input: PointFormInput): Promise<{ id: number }> {
-  const user = await requirePermission(POINT_RESOURCE, "update");
+  const user = await requirePermission(POINT_RESOURCE, "create");
   const resolvedVillageId = await resolveVillageId(user);
   if (input.parrent !== null && input.parrent !== undefined) {
     const parent = await repoFindPolygonById(resolvedVillageId, input.parrent);
@@ -246,7 +246,7 @@ export async function updatePoint(id: number, input: PointFormInput): Promise<vo
 }
 
 export async function deletePoint(id: number): Promise<void> {
-  const user = await requirePermission(POINT_RESOURCE, "update");
+  const user = await requirePermission(POINT_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
   const existing = (await repoListPoints(villageId)).find((point) => point.id === id);
   if (!existing) throw notFound();
@@ -263,7 +263,7 @@ export async function listSimbolUseCases(): Promise<SimbolDTO[]> {
 
 export async function createSimbol(input: SimbolFormInput): Promise<{ id: number }> {
   await requireUser();
-  await requirePermission(SIMBOL_RESOURCE, "update");
+  await requirePermission(SIMBOL_RESOURCE, "create");
   const id = await repoInsertSimbol(input);
   return { id };
 }
@@ -276,7 +276,7 @@ export async function updateSimbol(id: number, input: SimbolFormInput): Promise<
 
 export async function deleteSimbol(id: number): Promise<void> {
   await requireUser();
-  await requirePermission(SIMBOL_RESOURCE, "update");
+  await requirePermission(SIMBOL_RESOURCE, "delete");
   await repoDeleteSimbol(id);
 }
 
@@ -289,7 +289,7 @@ export async function listPersilUseCases(): Promise<PersilDTO[]> {
 }
 
 export async function createPersil(input: PersilFormInput): Promise<{ id: number }> {
-  const user = await requirePermission(PERTANAHAN_RESOURCE, "update");
+  const user = await requirePermission(PERTANAHAN_RESOURCE, "create");
   const resolvedVillageId = await resolveVillageId(user);
   const id = await repoInsertPersil(resolvedVillageId, input);
   return { id };
@@ -304,7 +304,7 @@ export async function updatePersil(id: number, input: PersilFormInput): Promise<
 }
 
 export async function deletePersil(id: number): Promise<void> {
-  const user = await requirePermission(PERTANAHAN_RESOURCE, "update");
+  const user = await requirePermission(PERTANAHAN_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
   const persil = await repoFindPersilById(villageId, id);
   if (!persil) throw notFound();
@@ -320,7 +320,7 @@ export async function listCdesaUseCases(): Promise<CdesaDTO[]> {
 }
 
 export async function createCdesa(input: unknown): Promise<{ id: number }> {
-  const user = await requirePermission(PERTANAHAN_RESOURCE, "update");
+  const user = await requirePermission(PERTANAHAN_RESOURCE, "create");
   const resolvedVillageId = await resolveVillageId(user);
   const parsed = cdesaSchema.parse(input);
   const id = await repoInsertCdesa(resolvedVillageId, {
@@ -359,7 +359,7 @@ export async function updateCdesa(id: number, input: unknown): Promise<void> {
 }
 
 export async function deleteCdesa(id: number): Promise<void> {
-  const user = await requirePermission(PERTANAHAN_RESOURCE, "update");
+  const user = await requirePermission(PERTANAHAN_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
   const cdesa = await repoFindCdesaById(villageId, id);
   if (!cdesa) throw notFound();
@@ -375,7 +375,7 @@ export async function listCdesaMutasiUseCases(): Promise<CdesaMutasiDTO[]> {
 }
 
 export async function createCdesaMutasi(input: unknown): Promise<{ id: number }> {
-  const user = await requirePermission(PERTANAHAN_RESOURCE, "update");
+  const user = await requirePermission(PERTANAHAN_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
   const parsed = cdesaMutasiSchema.parse(input);
   const cdesa = await repoFindCdesaById(villageId, parsed.cdesaId);
@@ -406,7 +406,7 @@ export async function updateCdesaMutasi(id: number, input: unknown): Promise<voi
 }
 
 export async function deleteCdesaMutasi(id: number): Promise<void> {
-  const user = await requirePermission(PERTANAHAN_RESOURCE, "update");
+  const user = await requirePermission(PERTANAHAN_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
   const existing = await repoFindCdesaMutasiById(villageId, id);
   if (!existing) throw notFound();

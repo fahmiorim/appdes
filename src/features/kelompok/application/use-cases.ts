@@ -171,7 +171,7 @@ async function pastikanKategori(villageId: number, kategoriId: number | null): P
 }
 
 export async function createKelompok(input: KelompokFormInput): Promise<{ id: number }> {
-  const user = await requirePermission(KELOMPOK_RESOURCE, "update");
+  const user = await requirePermission(KELOMPOK_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   await pastikanKategori(villageId, input.kategoriId);
@@ -255,7 +255,7 @@ export async function addAnggotaKelompok(
   kelompokId: number,
   input: AnggotaKelompokFormInput,
 ): Promise<void> {
-  const user = await requirePermission(KELOMPOK_RESOURCE, "update");
+  const user = await requirePermission(KELOMPOK_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const kelompokRow = await findKelompokById(villageId, kelompokId);
@@ -286,7 +286,7 @@ export async function addAnggotaKelompok(
 }
 
 export async function removeAnggotaKelompok(kelompokId: number, memberId: number): Promise<void> {
-  const user = await requirePermission(KELOMPOK_RESOURCE, "update");
+  const user = await requirePermission(KELOMPOK_RESOURCE, "delete");
   const villageId = await resolveVillageId(user);
 
   const kelompokRow = await findKelompokById(villageId, kelompokId);
@@ -324,7 +324,7 @@ export async function listKategoriKelompok(): Promise<KategoriKelompokDTO[]> {
 }
 
 export async function createKategori(input: KategoriKelompokFormInput): Promise<{ id: number }> {
-  const user = await requirePermission(KATEGORI_KELOMPOK_RESOURCE, "update");
+  const user = await requirePermission(KATEGORI_KELOMPOK_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   if (await kategoriExists(villageId, input.nama, input.tipe, null)) {
