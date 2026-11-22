@@ -104,7 +104,9 @@ export async function getInventarisPageData(search: string) {
     kategori,
     rows: denganPenyusutan(data.rows),
     total: data.total,
-    canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
+    canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create") || hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
+    canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create"),
+    canUpdate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canManage: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
   };
 }
@@ -138,9 +140,13 @@ export async function getInventarisTablePageData(input: {
     total: data.total,
     currentPage: safePage,
     summaryRows: denganPenyusutan(summary.rows),
-    canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
+    canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create") || hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
+    canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create"),
+    canUpdate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canManage: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
-    canMutate: hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
+    canMutate: hasPermission(user.permissions, MUTASI_RESOURCE, "create") || hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
+    canMutateCreate: hasPermission(user.permissions, MUTASI_RESOURCE, "create"),
+    canMutateUpdate: hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
   };
 }
 
@@ -209,7 +215,7 @@ export async function getLaporanInventarisCsv(kategoriId?: number) {
 }
 
 export async function saveInventarisKategori(input: InventarisKategoriInput, id?: number) {
-  const user = await requirePermission(INVENTARIS_RESOURCE, "update");
+  const user = await requirePermission(INVENTARIS_RESOURCE, id ? "update" : "create");
   const villageId = await resolveVillageId(user);
 
   if (await inventarisKategoriKodeExists(villageId, input.kode, id)) {
@@ -243,7 +249,7 @@ export async function hapusInventarisKategori(id: number) {
 }
 
 export async function saveInventaris(input: InventarisInput, id?: number) {
-  const user = await requirePermission(INVENTARIS_RESOURCE, "update");
+  const user = await requirePermission(INVENTARIS_RESOURCE, id ? "update" : "create");
   const villageId = await resolveVillageId(user);
 
   // `kategoriId` berasal dari formulir. Composite FK juga menegakkan tenant
@@ -307,7 +313,7 @@ export async function hapusInventaris(id: number) {
 }
 
 export async function ajukanMutasi(input: InventarisMutasiInput) {
-  const user = await requirePermission(MUTASI_RESOURCE, "update");
+  const user = await requirePermission(MUTASI_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const item = await getInventaris(villageId, input.inventarisId);
@@ -479,7 +485,7 @@ export async function buatJadwalPemeliharaan(input: {
   pelaksana?: string;
   deskripsi?: string;
 }) {
-  const user = await requirePermission(INVENTARIS_RESOURCE, "update");
+  const user = await requirePermission(INVENTARIS_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
   const item = await getInventaris(villageId, input.inventarisId);
   if (!item) throw notFound("Aset tidak ditemukan.");
@@ -589,7 +595,7 @@ export async function unggahDokumenInventaris(input: {
   ukuran: number;
   isi: Uint8Array;
 }) {
-  const user = await requirePermission(INVENTARIS_RESOURCE, "update");
+  const user = await requirePermission(INVENTARIS_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
   const asset = await getInventaris(villageId, input.inventarisId);
   if (!asset) throw notFound("Aset tidak ditemukan.");
