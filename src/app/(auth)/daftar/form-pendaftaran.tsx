@@ -26,6 +26,9 @@ export function FormPendaftaranWarga() {
         setNama("");
         setNoHp("");
       }
+    } catch {
+      setPesan("Koneksi bermasalah. Periksa jaringan lalu coba kembali.");
+      setBerhasil(false);
     } finally {
       setMemuat(false);
     }
