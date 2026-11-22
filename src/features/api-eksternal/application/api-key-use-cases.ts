@@ -59,6 +59,15 @@ export async function buatKunciApi(input: unknown): Promise<KunciApiBaru> {
     expiresAt,
   });
 
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.apiKeyCreate,
+    resource: "api-key",
+    resourceId: String(id),
+    details: { name: parsed.name, prefix, rateLimit, expiresAt: expiresAt?.toISOString() ?? null },
+  });
+
   return {
     id,
     key,
