@@ -69,36 +69,61 @@ function optionalNumber(message: string) {
 }
 
 /** Skema validasi input proyek pembangunan. */
-export const pembangunanFormSchema = z.object({
-  judul: z.string().trim().min(1, "Judul proyek wajib diisi.").max(200, "Maksimal 200 karakter."),
-  deskripsi: optionalText(2000),
-  lokasi: optionalText(200),
-  tahunAnggaran: z.coerce
-    .number({ error: "Tahun anggaran tidak valid." })
-    .int("Tahun anggaran tidak valid.")
-    .min(2000, "Tahun anggaran tidak valid.")
-    .max(2100, "Tahun anggaran tidak valid."),
-  sumberDana: z.preprocess(
-    (value) => (isBlankSelection(value) ? null : value),
-    z.string().trim().max(40, "Maksimal 40 karakter.").nullable(),
-  ),
-  anggaran: optionalNumber("Anggaran tidak valid."),
-  volume: optionalNumber("Volume tidak valid."),
-  satuan: optionalText(30),
-  pelaksana: optionalText(200),
-  mulai: optionalIsoDate,
-  selesai: optionalIsoDate,
-  status: z.preprocess(
-    (value) => (isBlankSelection(value) ? "rencana" : value),
-    z.enum(STATUS_PEMBANGUNAN, { error: "Status tidak valid." }),
-  ),
-  progres: z.coerce
-    .number({ error: "Progres tidak valid." })
-    .int("Progres tidak valid.")
-    .min(0, "Progres 0–100.")
-    .max(100, "Progres 0–100."),
-  hasil: optionalText(2000),
-});
+export const pembangunanFormSchema = z
+  .object({
+    judul: z.string().trim().min(1, "Judul proyek wajib diisi.").max(200, "Maksimal 200 karakter."),
+    deskripsi: optionalText(2000),
+    lokasi: optionalText(200),
+    latitude: z.preprocess(
+      (v) => (isBlankSelection(v) ? null : Number(v)),
+      z.number().min(-90).max(90).nullable(),
+    ),
+    longitude: z.preprocess(
+      (v) => (isBlankSelection(v) ? null : Number(v)),
+      z.number().min(-180).max(180).nullable(),
+    ),
+    tahunAnggaran: z.coerce
+      .number({ error: "Tahun anggaran tidak valid." })
+      .int("Tahun anggaran tidak valid.")
+      .min(2000, "Tahun anggaran tidak valid.")
+      .max(2100, "Tahun anggaran tidak valid."),
+    sumberDana: z.preprocess(
+      (value) => (isBlankSelection(value) ? null : value),
+      z.string().trim().max(40, "Maksimal 40 karakter.").nullable(),
+    ),
+    anggaran: optionalNumber("Anggaran tidak valid."),
+    volume: optionalNumber("Volume tidak valid."),
+    satuan: optionalText(30),
+    pelaksana: optionalText(200),
+    mulai: optionalIsoDate,
+    selesai: optionalIsoDate,
+    status: z.preprocess(
+      (value) => (isBlankSelection(value) ? "rencana" : value),
+      z.enum(STATUS_PEMBANGUNAN, { error: "Status tidak valid." }),
+    ),
+    progres: z.coerce
+      .number({ error: "Progres tidak valid." })
+      .int("Progres tidak valid.")
+      .min(0, "Progres 0–100.")
+      .max(100, "Progres 0–100."),
+    hasil: optionalText(2000),
+  })
+  .superRefine((value, ctx) => {
+    if ((value.latitude === null) !== (value.longitude === null)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["latitude"],
+        message: "Latitude dan longitude harus diisi bersamaan.",
+      });
+    }
+    if (value.mulai && value.selesai && value.selesai < value.mulai) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["selesai"],
+        message: "Tanggal selesai tidak boleh sebelum tanggal mulai.",
+      });
+    }
+  });
 
 export type PembangunanFormInput = z.infer<typeof pembangunanFormSchema>;
 
@@ -118,6 +143,8 @@ export interface PembangunanProyekDTO {
   slug: string;
   deskripsi: string | null;
   lokasi: string | null;
+  latitude: number | null;
+  longitude: number | null;
   tahunAnggaran: number;
   sumberDana: string | null;
   anggaran: string | null;

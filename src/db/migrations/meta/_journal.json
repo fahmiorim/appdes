@@ -267,6 +267,20 @@
       "when": 1795703000000,
       "tag": "0042_laporan_desa_template",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "5",
+      "when": 1795715400000,
+      "tag": "0043_pembangunan_gis_coordinates",
+      "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "5",
+      "when": 1795716000000,
+      "tag": "0044_keuangan_bulanan",
+      "breakpoints": true
     }
   ]
 }

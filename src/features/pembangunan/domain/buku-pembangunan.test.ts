@@ -16,6 +16,8 @@ function proyek(overrides: Partial<PembangunanProyekDTO> = {}): PembangunanProye
     slug: "normalisasi-saluran",
     deskripsi: null,
     lokasi: "Dusun Krajan",
+    latitude: null,
+    longitude: null,
     tahunAnggaran: 2026,
     sumberDana: "Dana Desa",
     anggaran: "1500000.00",

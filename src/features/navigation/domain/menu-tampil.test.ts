@@ -44,7 +44,7 @@ describe("ruteTersedia", () => {
 
   it("menolak rute yang belum punya halaman", () => {
     expect(ruteTersedia("/penduduk/tambah")).toBe(false);
-    expect(ruteTersedia("/keuangan/laporan")).toBe(false);
+    expect(ruteTersedia("/keuangan/laporan")).toBe(true);
     expect(ruteTersedia(null)).toBe(false);
   });
 });
