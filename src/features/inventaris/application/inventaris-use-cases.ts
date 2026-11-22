@@ -456,6 +456,7 @@ export async function getInventarisDetailPageData(id: number) {
     dokumen,
     riwayatPenanggungJawab,
     canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
+    canUpdate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canDelete: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
     canMutate:
       hasPermission(user.permissions, MUTASI_RESOURCE, "create") ||
