@@ -331,7 +331,7 @@ export async function hapusInventaris(id: number) {
 }
 
 export async function ajukanMutasi(input: InventarisMutasiInput) {
-  const user = await requirePermission(MUTASI_RESOURCE, "update");
+  const user = await requirePermission(MUTASI_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const item = await getInventaris(villageId, input.inventarisId);
