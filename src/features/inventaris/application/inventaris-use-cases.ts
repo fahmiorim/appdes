@@ -105,7 +105,7 @@ export async function getInventarisPageData(search: string) {
     rows: denganPenyusutan(data.rows),
     total: data.total,
     canWrite:
-      hasPermission(user.permissions, INVENTARIS_RESOURCE, "update") ||
+      hasPermission(user.permissions, INVENTARIS_RESOURCE, "create") ||
       hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create"),
     canUpdate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
@@ -143,13 +143,13 @@ export async function getInventarisTablePageData(input: {
     currentPage: safePage,
     summaryRows: denganPenyusutan(summary.rows),
     canWrite:
-      hasPermission(user.permissions, INVENTARIS_RESOURCE, "update") ||
+      hasPermission(user.permissions, INVENTARIS_RESOURCE, "create") ||
       hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create"),
     canUpdate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canManage: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
     canMutate:
-      hasPermission(user.permissions, MUTASI_RESOURCE, "update") ||
+      hasPermission(user.permissions, MUTASI_RESOURCE, "create") ||
       hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
     canMutateCreate: hasPermission(user.permissions, MUTASI_RESOURCE, "create"),
     canMutateUpdate: hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
@@ -456,7 +456,7 @@ export async function getInventarisDetailPageData(id: number) {
     canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canDelete: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
     canMutate:
-      hasPermission(user.permissions, MUTASI_RESOURCE, "update") ||
+      hasPermission(user.permissions, MUTASI_RESOURCE, "create") ||
       hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
     canMutateCreate: hasPermission(user.permissions, MUTASI_RESOURCE, "create"),
     canMutateUpdate: hasPermission(user.permissions, MUTASI_RESOURCE, "update"),
