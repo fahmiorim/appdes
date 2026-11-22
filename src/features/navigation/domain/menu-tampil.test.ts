@@ -28,6 +28,8 @@ describe("ruteTersedia", () => {
     expect(ruteTersedia("/super-admin")).toBe(true);
     expect(ruteTersedia("/beranda?tab=ringkasan")).toBe(true);
     expect(ruteTersedia("/penduduk")).toBe(true);
+    expect(ruteTersedia("/inventaris/123")).toBe(false);
+    expect(ruteTersedia("/inventaris/[id]")).toBe(true);
     expect(ruteTersedia("/penduduk/dashboard")).toBe(true);
     expect(ruteTersedia("/keluarga")).toBe(true);
     expect(ruteTersedia("/mutasi-penduduk")).toBe(true);
