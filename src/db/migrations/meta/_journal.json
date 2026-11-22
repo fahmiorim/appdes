@@ -302,6 +302,13 @@
       "when": 1795708000000,
       "tag": "0047_password_history",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "5",
+      "when": 1795709000000,
+      "tag": "0048_pendaftaran_warga",
+      "breakpoints": true
     }
   ]
 }
