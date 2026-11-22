@@ -60,6 +60,7 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
       { href: "/agenda", label: "Agenda Kegiatan" },
       { href: "/statistik", label: "Statistik Desa" },
       { href: "/pembangunan", label: "Pembangunan Desa" },
+      { href: "/pembangunan", label: "Pembangunan Desa" },
       { href: "/transparansi/apbdes", label: "APBDes & Transparansi Anggaran" },
       { href: "/transparansi/laporan-keuangan", label: "Laporan Keuangan Desa" },
     ],
