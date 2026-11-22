@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getInventarisDetailPageData } from "@/features/inventaris/application/inventaris-use-cases";
+import {
+  getInventarisDetailPageData,
+} from "@/features/inventaris/application/inventaris-use-cases";
 import {
   INVENTARIS_ASAL,
   INVENTARIS_KONDISI_LABELS,
@@ -87,7 +89,13 @@ export default async function DetailInventarisPage({ params, searchParams }: Pro
               <p>Data identitas barang dan klasifikasi.</p>
             </div>
             <span
-              className={`${styles.tag} ${x.kondisi === "baik" ? styles.good : x.kondisi === "rusak_ringan" ? styles.warn : styles.bad}`}
+              className={`${styles.tag} ${
+                x.kondisi === "baik"
+                  ? styles.good
+                  : x.kondisi === "rusak_ringan"
+                    ? styles.warn
+                    : styles.bad
+              }`}
             >
               {INVENTARIS_KONDISI_LABELS[x.kondisi]}
             </span>
