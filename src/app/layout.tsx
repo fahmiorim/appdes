@@ -11,6 +11,7 @@ export const metadata: Metadata = {
     template: `%s | ${APP_NAME}`,
   },
   description: APP_DESCRIPTION,
+  icons: { icon: "/api/publik/favicon" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {

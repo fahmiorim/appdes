@@ -112,6 +112,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
                 Mengalami kendala masuk? Hubungi administrator desa Anda.
               </p>
               <p className="login-card-switch">
+                Belum memiliki akun? <Link href="/daftar">Daftar akun warga</Link>
+              </p>
+              <p className="login-card-switch">
                 Administrator desa? <Link href="/masuk-admin">Masuk ke ruang kerja</Link>
               </p>
             </section>

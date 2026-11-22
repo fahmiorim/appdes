@@ -32,6 +32,7 @@ export const RESOURCES = {
   laporanKeuangan: "laporan-keuangan",
   persuratan: "persuratan",
   pengaturan: "pengaturan",
+  pengaturanDesa: "pengaturan-desa",
   pengaturanAplikasi: "pengaturan-aplikasi",
   notifikasi: "notifikasi",
   plugin: "plugin",

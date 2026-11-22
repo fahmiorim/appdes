@@ -53,6 +53,7 @@ describe("rute publik", () => {
       "/masuk",
       "/masuk-admin",
       "/super-admin-login",
+      "/two-factor",
       "/agenda",
       "/pengumuman",
       "/galeri",

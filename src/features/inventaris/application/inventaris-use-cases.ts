@@ -213,9 +213,7 @@ export async function getLaporanInventarisCsv(kategoriId?: number) {
     listInventaris(villageId),
   ]);
   const kategoriNama =
-    kategoriId != null
-      ? (kategoriList.find((item) => item.id === kategoriId)?.nama ?? null)
-      : null;
+    kategoriId != null ? (kategoriList.find((item) => item.id === kategoriId)?.nama ?? null) : null;
   return {
     csv: buildInventarisCsv(denganPenyusutan(data.rows), kategoriId ?? null),
     kategoriNama,
@@ -333,7 +331,7 @@ export async function hapusInventaris(id: number) {
 }
 
 export async function ajukanMutasi(input: InventarisMutasiInput) {
-  const user = await requirePermission(MUTASI_RESOURCE, "update");
+  const user = await requirePermission(MUTASI_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const item = await getInventaris(villageId, input.inventarisId);
