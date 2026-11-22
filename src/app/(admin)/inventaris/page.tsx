@@ -392,7 +392,7 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
           </form>
         </section>
       ) : null}
-      {data.canWrite ? (
+      {data.canWrite || data.canManage ? (
         <section className={styles.panel}>
           <div className={styles.panelHead}>
             <div>
