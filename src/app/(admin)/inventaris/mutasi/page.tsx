@@ -137,7 +137,13 @@ export default async function MutasiPemeliharaanPage({ searchParams }: Props) {
                     <td>{m.diajukanOleh ?? "—"}</td>
                     <td>
                       <span
-                        className={`${styles.tag} ${m.status === "disetujui" ? styles.good : m.status === "ditolak" ? styles.bad : styles.warn}`}
+                        className={`${styles.tag} ${
+                          m.status === "disetujui"
+                            ? styles.good
+                            : m.status === "ditolak"
+                              ? styles.bad
+                              : styles.warn
+                        }`}
                       >
                         {MUTASI_STATUS_LABELS[m.status]}
                       </span>
