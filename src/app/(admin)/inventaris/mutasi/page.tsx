@@ -277,7 +277,8 @@ export default async function MutasiPemeliharaanPage({ searchParams }: Props) {
                       {x.deskripsi ?? "Tidak ada deskripsi"} · Biaya {formatRupiah(x.biaya)}
                     </small>
                     <div className={styles.actions} style={{ marginTop: 8 }}>
-                      {data.canWrite ? <form action={ubahStatusPemeliharaanAction}>
+                      {data.canWrite && x.status !== "selesai" && x.status !== "dibatalkan" ? (
+                        <form action={ubahStatusPemeliharaanAction}>
                         <input type="hidden" name="id" value={x.id} />
                         <input
                           name="jenis"
@@ -332,11 +333,14 @@ export default async function MutasiPemeliharaanPage({ searchParams }: Props) {
                           <option value="dalam_perbaikan">Dalam Perbaikan</option>
                         </select>
                         <button className={styles.secondary}>Perbarui</button>
-                      </form> : null}
-                      {data.canManage ? <form action={hapusJadwalPemeliharaanAction}>
+                        </form>
+                      ) : null}
+                      {data.canManage ? (
+                        <form action={hapusJadwalPemeliharaanAction}>
                         <input type="hidden" name="id" value={x.id} />
                         <button className={styles.secondary}>Hapus</button>
-                      </form> : null}
+                        </form>
+                      ) : null}
                     </div>
                   </article>
                 ))}
