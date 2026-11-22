@@ -194,7 +194,13 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
                   <td>{x.lokasi ?? "—"}</td>
                   <td>
                     <span
-                      className={`${styles.tag} ${x.kondisi === "baik" ? styles.good : x.kondisi === "rusak_ringan" ? styles.warn : styles.bad}`}
+                      className={`${styles.tag} ${
+                        x.kondisi === "baik"
+                          ? styles.good
+                          : x.kondisi === "rusak_ringan"
+                            ? styles.warn
+                            : styles.bad
+                      }`}
                     >
                       {INVENTARIS_KONDISI_LABELS[x.kondisi]}
                     </span>
@@ -399,29 +405,29 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
               <div className={styles.statLine} key={k.id}>
                 {data.canUpdate ? (
                   <form action={simpanKategoriInventarisAction} className={styles.actions}>
-                  <input type="hidden" name="id" value={k.id} />
-                  <input
-                    name="kode"
-                    defaultValue={k.kode}
-                    aria-label="Kode kategori"
-                    maxLength={20}
-                    required
-                  />
-                  <input
-                    name="nama"
-                    defaultValue={k.nama}
-                    aria-label="Nama kategori"
-                    maxLength={150}
-                    required
-                  />
-                  <select name="golongan" defaultValue={k.golongan}>
-                    {Object.entries(INVENTARIS_KATEGORI_LABELS).map(([key, label]) => (
-                      <option key={key} value={key}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                  <button className={styles.secondary}>Simpan</button>
+                    <input type="hidden" name="id" value={k.id} />
+                    <input
+                      name="kode"
+                      defaultValue={k.kode}
+                      aria-label="Kode kategori"
+                      maxLength={20}
+                      required
+                    />
+                    <input
+                      name="nama"
+                      defaultValue={k.nama}
+                      aria-label="Nama kategori"
+                      maxLength={150}
+                      required
+                    />
+                    <select name="golongan" defaultValue={k.golongan}>
+                      {Object.entries(INVENTARIS_KATEGORI_LABELS).map(([key, label]) => (
+                        <option key={key} value={key}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                    <button className={styles.secondary}>Simpan</button>
                   </form>
                 ) : null}
                 {data.canManage ? (
@@ -439,29 +445,29 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
               className={styles.form}
               style={{ marginTop: 14 }}
             >
-            <label>
-              Kode Kategori
-              <input name="kode" required maxLength={20} />
-            </label>
-            <label>
-              Nama Kategori
-              <input name="nama" required maxLength={150} />
-            </label>
-            <label>
-              Golongan
-              <select name="golongan">
-                {Object.entries(INVENTARIS_KATEGORI_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>
-                    {v}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className={styles.wide}>
-              Keterangan
-              <input name="keterangan" />
-            </label>
-            <button className={styles.primary}>Tambah Kategori</button>
+              <label>
+                Kode Kategori
+                <input name="kode" required maxLength={20} />
+              </label>
+              <label>
+                Nama Kategori
+                <input name="nama" required maxLength={150} />
+              </label>
+              <label>
+                Golongan
+                <select name="golongan">
+                  {Object.entries(INVENTARIS_KATEGORI_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className={styles.wide}>
+                Keterangan
+                <input name="keterangan" />
+              </label>
+              <button className={styles.primary}>Tambah Kategori</button>
             </form>
           ) : null}
         </section>
