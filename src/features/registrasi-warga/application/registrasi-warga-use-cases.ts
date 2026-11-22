@@ -1,6 +1,8 @@
 import "server-only";
 
 import { bacaPengaturan } from "@/features/pengaturan/application/pengaturan-use-cases";
+import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
+import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 import { pengajuanRegistrasiWargaSchema, type PengajuanRegistrasiWargaInput } from "@/features/registrasi-warga/domain/registrasi-warga";
 import { ajukanRegistrasiWarga, daftarRegistrasiWarga, prosesRegistrasiWarga } from "@/features/registrasi-warga/infrastructure/registrasi-warga-repository";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
@@ -28,5 +30,14 @@ export async function tinjauRegistrasiWargaAdmin(input: { id: number; keputusan:
   }
   const user = await requirePermission(RESOURCES.pengguna, "update");
   const villageId = await resolveVillageId(user);
-  return prosesRegistrasiWarga(villageId, input.id, input.keputusan, input.catatan);
+  const credential = await prosesRegistrasiWarga(villageId, input.id, input.keputusan, input.catatan);
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: input.keputusan === "setujui" ? AUDIT_EVENTS.registrasiWargaDisetujui : AUDIT_EVENTS.registrasiWargaDitolak,
+    resource: "registrasi-warga",
+    resourceId: String(input.id),
+    details: { keputusan: input.keputusan },
+  });
+  return credential;
 }
