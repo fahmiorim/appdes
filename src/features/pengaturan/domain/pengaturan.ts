@@ -35,7 +35,7 @@ export const pengaturanSchema = z.object({
     .max(12, "Jumlah berita maksimal 12.")
     .default(5),
   /** Izinkan pengajuan akun warga dari halaman publik. */
-  pendaftaranWargaAktif: z.boolean().default(false),
+  pendaftaranWargaAktif: z.boolean().default(true),
   /** Mode penomoran surat: 1=manual, 2=otomatis per tahun, 3=otomatis per bulan, 4=otomatis per jenis. */
   penomoranSurat: z.coerce.number().int().min(1).max(4).default(2),
 });

@@ -79,6 +79,9 @@ export default async function LayananMandiriPage() {
           >
             {sudahMasuk ? "Buka beranda warga" : "Masuk ke layanan"}
           </Link>
+          <Link className="button button-secondary" href="/daftar">
+            Daftar akun warga
+          </Link>
           <Link className="button button-secondary" href="/">
             Kembali ke website desa
           </Link>

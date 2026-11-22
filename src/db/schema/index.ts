@@ -89,3 +89,6 @@ export * from "./plugin-registry";
 export * from "./login-otp";
 export * from "./umpan-balik";
 export * from "./laporan-statistik";
+export * from "./village-security";
+export * from "./two-factor";
+export * from "./password-history";
