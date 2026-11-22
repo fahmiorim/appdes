@@ -5,7 +5,7 @@ import { hashPassword } from "better-auth/crypto";
 import { and, desc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { registrasiWarga, residents, users } from "@/db/schema";
+import { accounts, registrasiWarga, residents, users } from "@/db/schema";
 import { generatePin } from "@/features/warga/infrastructure/warga-repository";
 import type { PengajuanRegistrasiWargaInput, RegistrasiWargaDTO } from "@/features/registrasi-warga/domain/registrasi-warga";
 import { conflict, notFound } from "@/lib/errors";
