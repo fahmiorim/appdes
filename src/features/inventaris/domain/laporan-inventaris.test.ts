@@ -151,7 +151,10 @@ describe("buildInventarisCsv", () => {
 
   it("menetralkan sel teks yang berpotensi menjadi formula spreadsheet", () => {
     const csv = buildInventarisCsv([
-      item({ namaBarang: "=HYPERLINK(\"https://example.com\")", lokasi: " @SUM(A1:A2)" }),
+      item({
+        namaBarang: "=HYPERLINK(\"https://example.com\")",
+        lokasi: " @SUM(A1:A2)",
+      }),
     ]);
     expect(csv).toContain("'=HYPERLINK");
     expect(csv).toContain("' @SUM");
