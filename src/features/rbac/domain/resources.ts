@@ -42,6 +42,7 @@ export const RESOURCES = {
   kategoriKelompok: "kategori-kelompok",
   suplemen: "suplemen",
   laporanPenduduk: "laporan-penduduk",
+  laporanStatistik: "laporan-statistik",
   kesehatan: "kesehatan",
   widget: "widget",
   kehadiran: "kehadiran",

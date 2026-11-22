@@ -85,7 +85,7 @@ function kolomMigrasi(): Map<string, Set<string>> {
       const badan = tabel[2];
       if (!nama || badan === undefined) continue;
       for (const baris of badan.split("\n")) {
-        const cocok = /^\t`([a-z0-9_]+)`/.exec(baris);
+        const cocok = /^[\t ]+`([a-z0-9_]+)`/.exec(baris);
         if (cocok?.[1]) tambah(nama, cocok[1]);
       }
     }
@@ -113,7 +113,7 @@ function namaIndexMigrasi(): Set<string> {
   const hasil = new Set<string>();
   for (const isi of sqlMigrasi()) {
     for (const cocok of isi.matchAll(/CREATE (?:UNIQUE )?INDEX `([^`]+)`/g)) hasil.add(cocok[1]!);
-    for (const cocok of isi.matchAll(/^\tKEY `([^`]+)`/gm)) hasil.add(cocok[1]!);
+    for (const cocok of isi.matchAll(/^[\t ]+KEY `([^`]+)`/gm)) hasil.add(cocok[1]!);
     for (const cocok of isi.matchAll(/CONSTRAINT `([^`]+)` UNIQUE/g)) hasil.add(cocok[1]!);
   }
   return hasil;
@@ -213,6 +213,20 @@ describe("paritas skema vs migrasi", () => {
     }
 
     expect(hilang.sort()).toEqual([]);
+  });
+
+  it("foreign key laporan statistik mempertahankan nama constraint migration", () => {
+    const isi = fs.readFileSync(`${SCHEMA_DIR}laporan-statistik.ts`, "utf8");
+    const namaSchema = [...isi.matchAll(/name: "(laporan_desa_[a-z_]+_fk)"/g)]
+      .map((cocok) => cocok[1])
+      .sort();
+
+    expect(namaSchema).toEqual([
+      "laporan_desa_template_user_fk",
+      "laporan_desa_template_village_fk",
+      "laporan_desa_tersimpan_user_fk",
+      "laporan_desa_tersimpan_village_fk",
+    ]);
   });
 
   it("setiap indeks pada snapshot dibuat oleh SQL migrasi", () => {
