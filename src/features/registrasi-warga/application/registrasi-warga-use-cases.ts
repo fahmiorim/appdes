@@ -23,6 +23,9 @@ export async function ambilRegistrasiWargaAdmin() {
 }
 
 export async function tinjauRegistrasiWargaAdmin(input: { id: number; keputusan: "setujui" | "tolak"; catatan?: string }) {
+  if (!Number.isSafeInteger(input.id) || input.id <= 0 || !["setujui", "tolak"].includes(input.keputusan)) {
+    throw validationError("Keputusan pendaftaran tidak valid.");
+  }
   const user = await requirePermission(RESOURCES.pengguna, "update");
   const villageId = await resolveVillageId(user);
   return prosesRegistrasiWarga(villageId, input.id, input.keputusan, input.catatan);
