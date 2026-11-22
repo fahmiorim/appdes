@@ -94,7 +94,7 @@ export async function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Prop
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <Link href="/" className={styles.brand} aria-label={`Beranda ${desa.namaDesa ?? "desa"}`}>
-            {logoUrl && tema?.logoTampil !== false ? (
+            {tema?.logoTampil === false ? null : logoUrl ? (
               <Image
                 src={logoUrl}
                 alt=""
