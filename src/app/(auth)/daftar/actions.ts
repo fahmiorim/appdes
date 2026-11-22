@@ -14,6 +14,6 @@ export async function ajukanAkunWargaAction(input: { nik: string; nama: string; 
     return { ok: true, message: "Pengajuan terkirim. Administrator desa akan memeriksa data Anda sebelum akun diaktifkan." };
   } catch (error) {
     const state = toErrorState(error);
-    return { ok: false, message: state.message || "Pengajuan belum dapat diproses. Periksa kembali data Anda." };
+    return { ok: false, message: "message" in state ? state.message : "Pengajuan belum dapat diproses. Periksa kembali data Anda." };
   }
 }
