@@ -15,8 +15,12 @@ export async function ajukanAkunWargaAction(input: { nik: string; nama: string; 
   try {
     const desa = await getIdentitasFromRequest();
     const ip = alamatIpDariHeader(await headers(), env.TRUST_PROXY);
-    const quota = await batasiPermintaan(`registrasi-warga:${desa.id}:${ip}`, { batas: 3, jendelaMs: 15 * 60_000 });
-    if (quota.dibatasi) throw new AppError("RATE_LIMITED", "Terlalu banyak pengajuan dari jaringan ini. Coba kembali 15 menit lagi.");
+    const quotaNIK = await batasiPermintaan(`registrasi-warga-nik:${desa.id}:${input.nik}`, { batas: 3, jendelaMs: 15 * 60_000 });
+    if (quotaNIK.dibatasi) throw new AppError("RATE_LIMITED", "Terlalu banyak percobaan untuk data ini. Coba kembali 15 menit lagi.");
+    if (ip !== "tidak-diketahui") {
+      const quotaIP = await batasiPermintaan(`registrasi-warga-ip:${desa.id}:${ip}`, { batas: 10, jendelaMs: 15 * 60_000 });
+      if (quotaIP.dibatasi) throw new AppError("RATE_LIMITED", "Terlalu banyak pengajuan dari jaringan ini. Coba kembali 15 menit lagi.");
+    }
     await kirimPengajuanRegistrasiWarga(desa.id, input);
     revalidatePath("/daftar");
     return { ok: true, message: "Pengajuan terkirim. Administrator desa akan memeriksa data Anda sebelum akun diaktifkan." };
