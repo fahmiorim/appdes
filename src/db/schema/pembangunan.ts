@@ -40,6 +40,8 @@ export const pembangunanProyek = mysqlTable(
     deskripsi: text("deskripsi"),
 
     lokasi: varchar("lokasi", { length: 200 }),
+    latitude: decimal("latitude", { precision: 10, scale: 7 }),
+    longitude: decimal("longitude", { precision: 10, scale: 7 }),
 
     tahunAnggaran: int("tahun_anggaran").notNull(),
 

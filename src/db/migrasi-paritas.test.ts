@@ -49,6 +49,14 @@ function sqlMigrasi(): string[] {
     .map((berkas) => fs.readFileSync(MIGRATIONS_DIR + berkas, "utf8"));
 }
 
+function berkasSqlMigrasi(): Array<{ berkas: string; isi: string }> {
+  return fs
+    .readdirSync(MIGRATIONS_DIR)
+    .filter((berkas) => berkas.endsWith(".sql"))
+    .sort()
+    .map((berkas) => ({ berkas, isi: fs.readFileSync(MIGRATIONS_DIR + berkas, "utf8") }));
+}
+
 function tabelMigrasi(): Set<string> {
   const hasil = new Set<string>();
   for (const isi of sqlMigrasi()) {
@@ -287,5 +295,25 @@ describe("paritas skema vs migrasi", () => {
       .map((entri) => entri.tag);
 
     expect(hilang).toEqual([]);
+  });
+  it("setiap pernyataan migrasi dipisah statement-breakpoint", () => {
+    // Drizzle mengeksekusi isi berkas per potongan `--> statement-breakpoint`.
+    // Dua pernyataan yang menyatu dikirim sebagai satu query, MySQL menolaknya
+    // dengan `ER_PARSE_ERROR`, lalu `db:migrate` dan seluruh integration test
+    // gagal pada database kosong.
+    const pelanggaran: string[] = [];
+
+    for (const { berkas, isi } of berkasSqlMigrasi()) {
+      isi.split("--> statement-breakpoint").forEach((potongan, posisi) => {
+        const pernyataan = [
+          ...potongan.matchAll(
+            /^[ \t]*(ALTER|CREATE|DROP|INSERT|UPDATE|DELETE|TRUNCATE|RENAME)\b/gim,
+          ),
+        ];
+        if (pernyataan.length > 1) pelanggaran.push(`${berkas} potongan ${posisi + 1}`);
+      });
+    }
+
+    expect(pelanggaran).toEqual([]);
   });
 });
