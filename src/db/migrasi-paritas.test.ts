@@ -32,7 +32,12 @@ interface Snapshot {
 function tabelSkema(): Set<string> {
   const hasil = new Set<string>();
   for (const berkas of fs.readdirSync(SCHEMA_DIR)) {
-    if (!berkas.endsWith(".ts") || berkas.endsWith(".test.ts") || berkas === "index.ts") continue;
+    if (
+      !berkas.endsWith(".ts") ||
+      berkas.endsWith(".test.ts") ||
+      berkas === "index.ts"
+    )
+      continue;
     const isi = fs.readFileSync(SCHEMA_DIR + berkas, "utf8");
     for (const cocok of isi.matchAll(/mysqlTable\(\s*"([a-z0-9_]+)"/g)) {
       const tabel = cocok[1];
@@ -54,13 +59,18 @@ function berkasSqlMigrasi(): Array<{ berkas: string; isi: string }> {
     .readdirSync(MIGRATIONS_DIR)
     .filter((berkas) => berkas.endsWith(".sql"))
     .sort()
-    .map((berkas) => ({ berkas, isi: fs.readFileSync(MIGRATIONS_DIR + berkas, "utf8") }));
+    .map((berkas) => ({
+      berkas,
+      isi: fs.readFileSync(MIGRATIONS_DIR + berkas, "utf8"),
+    }));
 }
 
 function tabelMigrasi(): Set<string> {
   const hasil = new Set<string>();
   for (const isi of sqlMigrasi()) {
-    for (const cocok of isi.matchAll(/CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)`/g)) {
+    for (const cocok of isi.matchAll(
+      /CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)`/g,
+    )) {
       const tabel = cocok[1];
       if (tabel) hasil.add(tabel);
     }
@@ -122,7 +132,9 @@ function kolomMigrasi(): Map<string, Set<string>> {
 function namaForeignKeyMigrasi(): Set<string> {
   const hasil = new Set<string>();
   for (const isi of sqlMigrasi()) {
-    for (const cocok of isi.matchAll(/CONSTRAINT `([^`]+)` FOREIGN KEY/g)) hasil.add(cocok[1]!);
+    for (const cocok of isi.matchAll(/CONSTRAINT `([^`]+)` FOREIGN KEY/g)) {
+      hasil.add(cocok[1]!);
+    }
   }
   return hasil;
 }
@@ -130,9 +142,13 @@ function namaForeignKeyMigrasi(): Set<string> {
 function namaIndexMigrasi(): Set<string> {
   const hasil = new Set<string>();
   for (const isi of sqlMigrasi()) {
-    for (const cocok of isi.matchAll(/CREATE (?:UNIQUE )?INDEX `([^`]+)`/g)) hasil.add(cocok[1]!);
+    for (const cocok of isi.matchAll(/CREATE (?:UNIQUE )?INDEX `([^`]+)`/g)) {
+      hasil.add(cocok[1]!);
+    }
     for (const cocok of isi.matchAll(/^[\t ]+KEY `([^`]+)`/gm)) hasil.add(cocok[1]!);
-    for (const cocok of isi.matchAll(/CONSTRAINT `([^`]+)` UNIQUE/g)) hasil.add(cocok[1]!);
+    for (const cocok of isi.matchAll(/CONSTRAINT `([^`]+)` UNIQUE/g)) {
+      hasil.add(cocok[1]!);
+    }
     for (const cocok of isi.matchAll(
       /ALTER TABLE `[^`]+` ADD UNIQUE (?:KEY|INDEX) `([^`]+)`/g,
     )) {
@@ -154,7 +170,9 @@ function namaIndexSkema(): Set<string> {
 }
 
 function tagJournal(): string[] {
-  const journal = JSON.parse(fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8")) as {
+  const journal = JSON.parse(
+    fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8"),
+  ) as {
     entries: Array<{ idx: number; tag: string }>;
   };
   return journal.entries.map((entri) => entri.tag);
@@ -169,7 +187,9 @@ function snapshotTerakhir(): Snapshot {
   const terakhir = berkas.at(-1);
   if (!terakhir) throw new Error("Tidak ada snapshot migrasi.");
 
-  return JSON.parse(fs.readFileSync(`${META_DIR}${terakhir}`, "utf8")) as Snapshot;
+  return JSON.parse(
+    fs.readFileSync(`${META_DIR}${terakhir}`, "utf8"),
+  ) as Snapshot;
 }
 
 function berkasMigrasi(): string[] {
@@ -238,7 +258,9 @@ describe("paritas skema vs migrasi", () => {
     expect(hilang.sort()).toEqual([]);
   });
 
-  it("foreign key laporan statistik mempertahankan nama constraint migration", () => {
+  it(
+    "foreign key laporan statistik mempertahankan nama constraint migration",
+    () => {
     const isi = fs.readFileSync(`${SCHEMA_DIR}laporan-statistik.ts`, "utf8");
     const namaSchema = [...isi.matchAll(/name: "(laporan_desa_[a-z_]+_fk)"/g)]
       .map((cocok) => cocok[1])
@@ -282,7 +304,9 @@ describe("paritas skema vs migrasi", () => {
   });
 
   it("entri journal terakhir memakai timestamp terbesar", () => {
-    const journal = JSON.parse(fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8")) as {
+    const journal = JSON.parse(
+      fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8"),
+    ) as {
       entries: Array<{ idx: number; tag: string; when: number }>;
     };
 
@@ -291,7 +315,9 @@ describe("paritas skema vs migrasi", () => {
     // kecil akan dilewati walau `db:migrate` melaporkan sukses.
     const terakhir = journal.entries.at(-1);
     expect(terakhir).toBeDefined();
-    expect(terakhir!.when).toBe(Math.max(...journal.entries.map((entri) => entri.when)));
+    expect(terakhir!.when).toBe(
+      Math.max(...journal.entries.map((entri) => entri.when)),
+    );
   });
 
   it("setiap entri journal memiliki berkas snapshot", () => {
@@ -325,7 +351,9 @@ describe("paritas skema vs migrasi", () => {
             /^[ \t]*(ALTER|CREATE|DROP|INSERT|UPDATE|DELETE|TRUNCATE|RENAME)\b/gim,
           ),
         ];
-        if (pernyataan.length > 1) pelanggaran.push(`${berkas} potongan ${posisi + 1}`);
+        if (pernyataan.length > 1) {
+          pelanggaran.push(`${berkas} potongan ${posisi + 1}`);
+        }
       });
     }
 

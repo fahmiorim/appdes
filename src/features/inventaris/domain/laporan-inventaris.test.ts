@@ -8,7 +8,9 @@ import {
   type LaporanInventarisItem,
 } from "./laporan-inventaris";
 
-function item(overrides: Partial<LaporanInventarisItem>): LaporanInventarisItem {
+function item(
+  overrides: Partial<LaporanInventarisItem>,
+): LaporanInventarisItem {
   return {
     id: 1,
     kategoriId: 1,
@@ -162,7 +164,11 @@ describe("buildInventarisCsv", () => {
 
   it("melabeli kondisi dengan teks dan membungkus sel bertanda pemisah", () => {
     const csv = buildInventarisCsv([
-      item({ namaBarang: "Meja; Kursi", kondisi: "rusak_berat", nilaiAkhir: "10.00" }),
+      item({
+        namaBarang: "Meja; Kursi",
+        kondisi: "rusak_berat",
+        nilaiAkhir: "10.00",
+      }),
     ]);
     expect(csv).toContain('"Meja; Kursi"');
     expect(csv).toContain("Rusak Berat");
@@ -171,7 +177,9 @@ describe("buildInventarisCsv", () => {
 
 describe("inventarisCsvFilename", () => {
   it("membuat nama berkas dari nama desa", () => {
-    expect(inventarisCsvFilename("Desa Suka Maju")).toBe("laporan-inventaris-desa-suka-maju.csv");
+    expect(inventarisCsvFilename("Desa Suka Maju")).toBe(
+      "laporan-inventaris-desa-suka-maju.csv",
+    );
   });
 
   it("menambahkan slug kategori bila ada", () => {
