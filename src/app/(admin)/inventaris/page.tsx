@@ -31,7 +31,7 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
   const pageRaw = Number(p.page);
   const page = Number.isInteger(pageRaw) && pageRaw > 0 ? pageRaw : 1;
   const pageSize = 10;
-  const kategoriId = p.kategori && /^\\d+$/.test(p.kategori) ? Number(p.kategori) : undefined;
+  const kategoriId = p.kategori && /^\d+$/.test(p.kategori) ? Number(p.kategori) : undefined;
   const data = await getInventarisTablePageData({
     search: q,
     kategoriId,
