@@ -210,7 +210,7 @@ export default async function DaftarInventarisPage({ searchParams }: Props) {
                       {data.canWrite ? (
                         <Link href={"/inventaris/" + x.id + "?edit=1"}>Edit</Link>
                       ) : null}
-                      {data.canMutate ? (
+                      {data.canMutateCreate ? (
                         <Link href={"/inventaris/mutasi?inventarisId=" + x.id + "&jenis=hapus"}>
                           Ajukan Penghapusan
                         </Link>
