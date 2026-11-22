@@ -111,7 +111,7 @@ export default async function PengelolaanAsetPage() {
                   <td>
                     <div className={styles.actions}>
                       <Link href={"/inventaris/" + x.id}>Detail</Link>
-                      <Link href={"/inventaris/" + x.id + "?edit=1"}>Edit</Link>
+                      {data.canUpdate ? <Link href={"/inventaris/" + x.id + "?edit=1"}>Edit</Link> : null}
                     </div>
                   </td>
                 </tr>
