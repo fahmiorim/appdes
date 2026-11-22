@@ -26,6 +26,11 @@ export type LaporanInventarisItem = InventarisRow & {
 
 const TANPA_KATEGORI = "Tanpa kategori";
 
+/** Cegah teks yang diawali karakter formula dieksekusi spreadsheet saat CSV dibuka. */
+function amanUntukSpreadsheet(value: string): string {
+  return /^[\\t\\r ]*[=+\\-@]/.test(value) ? "\u0027" + value : value;
+}
+
 function kategoriLabel(item: LaporanInventarisItem): string {
   return item.kategoriNama?.trim() || TANPA_KATEGORI;
 }
@@ -204,17 +209,17 @@ export function buildInventarisCsv(
   ];
 
   const baris = terpilih.map((item) => [
-    kategoriLabel(item),
-    item.nomorInventaris ?? "",
-    item.kodeBarang ?? "",
-    item.namaBarang,
+    amanUntukSpreadsheet(kategoriLabel(item)),
+    amanUntukSpreadsheet(item.nomorInventaris ?? ""),
+    amanUntukSpreadsheet(item.kodeBarang ?? ""),
+    amanUntukSpreadsheet(item.namaBarang),
     item.jumlah,
-    item.satuan ?? "",
+    amanUntukSpreadsheet(item.satuan ?? ""),
     item.nilaiAkhir ?? "0.00",
     item.akumulasiPenyusutan ?? "0.00",
     item.nilaiBuku ?? item.nilaiAkhir ?? "0.00",
-    INVENTARIS_KONDISI_LABELS[item.kondisi] ?? item.kondisi,
-    item.lokasi ?? "",
+    amanUntukSpreadsheet(INVENTARIS_KONDISI_LABELS[item.kondisi] ?? item.kondisi),
+    amanUntukSpreadsheet(item.lokasi ?? ""),
   ]);
 
   const total = [
