@@ -116,11 +116,15 @@ function kolomMigrasi(): Map<string, Set<string>> {
     }
 
     // Satu ALTER TABLE dapat menambahkan beberapa kolom; proses tiap ADD.
-    for (const pernyataan of isi.matchAll(/ALTER TABLE `([a-z0-9_]+)`([\s\S]*?);/gi)) {
+    for (const pernyataan of isi.matchAll(
+      /ALTER TABLE `([a-z0-9_]+)`([\\s\\S]*?);/gi,
+    )) {
       const nama = pernyataan[1];
       const badan = pernyataan[2] ?? "";
       if (!nama) continue;
-      for (const tambahan of badan.matchAll(/\bADD (?:COLUMN )?`([a-z0-9_]+)`/gi)) {
+      for (const tambahan of badan.matchAll(
+        /\\bADD (?:COLUMN )?`([a-z0-9_]+)`/gi,
+      )) {
         const kolom = tambahan[1];
         if (kolom) tambah(nama, kolom);
       }
@@ -170,7 +174,11 @@ function namaIndexSkema(): Set<string> {
       continue;
     }
     const isi = fs.readFileSync(SCHEMA_DIR + berkas, "utf8");
-    for (const cocok of isi.matchAll(/(?:unique)?index\(\s*"([^"]+)"/gi)) hasil.add(cocok[1]!);
+    for (const cocok of isi.matchAll(
+      /(?:unique)?index\\(\\s*"([^"]+)"/gi,
+    )) {
+      hasil.add(cocok[1]!);
+    }
   }
   return hasil;
 }

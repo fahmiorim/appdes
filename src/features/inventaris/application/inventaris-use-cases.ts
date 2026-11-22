@@ -487,9 +487,16 @@ export async function getMutasiPageData(inventarisId?: number) {
     satuan: item.satuan,
   }));
 
-  const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
+  const role =
+    user.roleId === null
+      ? null
+      : await findRoleById(user.roleId, user.villageId);
   const approverSteps = MUTASI_STEPS.filter((step) =>
-    roleCanApproveMutasiStep(step, role?.slug ?? null, user.permissions.isSuperadmin),
+    roleCanApproveMutasiStep(
+      step,
+      role?.slug ?? null,
+      user.permissions.isSuperadmin,
+    ),
   );
 
   return {
