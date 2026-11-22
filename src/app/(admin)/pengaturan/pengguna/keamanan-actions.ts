@@ -15,6 +15,8 @@ export async function simpanKeamananAction(formData: FormData): Promise<void> {
   const rawIps = String(formData.get("allowedIps") ?? "").split(/[\n,;]+/).map((ip) => ip.trim()).filter(Boolean);
   const parsed = keamananSchema.safeParse({
     passwordMinLength: formData.get("passwordMinLength"),
+    passwordExpiryDays: formData.get("passwordExpiryDays"),
+    passwordReuseCount: formData.get("passwordReuseCount"),
     requireUppercase: formData.get("requireUppercase") === "on",
     requireLowercase: formData.get("requireLowercase") === "on",
     requireNumber: formData.get("requireNumber") === "on",
