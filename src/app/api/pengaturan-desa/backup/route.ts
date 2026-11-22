@@ -7,7 +7,7 @@ import { layananPublik, pengaturanDesa, profilDesa, theme, villages } from "@/db
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { requirePermission } from "@/lib/dal";
 import { appErrorStatus, isAppError } from "@/lib/errors";
-import { ambilPengaturanAdmin, simpanPengaturanAdmin } from "@/features/pengaturan/application/pengaturan-use-cases";
+import { bacaPengaturan, simpanPengaturanTenant } from "@/features/pengaturan/application/pengaturan-use-cases";
 
 export const runtime = "nodejs";
 const response = (data: unknown, status = 200) =>
@@ -38,7 +38,7 @@ export async function GET() {
         metode: layananPublik.metode, aktif: layananPublik.aktif }).from(layananPublik).where(eq(layananPublik.villageId, villageId)),
       db.select({ slug: theme.slug, nama: theme.nama, versi: theme.versi, opsi: theme.opsi })
         .from(theme).where(and(eq(theme.villageId, villageId), eq(theme.aktif, true))).limit(1),
-      ambilPengaturanAdmin(),
+      bacaPengaturan(villageId),
     ]);
     const backup = {
       format: "flexidesa-village-settings", version: 1, createdAt: new Date().toISOString(),
@@ -145,7 +145,7 @@ export async function POST(request: Request) {
         }
       }
     });
-    await simpanPengaturanAdmin(backup.umum);
+    await simpanPengaturanTenant(villageId, backup.umum, user.id);
     return response({ message: "Konfigurasi berhasil dipulihkan. Data transaksi, akun, dan isi berkas media tidak diubah." });
   } catch (error) { return handle(error); }
 }
