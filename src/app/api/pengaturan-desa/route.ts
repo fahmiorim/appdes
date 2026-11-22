@@ -7,7 +7,7 @@ import { layananPublik, pengaturanDesa, profilDesa, theme, villages, websiteTemp
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { requirePermission } from "@/lib/dal";
 import { appErrorStatus, isAppError } from "@/lib/errors";
-import { ambilPengaturanAdmin, simpanPengaturanAdmin } from "@/features/pengaturan/application/pengaturan-use-cases";
+import { bacaPengaturan, simpanPengaturanTenant } from "@/features/pengaturan/application/pengaturan-use-cases";
 import { tokenTemplateSchema } from "@/features/multi-desa/domain/template-website";
 import { hitungUkuranMedia } from "@/features/publik/infrastructure/media-storage";
 
@@ -61,7 +61,7 @@ export async function GET() {
       Promise.all([bacaNilai(villageId,"pengaturan.kontak"),bacaNilai(villageId,"pengaturan.integrasi"),bacaNilai(villageId,"pengaturan.favicon")]),
       db.select({id:websiteTemplates.id,slug:websiteTemplates.slug,nama:websiteTemplates.name,kategori:websiteTemplates.category,deskripsi:websiteTemplates.description,versi:websiteTemplates.version,tokens:websiteTemplates.tokens,tags:websiteTemplates.tags}).from(websiteTemplates).where(eq(websiteTemplates.status,"published")).orderBy(asc(websiteTemplates.name)),
       db.select({id:theme.id,slug:theme.slug,nama:theme.nama,versi:theme.versi,opsi:theme.opsi}).from(theme).where(and(eq(theme.villageId,villageId),eq(theme.aktif,true))).limit(1),
-      ambilPengaturanAdmin(),
+      bacaPengaturan(villageId),
       hitungUkuranMedia(villageId),
       db.select({kuotaMediaMb:villages.kuotaMediaMb}).from(villages).where(eq(villages.id,villageId)).limit(1),
     ]);
@@ -113,7 +113,7 @@ export async function PUT(request:Request) {
     if(body.section==="umum") {
       const s=umumSchema.safeParse(body.data);
       if(!s.success)return json({error:s.error.issues[0]?.message??"Pengaturan umum tidak valid."},422);
-      await simpanPengaturanAdmin(s.data);
+      await simpanPengaturanTenant(villageId, s.data, user.id);
       return json({message:"Preferensi umum berhasil disimpan."});
     }
     if(body.section==="tampilan") {
