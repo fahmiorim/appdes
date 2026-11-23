@@ -2,7 +2,7 @@ import { boolean, index, int, mysqlTable, text, timestamp, varchar } from "drizz
 
 import { users } from "./auth";
 
-export const twoFactor = mysqlTable(
+export const twoFactors = mysqlTable(
   "two_factor",
   {
     id: varchar("id", { length: 36 }).primaryKey(),

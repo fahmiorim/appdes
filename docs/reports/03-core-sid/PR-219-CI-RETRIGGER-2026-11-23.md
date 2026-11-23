@@ -6,14 +6,16 @@
 - **Branch task:** `task/PR-219-ci-fix` (dipublikasikan pada branch head PR `work/pengaturan-desa`).
 - **Base commit kerja:** `fc9dc3ef32fd833c8bf5f58740657afeca7817d4` (`origin/main` setelah PR #216 masuk).
 - **Commit implementasi dan laporan awal:** `971210ded5e9752e27d7b540ab3a3cbf71449e68`.
-- **Pembaruan laporan pemicu CI:** dikirim sebagai commit terpisah setelah perubahan base; lihat SHA terbaru pada histori branch/penyerahan task.
+- **Pembaruan laporan hasil Visual QA dan perbaikan schema:** tercakup dalam commit koreksi pada histori branch/penyerahan task.
 - **PR:** [#219](https://github.com/fahmiorim/appdes/pull/219).
 
 ## Kondisi awal dan analisis
 
 Empat blocker build/format yang telah dicatat dalam laporan [perbaikan CI PR #216 dan pemeriksaan #219](./INVENTARIS-PR-216-CI-2026-11-23.md) sudah diperbaiki dan commit `9ddead098174bb176aecc0fec2bd8c2708eefbac` sudah ada pada branch PR. Perubahan lanjutan lokal berasal dari kegagalan unit test/typecheck dan guard arsitektur: beberapa route/page mengakses Drizzle/repository secara langsung, sementara test lama tidak menyediakan kontrak permission/sesi terbaru atau memanggil komponen server async secara tepat.
 
-Workflow `.github/workflows/ci.yml` dan `.github/workflows/visual-qa.yml` hanya berjalan untuk Pull Request dengan base `main`. PR #219 masih berbasis `feature/inventaris-aset-mockup-v2`, sehingga GitHub belum menampilkan checks. PR #216 telah masuk `main`, dan perubahan #219 menggunakan migration `0051`–`0056`, setelah rangkaian migration #216 `0045`–`0050`.
+Workflow `.github/workflows/ci.yml` dan `.github/workflows/visual-qa.yml` hanya berjalan untuk Pull Request dengan base `main`. PR #219 awalnya berbasis `feature/inventaris-aset-mockup-v2`, sehingga base dipindah ke `main` untuk menjalankan checks. PR #216 telah masuk `main`, dan perubahan #219 menggunakan migration `0051`–`0056`, setelah rangkaian migration #216 `0045`–`0050`.
+
+Run CI #45113247301 pada head `4ec3d0d34b0094cbf716c7180127e0795cbb76d9` lulus, termasuk test unit/quality, build produksi, dan integration test disposable MySQL 8. Visual QA #45113247331 gagal pada step `Start Next.js`; log menunjukkan Better Auth mengharapkan key schema `twoFactors` karena adapter dikonfigurasi `usePlural: true`, sedangkan schema hanya mengekspor `twoFactor`. Tabel fisik `two_factor` dan migrasinya sudah ada; penyebabnya adalah nama key export schema Drizzle yang tunggal, bukan DDL yang hilang.
 
 ## File yang diperiksa
 
@@ -47,28 +49,29 @@ Perintah berikut dijalankan pada working tree yang akan dipublikasikan:
 
 | Status | Perintah | Hasil |
 |---|---|---|
-| PASS | `npm test` | 249 file dan 2.103 test lulus. Log test mencatat pesan Better Auth `Missing tables: twoFactors` dari konfigurasi test; test suite tetap exit 0. |
+| PASS | `npm test` | 249 file dan 2.104 test lulus setelah perbaikan export schema. |
 | PASS | `npm run lint` | 0 error, 10 warning (warning `console`, `<img>`, dan navigasi internal yang tercatat pada output). |
-| PASS | `npm run typecheck` | `next typegen && tsc --noEmit` lulus. |
+| PASS | `npm run typecheck` | `next typegen && tsc --noEmit` lulus setelah koreksi nama export. |
 | PASS | `npm run build` | Build produksi selesai. Turbopack mengeluarkan dua warning tracing akses filesystem dinamis pada modul ekspor/WhatsApp yang tidak diubah. |
-| PASS | `npm run format:check` | Semua file sesuai Prettier. |
-| PASS | `git diff --check` dan `git diff --cached --check` | Tidak menemukan whitespace error. |
-| PASS | `node scripts/ci-changes.mjs origin/main HEAD` | Mengklasifikasikan perubahan kode, integration, dan build sebagai `true`; job-job terkait memang harus berjalan. |
-| PASS | Test terarah `npx vitest run src/features/pengaturan/domain/pengaturan-desa.test.ts src/features/pengaturan/application/pengaturan-use-cases.test.ts src/features/pengguna/application/pengguna-use-cases.test.ts` | 3 file, 13 test lulus sebelum cek penuh terakhir. |
+| PASS | `npm run format:check` | Semua file sesuai Prettier setelah koreksi schema dan regression test. |
+| PASS | `npx vitest run src/db/migrasi-paritas.test.ts` | 12 test lulus; regression test untuk key `twoFactors` gagal sebelum fix karena key schema tidak tersedia karena key schema tidak tersedia.\"twoFactors\"`. |
+| PASS | `git diff --check` | Tidak menemukan whitespace error pada perubahan saat ini. |
 | SKIPPED | `npm run test:integration:ci` lokal | Tidak dijalankan karena MySQL disposable lokal tidak disiapkan; workflow GitHub menggunakan MySQL 8 disposable. |
-| PENDING | CI GitHub Actions untuk head hasil push | Base sudah `main`, tetapi belum ada run pada SHA implementasi (`gh api` mengembalikan `total_count: 0`); laporan diperbarui dan dipush untuk memicu event `synchronize`. |
-| PENDING | Visual QA GitHub Actions untuk head hasil push | Workflow hanya terpicu pada PR ke `main` dengan path UI yang relevan; status diperiksa setelah push sinkronisasi. |
+| PASS | CI GitHub Actions run #45113247301 pada head `4ec3d0d34b0094cbf716c7180127e0795cbb76d9` | Unit/quality, build produksi, dan integration MySQL 8 lulus. Run ini mendahului koreksi export schema. |
+| FAIL | Visual QA run #45113247331 pada head `4ec3d0d34b0094cbf716c7180127e0795cbb76d9` | `Start Next.js` gagal dengan `SCHEMA_MISMATCH`: Better Auth melaporkan missing schema key `twoFactors`; telah diperbaiki dengan export plural dan regression test. |
+| PENDING | CI GitHub Actions untuk koreksi export schema | Belum dipush atau dijalankan oleh GitHub Actions. |
+| PENDING | Visual QA GitHub Actions untuk koreksi export schema | Belum dipush atau dijalankan; harus diverifikasi pada run baru setelah push. |
 
 ## Status Git/PR dan risiko tersisa
 
-PR #219 semula `OPEN`, head `work/pengaturan-desa` pada `9ddead098174bb176aecc0fec2bd8c2708eefbac`, base `feature/inventaris-aset-mockup-v2`, dan belum memiliki checks. Commit implementasi `971210ded5e9752e27d7b540ab3a3cbf71449e68` telah dipush ke head PR. Base diubah ke `main` agar workflow sesuai trigger yang didefinisikan repository. Setelah perubahan base, GitHub belum membuat run untuk SHA tersebut (`gh api` melaporkan `total_count: 0`, dan `gh pr checks 219` melaporkan tidak ada checks). Pembaruan laporan ini dipush sebagai event sinkronisasi PR agar workflow pada diff menuju `main` mulai berjalan. Tidak ada merge atau deployment.
+PR #219 berstatus `OPEN`, head `work/pengaturan-desa`, base `main`. Perbaikan berlapis sebelumnya telah dipush (`971210ded5e9752e27d7b540ab3a3cbf71449e68` dan pembaruan laporan `4ec3d0d34b0094cbf716c7180127e0795cbb76d9`). CI utama lulus pada commit laporan itu, tetapi Visual QA gagal karena model schema Better Auth diekspor dengan key `twoFactor`, bukan `twoFactors`. Koreksi lokal sekarang mengganti nama export saja, mempertahankan tabel DB `two_factor`, dan menambahkan regression test statis; validasi lokal lulus. Koreksi ini belum dikomit/dipush dan belum diverifikasi ulang oleh Actions. Tidak ada migration yang diubah/dijalankan, merge, atau deployment.
 
 Risiko/keterbatasan:
-- Hasil CI/Visual QA remote belum dapat dinyatakan PASS sampai run selesai pada head commit baru.
-- Integration MySQL tidak diverifikasi lokal; CI disposable menjadi pemeriksaan integrasi.
-- Lint warning, pesan mismatch tabel 2FA selama unit test, dan warning tracing Turbopack tetap ada dan tidak menjadi scope perubahan.
+- CI utama PASS tetapi Visual QA FAIL pada commit sebelum koreksi; Visual QA ulang dan CI untuk koreksi export schema masih menunggu push/run.
+- Integration MySQL lulus di CI pada run sebelumnya; tidak dijalankan lokal.
+- Warning lint yang sudah ada dan warning tracing Turbopack pada build sebelumnya tetap di luar scope. Mismatch schema 2FA telah diperbaiki di working tree, tetapi belum mendapat konfirmasi dari Actions setelah push.
 - PR tetap menunggu review maintainer; perubahan tidak menyatakan PR siap merge sebelum seluruh required check remote lulus.
 
 ## Kesimpulan dan langkah berikutnya
 
-Perubahan lanjutan dipisahkan ke use case/repository dengan tenant berasal dari konteks server, disertai koreksi test, dan lulus validasi lokal yang tercantum. Setelah commit dipush dan base PR menjadi `main`, verifikasi status run GitHub CI serta Visual QA untuk head tersebut; laporkan hasil sebenarnya sebelum menyatakan checks hijau.
+Perubahan lanjutan dipisahkan ke use case/repository dengan tenant berasal dari konteks server, disertai koreksi test. Akar kegagalan Visual QA pada run sebelumnya ditemukan di nama export schema Better Auth, diperbaiki tanpa mengubah migration, dan dilindungi regression test yang terbukti gagal sebelum fix. Validasi lokal lulus; push dan verifikasi ulang run GitHub CI/Visual QA masih perlu dilakukan sebelum checks dapat dinyatakan hijau.

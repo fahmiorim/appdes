@@ -2,6 +2,8 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
+import * as skema from "./schema";
+
 /**
  * Penjaga paritas skema vs migrasi.
  *
@@ -186,6 +188,10 @@ function berkasMigrasi(): string[] {
 }
 
 describe("paritas skema vs migrasi", () => {
+  it("mengekspos tabel two-factor dengan key plural yang dipakai adapter Better Auth", () => {
+    expect(skema).toHaveProperty("twoFactors");
+  });
+
   it("setiap tabel pada skema dibuat oleh berkas migrasi", () => {
     const skema = tabelSkema();
     const migrasi = tabelMigrasi();
