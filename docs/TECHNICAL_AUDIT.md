@@ -9,7 +9,7 @@
 >
 > **Catatan koreksi status (19 November 2026):** beberapa klaim status dikoreksi setelah pemeriksaan ulang terhadap kode: konfigurasi cookie cache (§3), status AUD-013, AUD-015, dan AUD-028, bukti AUD-030 dan AUD-031, serta angka inventaris §2. Temuan lain tetap snapshot audit awal. Rincian dan bukti ada di [laporan pemeriksaan status](./reports/00-baseline/TECHNICAL-AUDIT-STATUS-CHECK-2026-11-19.md).
 >
-> **Catatan status (19 November 2026):** inventaris kode kini 48 `page.tsx` (19 halaman admin: 12 Admin Desa + 7 konsol platform), 82 route handler, 52 direktori fitur, 16 migrasi (`0000`–`0015`), dan 50 berkas `*.integration.test.ts` (53 test terpetakan). Temuan AUD di bawah tetap snapshot; status UI per layer ada di [audit mockup dan dokumen](./reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
+> **Catatan rekonsiliasi dokumen (23 November 2026):** inventaris kode pada `origin/main` commit `2c86ec48` adalah 149 `page.tsx` (102 di route group `(admin)`: 89 halaman non-super-admin dan 13 halaman `/super-admin`), 115 route handler, 57 direktori fitur, 34 berkas `"use server"`, 52 berkas migration dengan 52 entri journal, 93 constraint composite `%_tenant_fk` yang diharapkan integration test, dan 56 berkas `*.integration.test.ts` (59 test terpetakan). Temuan AUD di bawah tetap snapshot; angka 19 November dipertahankan sebagai riwayat. Bukti dan batas validasi ada di [laporan rekonsiliasi](./reports/00-baseline/DOCS-RECONCILIATION-2026-11-23.md).
 
 ## 1. Ringkasan eksekutif
 
@@ -35,14 +35,18 @@ Aplikasi menggunakan Next.js App Router, React, TypeScript, MySQL, Drizzle ORM, 
 
 Audit dilakukan secara **read-only** terhadap repository. Tidak ada perubahan source code, migrasi database, penghapusan file, atau operasi tulis ke lingkungan aplikasi.
 
-Inventaris statis yang teridentifikasi:
-- 1.307 file ter-track di Git (per 19 November 2026).
-- 52 direktori fitur aktual.
-- 284 file test, termasuk 50 integration test.
-- 79 file schema TypeScript di `src/db/schema/`.
-- Satu baseline SQL migration saat audit: `src/db/migrations/0000_baseline.sql` (per 19 November 2026: 16 migrasi, `0000`–`0015`).
-- 130 entri halaman/API (per 19 November 2026: 48 halaman `page.tsx`, 82 route handler, 52 direktori fitur, dan 79 berkas schema; 284 berkas test termasuk 50 integration test).
+Inventaris statis pada baseline aktif (`origin/main` commit `2c86ec48`, 23 November 2026):
+- 1.732 file ter-track di Git.
+- 149 halaman `page.tsx`, 115 route handler, dan 3 layout (termasuk `public-site-layout.tsx`).
+- 102 halaman di route group `(admin)`: 89 halaman non-super-admin dan 13 halaman `/super-admin` (tujuh area menu).
+- 57 direktori fitur, 89 berkas `*-repository.ts`, 113 berkas application/use case non-test, dan 34 berkas `"use server"`.
+- 308 file test, termasuk 56 berkas `*.integration.test.ts`; peta integration test memetakan 59 test.
+- 95 file schema TypeScript di `src/db/schema/`.
+- 52 berkas migration SQL dan 52 entri journal Drizzle. Nomor tidak kontigu dan prefiks `0021` dipakai dua berkas, jadi jumlah tidak boleh disimpulkan dari nomor terakhir.
+- 93 constraint composite `%_tenant_fk` yang diharapkan oleh `src/db/tenant-composite-fk.integration.test.ts`.
 - Stack utama: Next.js 16.4.2, React 19.3.0, TypeScript, MySQL, Drizzle ORM, Better Auth, Zod, Vitest.
+
+Angka 19 November (1.307 file, 48 halaman, 82 route handler, 52 direktori fitur, 16 migrasi, 50 integration test) dipertahankan sebagai snapshot historis di laporan, bukan inventaris aktif.
 
 Tidak dilakukan:
 - Menjalankan build, lint, typecheck, atau test.
@@ -91,7 +95,7 @@ Status temuan sudah berubah sejak audit awal. Tabel berikut adalah ringkasan ver
 | Temuan | Status kode 18 November 2026 | Bukti |
 |---|---|---|
 | AUD-001 | Diperbaiki | `src/features/rbac/application/authorization.ts:40-49` memvalidasi `villageId` role dan pengecualian platform `villageId === null`. |
-| AUD-002 | Diperbaiki | Migration `0001`–`0011`; `src/db/tenant-composite-fk.integration.test.ts` mengharapkan 68 constraint `%_tenant_fk`. Dicatat lulus pada MySQL disposable di `PHASE-1-CLOSURE-2026-11-17.md`; belum dijalankan pada staging/production. |
+| AUD-002 | Diperbaiki | Migration composite FK dimulai `0001` dan tersebar di beberapa migration; `src/db/tenant-composite-fk.integration.test.ts` kini mengharapkan 93 constraint `%_tenant_fk`. Kelulusan 68 constraint pada MySQL disposable tercatat di `PHASE-1-CLOSURE-2026-11-17.md`; daftar 93 belum dijalankan ulang pada rekonsiliasi dokumen ini dan belum diuji di staging/production. |
 | AUD-003 | Diperbaiki | `validatePendudukTenantReferences` di `src/features/penduduk/application/use-cases.ts:104,141`; validasi family/region ber-`villageId` di repository. |
 | AUD-004 | Diperbaiki | `validateKeluargaRegion` di `src/features/keluarga/application/use-cases.ts:172,199`. |
 | AUD-005 | Diperbaiki | `validateRumahTanggaRegion` di `src/features/rumah-tangga/application/use-cases.ts:182,196`. |

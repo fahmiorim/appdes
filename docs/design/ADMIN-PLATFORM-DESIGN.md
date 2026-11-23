@@ -3,6 +3,8 @@
 > Status: **Product design v0.1 untuk Super Admin; Admin Desa dan Super Admin kini memiliki acuan screenshot.** Empat puluh enam layar Admin Desa tersedia di `docs/mockups/village/` dan dipetakan di [audit kesiapan backend mockup baru](../reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md). Tiga puluh sembilan layar Super Admin berada di `docs/mockups/platform/super-admin/` dan dipetakan di [audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md).
 >
 > Catatan: §2 memakai mockup Admin Desa sebagai acuan. §3 sudah diselaraskan dengan 39 mockup Super Admin dan diimplementasikan pada 19 November 2026 (shell, header halaman, KPI bertone, tab tenant, dan dashboard). Angka contoh pada mockup tidak dipakai sebagai fixture; KPI dan tabel selalu membaca data tenant nyata.
+>
+> **Catatan rekonsiliasi (23 November 2026):** status Pengguna platform, Template, dan batasan §4 diselaraskan dengan `origin/main` `2c86ec48`. Angka route, modul, dan grant terkini ada di [SID_FEATURE_MAP](../SID_FEATURE_MAP.md).
 
 ## 1. Prinsip bersama
 
@@ -77,12 +79,12 @@ Bagian ini mencatat fitur yang lazim dimiliki konsol Super Admin pada produk Saa
 |---|---|---|
 | Ringkasan / Dashboard | KPI jumlah tenant, tenant aktif, pengguna, penduduk agregat, aktivitas terbaru | Ada — KPI, tenant terbaru, feed audit terbaru, dan daftar "perlu perhatian" pada `/super-admin` |
 | Tenant / Desa | Daftar tenant, cari dan filter, provisioning, detail, aktif/nonaktif, kuota media, reset akses admin, ekspor, purge | Ada — seluruh aksi pada `/super-admin/tenant` |
-| Domain | Domain utama dan alias per tenant, status verifikasi DNS, status sertifikat | Sebagian — daftar lintas desa di `/super-admin/domain` dan kelola alias di panel tenant; verifikasi DNS/SSL belum ada |
+| Domain | Domain utama dan alias per tenant, status pemantauan DNS, status sertifikat | Sebagian — daftar lintas desa, kelola alias, dan pemantauan DNS/SSL di `/super-admin/domain`; lifecycle verifikasi kepemilikan (challenge DNS/HTTP) belum ada |
 | Pengguna platform | Akun super admin dan staf platform, role, MFA, sesi aktif, undangan anggota tim | Ada — `/super-admin/pengguna` menampilkan daftar, membuat akun platform, aktif/nonaktif, reset sandi sementara, dan cabut sesi; MFA dan undangan email belum ada |
 | Langganan / paket | Paket, kuota, masa aktif, tagihan, invoice, riwayat pembayaran | Belum — belum ada model komersial |
 | Audit trail | Log aksi sensitif lintas tenant: aktor, waktu, IP, perubahan | Ada — `/super-admin/audit` dengan pencarian, filter desa/peristiwa, paginasi, detail perubahan, dan ekspor CSV hingga 5.000 baris |
 | Monitor dan kesehatan | Status basis data dan penyimpanan, antrean job, backup terakhir, error rate | Belum |
-| Template dan konten | Template tenant baru (role, modul, tema, menu publik), tema, katalog surat | Sebagian — `/super-admin/template` menampilkan isi template baca-saja; editor template belum ada |
+| Template dan konten | Template tenant baru (role, modul, tema, menu publik), katalog tema, katalog surat | Ada — `/super-admin/template` menyediakan katalog: buat, ubah, ubah status, riwayat versi, dan distribusi ke tenant pemakai; tenant memilih template terbit pada tab Tampilan `/pengaturan-desa`. Belum: registry paket kode tema dan editor template fondasi tenant |
 | Pengaturan platform | Identitas platform, SMTP, kuota default, kebijakan retensi | Sebagian — `/super-admin/pengaturan` menampilkan konfigurasi aktif baca-saja (tanpa rahasia); pengubahan tetap lewat environment |
 | Dukungan | Tiket, impersonasi dengan audit, catatan kontak tenant | Belum — impersonasi memerlukan keputusan keamanan tersendiri |
 
@@ -123,8 +125,8 @@ Menu admin desa dibangun dari tabel `modules` yang dibatasi tenant, sedangkan ak
 
 ## 4. Batasan saat ini
 
-- Sidebar desa yang disemai template menampilkan Beranda, Data Penduduk, dan grup Pengaturan (Pengguna & Hak Akses serta Grup Akses). Halaman `/keuangan`, `/konten/berita`, `/konten/galeri`, `/persuratan/surat`, dan `/pengaduan-admin` sudah ada sebagai route baca-saja, tetapi belum mendapat baris modul dan grant di template; untuk tenant baru halaman itu tidak otomatis muncul dan dapat ditolak 403. Kelompok menu lain di §2 masih target.
-- Konsol Super Admin sudah memiliki tujuh halaman (Ringkasan, Tenant, Domain, Pengguna platform, Audit trail, Template, Pengaturan) dengan menu sidebar bergrup, breadcrumb, header halaman, dan KPI bertone yang sama. Mockup lain (paket, monitoring, keamanan, laporan, peta sebaran, ekspor) belum memiliki model data/halaman. Halaman Template dan Pengaturan masih baca-saja karena sumbernya artefak kode dan environment; MFA, undangan anggota tim, monitor, backup, feature flag per tenant, dan langganan belum ada.
+- Sidebar desa yang disemai template memuat 23 modul: Beranda, data kependudukan (dashboard, penduduk, keluarga, mutasi, statistik), website desa (dashboard, pengaturan, halaman, konten, dokumen), administrasi surat (dashboard surat dan permohonan surat), pemerintahan desa (dashboard, perangkat, lembaga, wilayah), serta grup Pengaturan (pengguna dan grup akses). Halaman `/keuangan`, `/konten/berita`, `/konten/galeri`, `/inventaris`, `/absensi-kepegawaian`, `/pelayanan-publik`, `/laporan-statistik`, dan `/pengaduan-admin` sudah ada, tetapi belum mendapat baris modul dan grant di template; untuk tenant baru halaman itu tidak otomatis muncul dan dapat ditolak 403. Kelompok menu lain di §2 masih target.
+- Konsol Super Admin sudah memiliki 13 halaman dalam tujuh area (Ringkasan, Tenant, Domain + tambah/detail, Pengguna platform, Audit trail, Template + baru/fondasi/penggunaan/detail, Pengaturan) dengan menu sidebar bergrup, breadcrumb, header halaman, dan KPI bertone yang sama. Mockup lain (paket, monitoring, keamanan, laporan, peta sebaran, ekspor) belum memiliki model data/halaman. Halaman Template dapat membuat, mengubah, dan mendistribusikan katalog template; halaman Pengaturan tetap baca-saja karena sumbernya environment. MFA untuk akun platform, undangan anggota tim, monitor, backup, feature flag per tenant, dan langganan belum ada.
 - Audit trail platform dapat dicari, difilter per desa dan jenis peristiwa, menampilkan detail perubahan, serta diekspor ke CSV (maksimal 5.000 baris per unduhan). Retensi dan arsip audit terpusat belum ada.
 - Pengelolaan pengguna platform hanya menjangkau akun `village_id IS NULL`; akun administrator desa tetap dikelola dari konsol tenant masing-masing.
 - Admin Desa memiliki 46 screenshot acuan dalam 11 area di `docs/mockups/village/`, dan Super Admin memiliki 39 screenshot di `docs/mockups/platform/super-admin/`. Semua masih satu varian desktop 1536 × 1024; belum ada varian mobile maupun state kosong/loading/error. Setiap penyimpangan/keputusan produk harus direview dan dicatat sebelum acceptance.

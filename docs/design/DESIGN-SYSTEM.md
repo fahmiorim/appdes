@@ -232,14 +232,14 @@ Sebelum mengubah status dokumen menjadi stable:
 | Area | Status |
 |---|---|
 | Inventaris mockup | 126 file terdaftar: 21 publik, 11 akun, 7 pendukung, 41 platform (2 landing/login + 39 konsol Super Admin), dan 46 Admin Desa |
-| Audit struktur repository | Baseline 18 November 2026 pada `main`: `/masuk`, `/beranda`, dan tujuh halaman `/super-admin/*`. Per 19 November 2026 ada 48 `page.tsx`: 19 di `(admin)` — 12 halaman Admin Desa dan 7 konsol platform — dengan `RUTE_ADMIN_TERSEDIA` 16 entri. Login Admin Desa `/masuk-admin` bukan UI pengelolaan modul. Template tenant baru tetap hanya menyemai 5 modul; lima halaman baca-saja belum mendapat modul/grant sehingga dapat ditolak 403 |
+| Audit struktur repository | Baseline 18 November 2026 pada `main`: `/masuk`, `/beranda`, dan tujuh area menu `/super-admin/*`. Per 23 November 2026 ada 149 `page.tsx`: 102 di `(admin)` — 89 halaman non-super-admin dan 13 halaman `/super-admin` — dengan `RUTE_ADMIN_TERSEDIA` 65 entri. Login Admin Desa `/masuk-admin` bukan UI pengelolaan modul. Template tenant baru menyemai 23 modul dan 62 grant; jumlah route tidak menjamin CRUD lengkap |
 | Audit visual referensi | 42 mockup diaudit pada 18 November 2026. Pada 19 November, 39 layar Super Admin ditinjau lewat contact sheet (layar utama pada resolusi 1400 px) dan 46 layar Admin Desa ditinjau. Audit ini tidak mengukur pixel, kontras final, atau viewport implementasi |
 | Prinsip dan semantik token | Draft; dapat dipakai sebagai kontrak semantik |
 | Baseline warna | Draft v0.3 diturunkan dari sampel visual; perlu contrast check dan browser comparison |
 | Komponen bersama | Spesifikasi awal; perlu visual review dan konsolidasi |
 | Admin Desa | 46 referensi di `docs/mockups/village/`; 11 area fitur, dengan backend yang jauh lebih siap daripada UI. Pemetaan modul dan status backend ada di [audit kesiapan backend mockup baru](../reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md) |
 | Super Admin | 39 referensi di `docs/mockups/platform/super-admin/`; baru 7 route konsol dengan kedalaman berbeda. Pemetaan dan 23 layar tanpa model data ada di [audit mockup Super Admin](../reports/05-ui-audit/REVIEW-MOCKUP-SUPER-ADMIN-2026-11-19.md); layar Laporan & Analitik ke-39 juga belum punya model data |
-| Arah visual Super Admin | Ditetapkan 19 November 2026 mengikuti 39 mockup: sidebar indigo-ungu, aksi ungu, topbar breadcrumb + pencarian, header halaman, dan KPI bertone. Shell dan tujuh halaman konsol sudah memakainya; 32 layar lain belum dibangun. Rincian di [spesifikasi Admin dan Super Admin](./ADMIN-PLATFORM-DESIGN.md) |
+| Arah visual Super Admin | Ditetapkan 19 November 2026 mengikuti 39 mockup: sidebar indigo-ungu, aksi ungu, topbar breadcrumb + pencarian, header halaman, dan KPI bertone. Shell dan tujuh area menu konsol sudah memakainya; 32 layar mockup lain belum dibangun. Rincian di [spesifikasi Admin dan Super Admin](./ADMIN-PLATFORM-DESIGN.md) |
 | Responsive rules final | Belum diverifikasi pada viewport desktop/mobile |
 | Visual regression baseline | Belum dibuat; perlu runtime browser dan fixture sintetis |
 

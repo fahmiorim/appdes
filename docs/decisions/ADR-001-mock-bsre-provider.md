@@ -1,9 +1,13 @@
 # ADR-001 — Mock BSrE Provider untuk Pengujian TTE
 
-- **Status:** Diterima untuk implementasi lingkungan development/test
+- **Status:** Diterima untuk implementasi lingkungan development/test; **belum diterapkan** per 23 November 2026
 - **Tanggal:** 12 November 2026
 - **Konteks:** Appdes belum memiliki akses/credential integrasi resmi BSrE. Modul TTE perlu tetap dapat diuji sebelum pengajuan integrasi disetujui.
 - **Keputusan:** Sediakan mock provider BSrE sebagai standalone service di repository yang sama, terpisah dari aplikasi produksi.
+
+> **Status implementasi (23 November 2026):** tidak ada direktori `tools/` maupun
+> service `tools/mock-bsre` pada `origin/main` commit `2c86ec48`. ADR ini tetap
+> rancangan keputusan, bukan bukti kode tersedia.
 
 ## 1. Konteks dan masalah
 

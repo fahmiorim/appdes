@@ -135,11 +135,12 @@ DATABASE_URL=mysql://sid_app:GANTI_PASSWORD_APP@127.0.0.1:3306/sid_production
 | `npm run db:push` | Menyamakan schema langsung ke database | **Tidak** |
 | `npm run db:studio` | GUI database | Jangan diekspos ke production |
 
-Repository saat ini memiliki 16 migration: baseline
-`src/db/migrations/0000_baseline.sql` serta `0001`–`0015` untuk composite
-foreign key, kontrol tenant, lifecycle retensi tenant, serta menu penduduk dan
-pengguna/grup akses. Tidak ada mekanisme down/rollback otomatis;
-rollback aplikasi harus disertai pemulihan backup yang sesuai.
+Repository saat ini memiliki 52 berkas migration dan 52 entri journal Drizzle
+(per 23 November 2026), dimulai dari `src/db/migrations/0000_baseline.sql`.
+Nomor versi tidak kontigu dan prefiks `0021` dipakai dua berkas, sehingga
+jumlah migration tidak boleh disimpulkan dari nomor terakhir. Tidak ada
+mekanisme down/rollback otomatis; rollback aplikasi harus disertai pemulihan
+backup yang sesuai.
 
 ### 5.2 Sebelum migrasi
 
@@ -247,9 +248,9 @@ sekali. Template memuat role, modul, matriks akses, tema, dan menu publik.
 Batas yang perlu diketahui operator:
 
 - Template bawaan berisi 4 role (`administrator`, `sekretaris`, `operator`,
-  `kepala-desa`), 5 modul (`beranda`, `penduduk`, grup `pengaturan`,
-  `pengguna`, `grup-akses`), dan 11 grant. Modul lain ditambahkan ke template
-  ketika halamannya tersedia.
+  `kepala-desa`), 23 modul, dan 62 grant. Modul dan grant aktual didefinisikan
+  di `src/db/templates/tenant-template.ts` serta dijaga test; jumlah ini harus
+  diperiksa ulang sebelum onboarding karena template dapat berubah.
 - Katalog jenis surat, buku bumindes, dan kategori inventaris **tidak** dibuat
   otomatis. Ketiganya data master milik desa dan tidak diwariskan dari tenant
   lain; administrator desa menyiapkannya sendiri.

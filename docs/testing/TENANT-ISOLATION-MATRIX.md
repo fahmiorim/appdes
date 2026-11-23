@@ -80,8 +80,9 @@ atau ekspor.
 - `0018_survey_indicator_tenant_fk.sql` menutup `survey_soal.indikator_id`.
 - Preflight 0018 diuji oleh `src/db/m0018-preflight.integration.test.ts`:
   referensi lintas desa harus menghentikan migration sebelum DDL dijalankan.
-- Daftar 74 composite FK dikunci oleh
-  `src/db/tenant-composite-fk.integration.test.ts`.
+- Daftar 93 composite FK (per 23 November 2026) dikunci oleh
+  `src/db/tenant-composite-fk.integration.test.ts`. Angka ini adalah ekspektasi
+  test; rekonsiliasi dokumen tidak menjalankan ulang integration test MySQL.
 
 Lihat juga [Peta Integration Test](./INTEGRATION-TEST-MAP.md) untuk daftar file
 test dan kebijakan seleksi test.

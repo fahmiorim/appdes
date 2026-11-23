@@ -1,7 +1,7 @@
 # Master Roadmap — Appdes SID
 
 > Roadmap stabilisasi, penguatan multi-tenant, dan pengembangan Sistem Informasi Desa.  
-> Repository: `fahmiorim/appdes` · Baseline audit statis: 12 November 2026 · Relevansi perluasan mockup ditinjau: 19 November 2026.
+> Repository: `fahmiorim/appdes` · Baseline audit statis: 12 November 2026 · Relevansi perluasan mockup ditinjau: 19 November 2026 · Rekonsiliasi status kode: 23 November 2026 (`origin/main` `2c86ec48`).
 
 ## 1. Prinsip roadmap
 
@@ -41,19 +41,19 @@ Invarian: host platform/reserved/unknown tidak boleh jatuh ke tenant; tidak ada 
 
 **Penegakan invarian di kode (18 November 2026):** fallback satu desa kini opt-in lewat `TENANT_LEGACY_SINGLE_HOST_FALLBACK` dan default mati, host tak dikenal di halaman menghasilkan 404, serta konfigurasi ditolak bila host platform `flexidesa.id` dipakai pada production dengan fallback aktif (PR #135, #137, #138). Host platform dipisah dari `DESA_BASE_DOMAIN` lewat `PLATFORM_HOSTS`; `/` menampilkan landing page platform untuk host tersebut (PR #130).
 
-**Catatan baseline:** tenant resolver, wildcard slug, domain alias, provisioning desa, dan host-only cookie sudah ditemukan pada audit statis. Landing page platform sudah ada, tetapi produsen host lain belum: `demo.flexidesa.id`, host reserved, dan classifier domain di proxy belum tersedia. Better Auth masih memakai satu `BETTER_AUTH_URL`, custom domain verification belum ditemukan, dan DNS/TLS/reverse proxy belum diverifikasi.
+**Catatan baseline:** tenant resolver, wildcard slug, domain alias, provisioning desa, dan host-only cookie sudah ditemukan pada audit statis. Landing page platform sudah ada, tetapi produsen host lain belum: `demo.flexidesa.id`, host reserved, dan classifier domain di proxy belum tersedia. Better Auth masih memakai satu `BETTER_AUTH_URL`. Pemantauan DNS/SSL sudah tersedia di `pemantauan-domain-use-cases.ts` dan konsol `/super-admin/domain`, tetapi lifecycle verifikasi kepemilikan custom domain (challenge DNS/HTTP) belum ditemukan; konfigurasi DNS/TLS/reverse proxy belum diverifikasi.
 
 ## 2B. Relevansi fase terhadap perluasan mockup Super Admin (19 November 2026)
 
 **Kesimpulan:** Fase 0–6 dan urutannya tetap relevan. Perluasan menjadi 39 layar Super Admin memperjelas arah konsol, tetapi tidak menciptakan fitur baru yang siap pakai: audit 38 layar memetakan 15 layar sebagai sebagian dan 23 belum memiliki fitur atau model data, sedangkan layar Laporan & Analitik yang ke-39 juga belum punya model data — seluruhnya **24 layar** belum siap. Mockup tidak boleh dipakai sebagai acceptance data, dan tidak ada area baru yang boleh melompati gate keamanan tenant serta operasional Fase 1/5.
 
-Ekspansi 46 layar Admin Desa pada hari yang sama tidak mengubah urutan fase. Backend modul desa (kehadiran, inventaris, keluarga, mutasi penduduk, bumindes, pembangunan, statistik, kesehatan, bantuan, survei, dan persuratan) sudah tersedia di server, tetapi UI belum merata: 12 halaman Admin Desa ada, dua area berfungsi penuh, penduduk punya daftar/detail/form, dan lima halaman lain masih baca-saja serta belum mendapat modul/grant template sehingga dapat ditolak 403 pada tenant baru. Pekerjaan berikutnya adalah menghubungkan UI ke use case yang ada dan menyemai modul/grant untuk halaman yang sudah tersedia, bukan membangun backend baru. Rincian per modul ada di [audit kesiapan backend mockup baru](./reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md); temuan menu/grant dan pemetaan layar terbaru ada di [audit mockup dan dokumen](./reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
+Ekspansi 46 layar Admin Desa pada hari yang sama tidak mengubah urutan fase. Backend modul desa (kehadiran, inventaris, keluarga, mutasi penduduk, bumindes, pembangunan, statistik, kesehatan, bantuan, survei, dan persuratan) sudah tersedia di server, tetapi UI belum merata: per 23 November 2026 ada 89 halaman di route group `(admin)` non-super-admin dan 13 halaman `/super-admin`; template tenant memuat 23 modul dan 62 grant. Jumlah route bukan bukti CRUD lengkap, dan status per modul harus dibaca dari [inventaris modul](./architecture/MODULE-INVENTORY.md). Pekerjaan berikutnya adalah menghubungkan UI ke use case yang ada dan menjaga modul/grant template tetap sesuai halaman yang tersedia, bukan membangun backend baru. Rincian per modul ada di [audit kesiapan backend mockup baru](./reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md); temuan menu/grant dan pemetaan layar terbaru ada di [audit mockup dan dokumen](./reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
 
 | Area di mockup | Kondisi repository | Fase/prioritas | Keputusan |
 |---|---|---|---|
 | Dashboard, tenant, domain, pengguna platform, audit, pengaturan | Tujuh route sudah ada; kedalaman berbeda dari mockup | Fase 2 lanjutan · P1/P2 | Perdalam dengan data nyata dan walkthrough staging. Tidak perlu model data baru untuk memperbaiki tampilan yang sudah didukung. |
 | Wizard provisioning, import tenant, dan matriks peran | Sebagian use case tersedia; alur belum satu paket | Fase 2/3 · P2 | Kerjakan setelah validasi tenant dan template stabil; import wajib memiliki validasi, batas ukuran, dan audit. |
-| Katalog template, editor template, dan tema website | Template fondasi ada; editor dan registry tema belum | Fase 2 (template fondasi) dan Fase 3 (tema situs) · P2 | Pisahkan kontrak "template fondasi tenant" dari "tema website" sebelum membuat UI. Jangan mencampur keduanya dalam satu menu. |
+| Katalog template, editor template, dan tema website | Template fondasi dan katalog template platform ada; tenant memilih template terbit lewat `/pengaturan-desa`; registry paket kode tema belum | Fase 2 (template fondasi) dan Fase 3 (tema situs) · P2 | Pisahkan kontrak "template fondasi tenant" dari "tema website" sebelum menambah registry paket kode tema. Jangan mencampur keduanya dalam satu menu. |
 | Langganan, paket, invoice, dan pembayaran | Belum ada model komersial | Kandidat Fase 7 · P3 | Ditunda sampai keputusan bisnis, provider pembayaran, rekonsiliasi, audit, dan kebijakan pajak/privasi tersedia. |
 | Monitoring, backup, dan manajemen insiden | Sebagian prosedur operasional; belum ada UI terpusat | Fase 5 · P1/P2 | Bangun sumber metrik dan prosedur operasi lebih dulu. UI konsol mengikuti, bukan menggantikan backup/restore yang terbukti. |
 | Pusat keamanan, sesi, firewall, dan pembatasan akses | Kontrol tersebar; firewall berada di infrastruktur | Fase 1/5 · P1 | Kontrol tetap di server/ingress. Dashboard hanya menampilkan status tepercaya dan aksi berizin; jangan menyamakan tampilan dengan jaminan keamanan. |
@@ -134,7 +134,7 @@ Pekerjaan:
 **Validasi operasional yang masih terbuka:**
 - Lakukan walkthrough konsol pada staging dengan tenant sintetis, termasuk provisioning, reset admin, perubahan domain, ekspor, dan status retensi.
 - Pasang systemd timer cleanup pada server yang dituju, lalu verifikasi jadwal dan log eksekusinya.
-- Tinjau template bawaan (4 role, 5 modul, 11 grant) sebelum onboarding tenant nyata; halaman baca-saja yang sudah ada belum disemai sebagai modul.
+- Tinjau template bawaan (4 role, 23 modul, 62 grant) sebelum onboarding tenant nyata; pastikan setiap modul yang disemai memiliki halaman dan grant yang diuji.
 - Uji bootstrap dan login Super Admin pada lingkungan staging yang disetujui; jangan menguji pada production tanpa prosedur rilis.
 
 ### Fase 3 — Stabilkan core SID
@@ -181,7 +181,7 @@ Pekerjaan:
 - Lakukan restore drill berkala di staging; catat RPO/RTO aktual.
 - Tambahkan monitoring disk, database, worker/queue, proses WhatsApp, sertifikat TLS, dan domain.
 - Sediakan log terpusat, alert, prosedur insiden, dan SOP operasional.
-- Perbaiki race condition agregasi keuangan, kuota media, dan transisi status surat. (**Selesai di kode** untuk tiga jalur utama: transaksi plus kunci MySQL per 16–17 November 2026, lihat [AUD-034](./reports/01-security/AUD-034-race-conditions.md). Sisa: `upsertKeuanganBatch` pada impor APBDes belum memakai kunci yang sama, sehingga impor bersamaan dengan simpan manual masih dapat membuat induk tidak konsisten; validasi beban nyata juga belum dilakukan.)
+- Perbaiki race condition agregasi keuangan, kuota media, dan transisi status surat. (**Selesai di kode** untuk tiga jalur utama: transaksi plus kunci MySQL per 16 November 2026, lihat [AUD-034](./reports/01-security/AUD-034-race-conditions.md). Impor APBDes kini memakai jalur `saveKeuanganNilai` yang sama, termasuk kunci `(desa, tahun)` dan agregasi ulang induk, dengan bukti `apbdes-import-concurrency.integration.test.ts`; validasi beban nyata belum dilakukan.)
 
 **Kriteria selesai:**
 - Restore DB dan media berhasil pada lingkungan bersih.
