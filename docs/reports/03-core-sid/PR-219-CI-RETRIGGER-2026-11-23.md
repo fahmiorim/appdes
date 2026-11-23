@@ -5,7 +5,8 @@
 - **Tanggal:** 2026-11-23.
 - **Branch task:** `task/PR-219-ci-fix` (dipublikasikan pada branch head PR `work/pengaturan-desa`).
 - **Base commit kerja:** `fc9dc3ef32fd833c8bf5f58740657afeca7817d4` (`origin/main` setelah PR #216 masuk).
-- **Commit hasil:** SHA commit perubahan kode dan laporan tersedia pada histori branch PR; dicantumkan juga dalam penyerahan task.
+- **Commit implementasi dan laporan awal:** `971210ded5e9752e27d7b540ab3a3cbf71449e68`.
+- **Pembaruan laporan pemicu CI:** dikirim sebagai commit terpisah setelah perubahan base; lihat SHA terbaru pada histori branch/penyerahan task.
 - **PR:** [#219](https://github.com/fahmiorim/appdes/pull/219).
 
 ## Kondisi awal dan analisis
@@ -55,12 +56,12 @@ Perintah berikut dijalankan pada working tree yang akan dipublikasikan:
 | PASS | `node scripts/ci-changes.mjs origin/main HEAD` | Mengklasifikasikan perubahan kode, integration, dan build sebagai `true`; job-job terkait memang harus berjalan. |
 | PASS | Test terarah `npx vitest run src/features/pengaturan/domain/pengaturan-desa.test.ts src/features/pengaturan/application/pengaturan-use-cases.test.ts src/features/pengguna/application/pengguna-use-cases.test.ts` | 3 file, 13 test lulus sebelum cek penuh terakhir. |
 | SKIPPED | `npm run test:integration:ci` lokal | Tidak dijalankan karena MySQL disposable lokal tidak disiapkan; workflow GitHub menggunakan MySQL 8 disposable. |
-| PENDING | CI GitHub Actions untuk head hasil push | Belum ada hasil saat laporan ditulis; cek ulang tautan PR setelah trigger. |
-| PENDING | Visual QA GitHub Actions untuk head hasil push | Workflow hanya terpicu pada PR ke `main` dengan path UI yang relevan; status diperiksa setelah push/base update. |
+| PENDING | CI GitHub Actions untuk head hasil push | Base sudah `main`, tetapi belum ada run pada SHA implementasi (`gh api` mengembalikan `total_count: 0`); laporan diperbarui dan dipush untuk memicu event `synchronize`. |
+| PENDING | Visual QA GitHub Actions untuk head hasil push | Workflow hanya terpicu pada PR ke `main` dengan path UI yang relevan; status diperiksa setelah push sinkronisasi. |
 
 ## Status Git/PR dan risiko tersisa
 
-PR #219 semula `OPEN`, head `work/pengaturan-desa` pada `9ddead098174bb176aecc0fec2bd8c2708eefbac`, base `feature/inventaris-aset-mockup-v2`, dan belum memiliki checks. Perubahan ini dipersiapkan pada branch `task/PR-219-ci-fix`; commit dan push ditujukan ke head PR. Base diubah ke `main` agar workflow sesuai trigger yang didefinisikan repository. Tidak ada merge atau deployment.
+PR #219 semula `OPEN`, head `work/pengaturan-desa` pada `9ddead098174bb176aecc0fec2bd8c2708eefbac`, base `feature/inventaris-aset-mockup-v2`, dan belum memiliki checks. Commit implementasi `971210ded5e9752e27d7b540ab3a3cbf71449e68` telah dipush ke head PR. Base diubah ke `main` agar workflow sesuai trigger yang didefinisikan repository. Setelah perubahan base, GitHub belum membuat run untuk SHA tersebut (`gh api` melaporkan `total_count: 0`, dan `gh pr checks 219` melaporkan tidak ada checks). Pembaruan laporan ini dipush sebagai event sinkronisasi PR agar workflow pada diff menuju `main` mulai berjalan. Tidak ada merge atau deployment.
 
 Risiko/keterbatasan:
 - Hasil CI/Visual QA remote belum dapat dinyatakan PASS sampai run selesai pada head commit baru.
