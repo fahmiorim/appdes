@@ -169,6 +169,41 @@ describe("template bawaan yang dikirim", () => {
     }
   });
 
+  it("menyediakan modul dan grant untuk keuangan, konten, inventaris, kepegawaian, layanan, statistik, dan pengaduan", () => {
+    const expected = [
+      { slug: "keuangan", url: "/keuangan", parentSlug: null },
+      { slug: "berita", url: "/konten/berita", parentSlug: "website-desa" },
+      { slug: "galeri", url: "/konten/galeri", parentSlug: "website-desa" },
+      { slug: "inventaris", url: "/inventaris", parentSlug: null },
+      { slug: "kehadiran", url: "/absensi-kepegawaian/absensi", parentSlug: null },
+      { slug: "kepegawaian", url: "/absensi-kepegawaian/pegawai", parentSlug: null },
+      { slug: "cuti-izin", url: "/absensi-kepegawaian/cuti-izin", parentSlug: null },
+      { slug: "layanan-publik", url: "/pelayanan-publik", parentSlug: null },
+      { slug: "laporan-statistik", url: "/laporan-statistik", parentSlug: null },
+      { slug: "pengaduan", url: "/pengaduan-admin", parentSlug: null },
+    ];
+
+    for (const { slug, url, parentSlug } of expected) {
+      expect(template.modules.find((modul) => modul.slug === slug)).toMatchObject({
+        url,
+        parentSlug,
+        isActive: true,
+        isGroup: false,
+      });
+
+      const akses = template.akses
+        .filter((grant) => grant.moduleSlug === slug)
+        .map((grant) => `${grant.roleSlug}:${grant.access}`)
+        .sort();
+      expect(akses, `Grant modul "${slug}" tidak sesuai`).toEqual([
+        "administrator:manage",
+        "kepala-desa:read",
+        "operator:read",
+        "sekretaris:read",
+      ]);
+    }
+  });
+
   it("menyediakan akses baca penduduk untuk role non-admin", () => {
     const penduduk = template.modules.find((modul) => modul.slug === "penduduk");
     expect(penduduk).toMatchObject({

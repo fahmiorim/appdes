@@ -28,7 +28,7 @@ Nama host sistem lain seperti `www`, `admin`, `demo`, `api`, `mail`, `autodiscov
 
 Area Admin Desa pada hostname tenant tidak memakai prefiks `/admin`; halamannya berada di `/beranda`, `/penduduk`, `/keuangan`, `/konten/*`, `/persuratan/surat`, `/pengaduan-admin`, dan `/pengaturan/*`, sesuai `RUTE_ADMIN_TERSEDIA`. Rute tersebut berbeda otoritas dari `admin.flexidesa.id`, yang hanya untuk Super Admin platform. Jangan menyamakan role administrator desa dengan role Super Admin platform.
 
-**Status 23 November 2026:** route group `(admin)` memuat 89 halaman non-super-admin dan 13 halaman `/super-admin`; `RUTE_ADMIN_TERSEDIA` berisi 65 entri dan template tenant menyemai 23 modul untuk 4 role. Jumlah halaman bukan bukti CRUD lengkap; status per modul ada di [inventaris modul](./MODULE-INVENTORY.md). Resolver host belum menjadi classifier lengkap; `demo.flexidesa.id` dan host reserved belum tersedia. Detail UI historis ada di [audit mockup dan dokumen](../reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
+**Status 23 November 2026:** route group `(admin)` memuat 89 halaman non-super-admin dan 13 halaman `/super-admin`; `RUTE_ADMIN_TERSEDIA` berisi 65 entri dan template tenant menyemai 33 modul serta 102 grant untuk 4 role. Jumlah halaman bukan bukti CRUD lengkap; status per modul ada di [inventaris modul](./MODULE-INVENTORY.md). Resolver host belum menjadi classifier lengkap; `demo.flexidesa.id` dan host reserved belum tersedia. Detail UI historis ada di [audit mockup dan dokumen](../reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
 
 ## 2. Baseline implementasi yang ditemukan
 

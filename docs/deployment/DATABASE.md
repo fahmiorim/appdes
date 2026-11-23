@@ -248,7 +248,7 @@ sekali. Template memuat role, modul, matriks akses, tema, dan menu publik.
 Batas yang perlu diketahui operator:
 
 - Template bawaan berisi 4 role (`administrator`, `sekretaris`, `operator`,
-  `kepala-desa`), 23 modul, dan 62 grant. Modul dan grant aktual didefinisikan
+  `kepala-desa`), 33 modul, dan 102 grant. Modul dan grant aktual didefinisikan
   di `src/db/templates/tenant-template.ts` serta dijaga test; jumlah ini harus
   diperiksa ulang sebelum onboarding karena template dapat berubah.
 - Katalog jenis surat, buku bumindes, dan kategori inventaris **tidak** dibuat

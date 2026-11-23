@@ -48,7 +48,7 @@ Urutan sumber kebenaran:
 | 11 | `/pengaturan/pengguna` | Manajemen Pengguna & Hak Akses | `pengguna` | [#42](#mockup-42), pendukung [#44](#mockup-44) | Dinamis, baca + CRUD |
 | 12 | `/pengaturan/grup-akses` | Hak Akses & Permission | `grup-akses` | [#43](#mockup-43) | Dinamis, baca + CRUD + izin |
 
-Pada snapshot 19 November, lima halaman baca-saja adalah Keuangan, Berita, Galeri, Administrasi Surat, dan Pengaduan. Per 23 November 2026, Administrasi Surat sudah memiliki modul dan grant di template tenant, sedangkan Keuangan, Berita, Galeri, dan Pengaduan masih belum. Untuk tenant baru, halaman yang belum memiliki modul/grant dapat ditolak 403 dan tidak muncul di sidebar sampai modul/grant ditambahkan. Ini adalah gap rilis yang diketahui, bukan sesuatu yang boleh ditembus dengan melewati permission.
+Pada snapshot 19 November, lima halaman baca-saja adalah Keuangan, Berita, Galeri, Administrasi Surat, dan Pengaduan. Per 23 November 2026, kelima area itu sudah memiliki modul dan grant di template tenant. Modul dan grant hanya membuka akses sisi server; kedalaman alur tulis tetap mengikuti status per halaman pada tabel ini dan inventaris modul, bukan otomatis menjadi CRUD lengkap.
 
 ## 3. Aturan lintas layar
 
@@ -684,11 +684,11 @@ Mockup lain di katalog tidak diuraikan dalam dokumen ini. Jangan menyatakan selu
 - Tidak ada build, typecheck, unit test, integration test, atau runtime check yang dijalankan untuk 12 layar. Dokumen ini tidak membuktikan halaman berjalan atau test lulus.
 - Fidelity visual tidak diukur dengan screenshot aplikasi. Perbandingan dilakukan terhadap preview mockup 1200 x 800 dan kode/CSS, bukan pixel diff.
 - Tiga layar tidak memiliki mockup khusus: detail penduduk, tambah penduduk, ubah penduduk. Pengaduan tidak memiliki mockup khusus; #17/#19 hanya referensi.
-- Lima halaman baca-saja memiliki gap modul/grant pada template tenant. Ini harus diselesaikan sebelum menganggap halaman tersebut siap dipakai tenant baru.
+- Lima halaman baca-saja sudah memiliki modul dan grant pada template tenant per 23 November 2026. Itu tidak menghilangkan gap kedalaman alur tulis; status per halaman tetap mengikuti tabel dan inventaris modul.
 
 **Urutan kerja yang disarankan.**
 
-1. **Perbaiki akses tenant baru:** tambahkan modul dan grant untuk `keuangan`, `berita`, `galeri`, `surat`, dan `pengaduan` melalui migration/template yang disengaja, beserta test bahwa tenant baru memperoleh menu dan izin yang benar. Jangan mematikan guard.
+1. **Verifikasi akses tenant baru:** modul dan grant untuk `keuangan`, `berita`, `galeri`, `surat`, dan `pengaduan` sudah ditambahkan ke template. Jalankan provisioning test pada database test disposable untuk memastikan tenant baru memperoleh menu dan izin yang benar; jangan mematikan guard.
 2. **Perbaiki alur admin Berita:** pisahkan query admin dari query publik agar draft dan berita terjadwal terlihat, tetap dibatasi `villageId` dan permission.
 3. **Lengkapi alur operasional:** kontrol pagination/filter pada Surat, detail/tanggapan pada Pengaduan, lalu pemilih tahun/filter pada Keuangan. Setiap aksi baru memerlukan aturan otorisasi dan negative test lintas tenant.
 4. **Baru ke parity visual:** KPI, grafik, panel prioritas, dan kepadatan mockup. Jangan menambahkan grafik yang datanya belum tersedia atau belum tervalidasi.

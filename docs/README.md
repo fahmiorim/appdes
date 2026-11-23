@@ -23,6 +23,13 @@ Indeks dokumen repository. Gunakan halaman ini untuk menentukan dokumen mana yan
 | [`testing/`](./testing/) | Peta integration test dan panduan visual QA |
 | [`reports/`](./reports/) | Laporan task, audit, dan snapshot hasil pemeriksaan |
 
+## Pemeriksaan angka dokumen
+
+Jalankan `npm run docs:check-claims` setelah mengubah route, template tenant, atau
+migration. Skrip membandingkan angka pada dokumen aktif dengan source dan
+melewati `reports/` karena laporan adalah snapshot historis. Pemeriksaan yang sama
+berjalan di CI untuk setiap pull request.
+
 ## Membedakan dokumen aktif dan historis
 
 - **Aktif** — dokumen di akar `docs/`, `architecture/`, `decisions/`, `deployment/`, `design/`, `mockups/`, dan `testing/`. Perbarui bila kontrak, status, atau prosedurnya berubah.

@@ -285,7 +285,7 @@ pertama.
 Desa baru kemudian dibuat dari konsol/dashboard Super Admin. Fondasinya berasal
 dari template platform `src/db/templates/tenant-template.ts`, bukan dari desa
 lain, sehingga instalasi baru tidak membutuhkan desa sumber. Template bawaan
-berisi 4 role, 23 modul, dan 62 grant; katalog surat, buku bumindes, dan kategori
+berisi 4 role, 33 modul, dan 102 grant; katalog surat, buku bumindes, dan kategori
 inventaris sengaja tidak diwariskan dan disiapkan oleh administrator desa.
 
 Jangan menganggap endpoint sign-up Better Auth sebagai prosedur instalasi resmi.

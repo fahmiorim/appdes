@@ -232,7 +232,7 @@ Sebelum mengubah status dokumen menjadi stable:
 | Area | Status |
 |---|---|
 | Inventaris mockup | 126 file terdaftar: 21 publik, 11 akun, 7 pendukung, 41 platform (2 landing/login + 39 konsol Super Admin), dan 46 Admin Desa |
-| Audit struktur repository | Baseline 18 November 2026 pada `main`: `/masuk`, `/beranda`, dan tujuh area menu `/super-admin/*`. Per 23 November 2026 ada 149 `page.tsx`: 102 di `(admin)` — 89 halaman non-super-admin dan 13 halaman `/super-admin` — dengan `RUTE_ADMIN_TERSEDIA` 65 entri. Login Admin Desa `/masuk-admin` bukan UI pengelolaan modul. Template tenant baru menyemai 23 modul dan 62 grant; jumlah route tidak menjamin CRUD lengkap |
+| Audit struktur repository | Baseline 18 November 2026 pada `main`: `/masuk`, `/beranda`, dan tujuh area menu `/super-admin/*`. Per 23 November 2026 ada 149 `page.tsx`: 102 di `(admin)` — 89 halaman non-super-admin dan 13 halaman `/super-admin` — dengan `RUTE_ADMIN_TERSEDIA` 65 entri. Login Admin Desa `/masuk-admin` bukan UI pengelolaan modul. Template tenant baru menyemai 33 modul dan 102 grant; jumlah route tidak menjamin CRUD lengkap |
 | Audit visual referensi | 42 mockup diaudit pada 18 November 2026. Pada 19 November, 39 layar Super Admin ditinjau lewat contact sheet (layar utama pada resolusi 1400 px) dan 46 layar Admin Desa ditinjau. Audit ini tidak mengukur pixel, kontras final, atau viewport implementasi |
 | Prinsip dan semantik token | Draft; dapat dipakai sebagai kontrak semantik |
 | Baseline warna | Draft v0.3 diturunkan dari sampel visual; perlu contrast check dan browser comparison |
