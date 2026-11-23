@@ -20,9 +20,16 @@ import {
 export type LaporanInventarisItem = InventarisRow & {
   kategoriNama: string | null;
   kategoriKode: string | null;
+  nilaiBuku?: string;
+  penyusutanBulanan?: string;
 };
 
 const TANPA_KATEGORI = "Tanpa kategori";
+
+/** Cegah teks yang diawali karakter formula dieksekusi spreadsheet saat CSV dibuka. */
+function amanUntukSpreadsheet(value: string): string {
+  return /^[\t\r ]*[=+\-@]/.test(value) ? "\u0027" + value : value;
+}
 
 function kategoriLabel(item: LaporanInventarisItem): string {
   return item.kategoriNama?.trim() || TANPA_KATEGORI;
@@ -194,21 +201,25 @@ export function buildInventarisCsv(
     "Nama Barang",
     "Jumlah",
     "Satuan",
-    "Nilai Akhir",
+    "Nilai Perolehan",
+    "Akumulasi Penyusutan",
+    "Nilai Buku",
     "Kondisi",
     "Lokasi",
   ];
 
   const baris = terpilih.map((item) => [
-    kategoriLabel(item),
-    item.nomorInventaris ?? "",
-    item.kodeBarang ?? "",
-    item.namaBarang,
+    amanUntukSpreadsheet(kategoriLabel(item)),
+    amanUntukSpreadsheet(item.nomorInventaris ?? ""),
+    amanUntukSpreadsheet(item.kodeBarang ?? ""),
+    amanUntukSpreadsheet(item.namaBarang),
     item.jumlah,
-    item.satuan ?? "",
+    amanUntukSpreadsheet(item.satuan ?? ""),
     item.nilaiAkhir ?? "0.00",
-    INVENTARIS_KONDISI_LABELS[item.kondisi] ?? item.kondisi,
-    item.lokasi ?? "",
+    item.akumulasiPenyusutan ?? "0.00",
+    item.nilaiBuku ?? item.nilaiAkhir ?? "0.00",
+    amanUntukSpreadsheet(INVENTARIS_KONDISI_LABELS[item.kondisi] ?? item.kondisi),
+    amanUntukSpreadsheet(item.lokasi ?? ""),
   ]);
 
   const total = [
@@ -219,6 +230,8 @@ export function buildInventarisCsv(
     sumMoney(terpilih.map((item) => item.jumlah)),
     "",
     sumMoney(terpilih.map((item) => item.nilaiAkhir ?? "0.00")),
+    sumMoney(terpilih.map((item) => item.akumulasiPenyusutan ?? "0.00")),
+    sumMoney(terpilih.map((item) => item.nilaiBuku ?? item.nilaiAkhir ?? "0.00")),
     "",
     "",
   ];

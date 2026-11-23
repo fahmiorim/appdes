@@ -113,6 +113,7 @@ describe("neracaAset", () => {
       baik: "1000.00",
       rusak_ringan: "500.00",
       rusak_berat: "0.00",
+      dalam_perbaikan: "0.00",
     });
     expect(tanah?.totalNilai).toBe("1500.00");
   });
@@ -123,6 +124,7 @@ describe("neracaAset", () => {
       baik: "1000.00",
       rusak_ringan: "500.00",
       rusak_berat: "250.00",
+      dalam_perbaikan: "0.00",
     });
     expect(neraca.grandTotal).toBe("1750.00");
   });
@@ -147,9 +149,24 @@ describe("buildInventarisCsv", () => {
     expect(baris[baris.length - 1]).toContain("1500.00");
   });
 
+  it("menetralkan sel teks yang berpotensi menjadi formula spreadsheet", () => {
+    const csv = buildInventarisCsv([
+      item({
+        namaBarang: '=HYPERLINK("https://example.com")',
+        lokasi: " @SUM(A1:A2)",
+      }),
+    ]);
+    expect(csv).toContain("'=HYPERLINK");
+    expect(csv).toContain("' @SUM");
+  });
+
   it("melabeli kondisi dengan teks dan membungkus sel bertanda pemisah", () => {
     const csv = buildInventarisCsv([
-      item({ namaBarang: "Meja; Kursi", kondisi: "rusak_berat", nilaiAkhir: "10.00" }),
+      item({
+        namaBarang: "Meja; Kursi",
+        kondisi: "rusak_berat",
+        nilaiAkhir: "10.00",
+      }),
     ]);
     expect(csv).toContain('"Meja; Kursi"');
     expect(csv).toContain("Rusak Berat");

@@ -54,7 +54,10 @@ function berkasSqlMigrasi(): Array<{ berkas: string; isi: string }> {
     .readdirSync(MIGRATIONS_DIR)
     .filter((berkas) => berkas.endsWith(".sql"))
     .sort()
-    .map((berkas) => ({ berkas, isi: fs.readFileSync(MIGRATIONS_DIR + berkas, "utf8") }));
+    .map((berkas) => ({
+      berkas,
+      isi: fs.readFileSync(MIGRATIONS_DIR + berkas, "utf8"),
+    }));
 }
 
 function tabelMigrasi(): Set<string> {
@@ -77,6 +80,9 @@ function tabelMigrasi(): Set<string> {
  * badan `CREATE TABLE` mana pun. Tanpa cabang ini, paritas snapshot vs SQL
  * gagal palsu; dengan cabang ini, kolom tetap wajib ada di suatu migration.
  */
+const POLA_CREATE_TABLE =
+  /CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)` \(\n([\s\S]*?)\n\)(?:\s*[A-Z][A-Z0-9_]*(?:\s*=\s*[^;]+)?)*\s*;/gi;
+
 function kolomMigrasi(): Map<string, Set<string>> {
   const hasil = new Map<string, Set<string>>();
   const tambah = (tabel: string, kolom: string) => {
@@ -86,9 +92,8 @@ function kolomMigrasi(): Map<string, Set<string>> {
   };
 
   for (const isi of sqlMigrasi()) {
-    for (const tabel of isi.matchAll(
-      /CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)` \(\n([\s\S]*?)\n\);/g,
-    )) {
+    // Terima CREATE TABLE yang diakhiri ENGINE/CHARSET, bukan hanya ");".
+    for (const tabel of isi.matchAll(POLA_CREATE_TABLE)) {
       const nama = tabel[1];
       const badan = tabel[2];
       if (!nama || badan === undefined) continue;
@@ -98,12 +103,15 @@ function kolomMigrasi(): Map<string, Set<string>> {
       }
     }
 
-    for (const tambahan of isi.matchAll(
-      /ALTER TABLE `([a-z0-9_]+)` ADD (?:COLUMN )?`([a-z0-9_]+)`/g,
-    )) {
-      const nama = tambahan[1];
-      const kolom = tambahan[2];
-      if (nama && kolom) tambah(nama, kolom);
+    // Satu ALTER TABLE dapat menambahkan beberapa kolom; proses tiap ADD.
+    for (const pernyataan of isi.matchAll(/ALTER TABLE `([a-z0-9_]+)`([\s\S]*?);/gi)) {
+      const nama = pernyataan[1];
+      const badan = pernyataan[2] ?? "";
+      if (!nama) continue;
+      for (const tambahan of badan.matchAll(/\bADD (?:COLUMN )?`([a-z0-9_]+)`/gi)) {
+        const kolom = tambahan[1];
+        if (kolom) tambah(nama, kolom);
+      }
     }
   }
   return hasil;
@@ -112,7 +120,9 @@ function kolomMigrasi(): Map<string, Set<string>> {
 function namaForeignKeyMigrasi(): Set<string> {
   const hasil = new Set<string>();
   for (const isi of sqlMigrasi()) {
-    for (const cocok of isi.matchAll(/CONSTRAINT `([^`]+)` FOREIGN KEY/g)) hasil.add(cocok[1]!);
+    for (const cocok of isi.matchAll(/CONSTRAINT `([^`]+)` FOREIGN KEY/g)) {
+      hasil.add(cocok[1]!);
+    }
   }
   return hasil;
 }
@@ -120,9 +130,16 @@ function namaForeignKeyMigrasi(): Set<string> {
 function namaIndexMigrasi(): Set<string> {
   const hasil = new Set<string>();
   for (const isi of sqlMigrasi()) {
-    for (const cocok of isi.matchAll(/CREATE (?:UNIQUE )?INDEX `([^`]+)`/g)) hasil.add(cocok[1]!);
+    for (const cocok of isi.matchAll(/CREATE (?:UNIQUE )?INDEX `([^`]+)`/g)) {
+      hasil.add(cocok[1]!);
+    }
     for (const cocok of isi.matchAll(/^[\t ]+KEY `([^`]+)`/gm)) hasil.add(cocok[1]!);
-    for (const cocok of isi.matchAll(/CONSTRAINT `([^`]+)` UNIQUE/g)) hasil.add(cocok[1]!);
+    for (const cocok of isi.matchAll(/CONSTRAINT `([^`]+)` UNIQUE/g)) {
+      hasil.add(cocok[1]!);
+    }
+    for (const cocok of isi.matchAll(/ALTER TABLE `[^`]+` ADD UNIQUE (?:KEY|INDEX) `([^`]+)`/g)) {
+      hasil.add(cocok[1]!);
+    }
   }
   return hasil;
 }
@@ -131,9 +148,13 @@ function namaIndexMigrasi(): Set<string> {
 function namaIndexSkema(): Set<string> {
   const hasil = new Set<string>();
   for (const berkas of fs.readdirSync(SCHEMA_DIR)) {
-    if (!berkas.endsWith(".ts") || berkas.endsWith(".test.ts") || berkas === "index.ts") continue;
+    if (!berkas.endsWith(".ts") || berkas.endsWith(".test.ts") || berkas === "index.ts") {
+      continue;
+    }
     const isi = fs.readFileSync(SCHEMA_DIR + berkas, "utf8");
-    for (const cocok of isi.matchAll(/(?:unique)?index\(\s*"([^"]+)"/gi)) hasil.add(cocok[1]!);
+    for (const cocok of isi.matchAll(/(?:unique)?index\(\s*"([^"]+)"/gi)) {
+      hasil.add(cocok[1]!);
+    }
   }
   return hasil;
 }
@@ -310,7 +331,9 @@ describe("paritas skema vs migrasi", () => {
             /^[ \t]*(ALTER|CREATE|DROP|INSERT|UPDATE|DELETE|TRUNCATE|RENAME)\b/gim,
           ),
         ];
-        if (pernyataan.length > 1) pelanggaran.push(`${berkas} potongan ${posisi + 1}`);
+        if (pernyataan.length > 1) {
+          pelanggaran.push(`${berkas} potongan ${posisi + 1}`);
+        }
       });
     }
 

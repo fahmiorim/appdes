@@ -1,4 +1,4 @@
-export type Action = "read" | "update" | "delete";
+export type Action = "read" | "create" | "update" | "delete";
 
 export const ACCESS_LEVELS = ["read", "write", "manage"] as const;
 export type AccessLevel = (typeof ACCESS_LEVELS)[number];
@@ -11,6 +11,7 @@ export const ACCESS_RANK: Readonly<Record<AccessLevel, number>> = {
 
 const REQUIRED_LEVEL: Readonly<Record<Action, AccessLevel>> = {
   read: "read",
+  create: "write",
   update: "write",
   delete: "manage",
 };
@@ -57,6 +58,7 @@ export function levelToActions(level: AccessLevel | null | undefined): Action[] 
   const actions: Action[] = [];
   if (!level) return actions;
   if (levelAllows(level, "read")) actions.push("read");
+  if (levelAllows(level, "create")) actions.push("create");
   if (levelAllows(level, "update")) actions.push("update");
   if (levelAllows(level, "delete")) actions.push("delete");
   return actions;

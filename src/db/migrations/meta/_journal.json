@@ -281,6 +281,48 @@
       "when": 1795716000000,
       "tag": "0044_keuangan_bulanan",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "5",
+      "when": 1795716600000,
+      "tag": "0045_inventaris_pemeliharaan",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "5",
+      "when": 1795717200000,
+      "tag": "0046_inventaris_dokumen",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "5",
+      "when": 1795717800000,
+      "tag": "0047_inventaris_kondisi_perbaikan",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "5",
+      "when": 1795718400000,
+      "tag": "0048_inventaris_penyusutan_penanggung_jawab",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "5",
+      "when": 1795719000000,
+      "tag": "0049_inventaris_riwayat_pemeliharaan",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "5",
+      "when": 1795719600000,
+      "tag": "0050_inventaris_kondisi_setelah_pemeliharaan",
+      "breakpoints": true
     }
   ]
 }

@@ -18,14 +18,17 @@ describe("levelAllows", () => {
 
   it("memetakan read -> read, write -> update, manage -> delete", () => {
     expect(levelAllows("read", "read")).toBe(true);
+    expect(levelAllows("read", "create")).toBe(false);
     expect(levelAllows("read", "update")).toBe(false);
     expect(levelAllows("read", "delete")).toBe(false);
 
     expect(levelAllows("write", "read")).toBe(true);
+    expect(levelAllows("write", "create")).toBe(true);
     expect(levelAllows("write", "update")).toBe(true);
     expect(levelAllows("write", "delete")).toBe(false);
 
     expect(levelAllows("manage", "read")).toBe(true);
+    expect(levelAllows("manage", "create")).toBe(true);
     expect(levelAllows("manage", "update")).toBe(true);
     expect(levelAllows("manage", "delete")).toBe(true);
   });
@@ -35,8 +38,8 @@ describe("levelToActions", () => {
   it("mengembalikan daftar aksi sesuai tingkat", () => {
     expect(levelToActions(null)).toEqual([]);
     expect(levelToActions("read")).toEqual(["read"]);
-    expect(levelToActions("write")).toEqual(["read", "update"]);
-    expect(levelToActions("manage")).toEqual(["read", "update", "delete"]);
+    expect(levelToActions("write")).toEqual(["read", "create", "update"]);
+    expect(levelToActions("manage")).toEqual(["read", "create", "update", "delete"]);
   });
 });
 
