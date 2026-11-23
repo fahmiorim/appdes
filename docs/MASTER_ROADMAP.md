@@ -47,7 +47,7 @@ Invarian: host platform/reserved/unknown tidak boleh jatuh ke tenant; tidak ada 
 
 **Kesimpulan:** Fase 0–6 dan urutannya tetap relevan. Perluasan menjadi 39 layar Super Admin memperjelas arah konsol, tetapi tidak menciptakan fitur baru yang siap pakai: audit 38 layar memetakan 15 layar sebagai sebagian dan 23 belum memiliki fitur atau model data, sedangkan layar Laporan & Analitik yang ke-39 juga belum punya model data — seluruhnya **24 layar** belum siap. Mockup tidak boleh dipakai sebagai acceptance data, dan tidak ada area baru yang boleh melompati gate keamanan tenant serta operasional Fase 1/5.
 
-Ekspansi 46 layar Admin Desa pada hari yang sama tidak mengubah urutan fase. Backend modul desa (kehadiran, inventaris, keluarga, mutasi penduduk, bumindes, pembangunan, statistik, kesehatan, bantuan, survei, dan persuratan) sudah tersedia di server, tetapi UI belum merata: per 23 November 2026 ada 89 halaman di route group `(admin)` non-super-admin dan 13 halaman `/super-admin`; template tenant memuat 23 modul dan 62 grant. Jumlah route bukan bukti CRUD lengkap, dan status per modul harus dibaca dari [inventaris modul](./architecture/MODULE-INVENTORY.md). Pekerjaan berikutnya adalah menghubungkan UI ke use case yang ada dan menjaga modul/grant template tetap sesuai halaman yang tersedia, bukan membangun backend baru. Rincian per modul ada di [audit kesiapan backend mockup baru](./reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md); temuan menu/grant dan pemetaan layar terbaru ada di [audit mockup dan dokumen](./reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
+Ekspansi 46 layar Admin Desa pada hari yang sama tidak mengubah urutan fase. Backend modul desa (kehadiran, inventaris, keluarga, mutasi penduduk, bumindes, pembangunan, statistik, kesehatan, bantuan, survei, dan persuratan) sudah tersedia di server, tetapi UI belum merata: per 23 November 2026 ada 89 halaman di route group `(admin)` non-super-admin dan 13 halaman `/super-admin`; template tenant memuat 33 modul dan 102 grant. Jumlah route bukan bukti CRUD lengkap, dan status per modul harus dibaca dari [inventaris modul](./architecture/MODULE-INVENTORY.md). Pekerjaan berikutnya adalah menghubungkan UI ke use case yang ada dan menjaga modul/grant template tetap sesuai halaman yang tersedia, bukan membangun backend baru. Rincian per modul ada di [audit kesiapan backend mockup baru](./reports/05-ui-audit/MOCKUP-BACKEND-READINESS-2026-11-19.md); temuan menu/grant dan pemetaan layar terbaru ada di [audit mockup dan dokumen](./reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
 
 | Area di mockup | Kondisi repository | Fase/prioritas | Keputusan |
 |---|---|---|---|
@@ -134,7 +134,7 @@ Pekerjaan:
 **Validasi operasional yang masih terbuka:**
 - Lakukan walkthrough konsol pada staging dengan tenant sintetis, termasuk provisioning, reset admin, perubahan domain, ekspor, dan status retensi.
 - Pasang systemd timer cleanup pada server yang dituju, lalu verifikasi jadwal dan log eksekusinya.
-- Tinjau template bawaan (4 role, 23 modul, 62 grant) sebelum onboarding tenant nyata; pastikan setiap modul yang disemai memiliki halaman dan grant yang diuji.
+- Tinjau template bawaan (4 role, 33 modul, 102 grant) sebelum onboarding tenant nyata; pastikan setiap modul yang disemai memiliki halaman dan grant yang diuji.
 - Uji bootstrap dan login Super Admin pada lingkungan staging yang disetujui; jangan menguji pada production tanpa prosedur rilis.
 
 ### Fase 3 — Stabilkan core SID

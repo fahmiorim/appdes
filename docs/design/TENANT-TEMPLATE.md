@@ -5,7 +5,7 @@
 > `src/db/templates/tenant-template.ts` dan dijaga unit test di
 > `src/features/multi-desa/domain/template-tenant.test.ts` serta integration test
 > `src/features/multi-desa/provisioning-template.integration.test.ts`.
-> Per 23 November 2026 template berisi 4 role, 23 modul, dan 62 grant, dengan 8
+> Per 23 November 2026 template berisi 4 role, 33 modul, dan 102 grant, dengan 8
 > menu publik. Bagian §4–§5 dipertahankan sebagai catatan keputusan desain v1
 > dan rencana v2, bukan inventaris modul terkini; daftar aktual ada di file
 > template dan dijaga test. `getNavPublik` dipakai 5 halaman (lihat §4.3).
@@ -29,7 +29,7 @@ perubahan perilaku provisioning.
 | Slug role/modul wajib unik di dalam template, dan unik per `(village_id, slug)` di database | `template-tenant.ts`, `src/db/schema/rbac.ts:40,71` | Tidak boleh ada role/modul duplikat; nama role juga unik per tenant (`roles_village_name_uq`). |
 | Akses harus menunjuk role dan modul yang ada di template | `template-tenant.ts` | Matriks akses tidak boleh menyebut slug di luar daftar. |
 | Slug modul adalah kunci izin yang dipakai halaman | `src/features/rbac/domain/resources.ts`, `authorization.ts` (`readableResources`) | Slug modul template harus sama dengan `RESOURCES`; kalau tidak, grant tidak pernah cocok dengan pemeriksaan halaman. |
-| Halaman di route group `(admin)`: 89 halaman non-super-admin dan 13 halaman `/super-admin`; `RUTE_ADMIN_TERSEDIA` berisi 65 entri | `git ls-tree -r --name-only HEAD` → 102 `page.tsx` di `src/app/(admin)`; `RUTE_ADMIN_TERSEDIA` di `menu-tampil.ts` | Template kini menyemai 23 modul, jadi jumlah halaman tidak lagi menjadi batas lima modul v1. Jumlah route tidak menjamin CRUD lengkap; lihat §4.2 dan inventaris modul. |
+| Halaman di route group `(admin)`: 89 halaman non-super-admin dan 13 halaman `/super-admin`; `RUTE_ADMIN_TERSEDIA` berisi 65 entri | `git ls-tree -r --name-only HEAD` → 102 `page.tsx` di `src/app/(admin)`; `RUTE_ADMIN_TERSEDIA` di `menu-tampil.ts` | Template kini menyemai 33 modul, jadi jumlah halaman tidak lagi menjadi batas lima modul v1. Jumlah route tidak menjamin CRUD lengkap; lihat §4.2 dan inventaris modul. |
 | Menu menandai rute yang belum ada sebagai nonaktif "Segera", bukan tautan mati | `src/features/navigation/domain/menu-tampil.ts` (`RUTE_ADMIN_TERSEDIA`, `ratakanMenu`), `.admin-nav-pending` di `globals.css` | Menyemai banyak modul sekarang berarti sidebar penuh label "Segera". |
 | Daftar kelompok modul bisa tanpa grant; hak baca induk turun dari anak | `applyParentInheritance` di `src/features/rbac/domain/permission.ts` | Grup navigasi tidak perlu grant sendiri; cukup anaknya. |
 | `menu_publik` dibaca oleh situs publik melalui `getNavPublik` | `src/features/publik/application/nav-publik.ts`; 5 halaman memanggilnya: `/dokumen`, `/pengaduan`, `/pengaduan/baru`, `/pengaduan/berhasil`, dan `/pengaduan/lacak` | Menyemai menu publik hanya memengaruhi 5 halaman tersebut; halaman publik lain (termasuk beranda, berita, profil, agenda, layanan, dan kontak) masih menulis daftar tautan sendiri sampai peralihan selesai. |
@@ -172,7 +172,7 @@ desa (`src/app/(admin)/layout.tsx` mengalihkan pengguna ber-`residentId`).
 
 Bagian ini mencatat keputusan v1: lima modul disemai karena halamannya sudah
 ada — `beranda`, `penduduk`, grup `pengaturan`, `pengguna`, dan `grup-akses`.
-Template per 23 November 2026 sudah diperluas menjadi 23 modul; daftar aktual
+Template per 23 November 2026 sudah diperluas menjadi 33 modul; daftar aktual
 ada di `src/db/templates/tenant-template.ts`. Alasan v1 di bawah tetap menjadi
 kriteria: modul yang disemai harus punya halaman dan grant.
 
@@ -192,14 +192,12 @@ tersebut ada di §5.
 
 Snapshot 19 November 2026 mencatat lima halaman baca-saja Admin Desa di luar
 lima modul v1: `/keuangan`, `/konten/berita`, `/konten/galeri`,
-`/persuratan/surat`, dan `/pengaduan-admin`. Sejak itu template diperluas dengan
-modul website, surat, permohonan surat, dan pemerintahan, sehingga klasifikasi
-lama tidak lagi lengkap; status akses per halaman harus diverifikasi ulang dari
-inventaris dan grant aktual. Halaman yang memanggil `requirePermission` untuk
-resource di luar grant template tetap dapat ditolak 403 sampai modul/grant
-ditambahkan. Ini dicatat sebagai gap implementasi pada
-[audit mockup dan dokumen](../reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md),
-bukan alasan menambah semua modul tanpa alur tulis.
+`/persuratan/surat`, dan `/pengaduan-admin`. Per 23 November 2026 kelima area itu
+sudah memiliki modul dan grant, bersama modul inventaris, kepegawaian, pelayanan
+publik, dan laporan statistik. Modul/grant hanya membuka akses sisi server;
+kedalaman alur tulis per halaman tetap dibaca dari inventaris modul. Modul yang
+halamannya belum ada tetap tidak disemai, dan halaman yang memeriksa resource di
+luar grant template tetap dapat ditolak 403 sampai modul/grant ditambahkan.
 
 ### 4.3 Menu publik
 
@@ -287,9 +285,9 @@ itu keputusan yang disengaja karena desa boleh menyesuaikan role dan menunya.
 
 | Aspek | Dampak |
 |---|---|
-| Tenant baru | Mendapat 4 role, 23 modul, 62 grant, tema `esensi`, dan 8 menu publik. |
+| Tenant baru | Mendapat 4 role, 33 modul, 102 grant, tema `esensi`, dan 8 menu publik. |
 | Tenant lama | Tidak berubah. Tidak diperlukan migration atau backfill. |
-| Provisioning | Tetap satu transaksi; jumlah baris bertambah sedikit (4 role + 23 modul + 62 grant + 8 menu). |
+| Provisioning | Tetap satu transaksi; jumlah baris bertambah sedikit (4 role + 33 modul + 102 grant + 8 menu). |
 | Ekspor template | `platform:export-template` membaca data tenant; isi ekspor otomatis mengikuti data baru. |
 | Versi template | `versi` masih `1` meski daftar modul bertambah; kenaikan versi hanya diperlukan bila **bentuk** data berubah, misalnya menu publik berjenjang. |
 | Keamanan | Tidak ada akun, data pribadi, atau data master desa yang disemai. Semua grant tetap tunduk pada pemeriksaan server-side yang ada. |

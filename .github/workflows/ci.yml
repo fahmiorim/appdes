@@ -59,7 +59,10 @@ jobs:
           cache: npm
 
       # Hanya PR yang mengubah kode yang membutuhkan dependency. PR dokumentasi
-      # cukup menjalankan validator peta yang hanya memakai Node built-in.
+      # cukup menjalankan validator yang hanya memakai Node built-in.
+      - name: Validasi klaim angka dokumen
+        run: npm run docs:check-claims
+
       - name: Restore node_modules
         id: node-modules
         if: needs.changes.outputs.code == 'true'

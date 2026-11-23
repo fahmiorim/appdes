@@ -41,6 +41,7 @@ Gunakan laporan sesuai cakupannya; tidak ada satu laporan yang mewakili seluruh 
 | [Perbaikan CI PR #213](./03-core-sid/ABSENSI-KEPEGAWAIAN-PR-213-2026-11-21.md) | Absensi & kepegawaian: migrasi 0033, repository tenant-scoped, dan penggunaan use case di route | Bukti check lokal (typecheck, lint, format, 2.078 unit test, build) serta catatan migrasi wajib |
 | [Pemulihan CI PR #218](./03-core-sid/LAPORAN-STATISTIK-PR-218-CI-2026-11-22.md) | Laporan statistik: repository tenant-scoped, snapshot Drizzle 0034–0036, dan hasil CI lokal/remote | Status CI remote dicatat sebelum commit/push; periksa run baru pada PR #218 |
 | [Perbaikan CI PR #216](./03-core-sid/INVENTARIS-PR-216-CI-2026-11-23.md) | Inventaris & Aset: format, lint, dan matcher paritas migrasi; hasil CI #216 serta pemeriksaan CI #219 | Bukti head `5620f01d` hijau dan empat blocker #219 |
+| [Modul template baru dan pemeriksaan klaim dokumen](./03-core-sid/TEMPLATE-TENANT-GRANT-DAN-DOC-CI-2026-11-23.md) | Template tenant menyemai 10 modul/40 grant baru untuk keuangan, konten, inventaris, kepegawaian, layanan, statistik, dan pengaduan; CI memeriksa klaim angka dokumen | Bukti unit test, typecheck, lint, format, dan uji negatif skrip; provisioning MySQL belum dijalankan |
 
 Dokumen di `archive/` dipertahankan untuk jejak audit. Jangan mengutipnya sebagai status terbaru tanpa memeriksa laporan penggantinya.
 
