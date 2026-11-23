@@ -254,11 +254,11 @@ Aturan penting:
   ke database production. Integration test membuat database, menjalankan
   migrasi, dan menulis fixture.
 - Buat backup sebelum migrasi apa pun pada database yang sudah berisi data.
-- Repository saat ini memiliki 16 migrasi: baseline
-  `src/db/migrations/0000_baseline.sql` dan `0001`–`0015` untuk composite
-  foreign key, kontrol tenant, lifecycle tenant, serta menu penduduk dan
-  pengguna/grup akses. Tidak ada migrasi rollback
-  otomatis; pemulihan dilakukan dari backup.
+- Repository saat ini memiliki 52 berkas migration dan 52 entri journal Drizzle
+  (per 23 November 2026), dimulai dari `src/db/migrations/0000_baseline.sql`.
+  Nomor versi tidak kontigu dan prefiks `0021` dipakai dua berkas, sehingga
+  jumlah migration tidak boleh disimpulkan dari nomor terakhir. Tidak ada
+  migration rollback otomatis; pemulihan dilakukan dari backup.
 
 ### 6.1 Bootstrap Super Admin dan desa pertama
 
@@ -285,7 +285,7 @@ pertama.
 Desa baru kemudian dibuat dari konsol/dashboard Super Admin. Fondasinya berasal
 dari template platform `src/db/templates/tenant-template.ts`, bukan dari desa
 lain, sehingga instalasi baru tidak membutuhkan desa sumber. Template bawaan
-berisi 4 role, 5 modul, dan 11 grant; katalog surat, buku bumindes, dan kategori
+berisi 4 role, 23 modul, dan 62 grant; katalog surat, buku bumindes, dan kategori
 inventaris sengaja tidak diwariskan dan disiapkan oleh administrator desa.
 
 Jangan menganggap endpoint sign-up Better Auth sebagai prosedur instalasi resmi.

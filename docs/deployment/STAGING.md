@@ -115,7 +115,7 @@ runner lokal tanpa database, `npm run test:integration` akan mencetak status
 
 - [ ] Database staging terpisah dan kredensial bukan production.
 - [ ] `npm ci` selesai tanpa error.
-- [ ] `npm run db:migrate` selesai dan 16 migrasi tercatat.
+- [ ] `npm run db:migrate` selesai dan 52 migrasi tercatat (nomor tidak kontigu; periksa journal, bukan nomor terakhir).
 - [ ] `npm run build` selesai tanpa error.
 - [ ] Service berjalan sebagai user non-root.
 - [ ] `/api/publik/openapi` merespons 200.

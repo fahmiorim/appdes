@@ -3,6 +3,7 @@
 > **Status:** rancangan target dan catatan implementasi (bukan bukti deployment).  
 > **Repository:** `fahmiorim/appdes`  
 > **Baseline source yang diperiksa:** branch `main`, commit `3aad86bb224801424dc62bc4f40faebe3f220d18` (12 November 2026).  
+> **Rekonsiliasi status kode:** `origin/main` commit `2c86ec48ddff8c14e808f723b4c31cb6781de4872` (23 November 2026).
 > **Tujuan:** menjadi kontrak arsitektur untuk pekerjaan routing hostname, provisioning tenant, autentikasi, dan deployment FlexiDesa.
 
 ## 1. Keputusan arsitektur
@@ -27,7 +28,7 @@ Nama host sistem lain seperti `www`, `admin`, `demo`, `api`, `mail`, `autodiscov
 
 Area Admin Desa pada hostname tenant tidak memakai prefiks `/admin`; halamannya berada di `/beranda`, `/penduduk`, `/keuangan`, `/konten/*`, `/persuratan/surat`, `/pengaduan-admin`, dan `/pengaturan/*`, sesuai `RUTE_ADMIN_TERSEDIA`. Rute tersebut berbeda otoritas dari `admin.flexidesa.id`, yang hanya untuk Super Admin platform. Jangan menyamakan role administrator desa dengan role Super Admin platform.
 
-**Status 19 November 2026:** 12 halaman Admin Desa sudah memiliki `page.tsx`, tetapi menu tenant baru tetap dibangun dari modul yang disemai template (5 modul). Halaman `keuangan`, `konten/*`, `persuratan/surat`, dan `pengaduan-admin` belum mendapat modul/grant, sehingga route-nya ada tetapi belum dapat dibuka tenant baru tanpa penambahan modul dan permission. Detail ada di [audit mockup dan dokumen](../reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
+**Status 23 November 2026:** route group `(admin)` memuat 89 halaman non-super-admin dan 13 halaman `/super-admin`; `RUTE_ADMIN_TERSEDIA` berisi 65 entri dan template tenant menyemai 23 modul untuk 4 role. Jumlah halaman bukan bukti CRUD lengkap; status per modul ada di [inventaris modul](./MODULE-INVENTORY.md). Resolver host belum menjadi classifier lengkap; `demo.flexidesa.id` dan host reserved belum tersedia. Detail UI historis ada di [audit mockup dan dokumen](../reports/05-ui-audit/MOCKUP-DAN-DOKUMEN-AUDIT-2026-11-19.md).
 
 ## 2. Baseline implementasi yang ditemukan
 
@@ -53,8 +54,8 @@ Pemeriksaan statis pada baseline di atas menemukan fondasi berikut:
 3. Resolver saat ini memiliki fallback ketika jumlah desa aktif tepat satu. Fallback ini berguna untuk mode instalasi lama/satu desa, tetapi tidak boleh membuat host platform, host reserved, atau host yang tidak dikenal diam-diam menjadi tenant.
 4. `BETTER_AUTH_URL` masih menjadi satu base URL konfigurasi untuk Better Auth. URL reset password juga dibentuk dari nilai tersebut. Alur auth lintas hostname perlu dirancang dan diuji sebelum domain produksi diaktifkan.
 5. Cookie Better Auth saat ini host-only (`crossSubDomainCookies.enabled = false`). Pertahankan isolasi ini sebagai default; jangan membagikan cookie sesi ke seluruh subdomain tanpa threat model dan keputusan keamanan eksplisit.
-6. Adanya tabel domain tidak berarti kepemilikan domain custom sudah diverifikasi. Pada baseline belum ditemukan lifecycle verifikasi DNS/HTTP challenge.
-7. DNS wildcard, sertifikat TLS, reverse proxy, firewall, dan konfigurasi produksi belum diperiksa. Statusnya **belum diverifikasi**, bukan dianggap tersedia.
+6. Adanya tabel domain tidak berarti kepemilikan domain custom sudah diverifikasi. Pemantauan DNS dan SSL sudah tersedia melalui `src/features/multi-desa/application/pemantauan-domain-use-cases.ts`, `infrastructure/pemeriksa-dns.ts`, `infrastructure/pemeriksa-ssl.ts`, dan konsol `/super-admin/domain`; namun lifecycle verifikasi kepemilikan (DNS/HTTP challenge) belum ditemukan. Monitoring status bukan bukti kepemilikan.
+7. DNS wildcard, sertifikat TLS, reverse proxy, firewall, dan konfigurasi produksi belum diperiksa. Statusnya **belum diverifikasi**, bukan dianggap tersedia. Pemantauan aplikasi tidak menggantikan pemeriksaan konfigurasi deployment.
 
 ## 3. Aturan resolusi hostname target
 
@@ -309,7 +310,7 @@ Urutan berikut sengaja memisahkan perubahan routing dari security hardening yang
 - Belum ada pemeriksaan live DNS, reverse proxy, firewall, TLS, atau konfigurasi hosting.
 - Belum ada runtime test lintas hostname pada deployment staging.
 - Strategi final Better Auth untuk banyak hostname belum diputuskan.
-- Lifecycle verifikasi custom domain belum tersedia pada baseline.
+- Lifecycle verifikasi kepemilikan custom domain belum tersedia; pemantauan DNS/SSL yang ada bukan verifikasi kepemilikan.
 - Fallback single-tenant masih ada di resolver domain; kebijakan production harus diputuskan dan diuji.
 - Keberadaan use case provisioning belum membuktikan UI platform admin dan seluruh lifecycle tenant sudah siap.
 - Perubahan arsitektur harus diperiksa terhadap branch security yang aktif sebelum digabungkan.

@@ -77,7 +77,7 @@ Bagian ini mencatat fitur yang lazim dimiliki konsol Super Admin pada produk Saa
 |---|---|---|
 | Ringkasan / Dashboard | KPI jumlah tenant, tenant aktif, pengguna, penduduk agregat, aktivitas terbaru | Ada — KPI, tenant terbaru, feed audit terbaru, dan daftar "perlu perhatian" pada `/super-admin` |
 | Tenant / Desa | Daftar tenant, cari dan filter, provisioning, detail, aktif/nonaktif, kuota media, reset akses admin, ekspor, purge | Ada — seluruh aksi pada `/super-admin/tenant` |
-| Domain | Domain utama dan alias per tenant, status verifikasi DNS, status sertifikat | Sebagian — daftar lintas desa di `/super-admin/domain` dan kelola alias di panel tenant; verifikasi DNS/SSL belum ada |
+| Domain | Domain utama dan alias per tenant, status pemantauan DNS, status sertifikat | Sebagian — daftar lintas desa, kelola alias, dan pemantauan DNS/SSL di `/super-admin/domain`; lifecycle verifikasi kepemilikan (challenge DNS/HTTP) belum ada |
 | Pengguna platform | Akun super admin dan staf platform, role, MFA, sesi aktif, undangan anggota tim | Ada — `/super-admin/pengguna` menampilkan daftar, membuat akun platform, aktif/nonaktif, reset sandi sementara, dan cabut sesi; MFA dan undangan email belum ada |
 | Langganan / paket | Paket, kuota, masa aktif, tagihan, invoice, riwayat pembayaran | Belum — belum ada model komersial |
 | Audit trail | Log aksi sensitif lintas tenant: aktor, waktu, IP, perubahan | Ada — `/super-admin/audit` dengan pencarian, filter desa/peristiwa, paginasi, detail perubahan, dan ekspor CSV hingga 5.000 baris |

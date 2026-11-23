@@ -96,7 +96,7 @@ reference/agenda.png      reference/wilayah.png   (gambar desain, untuk dibandin
 
 Skrip memeriksa HTTP 200 lebih dulu untuk setiap route; bila ada route yang error, screenshot-nya tidak diambil dan skrip keluar dengan status 1 sambil menampilkan status HTTP dan cuplikan respons.
 
-Route yang dicakup sama dengan job visual CI: `agenda`, `galeri`, `galeri/kegiatan-desa`, `data/statistik`, `pemerintahan`, `wilayah`, `profil/sejarah`, `profil/visi-misi`, `dokumen`, `potensi`, `kontak`, `pengaduan`, `transparansi/apbdes`, `layanan`, `layanan/surat`, `profil`.
+Skrip lokal mencakup 16 route publik: `agenda`, `galeri`, `galeri/kegiatan-desa`, `data/statistik`, `pemerintahan`, `wilayah`, `profil/sejarah`, `profil/visi-misi`, `dokumen`, `potensi`, `kontak`, `pengaduan`, `transparansi/apbdes`, `layanan`, `layanan/surat`, `profil`. Job `visual-qa.yml` mencakup 18 route publik (menambahkan `/` dan `/berita`) plus `/masuk`; daftar dan cakupannya **tidak identik** dengan skrip lokal. Workflow berjalan pada PR yang mengubah UI dan dapat dijalankan manual lewat `workflow_dispatch`.
 
 ## 5. Menilai hasil
 
