@@ -17,7 +17,7 @@ export async function listPengaturan(
 }
 
 /** Mode penomoran surat pada baris desa (sumber kebenaran mesin penomoran). */
-export async function bacaPenomoranSurat(villageId: number): Promise<string | null> {
+export async function bacaPenomoranSurat(villageId: number): Promise<number | null> {
   const [row] = await db
     .select({ penomoranSurat: villages.penomoranSurat })
     .from(villages)
@@ -27,7 +27,7 @@ export async function bacaPenomoranSurat(villageId: number): Promise<string | nu
 }
 
 /** Perbarui mode penomoran surat satu desa. */
-export async function simpanPenomoranSurat(villageId: number, mode: string): Promise<void> {
+export async function simpanPenomoranSurat(villageId: number, mode: number): Promise<void> {
   await db.update(villages).set({ penomoranSurat: mode }).where(eq(villages.id, villageId));
 }
 

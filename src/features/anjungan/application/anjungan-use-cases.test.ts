@@ -25,7 +25,7 @@ describe("tambahAnjungan", () => {
   it("membuat UUID otomatis bila field dikirim kosong", async () => {
     const hasil = await tambahAnjungan(7, { nama: "Anjungan Surat", uuid: "" });
 
-    expect(dal.requirePermission).toHaveBeenCalledWith("anjungan", "update");
+    expect(dal.requirePermission).toHaveBeenCalledWith("anjungan", "create");
     expect(repo.createAnjungan).toHaveBeenCalledWith(
       expect.objectContaining({
         villageId: 7,

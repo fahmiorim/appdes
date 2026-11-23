@@ -1,29 +1,17 @@
-import { and, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
-import { db } from "@/db";
-import { pengaturanDesa, villages } from "@/db/schema";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
+import {
+  hapusMediaIdentitas,
+  simpanMediaIdentitas,
+} from "@/features/pengaturan/application/pengaturan-desa-use-cases";
 import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
-import { hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import { requirePermission } from "@/lib/dal";
 import { appErrorStatus, isAppError } from "@/lib/errors";
 
 export const runtime = "nodejs";
 const response = (data: unknown, status = 200) =>
   NextResponse.json(data, { status, headers: { "Cache-Control": "private, no-store" } });
-async function setting(villageId: number, key: string, value: string | null) {
-  if (value === null) {
-    await db
-      .delete(pengaturanDesa)
-      .where(and(eq(pengaturanDesa.villageId, villageId), eq(pengaturanDesa.kunci, key)));
-    return;
-  }
-  await db
-    .insert(pengaturanDesa)
-    .values({ villageId, kunci: key, nilai: JSON.stringify(value) })
-    .onDuplicateKeyUpdate({ set: { nilai: JSON.stringify(value) } });
-}
 function handle(e: unknown) {
   if (isAppError(e)) return response({ error: e.message }, appErrorStatus(e.code));
   console.error("Unggah identitas desa gagal:", e);
@@ -57,34 +45,7 @@ export async function POST(request: Request) {
       "umum",
       field,
     );
-    let old: string | null = null;
-    if (field === "logo") {
-      const [v] = await db
-        .select({ logo: villages.logo })
-        .from(villages)
-        .where(eq(villages.id, villageId))
-        .limit(1);
-      old = v?.logo ?? null;
-      await db.update(villages).set({ logo: path }).where(eq(villages.id, villageId));
-    } else {
-      const [v] = await db
-        .select({ nilai: pengaturanDesa.nilai })
-        .from(pengaturanDesa)
-        .where(
-          and(
-            eq(pengaturanDesa.villageId, villageId),
-            eq(pengaturanDesa.kunci, "pengaturan.favicon"),
-          ),
-        )
-        .limit(1);
-      try {
-        old = v?.nilai ? (JSON.parse(v.nilai) as string) : null;
-      } catch {
-        old = null;
-      }
-      await setting(villageId, "pengaturan.favicon", path);
-    }
-    if (old && old !== path) await hapusMedia(old);
+    await simpanMediaIdentitas(villageId, field, path);
     return response({
       message: field === "logo" ? "Logo desa berhasil diunggah." : "Favicon berhasil diunggah.",
       path,
@@ -98,31 +59,9 @@ export async function DELETE(request: Request) {
     const user = await requirePermission("pengaturan-desa", "update"),
       villageId = await resolveVillageId(user),
       field = new URL(request.url).searchParams.get("field");
-    if (field === "logo") {
-      const [v] = await db
-        .select({ logo: villages.logo })
-        .from(villages)
-        .where(eq(villages.id, villageId))
-        .limit(1);
-      await db.update(villages).set({ logo: null }).where(eq(villages.id, villageId));
-      if (v?.logo) await hapusMedia(v.logo);
-    } else if (field === "favicon") {
-      const [v] = await db
-        .select({ nilai: pengaturanDesa.nilai })
-        .from(pengaturanDesa)
-        .where(
-          and(
-            eq(pengaturanDesa.villageId, villageId),
-            eq(pengaturanDesa.kunci, "pengaturan.favicon"),
-          ),
-        )
-        .limit(1);
-      await setting(villageId, "pengaturan.favicon", null);
-      try {
-        const old = v?.nilai ? (JSON.parse(v.nilai) as string) : null;
-        if (old) await hapusMedia(old);
-      } catch {}
-    } else return response({ error: "Jenis media tidak valid." }, 400);
+    if (field !== "logo" && field !== "favicon")
+      return response({ error: "Jenis media tidak valid." }, 400);
+    await hapusMediaIdentitas(villageId, field);
     return response({ message: "Media identitas berhasil dihapus." });
   } catch (e) {
     return handle(e);

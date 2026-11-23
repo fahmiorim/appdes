@@ -96,7 +96,7 @@ describe("simpanDokumenKerjasama", () => {
       isi: new Uint8Array([37, 80, 68, 70]),
     });
 
-    expect(dal.requirePermission).toHaveBeenCalledWith("pelanggan", "update");
+    expect(dal.requirePermission).toHaveBeenCalledWith("pelanggan", "create");
     expect(media.simpanUnggahanMedia).toHaveBeenCalledWith(
       1,
       "umum",

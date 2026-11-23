@@ -1,9 +1,5 @@
-import { eq } from "drizzle-orm";
-
 import { TwoFactorSetup } from "@/app/(admin)/pengaturan/pengguna/keamanan/two-factor-setup";
-import { db } from "@/db";
-import { users } from "@/db/schema/auth";
-import { villageSecuritySettings } from "@/db/schema/village-security";
+import { getKeamananAkunSaya } from "@/features/pengguna/application/pengguna-use-cases";
 import { requireUser } from "@/lib/dal";
 import { env } from "@/lib/env";
 
@@ -12,22 +8,7 @@ import { PasswordChangeForm } from "./password-change-form";
 export const metadata = { title: "Keamanan Akun" };
 export default async function KeamananAkunPage() {
   const user = await requireUser({ allowSecurityRecovery: true });
-  const [account] = await db
-    .select({
-      twoFactorEnabled: users.twoFactorEnabled,
-      email: users.email,
-      emailVerified: users.emailVerified,
-    })
-    .from(users)
-    .where(eq(users.id, user.id))
-    .limit(1);
-  const [policy] = user.villageId
-    ? await db
-        .select()
-        .from(villageSecuritySettings)
-        .where(eq(villageSecuritySettings.villageId, user.villageId))
-        .limit(1)
-    : [undefined];
+  const { account, policy } = await getKeamananAkunSaya(user.id, user.villageId);
   return (
     <main style={{ maxWidth: 760, margin: "32px auto", padding: 20, display: "grid", gap: 16 }}>
       <header>

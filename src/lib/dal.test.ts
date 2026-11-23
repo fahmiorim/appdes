@@ -4,13 +4,18 @@ const mocks = vi.hoisted(() => {
   const limit = vi.fn();
   const where = vi.fn(() => ({ limit }));
   const leftJoin = vi.fn(() => ({ where }));
-  const from = vi.fn(() => ({ leftJoin }));
+  const from = vi.fn(() => ({ leftJoin, where }));
   const select = vi.fn(() => ({ from }));
-  return { select, limit, getSession: vi.fn(), compute: vi.fn() };
+  const whereBebas = vi.fn(async () => undefined);
+  const update = vi.fn(() => ({ set: vi.fn(() => ({ where: whereBebas })) }));
+  const hapus = vi.fn(() => ({ where: whereBebas }));
+  return { select, update, hapus, limit, getSession: vi.fn(), compute: vi.fn() };
 });
 
 vi.mock("server-only", () => ({}));
-vi.mock("@/db", () => ({ db: { select: mocks.select } }));
+vi.mock("@/db", () => ({
+  db: { select: mocks.select, update: mocks.update, delete: mocks.hapus },
+}));
 vi.mock("@/lib/auth", () => ({ auth: { api: { getSession: mocks.getSession } } }));
 vi.mock("next/headers", () => ({ headers: vi.fn(async () => new Headers()) }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
@@ -20,6 +25,7 @@ vi.mock("@/features/rbac/application/authorization", () => ({
 }));
 
 const sesiLama = {
+  session: { id: "s-1", updatedAt: new Date() },
   user: {
     id: "u-1",
     name: "Nama Lama",

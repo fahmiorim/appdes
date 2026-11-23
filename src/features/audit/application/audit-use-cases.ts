@@ -23,6 +23,16 @@ export async function recordAuditEvent(input: AuditEventInput): Promise<void> {
   }
 }
 
+export async function exportAuditLogs(villageId: number, maxPages = 100) {
+  const first = await listAuditLogs(villageId, { page: 1, pageSize: 100 });
+  const pages = await Promise.all(
+    Array.from({ length: Math.max(0, Math.min(first.pageCount, maxPages) - 1) }, (_, index) =>
+      listAuditLogs(villageId, { page: index + 2, pageSize: 100 }),
+    ),
+  );
+  return [...first.rows, ...pages.flatMap((page) => page.rows)];
+}
+
 export async function getAuditLogPageData(input: {
   page?: number;
   search?: string;

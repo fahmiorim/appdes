@@ -6,13 +6,12 @@ import { revalidatePath } from "next/cache";
 import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
 import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
-import { keamananSchema } from "@/features/pengguna/domain/keamanan";
 import {
-  createBlockedIp,
-  DEFAULT_SECURITY_SETTINGS,
-  deleteBlockedIp,
-  saveSecuritySettings,
-} from "@/features/pengguna/infrastructure/keamanan-repository";
+  hapusIpBlokir,
+  simpanKebijakanKeamanan,
+  tambahIpBlokir,
+} from "@/features/pengguna/application/pengguna-use-cases";
+import { DEFAULT_SECURITY_SETTINGS, keamananSchema } from "@/features/pengguna/domain/keamanan";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { requirePermission } from "@/lib/dal";
 
@@ -42,7 +41,7 @@ export async function simpanKeamananAction(formData: FormData): Promise<void> {
     throw new Error(parsed.error.issues[0]?.message ?? "Pengaturan keamanan tidak valid.");
   if (parsed.data.ipRestrictionEnabled && parsed.data.allowedIps.length === 0)
     throw new Error("Isi minimal satu IP yang diizinkan sebelum mengaktifkan pembatasan IP.");
-  await saveSecuritySettings(villageId, user.id, parsed.data);
+  await simpanKebijakanKeamanan(villageId, user.id, parsed.data);
   await recordAuditEvent({
     villageId,
     actorId: user.id,
@@ -62,7 +61,7 @@ export async function blokirIpAction(formData: FormData): Promise<void> {
   if (isIP(ip) === 0) throw new Error("Alamat IP tidak valid.");
   if (reason.length < 3 || reason.length > 255)
     throw new Error("Alasan blokir wajib 3–255 karakter.");
-  await createBlockedIp(villageId, user.id, ip, reason);
+  await tambahIpBlokir(villageId, user.id, ip, reason);
   await recordAuditEvent({
     villageId,
     actorId: user.id,
@@ -77,7 +76,7 @@ export async function hapusBlokirIpAction(formData: FormData): Promise<void> {
   const villageId = await resolveVillageId(user);
   const id = Number(formData.get("id"));
   if (!Number.isInteger(id) || id < 1) throw new Error("ID blokir IP tidak valid.");
-  await deleteBlockedIp(villageId, id);
+  await hapusIpBlokir(villageId, id);
   await recordAuditEvent({
     villageId,
     actorId: user.id,
@@ -91,7 +90,7 @@ export async function hapusBlokirIpAction(formData: FormData): Promise<void> {
 export async function resetKeamananAction(): Promise<void> {
   const user = await requirePermission(RESOURCES.pengguna, "update");
   const villageId = await resolveVillageId(user);
-  await saveSecuritySettings(villageId, user.id, DEFAULT_SECURITY_SETTINGS);
+  await simpanKebijakanKeamanan(villageId, user.id, DEFAULT_SECURITY_SETTINGS);
   await recordAuditEvent({
     villageId,
     actorId: user.id,

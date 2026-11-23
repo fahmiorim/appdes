@@ -211,7 +211,7 @@ describe("gis use-cases: layer & pertanahan", () => {
     await expect(createArea(input)).resolves.toEqual({ id: 21 });
     expect(gisRepo.findPolygonById).toHaveBeenCalledWith(10, 1);
     expect(gisRepo.insertArea).toHaveBeenCalledWith(10, input);
-    expect(dal.requirePermission).toHaveBeenCalledWith(AREA_RESOURCE, "update");
+    expect(dal.requirePermission).toHaveBeenCalledWith(AREA_RESOURCE, "create");
   });
 
   it("createArea menolak polygon yang tidak ditemukan", async () => {
@@ -276,7 +276,7 @@ describe("gis use-cases: layer & pertanahan", () => {
     await expect(createSimbol({ simbol: "Balai Desa", desk: null, sortOrder: 0 })).resolves.toEqual(
       { id: 9 },
     );
-    expect(dal.requirePermission).toHaveBeenCalledWith(SIMBOL_RESOURCE, "update");
+    expect(dal.requirePermission).toHaveBeenCalledWith(SIMBOL_RESOURCE, "create");
   });
 
   it("createPersil menyimpan untuk desa pengguna", async () => {
@@ -292,7 +292,7 @@ describe("gis use-cases: layer & pertanahan", () => {
 
     await expect(createPersil(input)).resolves.toEqual({ id: 31 });
     expect(gisRepo.insertPersil).toHaveBeenCalledWith(10, input);
-    expect(dal.requirePermission).toHaveBeenCalledWith(PERTANAHAN_RESOURCE, "update");
+    expect(dal.requirePermission).toHaveBeenCalledWith(PERTANAHAN_RESOURCE, "create");
   });
 
   it("deletePersil menolak persil yang tidak ada di desa", async () => {

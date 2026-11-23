@@ -1,14 +1,7 @@
-import { eq } from "drizzle-orm";
 import Link from "next/link";
 
-import { db } from "@/db";
-import { users } from "@/db/schema/auth";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
-import {
-  getSecurityOverview,
-  getSecuritySettings,
-  listBlockedIps,
-} from "@/features/pengguna/infrastructure/keamanan-repository";
+import { getDataHalamanKeamanan } from "@/features/pengguna/application/pengguna-use-cases";
 import { hasPermission } from "@/features/rbac/application/authorization";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { requirePermission } from "@/lib/dal";
@@ -30,20 +23,10 @@ export default async function KeamananPage() {
   const canCreate = hasPermission(user.permissions, RESOURCES.pengguna, "create");
   const canManage = hasPermission(user.permissions, RESOURCES.pengguna, "update");
   const canDelete = hasPermission(user.permissions, RESOURCES.pengguna, "delete");
-  const [settings, blockedIps, account, ringkasan] = await Promise.all([
-    getSecuritySettings(villageId),
-    listBlockedIps(villageId),
-    db
-      .select({
-        twoFactorEnabled: users.twoFactorEnabled,
-        email: users.email,
-        emailVerified: users.emailVerified,
-      })
-      .from(users)
-      .where(eq(users.id, user.id))
-      .limit(1),
-    getSecurityOverview(villageId),
-  ]);
+  const { settings, blockedIps, account, ringkasan } = await getDataHalamanKeamanan(
+    villageId,
+    user.id,
+  );
   return (
     <main className={styles.page}>
       <header>
@@ -86,9 +69,9 @@ export default async function KeamananPage() {
       </nav>
       <TwoFactorSetup
         required={settings.requireTwoFactorForAllUsers}
-        enabled={account[0]?.twoFactorEnabled ?? false}
-        hasEmail={Boolean(account[0]?.email)}
-        hasVerifiedEmail={account[0]?.emailVerified ?? false}
+        enabled={account?.twoFactorEnabled ?? false}
+        hasEmail={Boolean(account?.email)}
+        hasVerifiedEmail={account?.emailVerified ?? false}
         canEmailOtp={Boolean(env.RESEND_API_KEY && env.RESEND_FROM)}
       />
       {canManage ? (

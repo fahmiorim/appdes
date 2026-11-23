@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { listAuditLogs } from "@/features/audit/infrastructure/audit-repository";
+import { exportAuditLogs } from "@/features/audit/application/audit-use-cases";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { requirePermission } from "@/lib/dal";
@@ -15,13 +15,7 @@ function cell(value: unknown): string {
 export async function GET() {
   const user = await requirePermission(RESOURCES.auditLog, "read");
   const villageId = await resolveVillageId(user);
-  const first = await listAuditLogs(villageId, { page: 1, pageSize: 100 });
-  const pages = await Promise.all(
-    Array.from({ length: Math.max(0, Math.min(first.pageCount, 100) - 1) }, (_, index) =>
-      listAuditLogs(villageId, { page: index + 2, pageSize: 100 }),
-    ),
-  );
-  const rows = [...first.rows, ...pages.flatMap((page) => page.rows)];
+  const rows = await exportAuditLogs(villageId);
   const header = [
     "Waktu",
     "Pengguna",

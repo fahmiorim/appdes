@@ -18,6 +18,22 @@ export const keamananSchema = z.object({
 });
 export type KeamananInput = z.infer<typeof keamananSchema>;
 
+export const DEFAULT_SECURITY_SETTINGS: KeamananInput = {
+  passwordMinLength: 8,
+  passwordExpiryDays: 90,
+  passwordReuseCount: 3,
+  requireUppercase: true,
+  requireLowercase: true,
+  requireNumber: true,
+  requireSymbol: false,
+  sessionTimeoutMinutes: 30,
+  autoLogoutInactive: true,
+  concurrentLogin: false,
+  requireTwoFactorForAllUsers: false,
+  ipRestrictionEnabled: false,
+  allowedIps: [],
+};
+
 export interface BlockedIpDTO {
   id: number;
   ipAddress: string;

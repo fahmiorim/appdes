@@ -1,4 +1,3 @@
-import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
@@ -7,6 +6,7 @@ import { PublicSiteFooter, PublicSiteHeader } from "./public-site-layout";
 // Header membaca menu tenant; unit test tidak membuka koneksi database.
 vi.mock("@/features/publik/application/website-admin", () => ({
   muatMenuPublik: vi.fn(async () => []),
+  muatTemaPublik: vi.fn(async () => null),
 }));
 
 const desa = {
@@ -43,9 +43,10 @@ describe("public shared site layout", () => {
     expect(markup).toContain('href="/masuk"');
   });
 
-  it("renders the village identity, contact channels, and shared footer navigation", () => {
+  it("renders the village identity, contact channels, and shared footer navigation", async () => {
+    // Footer juga komponen server asinkron (membaca tema publik tenant).
     const markup = renderToStaticMarkup(
-      createElement(PublicSiteFooter, {
+      await PublicSiteFooter({
         desa,
         location: "Sei Balai, Batu Bara, Sumatera Utara",
         logoUrl: null,

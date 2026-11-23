@@ -23,6 +23,19 @@ vi.mock("@/features/rbac/infrastructure/rbac-repository", () => ({
   getRoleById: vi.fn(),
   listRoles: vi.fn(),
 }));
+// Kebijakan kata sandi berasal dari DB; unit test memakai kebijakan bawaan.
+vi.mock("@/features/pengguna/infrastructure/keamanan-repository", () => ({
+  assertPasswordNotReused: vi.fn(async () => undefined),
+  getSecuritySettings: vi.fn(async () => ({
+    passwordMinLength: 8,
+    passwordExpiryDays: 90,
+    passwordReuseCount: 0,
+    requireUppercase: false,
+    requireLowercase: false,
+    requireNumber: false,
+    requireSymbol: false,
+  })),
+}));
 
 const admin = { id: "u-admin", villageId: 7 } as never;
 

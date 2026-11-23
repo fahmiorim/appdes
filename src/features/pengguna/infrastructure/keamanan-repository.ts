@@ -15,23 +15,13 @@ import {
 import { auth } from "@/lib/auth";
 import { conflict } from "@/lib/errors";
 
-import type { BlockedIpDTO, KeamananInput } from "../domain/keamanan";
+import {
+  DEFAULT_SECURITY_SETTINGS,
+  type BlockedIpDTO,
+  type KeamananInput,
+} from "../domain/keamanan";
 
-export const DEFAULT_SECURITY_SETTINGS: KeamananInput = {
-  passwordMinLength: 8,
-  passwordExpiryDays: 90,
-  passwordReuseCount: 3,
-  requireUppercase: true,
-  requireLowercase: true,
-  requireNumber: true,
-  requireSymbol: false,
-  sessionTimeoutMinutes: 30,
-  autoLogoutInactive: true,
-  concurrentLogin: false,
-  requireTwoFactorForAllUsers: false,
-  ipRestrictionEnabled: false,
-  allowedIps: [],
-};
+export { DEFAULT_SECURITY_SETTINGS };
 
 function parseIps(raw: string | null): string[] {
   if (!raw) return [];
@@ -41,6 +31,19 @@ function parseIps(raw: string | null): string[] {
   } catch {
     return [];
   }
+}
+
+export async function getUserSecurityProfile(userId: string) {
+  const [row] = await db
+    .select({
+      twoFactorEnabled: users.twoFactorEnabled,
+      email: users.email,
+      emailVerified: users.emailVerified,
+    })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  return row ?? null;
 }
 
 export async function getSecuritySettings(villageId: number): Promise<KeamananInput> {
