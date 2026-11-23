@@ -81,7 +81,10 @@ export async function simpanIzinAction(
     const roleId = roleIdDari(formData);
     if (roleId === null) throw new Error("Grup akses tidak valid.");
 
-    const izin = new Map<number, { read: boolean; create: boolean; update: boolean; delete: boolean }>();
+    const izin = new Map<
+      number,
+      { read: boolean; create: boolean; update: boolean; delete: boolean }
+    >();
     for (const nilai of formData.getAll("moduleId")) {
       const moduleId = Number(nilai);
       if (Number.isInteger(moduleId) && moduleId > 0) {

@@ -188,7 +188,14 @@ export async function deleteRole(villageId: number, id: number): Promise<void> {
 export async function setRolePermissions(
   villageId: number,
   roleId: number,
-  perms: Array<{ moduleId: number; access: AccessLevel; read: boolean; create: boolean; update: boolean; delete: boolean }>,
+  perms: Array<{
+    moduleId: number;
+    access: AccessLevel;
+    read: boolean;
+    create: boolean;
+    update: boolean;
+    delete: boolean;
+  }>,
 ): Promise<void> {
   await db.transaction(async (tx) => {
     const [role] = await tx
@@ -226,15 +233,32 @@ export async function setRolePermissions(
   });
 }
 
-export async function listActionsByRole(roleId: number, villageId: number | null): Promise<Map<number, ModuleActions>> {
-  const moduleTenantFilter = villageId === null ? isNull(modules.villageId) : eq(modules.villageId, villageId);
-  const roleTenantFilter = villageId === null ? isNull(roles.villageId) : or(eq(roles.villageId, villageId), isNull(roles.villageId));
-  const rows = await db.select({
-    moduleId: rolePermissions.moduleId, read: rolePermissions.canRead,
-    create: rolePermissions.canCreate, update: rolePermissions.canUpdate, delete: rolePermissions.canDelete,
-  }).from(rolePermissions)
+export async function listActionsByRole(
+  roleId: number,
+  villageId: number | null,
+): Promise<Map<number, ModuleActions>> {
+  const moduleTenantFilter =
+    villageId === null ? isNull(modules.villageId) : eq(modules.villageId, villageId);
+  const roleTenantFilter =
+    villageId === null
+      ? isNull(roles.villageId)
+      : or(eq(roles.villageId, villageId), isNull(roles.villageId));
+  const rows = await db
+    .select({
+      moduleId: rolePermissions.moduleId,
+      read: rolePermissions.canRead,
+      create: rolePermissions.canCreate,
+      update: rolePermissions.canUpdate,
+      delete: rolePermissions.canDelete,
+    })
+    .from(rolePermissions)
     .innerJoin(roles, and(eq(roles.id, rolePermissions.roleId), roleTenantFilter))
     .innerJoin(modules, and(eq(modules.id, rolePermissions.moduleId), moduleTenantFilter))
     .where(eq(rolePermissions.roleId, roleId));
-  return new Map(rows.map((row) => [row.moduleId, { read: row.read, create: row.create, update: row.update, delete: row.delete }]));
+  return new Map(
+    rows.map((row) => [
+      row.moduleId,
+      { read: row.read, create: row.create, update: row.update, delete: row.delete },
+    ]),
+  );
 }

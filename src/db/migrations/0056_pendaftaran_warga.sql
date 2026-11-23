@@ -13,4 +13,3 @@ CREATE TABLE IF NOT EXISTS `registrasi_warga` (
   KEY `registrasi_warga_tenant_nik_idx` (`village_id`,`nik`),
   CONSTRAINT `registrasi_warga_village_fk` FOREIGN KEY (`village_id`) REFERENCES `villages`(`id`) ON DELETE CASCADE
 );
---> statement-breakpoint

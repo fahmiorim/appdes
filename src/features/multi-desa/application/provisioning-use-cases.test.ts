@@ -27,7 +27,9 @@ function pengguna(overrides: Partial<CurrentUser> = {}): CurrentUser {
     roleId: 1,
     residentId: null,
     mustChangePin: false,
-    permissions: { isSuperadmin: false, levelByResource: new Map() },
+    passwordExpired: false,
+    mustEnrollTwoFactor: false,
+    permissions: { isSuperadmin: false, levelByResource: new Map(), actionByResource: new Map() },
     ...overrides,
   };
 }
@@ -47,7 +49,7 @@ describe("isSuperAdminUser", () => {
     } as never);
 
     const administrator = pengguna({
-      permissions: { isSuperadmin: true, levelByResource: new Map() },
+      permissions: { isSuperadmin: true, levelByResource: new Map(), actionByResource: new Map() },
     });
 
     await expect(isSuperAdminUser(administrator)).resolves.toBe(false);
@@ -78,7 +80,7 @@ describe("isSuperAdminUser", () => {
       id: "u-platform",
       villageId: null,
       roleId: 3,
-      permissions: { isSuperadmin: false, levelByResource: new Map() },
+      permissions: { isSuperadmin: false, levelByResource: new Map(), actionByResource: new Map() },
     });
 
     await expect(isSuperAdminUser(platform)).resolves.toBe(true);
@@ -97,7 +99,13 @@ describe("requireSuperAdmin", () => {
 
   it("menolak administrator desa", async () => {
     vi.mocked(dal.requireUser).mockResolvedValue(
-      pengguna({ permissions: { isSuperadmin: true, levelByResource: new Map() } }),
+      pengguna({
+        permissions: {
+          isSuperadmin: true,
+          levelByResource: new Map(),
+          actionByResource: new Map(),
+        },
+      }),
     );
 
     await expect(requireSuperAdmin()).rejects.toMatchObject({ code: "FORBIDDEN" });

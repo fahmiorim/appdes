@@ -26,11 +26,25 @@ export interface BlockedIpDTO {
   createdAt: Date;
 }
 
-export function validasiKataSandi(password: string, policy: Pick<KeamananInput, "passwordMinLength" | "requireUppercase" | "requireLowercase" | "requireNumber" | "requireSymbol">): string | null {
-  if (password.length < policy.passwordMinLength) return `Kata sandi minimal ${policy.passwordMinLength} karakter.`;
-  if (policy.requireUppercase && !/[A-Z]/.test(password)) return "Kata sandi harus memuat huruf besar.";
-  if (policy.requireLowercase && !/[a-z]/.test(password)) return "Kata sandi harus memuat huruf kecil.";
+export function validasiKataSandi(
+  password: string,
+  policy: Pick<
+    KeamananInput,
+    | "passwordMinLength"
+    | "requireUppercase"
+    | "requireLowercase"
+    | "requireNumber"
+    | "requireSymbol"
+  >,
+): string | null {
+  if (password.length < policy.passwordMinLength)
+    return `Kata sandi minimal ${policy.passwordMinLength} karakter.`;
+  if (policy.requireUppercase && !/[A-Z]/.test(password))
+    return "Kata sandi harus memuat huruf besar.";
+  if (policy.requireLowercase && !/[a-z]/.test(password))
+    return "Kata sandi harus memuat huruf kecil.";
   if (policy.requireNumber && !/[0-9]/.test(password)) return "Kata sandi harus memuat angka.";
-  if (policy.requireSymbol && !/[^A-Za-z0-9]/.test(password)) return "Kata sandi harus memuat simbol.";
+  if (policy.requireSymbol && !/[^A-Za-z0-9]/.test(password))
+    return "Kata sandi harus memuat simbol.";
   return null;
 }

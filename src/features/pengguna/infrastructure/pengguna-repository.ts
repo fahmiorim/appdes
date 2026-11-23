@@ -168,12 +168,20 @@ export async function updatePengguna(
 
     if (account) {
       if (account.password) {
-        await tx.insert(passwordHistory).values({ userId: id, passwordHash: account.password })
+        await tx
+          .insert(passwordHistory)
+          .values({ userId: id, passwordHash: account.password })
           .onDuplicateKeyUpdate({ set: { passwordHash: account.password } });
       }
       await tx.update(accounts).set({ password: passwordHash }).where(eq(accounts.id, account.id));
     } else {
-      await tx.insert(accounts).values({ id: randomUUID(), accountId: id, providerId: "credential", userId: id, password: passwordHash });
+      await tx.insert(accounts).values({
+        id: randomUUID(),
+        accountId: id,
+        providerId: "credential",
+        userId: id,
+        password: passwordHash,
+      });
     }
     // Reset password oleh admin mencabut semua sesi lama seperti reset via Better Auth.
     await tx.delete(sessions).where(eq(sessions.userId, id));
@@ -186,6 +194,9 @@ export async function deletePengguna(id: string): Promise<void> {
 }
 
 export async function countPenggunaDenganRole(villageId: number, roleId: number): Promise<number> {
-  const [row] = await db.select({ total: count() }).from(users).where(and(eq(users.villageId, villageId), eq(users.roleId, roleId)));
+  const [row] = await db
+    .select({ total: count() })
+    .from(users)
+    .where(and(eq(users.villageId, villageId), eq(users.roleId, roleId)));
   return row?.total ?? 0;
 }

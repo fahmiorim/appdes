@@ -243,7 +243,10 @@ export default async function DetailBeritaPage({ params }: Props) {
               )}
             </section>
 
-            <KomentarBerita slug={berita.slug} enabled={berita.bolehKomentar && pengaturan.komentarAktif} />
+            <KomentarBerita
+              slug={berita.slug}
+              enabled={berita.bolehKomentar && pengaturan.komentarAktif}
+            />
           </div>
 
           <aside className={styles.detailSidebar}>

@@ -1,6 +1,6 @@
 import "server-only";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
@@ -86,13 +86,32 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   let mustEnrollTwoFactor = false;
   if (account.villageId !== null) {
     const [[security], [credential]] = await Promise.all([
-      db.select({ timeout: villageSecuritySettings.sessionTimeoutMinutes, enabled: villageSecuritySettings.autoLogoutInactive, passwordExpiryDays: villageSecuritySettings.passwordExpiryDays, requireTwoFactor: villageSecuritySettings.requireTwoFactorForAllUsers })
-        .from(villageSecuritySettings).where(eq(villageSecuritySettings.villageId, account.villageId)).limit(1),
-      db.select({ updatedAt: accounts.updatedAt }).from(accounts).where(and(eq(accounts.userId, user.id), eq(accounts.providerId, "credential"))).limit(1),
+      db
+        .select({
+          timeout: villageSecuritySettings.sessionTimeoutMinutes,
+          enabled: villageSecuritySettings.autoLogoutInactive,
+          passwordExpiryDays: villageSecuritySettings.passwordExpiryDays,
+          requireTwoFactor: villageSecuritySettings.requireTwoFactorForAllUsers,
+        })
+        .from(villageSecuritySettings)
+        .where(eq(villageSecuritySettings.villageId, account.villageId))
+        .limit(1),
+      db
+        .select({ updatedAt: accounts.updatedAt })
+        .from(accounts)
+        .where(and(eq(accounts.userId, user.id), eq(accounts.providerId, "credential")))
+        .limit(1),
     ]);
     const expiryDays = security?.passwordExpiryDays ?? 90;
-    passwordExpired = account.residentId === null && expiryDays > 0 && Boolean(credential?.updatedAt) && Date.now() - credential!.updatedAt!.getTime() > expiryDays * 86_400_000;
-    mustEnrollTwoFactor = account.residentId === null && Boolean(security?.requireTwoFactor) && !account.twoFactorEnabled;
+    passwordExpired =
+      account.residentId === null &&
+      expiryDays > 0 &&
+      Boolean(credential?.updatedAt) &&
+      Date.now() - credential!.updatedAt!.getTime() > expiryDays * 86_400_000;
+    mustEnrollTwoFactor =
+      account.residentId === null &&
+      Boolean(security?.requireTwoFactor) &&
+      !account.twoFactorEnabled;
     if (security?.enabled ?? true) {
       const timeoutMinutes = security?.timeout ?? 30;
       const lastActivity = (session.session.updatedAt ?? session.session.createdAt).getTime();
@@ -101,7 +120,10 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
         return null;
       }
       // Touch session on authenticated server requests to implement an actual idle timeout.
-      await db.update(sessions).set({ updatedAt: new Date() }).where(eq(sessions.id, session.session.id));
+      await db
+        .update(sessions)
+        .set({ updatedAt: new Date() })
+        .where(eq(sessions.id, session.session.id));
     }
   }
 
@@ -146,10 +168,13 @@ export async function verifySession(redirectTo = "/masuk"): Promise<CurrentUser>
 /**
  * Ambil pengguna atau lempar `AppError` (untuk Server Action / Route Handler).
  */
-export async function requireUser(options: { allowSecurityRecovery?: boolean } = {}): Promise<CurrentUser> {
+export async function requireUser(
+  options: { allowSecurityRecovery?: boolean } = {},
+): Promise<CurrentUser> {
   const user = await getCurrentUser();
   if (!user) throw unauthenticated();
-  if ((user.passwordExpired || user.mustEnrollTwoFactor) && !options.allowSecurityRecovery) throw forbidden();
+  if ((user.passwordExpired || user.mustEnrollTwoFactor) && !options.allowSecurityRecovery)
+    throw forbidden();
   return user;
 }
 

@@ -165,7 +165,14 @@ describe("isolasi tenant repository dan authorization RBAC", () => {
 
     await expect(
       setRolePermissions(current.villageA, current.roleA, [
-        { moduleId: current.moduleB, access: "manage" },
+        {
+          moduleId: current.moduleB,
+          access: "manage",
+          read: true,
+          create: true,
+          update: true,
+          delete: true,
+        },
       ]),
     ).rejects.toThrow(/modul tidak ditemukan pada desa aktif/);
 

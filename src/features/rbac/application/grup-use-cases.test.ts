@@ -60,7 +60,9 @@ describe("saveRolePermissions", () => {
 
     await saveRolePermissions(2, [izinBaca]);
 
-    expect(repo.setRolePermissions).toHaveBeenCalledWith(7, 2, [{ moduleId: 1, access: "read", read: true, create: false, update: false, delete: false }]);
+    expect(repo.setRolePermissions).toHaveBeenCalledWith(7, 2, [
+      { moduleId: 1, access: "read", read: true, create: false, update: false, delete: false },
+    ]);
     const audit = await import("@/features/audit/application/audit-use-cases");
     expect(audit.recordAuditEvent).toHaveBeenCalledWith(
       expect.objectContaining({ event: "grup-akses.permission", resourceId: "2" }),

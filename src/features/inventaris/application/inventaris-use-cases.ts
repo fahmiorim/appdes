@@ -281,7 +281,7 @@ export async function saveInventaris(input: InventarisInput, id?: number) {
     await updateInventaris(
       villageId,
       id,
-            {
+      {
         ...input,
         jumlah: Number(existing.jumlah),
         lokasi: existing.lokasi ?? "",

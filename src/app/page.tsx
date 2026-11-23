@@ -5,8 +5,8 @@ import Link from "next/link";
 import { hostPlatform } from "@/features/desa/application/platform-host";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
 import { getStatistikDesa } from "@/features/desa/application/statistik-desa";
-import { bacaPengaturan } from "@/features/pengaturan/application/pengaturan-use-cases";
 import { adalahHostPlatform } from "@/features/desa/domain/host";
+import { bacaPengaturan } from "@/features/pengaturan/application/pengaturan-use-cases";
 import {
   daftarAlbumGaleri,
   daftarBerita,
@@ -72,16 +72,17 @@ export default async function PublicHomePage() {
   if (adalahHostPlatform((await headers()).get("host"), hostPlatform)) return <PlatformLanding />;
 
   const desa = await getIdentitasFromRequest();
-  const [pengaturan, profil, berita, slider, statistik, perangkat, albums, announcements] = await Promise.all([
-    bacaPengaturan(desa.id),
-    profilDesaPublik(desa.id),
-    daftarBerita(desa.id, { limit: 12 }),
-    daftarSliderBeranda(desa.id),
-    getStatistikDesa(desa.id),
-    daftarPerangkatPublik(desa.id),
-    daftarAlbumGaleri(desa.id),
-    daftarDokumenPublik(desa.id, "pengumuman"),
-  ]);
+  const [pengaturan, profil, berita, slider, statistik, perangkat, albums, announcements] =
+    await Promise.all([
+      bacaPengaturan(desa.id),
+      profilDesaPublik(desa.id),
+      daftarBerita(desa.id, { limit: 12 }),
+      daftarSliderBeranda(desa.id),
+      getStatistikDesa(desa.id),
+      daftarPerangkatPublik(desa.id),
+      daftarAlbumGaleri(desa.id),
+      daftarDokumenPublik(desa.id, "pengumuman"),
+    ]);
 
   const galleryAlbum = albums.find((album) => album.jumlahFoto > 0) ?? null;
   const galleryPhotos = galleryAlbum ? await daftarFotoAlbum(desa.id, galleryAlbum.id) : [];

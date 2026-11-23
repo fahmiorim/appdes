@@ -140,18 +140,25 @@ export function KatalogLayanan({ layanan }: Props) {
                   <div className={styles.serviceBody}>
                     <h3>{item.nama}</h3>
                     <span className={styles.category}>
-                      {item.source === "desa" ? categoryFor(item) : item.klasifikasi ?? categoryFor(item)}
+                      {item.source === "desa"
+                        ? categoryFor(item)
+                        : (item.klasifikasi ?? categoryFor(item))}
                     </span>
                     <p>
                       {item.source === "desa"
-                        ? item.deskripsi || "Informasi layanan yang disediakan oleh pemerintah desa."
+                        ? item.deskripsi ||
+                          "Informasi layanan yang disediakan oleh pemerintah desa."
                         : item.butuhPenduduk
                           ? "Layanan ini memerlukan data penduduk yang terdaftar di desa."
                           : "Layanan administrasi desa. Periksa persyaratan sebelum mengajukan."}
                     </p>
                     {item.source === "desa" ? (
                       <div className={styles.serviceMeta}>
-                        <small>{item.biaya === 0 ? "Gratis" : "Biaya Rp " + (item.biaya ?? 0).toLocaleString("id-ID")}</small>
+                        <small>
+                          {item.biaya === 0
+                            ? "Gratis"
+                            : "Biaya Rp " + (item.biaya ?? 0).toLocaleString("id-ID")}
+                        </small>
                         <small>Estimasi {item.estimasiHari ?? 0} hari</small>
                         {item.metode ? <small>{item.metode.replaceAll("_", " ")}</small> : null}
                         {item.persyaratan ? <small>Persyaratan: {item.persyaratan}</small> : null}

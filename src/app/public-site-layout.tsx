@@ -69,7 +69,10 @@ const navigation: readonly (NavigationLink | NavigationGroup)[] = [
 ];
 
 export async function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Props) {
-  const [configuredMenu, tema] = await Promise.all([muatMenuPublik(desa.id), muatTemaPublik(desa.id)]);
+  const [configuredMenu, tema] = await Promise.all([
+    muatMenuPublik(desa.id),
+    muatTemaPublik(desa.id),
+  ]);
   const menuItems =
     configuredMenu.length > 0
       ? configuredMenu
@@ -97,7 +100,7 @@ export async function PublicSiteHeader({ desa, logoUrl, activePath = "/" }: Prop
   return (
     <>
       {tema ? (
-        <style>{`:root{--public-primary:${tema.primary};--public-secondary:${tema.secondary};--public-accent:${tema.accent};--public-background:${tema.background};--public-surface:${tema.surface};--public-text:${tema.text};--public-heading-font:${tema.fontHeading === "serif" ? "Georgia,serif" : "inherit"};--public-radius:${tema.radius}}main[class*="site"]{background-color:var(--public-background)!important;color:var(--public-text)!important}main[class*="site"] h1,main[class*="site"] h2,main[class*="site"] h3{font-family:var(--public-heading-font)}main[class*="site"] [class*="primary"]{background-color:var(--public-primary)!important;border-color:var(--public-primary)!important}main[class*="site"] [class*="active"]{color:var(--public-primary)!important}main[class*="site"] [class*="card"]{border-radius:var(--public-radius);background-color:var(--public-surface)}main[class*="site"] a:hover{color:var(--public-accent)}footer[class*="footer"]{background:var(--public-secondary)!important}}</style>
+        <style>{`:root{--public-primary:${tema.primary};--public-secondary:${tema.secondary};--public-accent:${tema.accent};--public-background:${tema.background};--public-surface:${tema.surface};--public-text:${tema.text};--public-heading-font:${tema.fontHeading === "serif" ? "Georgia,serif" : "inherit"};--public-radius:${tema.radius}}main[class*="site"]{background-color:var(--public-background)!important;color:var(--public-text)!important}main[class*="site"] h1,main[class*="site"] h2,main[class*="site"] h3{font-family:var(--public-heading-font)}main[class*="site"] [class*="primary"]{background-color:var(--public-primary)!important;border-color:var(--public-primary)!important}main[class*="site"] [class*="active"]{color:var(--public-primary)!important}main[class*="site"] [class*="card"]{border-radius:var(--public-radius);background-color:var(--public-surface)}main[class*="site"] a:hover{color:var(--public-accent)}footer[class*="footer"]{background:var(--public-secondary)!important}`}</style>
       ) : null}
       <header className={styles.header}>
         <div className={styles.headerInner}>
@@ -173,7 +176,9 @@ export async function PublicSiteFooter({ desa, location, logoUrl }: Props) {
       <div className={styles.footerMain}>
         <div className={styles.footerBrand}>
           <div className={styles.footerIdentity}>
-            {logoUrl && tema?.logoTampil !== false ? <Image src={logoUrl} alt="" width={44} height={44} unoptimized /> : null}
+            {logoUrl && tema?.logoTampil !== false ? (
+              <Image src={logoUrl} alt="" width={44} height={44} unoptimized />
+            ) : null}
             <div>
               <strong>Sistem Informasi Desa</strong>
               <b>{desa.namaDesa ?? "Pemerintah Desa"}</b>

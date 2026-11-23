@@ -5818,7 +5818,12 @@ a.beranda-quick-tile:hover {
   padding-top: 12px;
 }
 
-.pengguna-izin-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pengguna-izin-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
 .pengguna-izin-footer p {
   margin: 0;
@@ -5862,7 +5867,9 @@ a.beranda-quick-tile:hover {
 }
 
 @media (max-width: 1180px) {
-  .pengguna-kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pengguna-kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
   .pengguna-layout,
   .pengguna-role-layout {
     grid-template-columns: minmax(0, 1fr);

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
-import { listJenisSuratPublik } from "@/features/surat/application/surat-publik-use-cases";
 import { daftarLayananDesaPublik } from "@/features/publik/application/konten-publik";
+import { listJenisSuratPublik } from "@/features/surat/application/surat-publik-use-cases";
 
 import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
 import { KatalogLayanan } from "./katalog-layanan-client";

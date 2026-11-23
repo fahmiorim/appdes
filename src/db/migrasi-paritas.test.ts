@@ -133,7 +133,7 @@ function namaIndexMigrasi(): Set<string> {
     for (const cocok of isi.matchAll(/CREATE (?:UNIQUE )?INDEX `([^`]+)`/g)) {
       hasil.add(cocok[1]!);
     }
-    for (const cocok of isi.matchAll(/^[\t ]+KEY `([^`]+)`/gm)) hasil.add(cocok[1]!);
+    for (const cocok of isi.matchAll(/^[\t ]+(?:UNIQUE )?KEY `([^`]+)`/gm)) hasil.add(cocok[1]!);
     for (const cocok of isi.matchAll(/CONSTRAINT `([^`]+)` UNIQUE/g)) {
       hasil.add(cocok[1]!);
     }

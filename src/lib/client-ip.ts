@@ -7,8 +7,8 @@ import { env } from "@/lib/env";
  * belakang proxy/platform tepercaya. Tanpa konfigurasi itu, header seperti
  * `X-Forwarded-For` dapat dipalsukan oleh klien langsung.
  */
-export function alamatIpDariHeader(headers: Headers, percayaProxy: boolean): string {
-  if (!percayaProxy) return "tidak-diketahui";
+export function alamatIpDariHeader(headers: Headers | undefined, percayaProxy: boolean): string {
+  if (!percayaProxy || !headers) return "tidak-diketahui";
 
   const kandidat = [
     headers.get("cf-connecting-ip"),

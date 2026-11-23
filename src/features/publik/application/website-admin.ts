@@ -168,15 +168,18 @@ export async function muatTemaPublik(villageId: number) {
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
     const root = parsed as Record<string, unknown>;
     const raw = root.templateTokens;
-    const token = raw && typeof raw === "object" && !Array.isArray(raw)
-      ? raw as Record<string, unknown>
-      : {};
+    const token =
+      raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
     const brandingRaw = root.branding;
-    const branding = brandingRaw && typeof brandingRaw === "object" && !Array.isArray(brandingRaw)
-      ? brandingRaw as Record<string, unknown>
-      : {};
+    const branding =
+      brandingRaw && typeof brandingRaw === "object" && !Array.isArray(brandingRaw)
+        ? (brandingRaw as Record<string, unknown>)
+        : {};
     const color = (key: string, fallback: string, brandingKey?: string) => {
-      const value = brandingKey && typeof branding[brandingKey] === "string" ? branding[brandingKey] : token[key];
+      const value =
+        brandingKey && typeof branding[brandingKey] === "string"
+          ? branding[brandingKey]
+          : token[key];
       return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value) ? value : fallback;
     };
     return {

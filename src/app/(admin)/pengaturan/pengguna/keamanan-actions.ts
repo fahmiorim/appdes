@@ -1,18 +1,28 @@
 "use server";
-import { revalidatePath } from "next/cache";
+
 import { isIP } from "node:net";
-import { requirePermission } from "@/lib/dal";
-import { resolveVillageId } from "@/features/desa/application/resolve-village";
-import { RESOURCES } from "@/features/rbac/domain/resources";
-import { keamananSchema } from "@/features/pengguna/domain/keamanan";
-import { createBlockedIp, DEFAULT_SECURITY_SETTINGS, deleteBlockedIp, saveSecuritySettings } from "@/features/pengguna/infrastructure/keamanan-repository";
+import { revalidatePath } from "next/cache";
+
 import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
 import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
+import { resolveVillageId } from "@/features/desa/application/resolve-village";
+import { keamananSchema } from "@/features/pengguna/domain/keamanan";
+import {
+  createBlockedIp,
+  DEFAULT_SECURITY_SETTINGS,
+  deleteBlockedIp,
+  saveSecuritySettings,
+} from "@/features/pengguna/infrastructure/keamanan-repository";
+import { RESOURCES } from "@/features/rbac/domain/resources";
+import { requirePermission } from "@/lib/dal";
 
 export async function simpanKeamananAction(formData: FormData): Promise<void> {
   const user = await requirePermission(RESOURCES.pengguna, "update");
   const villageId = await resolveVillageId(user);
-  const rawIps = String(formData.get("allowedIps") ?? "").split(/[\n,;]+/).map((ip) => ip.trim()).filter(Boolean);
+  const rawIps = String(formData.get("allowedIps") ?? "")
+    .split(/[\n,;]+/)
+    .map((ip) => ip.trim())
+    .filter(Boolean);
   const parsed = keamananSchema.safeParse({
     passwordMinLength: formData.get("passwordMinLength"),
     passwordExpiryDays: formData.get("passwordExpiryDays"),
@@ -28,10 +38,18 @@ export async function simpanKeamananAction(formData: FormData): Promise<void> {
     ipRestrictionEnabled: formData.get("ipRestrictionEnabled") === "on",
     allowedIps: rawIps,
   });
-  if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Pengaturan keamanan tidak valid.");
-  if (parsed.data.ipRestrictionEnabled && parsed.data.allowedIps.length === 0) throw new Error("Isi minimal satu IP yang diizinkan sebelum mengaktifkan pembatasan IP.");
+  if (!parsed.success)
+    throw new Error(parsed.error.issues[0]?.message ?? "Pengaturan keamanan tidak valid.");
+  if (parsed.data.ipRestrictionEnabled && parsed.data.allowedIps.length === 0)
+    throw new Error("Isi minimal satu IP yang diizinkan sebelum mengaktifkan pembatasan IP.");
   await saveSecuritySettings(villageId, user.id, parsed.data);
-  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.pengaturanUpdate, resource: RESOURCES.pengguna, details: { securityPolicyUpdated: true } });
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.pengaturanUpdate,
+    resource: RESOURCES.pengguna,
+    details: { securityPolicyUpdated: true },
+  });
   revalidatePath("/pengaturan/pengguna");
   revalidatePath("/pengaturan/pengguna/keamanan");
 }
@@ -42,9 +60,16 @@ export async function blokirIpAction(formData: FormData): Promise<void> {
   const ip = String(formData.get("ipAddress") ?? "").trim();
   const reason = String(formData.get("reason") ?? "").trim();
   if (isIP(ip) === 0) throw new Error("Alamat IP tidak valid.");
-  if (reason.length < 3 || reason.length > 255) throw new Error("Alasan blokir wajib 3–255 karakter.");
+  if (reason.length < 3 || reason.length > 255)
+    throw new Error("Alasan blokir wajib 3–255 karakter.");
   await createBlockedIp(villageId, user.id, ip, reason);
-  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.pengaturanUpdate, resource: RESOURCES.pengguna, details: { blockedIpAdded: true } });
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.pengaturanUpdate,
+    resource: RESOURCES.pengguna,
+    details: { blockedIpAdded: true },
+  });
   revalidatePath("/pengaturan/pengguna/keamanan");
 }
 export async function hapusBlokirIpAction(formData: FormData): Promise<void> {
@@ -53,7 +78,13 @@ export async function hapusBlokirIpAction(formData: FormData): Promise<void> {
   const id = Number(formData.get("id"));
   if (!Number.isInteger(id) || id < 1) throw new Error("ID blokir IP tidak valid.");
   await deleteBlockedIp(villageId, id);
-  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.pengaturanUpdate, resource: RESOURCES.pengguna, details: { blockedIpRemoved: true } });
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.pengaturanUpdate,
+    resource: RESOURCES.pengguna,
+    details: { blockedIpRemoved: true },
+  });
   revalidatePath("/pengaturan/pengguna/keamanan");
 }
 
@@ -61,6 +92,12 @@ export async function resetKeamananAction(): Promise<void> {
   const user = await requirePermission(RESOURCES.pengguna, "update");
   const villageId = await resolveVillageId(user);
   await saveSecuritySettings(villageId, user.id, DEFAULT_SECURITY_SETTINGS);
-  await recordAuditEvent({ villageId, actorId: user.id, event: AUDIT_EVENTS.pengaturanUpdate, resource: RESOURCES.pengguna, details: { securityPolicyReset: true } });
+  await recordAuditEvent({
+    villageId,
+    actorId: user.id,
+    event: AUDIT_EVENTS.pengaturanUpdate,
+    resource: RESOURCES.pengguna,
+    details: { securityPolicyReset: true },
+  });
   revalidatePath("/pengaturan/pengguna/keamanan");
 }

@@ -3,6 +3,7 @@ import "server-only";
 import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
+import { villages } from "@/db/schema";
 import { pengaturanDesa } from "@/db/schema/pengaturan";
 
 /** Seluruh baris pengaturan satu desa (kunci belum dikenal diabaikan pemanggil). */
@@ -13,6 +14,21 @@ export async function listPengaturan(
     .select({ kunci: pengaturanDesa.kunci, nilai: pengaturanDesa.nilai })
     .from(pengaturanDesa)
     .where(eq(pengaturanDesa.villageId, villageId));
+}
+
+/** Mode penomoran surat pada baris desa (sumber kebenaran mesin penomoran). */
+export async function bacaPenomoranSurat(villageId: number): Promise<string | null> {
+  const [row] = await db
+    .select({ penomoranSurat: villages.penomoranSurat })
+    .from(villages)
+    .where(eq(villages.id, villageId))
+    .limit(1);
+  return row?.penomoranSurat ?? null;
+}
+
+/** Perbarui mode penomoran surat satu desa. */
+export async function simpanPenomoranSurat(villageId: number, mode: string): Promise<void> {
+  await db.update(villages).set({ penomoranSurat: mode }).where(eq(villages.id, villageId));
 }
 
 /** Simpan/ubah beberapa kunci sekaligus (upsert per kunci). */

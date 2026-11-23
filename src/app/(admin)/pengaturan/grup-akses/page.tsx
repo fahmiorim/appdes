@@ -4,11 +4,17 @@ import Link from "next/link";
 import { DialogHapus } from "@/components/ui/dialog-hapus";
 import { getGrupAksesAdminData } from "@/features/pengguna/application/pengguna-admin";
 
-import { buatRoleAction, hapusRoleAction, resetIzinRoleAction, simpanIzinAction, ubahRoleAction } from "./actions";
+import {
+  buatRoleAction,
+  hapusRoleAction,
+  resetIzinRoleAction,
+  simpanIzinAction,
+  ubahRoleAction,
+} from "./actions";
 import { DialogRole } from "./dialog-role";
 import { DialogSalinRole } from "./dialog-salin-role";
-import { salinRoleAction } from "./salin-role-action";
 import { FormIzin } from "./form-izin";
+import { salinRoleAction } from "./salin-role-action";
 
 export const metadata: Metadata = {
   title: "Hak Akses & Permission",
@@ -59,21 +65,43 @@ export default async function GrupAksesPage({
           </div>
         </article>
         <article className="pengguna-kpi" data-tone="biru">
-          <div><span>Pengguna Terikat</span><strong>{angka.format(data.statistik.total)}</strong><small>Akun staf pada desa ini</small></div>
+          <div>
+            <span>Pengguna Terikat</span>
+            <strong>{angka.format(data.statistik.total)}</strong>
+            <small>Akun staf pada desa ini</small>
+          </div>
         </article>
         <article className="pengguna-kpi" data-tone="oranye">
-          <div><span>Modul Sistem</span><strong>{angka.format(data.moduleCount)}</strong><small>Modul aktif yang dapat diatur</small></div>
+          <div>
+            <span>Modul Sistem</span>
+            <strong>{angka.format(data.moduleCount)}</strong>
+            <small>Modul aktif yang dapat diatur</small>
+          </div>
         </article>
         <article className="pengguna-kpi" data-tone="merah">
-          <div><span>Total Hak Akses</span><strong>{angka.format(data.totalHakAkses)}</strong><small>Izin yang sudah diberikan pada role</small></div>
+          <div>
+            <span>Total Hak Akses</span>
+            <strong>{angka.format(data.totalHakAkses)}</strong>
+            <small>Izin yang sudah diberikan pada role</small>
+          </div>
         </article>
       </div>
 
       <nav aria-label="Bagian manajemen pengguna" className="pengguna-tabs">
-        <Link className="pengguna-tab" href="/pengaturan/pengguna">Pengguna</Link>
-        <Link aria-current="page" className="pengguna-tab" href="/pengaturan/grup-akses">Peran &amp; Hak Akses</Link>
-        {data.canAudit ? <Link className="pengguna-tab" href="/pengaturan/pengguna/aktivitas">Aktivitas Pengguna</Link> : null}
-        <Link className="pengguna-tab" href="/pengaturan/pengguna/keamanan">Pengaturan Keamanan</Link>
+        <Link className="pengguna-tab" href="/pengaturan/pengguna">
+          Pengguna
+        </Link>
+        <Link aria-current="page" className="pengguna-tab" href="/pengaturan/grup-akses">
+          Peran &amp; Hak Akses
+        </Link>
+        {data.canAudit ? (
+          <Link className="pengguna-tab" href="/pengaturan/pengguna/aktivitas">
+            Aktivitas Pengguna
+          </Link>
+        ) : null}
+        <Link className="pengguna-tab" href="/pengaturan/pengguna/keamanan">
+          Pengaturan Keamanan
+        </Link>
       </nav>
 
       <div className="pengguna-role-layout">
@@ -112,7 +140,12 @@ export default async function GrupAksesPage({
                     </span>
                   </Link>
                   <div className="pengguna-role-aksi">
-                    {data.canCreate && data.canUpdate ? <DialogSalinRole role={{ id: role.id, name: role.name }} aksi={salinRoleAction} /> : null}
+                    {data.canCreate && data.canUpdate ? (
+                      <DialogSalinRole
+                        role={{ id: role.id, name: role.name }}
+                        aksi={salinRoleAction}
+                      />
+                    ) : null}
                     {data.canUpdate && !role.isSystem ? (
                       <DialogRole
                         aksi={ubahRoleAction}

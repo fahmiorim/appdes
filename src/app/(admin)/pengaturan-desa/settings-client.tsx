@@ -1,99 +1,1096 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import type { ReactNode } from "react";
 import Link from "next/link";
-import styles from "./pengaturan-desa.module.css";
-import { IntegrationManager } from "./integration-manager";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
-type Desa={id:number;namaDesa:string|null;kodeDesa:string|null;namaKecamatan:string|null;namaKabupaten:string|null;namaPropinsi:string|null;kodePos:string|null;alamat:string|null;email:string|null;telepon:string|null;website:string|null;logo:string|null;namaKepalaDesa:string|null;nipKepalaDesa:string|null;updatedAt:string};
-type Profil={visi:string|null;misi:string|null;sejarah:string|null;sambutan:string|null;koordinat:string|null;luasWilayah:string|null;batasUtara:string|null;batasSelatan:string|null;batasTimur:string|null;batasBarat:string|null};
-type Kontak={whatsapp:string;telepon:string;email:string;alamat:string;website:string;instagram:string;facebook:string;youtube:string;koordinat:string;tautanPeta:string;jamLayanan:string};
-type Umum={komentarAktif:boolean;beritaBeranda:number;pendaftaranWargaAktif:boolean;penomoranSurat:number};
-type Template={id:number;slug:string;nama:string;kategori:string;deskripsi:string;versi:string;tokens:Record<string,string>;tags:string[]};
-type Layanan={id:number;nama:string;kategori:string;deskripsi:string|null;persyaratan:string|null;estimasiHari:number;biaya:number;metode:string;aktif:boolean};
-type Data={desa:Desa|null;profil:Profil|null;kontak:Partial<Kontak>;favicon:string|null;templates:Template[];temaAktif:{slug:string;nama:string;versi:string;opsi:string|null}|null;umum:Umum;layanan:Layanan[];media:{usedBytes:number;quotaMb:number|null}};
-const tabs=[["profil","▣","Profil & Identitas"],["kontak","⌖","Kontak & Lokasi"],["tampilan","▣","Tampilan Website"],["layanan","▰","Layanan Desa"],["integrasi","↗","Integrasi & Sistem"],["backup","▤","Backup & Data"],["umum","☷","Pengaturan Umum"]] as const;
-const blankKontak:Kontak={whatsapp:"",telepon:"",email:"",alamat:"",website:"",instagram:"",facebook:"",youtube:"",koordinat:"",tautanPeta:"",jamLayanan:""};
-const blankUmum:Umum={komentarAktif:true,beritaBeranda:5,pendaftaranWargaAktif:true,penomoranSurat:2};
-const blankService={nama:"",kategori:"administrasi",deskripsi:"",persyaratan:"",estimasiHari:1,biaya:0,metode:"online_dan_langsung",aktif:true};
-const mediaUrl=(path:string|null|undefined)=>path?"/api/publik/media/"+path.split("/").map(encodeURIComponent).join("/"):"";
-const formatBytes=(value:number)=>value<1024?value+" B":value<1024*1024?(value/1024).toFixed(1)+" KB":(value/(1024*1024)).toFixed(1)+" MB";
-function Field({label,children,required=false}:{label:string;children:ReactNode;required?:boolean}){return <label className={styles.field}><span>{label}{required&&<b> *</b>}</span>{children}</label>}
-export function PengaturanDesaClient(){
- const [data,setData]=useState<Data|null>(null),[tab,setTab]=useState<string>("profil"),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[message,setMessage]=useState(""),[error,setError]=useState("");
- const [profile,setProfile]=useState({namaDesa:"",kodeDesa:"",namaKecamatan:"",namaKabupaten:"",namaPropinsi:"",kodePos:"",namaKepalaDesa:"",nipKepalaDesa:"",visi:"",misi:"",sejarah:"",sambutan:"",luasWilayah:"",batasUtara:"",batasSelatan:"",batasTimur:"",batasBarat:""});
- const [contact,setContact]=useState<Kontak>(blankKontak),[general,setGeneral]=useState<Umum>(blankUmum);
- const [templateSlug,setTemplateSlug]=useState(""),[service,setService]=useState({...blankService}),[editingService,setEditingService]=useState<number|null>(null);
- async function load(){setLoading(true);try{const r=await fetch("/api/pengaturan-desa",{cache:"no-store"});const d=await r.json();if(!r.ok)throw new Error(d.error||"Gagal memuat pengaturan.");setData(d);setProfile({namaDesa:d.desa?.namaDesa??"",kodeDesa:d.desa?.kodeDesa??"",namaKecamatan:d.desa?.namaKecamatan??"",namaKabupaten:d.desa?.namaKabupaten??"",namaPropinsi:d.desa?.namaPropinsi??"",kodePos:d.desa?.kodePos??"",namaKepalaDesa:d.desa?.namaKepalaDesa??"",nipKepalaDesa:d.desa?.nipKepalaDesa??"",visi:d.profil?.visi??"",misi:d.profil?.misi??"",sejarah:d.profil?.sejarah??"",sambutan:d.profil?.sambutan??"",luasWilayah:d.profil?.luasWilayah??"",batasUtara:d.profil?.batasUtara??"",batasSelatan:d.profil?.batasSelatan??"",batasTimur:d.profil?.batasTimur??"",batasBarat:d.profil?.batasBarat??""});setContact({...blankKontak,...d.kontak,telepon:d.kontak?.telepon??d.desa?.telepon??"",email:d.kontak?.email??d.desa?.email??"",alamat:d.kontak?.alamat??d.desa?.alamat??"",website:d.kontak?.website??d.desa?.website??"",whatsapp:d.kontak?.whatsapp??d.desa?.telepon??"",koordinat:d.kontak?.koordinat??d.profil?.koordinat??""});setGeneral({...blankUmum,...d.umum});setTemplateSlug(d.temaAktif?.slug??d.templates?.[0]?.slug??"");}catch(e){setError(e instanceof Error?e.message:"Gagal memuat pengaturan.");}finally{setLoading(false);}}
- useEffect(()=>{void load();},[]);
- async function save(section:string,payload:unknown){setBusy(true);setError("");setMessage("");try{const r=await fetch("/api/pengaturan-desa",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({section,data:payload})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Gagal menyimpan.");setMessage(d.message||"Perubahan berhasil disimpan.");await load();}catch(e){setError(e instanceof Error?e.message:"Gagal menyimpan pengaturan.");}finally{setBusy(false);}}
- async function upload(field:"logo"|"favicon",file?:File){if(!file)return;setBusy(true);setError("");setMessage("");try{const fd=new FormData();fd.set("field",field);fd.set("file",file);const r=await fetch("/api/pengaturan-desa/media",{method:"POST",body:fd});const d=await r.json();if(!r.ok)throw new Error(d.error||"Unggah gagal.");setMessage(d.message);await load();}catch(e){setError(e instanceof Error?e.message:"Unggah gagal.");}finally{setBusy(false);}}
- async function deleteMedia(field:"logo"|"favicon"){if(!window.confirm("Hapus file "+field+" yang sedang digunakan?"))return;const r=await fetch("/api/pengaturan-desa/media?field="+field,{method:"DELETE"});const d=await r.json();if(!r.ok){setError(d.error||"Gagal menghapus media.");return;}setMessage(d.message);await load();}
- async function saveService(){setBusy(true);setError("");setMessage("");try{const url="/api/pengaturan-desa/layanan",r=await fetch(url,{method:editingService?"PUT":"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(editingService?{id:editingService,data:service}:service)}),d=await r.json();if(!r.ok)throw new Error(d.error||"Gagal menyimpan layanan.");setMessage(d.message);setService({...blankService});setEditingService(null);await load();}catch(e){setError(e instanceof Error?e.message:"Gagal menyimpan layanan.");}finally{setBusy(false);}}
- async function removeService(item:Layanan){if(!window.confirm("Nonaktifkan layanan "+item.nama+"?"))return;const r=await fetch("/api/pengaturan-desa/layanan?id="+item.id,{method:"DELETE"}),d=await r.json();if(!r.ok){setError(d.error||"Gagal menghapus layanan.");return;}setMessage(d.message);await load();}
- const selectedTemplate=useMemo(()=>data?.templates.find(t=>t.slug===templateSlug),[data,templateSlug]);
- async function restoreBackup(file?:File){if(!file)return;const text=await file.text();if(!window.confirm("Pulihkan konfigurasi dari file ini? Preferensi profil dan konfigurasi desa akan ditimpa."))return;setBusy(true);try{const r=await fetch("/api/pengaturan-desa/backup",{method:"POST",headers:{"Content-Type":"application/json"},body:text}),d=await r.json();if(!r.ok)throw new Error(d.error||"Pemulihan gagal.");setMessage(d.message);await load();}catch(e){setError(e instanceof Error?e.message:"Pemulihan gagal.");}finally{setBusy(false);}}
- if(loading)return <div className={styles.loading}>Memuat pengaturan desa…</div>;
- if(!data)return <div className={styles.panel}><p>Pengaturan tidak dapat dimuat.</p><button onClick={()=>void load()}>Coba lagi</button></div>;
- return <div className={styles.page}>
-  <header className={styles.heading}><div><span className={styles.eyebrow}>KONFIGURASI TENANT</span><h1>Pengaturan Desa</h1><p>Kelola profil, tampilan, layanan, integrasi, backup, dan preferensi sistem desa.</p></div><a href="/website" className={styles.secondary}>↗ Website Desa</a></header>
-  <nav className={styles.tabs} aria-label="Bagian pengaturan">{tabs.map(([id,icon,label])=><button key={id} type="button" className={tab===id?styles.activeTab:""} onClick={()=>{setTab(id);setMessage("");setError("");}}><span>{icon}</span>{label}</button>)}</nav>
-  {message&&<div className={styles.success} role="status">✓ {message}</div>}{error&&<div className={styles.error} role="alert">{error}</div>}
-  {tab==="profil"&&<div className={styles.layout}><section className={styles.panel}><header><h2>▣　Profil & Identitas Desa</h2><p>Kelola informasi dasar dan identitas resmi desa.</p></header>
-   <div className={styles.formGrid}>
-    <Field label="Nama Desa" required><input value={profile.namaDesa} onChange={e=>setProfile({...profile,namaDesa:e.target.value})}/></Field>
-    <Field label="Kode Desa (Kemendagri)" required><input value={profile.kodeDesa} onChange={e=>setProfile({...profile,kodeDesa:e.target.value})}/></Field>
-    <Field label="Kecamatan" required><input value={profile.namaKecamatan} onChange={e=>setProfile({...profile,namaKecamatan:e.target.value})}/></Field>
-    <Field label="Kabupaten" required><input value={profile.namaKabupaten} onChange={e=>setProfile({...profile,namaKabupaten:e.target.value})}/></Field>
-    <Field label="Provinsi" required><input value={profile.namaPropinsi} onChange={e=>setProfile({...profile,namaPropinsi:e.target.value})}/></Field>
-    <Field label="Kode Pos"><input value={profile.kodePos} onChange={e=>setProfile({...profile,kodePos:e.target.value})}/></Field>
-    <Field label="Nama Kepala Desa"><input value={profile.namaKepalaDesa} onChange={e=>setProfile({...profile,namaKepalaDesa:e.target.value})}/></Field>
-    <Field label="NIP Kepala Desa"><input value={profile.nipKepalaDesa} onChange={e=>setProfile({...profile,nipKepalaDesa:e.target.value})}/></Field>
-   </div>
-   <div className={styles.uploadGrid}>
-    <div className={styles.uploadCard}><strong>Logo Desa</strong>{data.desa?.logo?<img src={mediaUrl(data.desa.logo)} alt="Logo desa"/>:<div className={styles.uploadPlaceholder}>Belum ada logo</div>}<label className={styles.uploadButton}>↑ Upload Logo<input type="file" accept="image/jpeg,image/png,image/svg+xml" onChange={e=>void upload("logo",e.target.files?.[0])}/></label>{data.desa?.logo&&<button className={styles.textDanger} onClick={()=>void deleteMedia("logo")}>Hapus logo</button>}<small>JPG, PNG, SVG · Maks. 2 MB</small></div>
-    <div className={styles.uploadCard}><strong>Favicon Website</strong>{data.favicon?<img src={mediaUrl(data.favicon)} alt="Favicon"/>:<div className={styles.uploadPlaceholder}>Belum ada favicon</div>}<label className={styles.uploadButton}>↑ Upload Favicon<input type="file" accept="image/png" onChange={e=>void upload("favicon",e.target.files?.[0])}/></label>{data.favicon&&<button className={styles.textDanger} onClick={()=>void deleteMedia("favicon")}>Hapus favicon</button>}<small>PNG · Maks. 1 MB</small></div>
-   </div>
-   <Field label="Visi Desa"><textarea rows={3} value={profile.visi} onChange={e=>setProfile({...profile,visi:e.target.value})}/></Field>
-   <Field label="Misi Desa"><textarea rows={6} value={profile.misi} onChange={e=>setProfile({...profile,misi:e.target.value})} placeholder="Satu misi per baris"/></Field>
-   <Field label="Sejarah Desa"><textarea rows={4} value={profile.sejarah} onChange={e=>setProfile({...profile,sejarah:e.target.value})}/></Field>
-   <Field label="Sambutan Kepala Desa"><textarea rows={4} value={profile.sambutan} onChange={e=>setProfile({...profile,sambutan:e.target.value})}/></Field>
-   <div className={styles.formGrid}>
-    <Field label="Luas Wilayah (km²)"><input value={profile.luasWilayah} onChange={e=>setProfile({...profile,luasWilayah:e.target.value})} placeholder="Contoh: 12,5"/></Field>
-    <Field label="Batas Utara"><input value={profile.batasUtara} onChange={e=>setProfile({...profile,batasUtara:e.target.value})}/></Field>
-    <Field label="Batas Selatan"><input value={profile.batasSelatan} onChange={e=>setProfile({...profile,batasSelatan:e.target.value})}/></Field>
-    <Field label="Batas Timur"><input value={profile.batasTimur} onChange={e=>setProfile({...profile,batasTimur:e.target.value})}/></Field>
-    <Field label="Batas Barat"><input value={profile.batasBarat} onChange={e=>setProfile({...profile,batasBarat:e.target.value})}/></Field>
-   </div>
-   <div className={styles.actions}><button className={styles.primary} disabled={busy} onClick={()=>void save("profil",profile)}>{busy?"Menyimpan…":"▣ Simpan Perubahan"}</button><button className={styles.secondary} onClick={()=>void load()}>↺ Reset</button><span>Data dipakai pada profil dan halaman Visi & Misi publik.</span></div>
-  </section><aside className={styles.side}><section className={styles.panel}><h2>◉　Pratinjau Identitas Desa</h2><div className={styles.preview}><div>{data.desa?.logo?<img src={mediaUrl(data.desa.logo)} alt=""/>:<b>FD</b>}<strong>{profile.namaDesa||"Nama Desa"}</strong><small>{[profile.namaKecamatan,profile.namaKabupaten,profile.namaPropinsi].filter(Boolean).join(", ")||"Wilayah desa"}</small></div><h3>{profile.namaDesa||"Nama Desa"}</h3><p>{profile.visi||"Visi desa akan ditampilkan di website publik."}</p></div><div className={styles.infoList}><p>✓ Profil desa tersimpan pada data tenant.</p><p>✓ Logo digunakan pada header dan dokumen publik.</p><p>✓ Visi dan misi terhubung ke halaman publik.</p></div></section></aside></div>}
-  {tab==="kontak"&&<section className={styles.panel}><header><h2>⌖　Kontak & Lokasi</h2><p>Informasi kantor desa yang ditampilkan pada halaman kontak publik.</p></header><div className={styles.formGrid}>
-   <Field label="Alamat Kantor Desa"><input value={contact.alamat} onChange={e=>setContact({...contact,alamat:e.target.value})}/></Field><Field label="Telepon Kantor"><input value={contact.telepon} onChange={e=>setContact({...contact,telepon:e.target.value})}/></Field>
-   <Field label="Nomor WhatsApp"><input value={contact.whatsapp} onChange={e=>setContact({...contact,whatsapp:e.target.value})}/></Field><Field label="Email Resmi"><input type="email" value={contact.email} onChange={e=>setContact({...contact,email:e.target.value})}/></Field>
-   <Field label="Website"><input type="url" value={contact.website} onChange={e=>setContact({...contact,website:e.target.value})}/></Field><Field label="Jam Pelayanan"><input value={contact.jamLayanan} onChange={e=>setContact({...contact,jamLayanan:e.target.value})} placeholder="Senin–Jumat, 08.00–16.00"/></Field>
-   <Field label="Koordinat (latitude, longitude)"><input value={contact.koordinat} onChange={e=>setContact({...contact,koordinat:e.target.value})} placeholder="-3.12345, 99.12345"/></Field><Field label="Tautan Google Maps"><input type="url" value={contact.tautanPeta} onChange={e=>setContact({...contact,tautanPeta:e.target.value})}/></Field>
-   <Field label="Instagram"><input value={contact.instagram} onChange={e=>setContact({...contact,instagram:e.target.value})}/></Field><Field label="Facebook"><input value={contact.facebook} onChange={e=>setContact({...contact,facebook:e.target.value})}/></Field><Field label="YouTube"><input value={contact.youtube} onChange={e=>setContact({...contact,youtube:e.target.value})}/></Field>
-  </div><div className={styles.actions}><button className={styles.primary} disabled={busy} onClick={()=>void save("kontak",contact)}>Simpan Kontak & Lokasi</button>{contact.tautanPeta&&<a className={styles.secondary} href={contact.tautanPeta} target="_blank" rel="noreferrer">Lihat Peta ↗</a>}</div></section>}
-  {tab==="tampilan"&&<div className={styles.layout}><section className={styles.panel}><header><h2>▣　Tampilan Website</h2><p>Pilih template dari katalog resmi dan atur identitas visual desa.</p></header>
-   {data.templates.length?<div className={styles.templateGrid}>{data.templates.map(t=><button type="button" key={t.slug} className={templateSlug===t.slug?styles.templateSelected:styles.templateCard} onClick={()=>setTemplateSlug(t.slug)}><div className={styles.templatePreview} style={{background:t.tokens.background??"#f4f7ff",color:t.tokens.text??"#182344"}}><span style={{background:t.tokens.primary??"#175de8"}}/><span style={{background:t.tokens.secondary??"#7b36ef"}}/><b>{t.nama}</b><small>{t.kategori} · v{t.versi}</small></div><strong>{t.nama}</strong><small>{t.deskripsi}</small>{templateSlug===t.slug&&<em>✓ Dipilih</em>}</button>)}</div>:<div className={styles.empty}>Belum ada template yang diterbitkan oleh Super Admin.</div>}
-   {selectedTemplate&&<div className={styles.actions}><button className={styles.primary} disabled={busy} onClick={()=>void save("tampilan",{templateSlug})}>Terapkan Template</button><span>Template dipilih dari katalog platform. Perubahan token berlaku pada tampilan publik yang mendukung token tema.</span></div>}
-   <div className={styles.linkCard}><strong>Pengaturan branding lanjutan</strong><p>Atur warna utama, warna aksen, dan font tema aktif melalui editor website.</p><Link href="/website/pengaturan">Buka Pengaturan Website →</Link></div>
-  </section><aside className={styles.side}><section className={styles.panel}><h2>◉　Pratinjau Website</h2><div className={styles.preview}><div><strong>{data.desa?.namaDesa}</strong><small>{data.temaAktif?.nama??"Tema belum diterapkan"}</small></div><h3>Website Resmi Desa</h3><p>Informasi, pelayanan, dan transparansi pemerintahan desa.</p></div><p className={styles.muted}>Template berasal dari katalog Super Admin. Tema yang tersedia dan dipublikasikan dapat dipilih oleh tenant.</p></section></aside></div>}
-  {tab==="layanan"&&<section className={styles.panel}><header><h2>▰　Layanan Desa</h2><p>Kelola katalog layanan dan status tampilnya pada website publik.</p></header><div className={styles.serviceForm}>
-   <Field label="Nama Layanan" required><input value={service.nama} onChange={e=>setService({...service,nama:e.target.value})}/></Field><Field label="Kategori"><select value={service.kategori} onChange={e=>setService({...service,kategori:e.target.value})}><option value="administrasi">Administrasi</option><option value="surat">Persuratan</option><option value="sosial">Sosial</option><option value="kependudukan">Kependudukan</option><option value="lainnya">Lainnya</option></select></Field>
-   <Field label="Deskripsi"><input value={service.deskripsi} onChange={e=>setService({...service,deskripsi:e.target.value})}/></Field><Field label="Persyaratan"><input value={service.persyaratan} onChange={e=>setService({...service,persyaratan:e.target.value})}/></Field>
-   <Field label="Estimasi (hari)"><input type="number" min="0" max="365" value={service.estimasiHari} onChange={e=>setService({...service,estimasiHari:Number(e.target.value)})}/></Field><Field label="Biaya (Rp)"><input type="number" min="0" value={service.biaya} onChange={e=>setService({...service,biaya:Number(e.target.value)})}/></Field>
-   <Field label="Metode"><select value={service.metode} onChange={e=>setService({...service,metode:e.target.value})}><option value="online_dan_langsung">Online & Langsung</option><option value="online">Online</option><option value="langsung">Langsung</option></select></Field><label className={styles.check}><input type="checkbox" checked={service.aktif} onChange={e=>setService({...service,aktif:e.target.checked})}/> Aktif dan tampil publik</label>
-   <div className={styles.actions}><button className={styles.primary} disabled={busy||!service.nama.trim()} onClick={()=>void saveService()}>{editingService?"Simpan Perubahan":"Tambah Layanan"}</button>{editingService&&<button className={styles.secondary} onClick={()=>{setEditingService(null);setService({...blankService});}}>Batal</button>}</div>
-  </div><div className={styles.tableWrap}><table><thead><tr><th>Nama Layanan</th><th>Kategori</th><th>Biaya</th><th>Estimasi</th><th>Status</th><th>Aksi</th></tr></thead><tbody>{data.layanan.map(item=><tr key={item.id}><td><strong>{item.nama}</strong><small>{item.deskripsi}</small></td><td>{item.kategori}</td><td>Rp {item.biaya.toLocaleString("id-ID")}</td><td>{item.estimasiHari} hari</td><td><span className={item.aktif?styles.statusOn:styles.statusOff}>{item.aktif?"Aktif":"Nonaktif"}</span></td><td><button onClick={()=>{setEditingService(item.id);setService({nama:item.nama,kategori:item.kategori,deskripsi:item.deskripsi??"",persyaratan:item.persyaratan??"",estimasiHari:item.estimasiHari,biaya:item.biaya,metode:item.metode,aktif:item.aktif});}}>Ubah</button> <button className={styles.textDanger} onClick={()=>void removeService(item)}>Nonaktifkan</button></td></tr>)}</tbody></table></div><p className={styles.muted}>Perubahan katalog layanan juga digunakan oleh modul Pelayanan Publik.</p></section>}
-  {tab==="integrasi"&&<IntegrationManager/>}
-  {tab==="backup"&&<section className={styles.panel}><header><h2>▤　Backup & Data</h2><p>Cadangkan dan pulihkan konfigurasi desa.</p></header><div className={styles.backupGrid}><article><span>↓</span><h3>Backup Konfigurasi</h3><p>Unduh identitas, profil publik, daftar layanan, tema, dan preferensi desa dalam berkas JSON.</p><a className={styles.primary} href="/api/pengaturan-desa/backup">Unduh Backup JSON</a></article><article><span>↥</span><h3>Pulihkan Konfigurasi</h3><p>Pulihkan preferensi dan profil dari backup FlexiDesa. Data transaksi dan pengguna tidak ditimpa.</p><label className={styles.uploadButton}>Pilih File Backup<input type="file" accept="application/json,.json" onChange={e=>void restoreBackup(e.target.files?.[0])}/></label></article></div><div className={styles.storageCard}><div><strong>Penyimpanan Media Desa</strong><small>Total seluruh berkas media desa, termasuk berkas publik dan privat</small></div><b>{formatBytes(data.media.usedBytes)} / {data.media.quotaMb===null?"Tanpa batas":formatBytes(data.media.quotaMb*1024*1024)}</b><progress max="100" value={data.media.quotaMb?Math.min(100,data.media.usedBytes/(data.media.quotaMb*1024*1024)*100):0}/></div><div className={styles.notice}>Backup ini khusus konfigurasi desa, bukan salinan penuh seluruh transaksi, dokumen, akun, dan media. Backup database penuh dan pemulihan seluruh sistem tetap dikelola Super Admin agar isolasi tenant dan konsistensi relasi tetap terjaga.</div><div className={styles.linkCard}><strong>Penggunaan penyimpanan media</strong><p>Logo dan favicon tersimpan di penyimpanan media tenant.</p><Link href="/website/pengaturan">Kelola media website →</Link></div></section>}
-  {tab==="umum"&&<section className={styles.panel}><header><h2>☷　Pengaturan Umum</h2><p>Atur preferensi publik, pendaftaran warga, dan penomoran surat.</p></header><div className={styles.preferences}>
-   <label><span><strong>Aktifkan komentar publik</strong><small>Izinkan pengunjung mengirim komentar pada halaman yang mendukung.</small></span><input type="checkbox" checked={general.komentarAktif} onChange={e=>setGeneral({...general,komentarAktif:e.target.checked})}/></label>
-   <label><span><strong>Pendaftaran akun warga</strong><small>Izinkan warga mengajukan akun. Pengajuan diverifikasi administrator desa; akun baru aktif setelah disetujui.</small></span><input type="checkbox" checked={general.pendaftaranWargaAktif} onChange={e=>setGeneral({...general,pendaftaranWargaAktif:e.target.checked})}/></label>
-   <Field label="Jumlah berita pada beranda"><select value={general.beritaBeranda} onChange={e=>setGeneral({...general,beritaBeranda:Number(e.target.value)})}>{[1,2,3,4,5,6,7,8,9,10,11,12].map(n=><option key={n} value={n}>{n} berita</option>)}</select></Field>
-   <Field label="Mode Penomoran Surat"><select value={general.penomoranSurat} onChange={e=>setGeneral({...general,penomoranSurat:Number(e.target.value)})}><option value={1}>Nomor global per tahun</option><option value={2}>Per jenis surat</option><option value={3}>Gabungan surat layanan dan agenda masuk/keluar</option><option value={4}>Per klasifikasi surat</option></select></Field>
-  </div><div className={styles.actions}><button className={styles.primary} disabled={busy} onClick={()=>void save("umum",general)}>Simpan Pengaturan Umum</button></div></section>}
- </div>;
+import { IntegrationManager } from "./integration-manager";
+import styles from "./pengaturan-desa.module.css";
+
+type Desa = {
+  id: number;
+  namaDesa: string | null;
+  kodeDesa: string | null;
+  namaKecamatan: string | null;
+  namaKabupaten: string | null;
+  namaPropinsi: string | null;
+  kodePos: string | null;
+  alamat: string | null;
+  email: string | null;
+  telepon: string | null;
+  website: string | null;
+  logo: string | null;
+  namaKepalaDesa: string | null;
+  nipKepalaDesa: string | null;
+  updatedAt: string;
+};
+type Profil = {
+  visi: string | null;
+  misi: string | null;
+  sejarah: string | null;
+  sambutan: string | null;
+  koordinat: string | null;
+  luasWilayah: string | null;
+  batasUtara: string | null;
+  batasSelatan: string | null;
+  batasTimur: string | null;
+  batasBarat: string | null;
+};
+type Kontak = {
+  whatsapp: string;
+  telepon: string;
+  email: string;
+  alamat: string;
+  website: string;
+  instagram: string;
+  facebook: string;
+  youtube: string;
+  koordinat: string;
+  tautanPeta: string;
+  jamLayanan: string;
+};
+type Umum = {
+  komentarAktif: boolean;
+  beritaBeranda: number;
+  pendaftaranWargaAktif: boolean;
+  penomoranSurat: number;
+};
+type Template = {
+  id: number;
+  slug: string;
+  nama: string;
+  kategori: string;
+  deskripsi: string;
+  versi: string;
+  tokens: Record<string, string>;
+  tags: string[];
+};
+type Layanan = {
+  id: number;
+  nama: string;
+  kategori: string;
+  deskripsi: string | null;
+  persyaratan: string | null;
+  estimasiHari: number;
+  biaya: number;
+  metode: string;
+  aktif: boolean;
+};
+type Data = {
+  desa: Desa | null;
+  profil: Profil | null;
+  kontak: Partial<Kontak>;
+  favicon: string | null;
+  templates: Template[];
+  temaAktif: { slug: string; nama: string; versi: string; opsi: string | null } | null;
+  umum: Umum;
+  layanan: Layanan[];
+  media: { usedBytes: number; quotaMb: number | null };
+};
+const tabs = [
+  ["profil", "▣", "Profil & Identitas"],
+  ["kontak", "⌖", "Kontak & Lokasi"],
+  ["tampilan", "▣", "Tampilan Website"],
+  ["layanan", "▰", "Layanan Desa"],
+  ["integrasi", "↗", "Integrasi & Sistem"],
+  ["backup", "▤", "Backup & Data"],
+  ["umum", "☷", "Pengaturan Umum"],
+] as const;
+const blankKontak: Kontak = {
+  whatsapp: "",
+  telepon: "",
+  email: "",
+  alamat: "",
+  website: "",
+  instagram: "",
+  facebook: "",
+  youtube: "",
+  koordinat: "",
+  tautanPeta: "",
+  jamLayanan: "",
+};
+const blankUmum: Umum = {
+  komentarAktif: true,
+  beritaBeranda: 5,
+  pendaftaranWargaAktif: true,
+  penomoranSurat: 2,
+};
+const blankService = {
+  nama: "",
+  kategori: "administrasi",
+  deskripsi: "",
+  persyaratan: "",
+  estimasiHari: 1,
+  biaya: 0,
+  metode: "online_dan_langsung",
+  aktif: true,
+};
+const mediaUrl = (path: string | null | undefined) =>
+  path ? "/api/publik/media/" + path.split("/").map(encodeURIComponent).join("/") : "";
+const formatBytes = (value: number) =>
+  value < 1024
+    ? value + " B"
+    : value < 1024 * 1024
+      ? (value / 1024).toFixed(1) + " KB"
+      : (value / (1024 * 1024)).toFixed(1) + " MB";
+function Field({
+  label,
+  children,
+  required = false,
+}: {
+  label: string;
+  children: ReactNode;
+  required?: boolean;
+}) {
+  return (
+    <label className={styles.field}>
+      <span>
+        {label}
+        {required && <b> *</b>}
+      </span>
+      {children}
+    </label>
+  );
+}
+export function PengaturanDesaClient() {
+  const [data, setData] = useState<Data | null>(null),
+    [tab, setTab] = useState<string>("profil"),
+    [loading, setLoading] = useState(true),
+    [busy, setBusy] = useState(false),
+    [message, setMessage] = useState(""),
+    [error, setError] = useState("");
+  const [profile, setProfile] = useState({
+    namaDesa: "",
+    kodeDesa: "",
+    namaKecamatan: "",
+    namaKabupaten: "",
+    namaPropinsi: "",
+    kodePos: "",
+    namaKepalaDesa: "",
+    nipKepalaDesa: "",
+    visi: "",
+    misi: "",
+    sejarah: "",
+    sambutan: "",
+    luasWilayah: "",
+    batasUtara: "",
+    batasSelatan: "",
+    batasTimur: "",
+    batasBarat: "",
+  });
+  const [contact, setContact] = useState<Kontak>(blankKontak),
+    [general, setGeneral] = useState<Umum>(blankUmum);
+  const [templateSlug, setTemplateSlug] = useState(""),
+    [service, setService] = useState({ ...blankService }),
+    [editingService, setEditingService] = useState<number | null>(null);
+  async function muatPengaturan(): Promise<Data> {
+    const r = await fetch("/api/pengaturan-desa", { cache: "no-store" });
+    const d = (await r.json()) as Data & { error?: string };
+    if (!r.ok) throw new Error(d.error || "Gagal memuat pengaturan.");
+    return d;
+  }
+  function terapkanPengaturan(d: Data) {
+    setData(d);
+    setProfile({
+      namaDesa: d.desa?.namaDesa ?? "",
+      kodeDesa: d.desa?.kodeDesa ?? "",
+      namaKecamatan: d.desa?.namaKecamatan ?? "",
+      namaKabupaten: d.desa?.namaKabupaten ?? "",
+      namaPropinsi: d.desa?.namaPropinsi ?? "",
+      kodePos: d.desa?.kodePos ?? "",
+      namaKepalaDesa: d.desa?.namaKepalaDesa ?? "",
+      nipKepalaDesa: d.desa?.nipKepalaDesa ?? "",
+      visi: d.profil?.visi ?? "",
+      misi: d.profil?.misi ?? "",
+      sejarah: d.profil?.sejarah ?? "",
+      sambutan: d.profil?.sambutan ?? "",
+      luasWilayah: d.profil?.luasWilayah ?? "",
+      batasUtara: d.profil?.batasUtara ?? "",
+      batasSelatan: d.profil?.batasSelatan ?? "",
+      batasTimur: d.profil?.batasTimur ?? "",
+      batasBarat: d.profil?.batasBarat ?? "",
+    });
+    setContact({
+      ...blankKontak,
+      ...d.kontak,
+      telepon: d.kontak?.telepon ?? d.desa?.telepon ?? "",
+      email: d.kontak?.email ?? d.desa?.email ?? "",
+      alamat: d.kontak?.alamat ?? d.desa?.alamat ?? "",
+      website: d.kontak?.website ?? d.desa?.website ?? "",
+      whatsapp: d.kontak?.whatsapp ?? d.desa?.telepon ?? "",
+      koordinat: d.kontak?.koordinat ?? d.profil?.koordinat ?? "",
+    });
+    setGeneral({ ...blankUmum, ...d.umum });
+    setTemplateSlug(d.temaAktif?.slug ?? d.templates?.[0]?.slug ?? "");
+  }
+  async function load() {
+    setLoading(true);
+    try {
+      terapkanPengaturan(await muatPengaturan());
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal memuat pengaturan.");
+    } finally {
+      setLoading(false);
+    }
+  }
+  // Pemuatan pertama memakai rantai promise agar setState terjadi setelah await,
+  // bukan sinkron di dalam effect (react-hooks/set-state-in-effect).
+  useEffect(() => {
+    let aktif = true;
+    muatPengaturan()
+      .then((d) => {
+        if (aktif) terapkanPengaturan(d);
+      })
+      .catch((e: unknown) => {
+        if (aktif) setError(e instanceof Error ? e.message : "Gagal memuat pengaturan.");
+      })
+      .finally(() => {
+        if (aktif) setLoading(false);
+      });
+    return () => {
+      aktif = false;
+    };
+  }, []);
+  async function save(section: string, payload: unknown) {
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const r = await fetch("/api/pengaturan-desa", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ section, data: payload }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Gagal menyimpan.");
+      setMessage(d.message || "Perubahan berhasil disimpan.");
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal menyimpan pengaturan.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function upload(field: "logo" | "favicon", file?: File) {
+    if (!file) return;
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const fd = new FormData();
+      fd.set("field", field);
+      fd.set("file", file);
+      const r = await fetch("/api/pengaturan-desa/media", { method: "POST", body: fd });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Unggah gagal.");
+      setMessage(d.message);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unggah gagal.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function deleteMedia(field: "logo" | "favicon") {
+    if (!window.confirm("Hapus file " + field + " yang sedang digunakan?")) return;
+    const r = await fetch("/api/pengaturan-desa/media?field=" + field, { method: "DELETE" });
+    const d = await r.json();
+    if (!r.ok) {
+      setError(d.error || "Gagal menghapus media.");
+      return;
+    }
+    setMessage(d.message);
+    await load();
+  }
+  async function saveService() {
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const url = "/api/pengaturan-desa/layanan",
+        r = await fetch(url, {
+          method: editingService ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editingService ? { id: editingService, data: service } : service),
+        }),
+        d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Gagal menyimpan layanan.");
+      setMessage(d.message);
+      setService({ ...blankService });
+      setEditingService(null);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Gagal menyimpan layanan.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function removeService(item: Layanan) {
+    if (!window.confirm("Nonaktifkan layanan " + item.nama + "?")) return;
+    const r = await fetch("/api/pengaturan-desa/layanan?id=" + item.id, { method: "DELETE" }),
+      d = await r.json();
+    if (!r.ok) {
+      setError(d.error || "Gagal menghapus layanan.");
+      return;
+    }
+    setMessage(d.message);
+    await load();
+  }
+  const selectedTemplate = useMemo(
+    () => data?.templates.find((t) => t.slug === templateSlug),
+    [data, templateSlug],
+  );
+  async function restoreBackup(file?: File) {
+    if (!file) return;
+    const text = await file.text();
+    if (
+      !window.confirm(
+        "Pulihkan konfigurasi dari file ini? Preferensi profil dan konfigurasi desa akan ditimpa.",
+      )
+    )
+      return;
+    setBusy(true);
+    try {
+      const r = await fetch("/api/pengaturan-desa/backup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: text,
+        }),
+        d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Pemulihan gagal.");
+      setMessage(d.message);
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Pemulihan gagal.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  if (loading) return <div className={styles.loading}>Memuat pengaturan desa…</div>;
+  if (!data)
+    return (
+      <div className={styles.panel}>
+        <p>Pengaturan tidak dapat dimuat.</p>
+        <button onClick={() => void load()}>Coba lagi</button>
+      </div>
+    );
+  return (
+    <div className={styles.page}>
+      <header className={styles.heading}>
+        <div>
+          <span className={styles.eyebrow}>KONFIGURASI TENANT</span>
+          <h1>Pengaturan Desa</h1>
+          <p>Kelola profil, tampilan, layanan, integrasi, backup, dan preferensi sistem desa.</p>
+        </div>
+        <a href="/website" className={styles.secondary}>
+          ↗ Website Desa
+        </a>
+      </header>
+      <nav className={styles.tabs} aria-label="Bagian pengaturan">
+        {tabs.map(([id, icon, label]) => (
+          <button
+            key={id}
+            type="button"
+            className={tab === id ? styles.activeTab : ""}
+            onClick={() => {
+              setTab(id);
+              setMessage("");
+              setError("");
+            }}
+          >
+            <span>{icon}</span>
+            {label}
+          </button>
+        ))}
+      </nav>
+      {message && (
+        <div className={styles.success} role="status">
+          ✓ {message}
+        </div>
+      )}
+      {error && (
+        <div className={styles.error} role="alert">
+          {error}
+        </div>
+      )}
+      {tab === "profil" && (
+        <div className={styles.layout}>
+          <section className={styles.panel}>
+            <header>
+              <h2>▣　Profil & Identitas Desa</h2>
+              <p>Kelola informasi dasar dan identitas resmi desa.</p>
+            </header>
+            <div className={styles.formGrid}>
+              <Field label="Nama Desa" required>
+                <input
+                  value={profile.namaDesa}
+                  onChange={(e) => setProfile({ ...profile, namaDesa: e.target.value })}
+                />
+              </Field>
+              <Field label="Kode Desa (Kemendagri)" required>
+                <input
+                  value={profile.kodeDesa}
+                  onChange={(e) => setProfile({ ...profile, kodeDesa: e.target.value })}
+                />
+              </Field>
+              <Field label="Kecamatan" required>
+                <input
+                  value={profile.namaKecamatan}
+                  onChange={(e) => setProfile({ ...profile, namaKecamatan: e.target.value })}
+                />
+              </Field>
+              <Field label="Kabupaten" required>
+                <input
+                  value={profile.namaKabupaten}
+                  onChange={(e) => setProfile({ ...profile, namaKabupaten: e.target.value })}
+                />
+              </Field>
+              <Field label="Provinsi" required>
+                <input
+                  value={profile.namaPropinsi}
+                  onChange={(e) => setProfile({ ...profile, namaPropinsi: e.target.value })}
+                />
+              </Field>
+              <Field label="Kode Pos">
+                <input
+                  value={profile.kodePos}
+                  onChange={(e) => setProfile({ ...profile, kodePos: e.target.value })}
+                />
+              </Field>
+              <Field label="Nama Kepala Desa">
+                <input
+                  value={profile.namaKepalaDesa}
+                  onChange={(e) => setProfile({ ...profile, namaKepalaDesa: e.target.value })}
+                />
+              </Field>
+              <Field label="NIP Kepala Desa">
+                <input
+                  value={profile.nipKepalaDesa}
+                  onChange={(e) => setProfile({ ...profile, nipKepalaDesa: e.target.value })}
+                />
+              </Field>
+            </div>
+            <div className={styles.uploadGrid}>
+              <div className={styles.uploadCard}>
+                <strong>Logo Desa</strong>
+                {data.desa?.logo ? (
+                  <img src={mediaUrl(data.desa.logo)} alt="Logo desa" />
+                ) : (
+                  <div className={styles.uploadPlaceholder}>Belum ada logo</div>
+                )}
+                <label className={styles.uploadButton}>
+                  ↑ Upload Logo
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/svg+xml"
+                    onChange={(e) => void upload("logo", e.target.files?.[0])}
+                  />
+                </label>
+                {data.desa?.logo && (
+                  <button className={styles.textDanger} onClick={() => void deleteMedia("logo")}>
+                    Hapus logo
+                  </button>
+                )}
+                <small>JPG, PNG, SVG · Maks. 2 MB</small>
+              </div>
+              <div className={styles.uploadCard}>
+                <strong>Favicon Website</strong>
+                {data.favicon ? (
+                  <img src={mediaUrl(data.favicon)} alt="Favicon" />
+                ) : (
+                  <div className={styles.uploadPlaceholder}>Belum ada favicon</div>
+                )}
+                <label className={styles.uploadButton}>
+                  ↑ Upload Favicon
+                  <input
+                    type="file"
+                    accept="image/png"
+                    onChange={(e) => void upload("favicon", e.target.files?.[0])}
+                  />
+                </label>
+                {data.favicon && (
+                  <button className={styles.textDanger} onClick={() => void deleteMedia("favicon")}>
+                    Hapus favicon
+                  </button>
+                )}
+                <small>PNG · Maks. 1 MB</small>
+              </div>
+            </div>
+            <Field label="Visi Desa">
+              <textarea
+                rows={3}
+                value={profile.visi}
+                onChange={(e) => setProfile({ ...profile, visi: e.target.value })}
+              />
+            </Field>
+            <Field label="Misi Desa">
+              <textarea
+                rows={6}
+                value={profile.misi}
+                onChange={(e) => setProfile({ ...profile, misi: e.target.value })}
+                placeholder="Satu misi per baris"
+              />
+            </Field>
+            <Field label="Sejarah Desa">
+              <textarea
+                rows={4}
+                value={profile.sejarah}
+                onChange={(e) => setProfile({ ...profile, sejarah: e.target.value })}
+              />
+            </Field>
+            <Field label="Sambutan Kepala Desa">
+              <textarea
+                rows={4}
+                value={profile.sambutan}
+                onChange={(e) => setProfile({ ...profile, sambutan: e.target.value })}
+              />
+            </Field>
+            <div className={styles.formGrid}>
+              <Field label="Luas Wilayah (km²)">
+                <input
+                  value={profile.luasWilayah}
+                  onChange={(e) => setProfile({ ...profile, luasWilayah: e.target.value })}
+                  placeholder="Contoh: 12,5"
+                />
+              </Field>
+              <Field label="Batas Utara">
+                <input
+                  value={profile.batasUtara}
+                  onChange={(e) => setProfile({ ...profile, batasUtara: e.target.value })}
+                />
+              </Field>
+              <Field label="Batas Selatan">
+                <input
+                  value={profile.batasSelatan}
+                  onChange={(e) => setProfile({ ...profile, batasSelatan: e.target.value })}
+                />
+              </Field>
+              <Field label="Batas Timur">
+                <input
+                  value={profile.batasTimur}
+                  onChange={(e) => setProfile({ ...profile, batasTimur: e.target.value })}
+                />
+              </Field>
+              <Field label="Batas Barat">
+                <input
+                  value={profile.batasBarat}
+                  onChange={(e) => setProfile({ ...profile, batasBarat: e.target.value })}
+                />
+              </Field>
+            </div>
+            <div className={styles.actions}>
+              <button
+                className={styles.primary}
+                disabled={busy}
+                onClick={() => void save("profil", profile)}
+              >
+                {busy ? "Menyimpan…" : "▣ Simpan Perubahan"}
+              </button>
+              <button className={styles.secondary} onClick={() => void load()}>
+                ↺ Reset
+              </button>
+              <span>Data dipakai pada profil dan halaman Visi & Misi publik.</span>
+            </div>
+          </section>
+          <aside className={styles.side}>
+            <section className={styles.panel}>
+              <h2>◉　Pratinjau Identitas Desa</h2>
+              <div className={styles.preview}>
+                <div>
+                  {data.desa?.logo ? <img src={mediaUrl(data.desa.logo)} alt="" /> : <b>FD</b>}
+                  <strong>{profile.namaDesa || "Nama Desa"}</strong>
+                  <small>
+                    {[profile.namaKecamatan, profile.namaKabupaten, profile.namaPropinsi]
+                      .filter(Boolean)
+                      .join(", ") || "Wilayah desa"}
+                  </small>
+                </div>
+                <h3>{profile.namaDesa || "Nama Desa"}</h3>
+                <p>{profile.visi || "Visi desa akan ditampilkan di website publik."}</p>
+              </div>
+              <div className={styles.infoList}>
+                <p>✓ Profil desa tersimpan pada data tenant.</p>
+                <p>✓ Logo digunakan pada header dan dokumen publik.</p>
+                <p>✓ Visi dan misi terhubung ke halaman publik.</p>
+              </div>
+            </section>
+          </aside>
+        </div>
+      )}
+      {tab === "kontak" && (
+        <section className={styles.panel}>
+          <header>
+            <h2>⌖　Kontak & Lokasi</h2>
+            <p>Informasi kantor desa yang ditampilkan pada halaman kontak publik.</p>
+          </header>
+          <div className={styles.formGrid}>
+            <Field label="Alamat Kantor Desa">
+              <input
+                value={contact.alamat}
+                onChange={(e) => setContact({ ...contact, alamat: e.target.value })}
+              />
+            </Field>
+            <Field label="Telepon Kantor">
+              <input
+                value={contact.telepon}
+                onChange={(e) => setContact({ ...contact, telepon: e.target.value })}
+              />
+            </Field>
+            <Field label="Nomor WhatsApp">
+              <input
+                value={contact.whatsapp}
+                onChange={(e) => setContact({ ...contact, whatsapp: e.target.value })}
+              />
+            </Field>
+            <Field label="Email Resmi">
+              <input
+                type="email"
+                value={contact.email}
+                onChange={(e) => setContact({ ...contact, email: e.target.value })}
+              />
+            </Field>
+            <Field label="Website">
+              <input
+                type="url"
+                value={contact.website}
+                onChange={(e) => setContact({ ...contact, website: e.target.value })}
+              />
+            </Field>
+            <Field label="Jam Pelayanan">
+              <input
+                value={contact.jamLayanan}
+                onChange={(e) => setContact({ ...contact, jamLayanan: e.target.value })}
+                placeholder="Senin–Jumat, 08.00–16.00"
+              />
+            </Field>
+            <Field label="Koordinat (latitude, longitude)">
+              <input
+                value={contact.koordinat}
+                onChange={(e) => setContact({ ...contact, koordinat: e.target.value })}
+                placeholder="-3.12345, 99.12345"
+              />
+            </Field>
+            <Field label="Tautan Google Maps">
+              <input
+                type="url"
+                value={contact.tautanPeta}
+                onChange={(e) => setContact({ ...contact, tautanPeta: e.target.value })}
+              />
+            </Field>
+            <Field label="Instagram">
+              <input
+                value={contact.instagram}
+                onChange={(e) => setContact({ ...contact, instagram: e.target.value })}
+              />
+            </Field>
+            <Field label="Facebook">
+              <input
+                value={contact.facebook}
+                onChange={(e) => setContact({ ...contact, facebook: e.target.value })}
+              />
+            </Field>
+            <Field label="YouTube">
+              <input
+                value={contact.youtube}
+                onChange={(e) => setContact({ ...contact, youtube: e.target.value })}
+              />
+            </Field>
+          </div>
+          <div className={styles.actions}>
+            <button
+              className={styles.primary}
+              disabled={busy}
+              onClick={() => void save("kontak", contact)}
+            >
+              Simpan Kontak & Lokasi
+            </button>
+            {contact.tautanPeta && (
+              <a
+                className={styles.secondary}
+                href={contact.tautanPeta}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Lihat Peta ↗
+              </a>
+            )}
+          </div>
+        </section>
+      )}
+      {tab === "tampilan" && (
+        <div className={styles.layout}>
+          <section className={styles.panel}>
+            <header>
+              <h2>▣　Tampilan Website</h2>
+              <p>Pilih template dari katalog resmi dan atur identitas visual desa.</p>
+            </header>
+            {data.templates.length ? (
+              <div className={styles.templateGrid}>
+                {data.templates.map((t) => (
+                  <button
+                    type="button"
+                    key={t.slug}
+                    className={
+                      templateSlug === t.slug ? styles.templateSelected : styles.templateCard
+                    }
+                    onClick={() => setTemplateSlug(t.slug)}
+                  >
+                    <div
+                      className={styles.templatePreview}
+                      style={{
+                        background: t.tokens.background ?? "#f4f7ff",
+                        color: t.tokens.text ?? "#182344",
+                      }}
+                    >
+                      <span style={{ background: t.tokens.primary ?? "#175de8" }} />
+                      <span style={{ background: t.tokens.secondary ?? "#7b36ef" }} />
+                      <b>{t.nama}</b>
+                      <small>
+                        {t.kategori} · v{t.versi}
+                      </small>
+                    </div>
+                    <strong>{t.nama}</strong>
+                    <small>{t.deskripsi}</small>
+                    {templateSlug === t.slug && <em>✓ Dipilih</em>}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.empty}>
+                Belum ada template yang diterbitkan oleh Super Admin.
+              </div>
+            )}
+            {selectedTemplate && (
+              <div className={styles.actions}>
+                <button
+                  className={styles.primary}
+                  disabled={busy}
+                  onClick={() => void save("tampilan", { templateSlug })}
+                >
+                  Terapkan Template
+                </button>
+                <span>
+                  Template dipilih dari katalog platform. Perubahan token berlaku pada tampilan
+                  publik yang mendukung token tema.
+                </span>
+              </div>
+            )}
+            <div className={styles.linkCard}>
+              <strong>Pengaturan branding lanjutan</strong>
+              <p>Atur warna utama, warna aksen, dan font tema aktif melalui editor website.</p>
+              <Link href="/website/pengaturan">Buka Pengaturan Website →</Link>
+            </div>
+          </section>
+          <aside className={styles.side}>
+            <section className={styles.panel}>
+              <h2>◉　Pratinjau Website</h2>
+              <div className={styles.preview}>
+                <div>
+                  <strong>{data.desa?.namaDesa}</strong>
+                  <small>{data.temaAktif?.nama ?? "Tema belum diterapkan"}</small>
+                </div>
+                <h3>Website Resmi Desa</h3>
+                <p>Informasi, pelayanan, dan transparansi pemerintahan desa.</p>
+              </div>
+              <p className={styles.muted}>
+                Template berasal dari katalog Super Admin. Tema yang tersedia dan dipublikasikan
+                dapat dipilih oleh tenant.
+              </p>
+            </section>
+          </aside>
+        </div>
+      )}
+      {tab === "layanan" && (
+        <section className={styles.panel}>
+          <header>
+            <h2>▰　Layanan Desa</h2>
+            <p>Kelola katalog layanan dan status tampilnya pada website publik.</p>
+          </header>
+          <div className={styles.serviceForm}>
+            <Field label="Nama Layanan" required>
+              <input
+                value={service.nama}
+                onChange={(e) => setService({ ...service, nama: e.target.value })}
+              />
+            </Field>
+            <Field label="Kategori">
+              <select
+                value={service.kategori}
+                onChange={(e) => setService({ ...service, kategori: e.target.value })}
+              >
+                <option value="administrasi">Administrasi</option>
+                <option value="surat">Persuratan</option>
+                <option value="sosial">Sosial</option>
+                <option value="kependudukan">Kependudukan</option>
+                <option value="lainnya">Lainnya</option>
+              </select>
+            </Field>
+            <Field label="Deskripsi">
+              <input
+                value={service.deskripsi}
+                onChange={(e) => setService({ ...service, deskripsi: e.target.value })}
+              />
+            </Field>
+            <Field label="Persyaratan">
+              <input
+                value={service.persyaratan}
+                onChange={(e) => setService({ ...service, persyaratan: e.target.value })}
+              />
+            </Field>
+            <Field label="Estimasi (hari)">
+              <input
+                type="number"
+                min="0"
+                max="365"
+                value={service.estimasiHari}
+                onChange={(e) => setService({ ...service, estimasiHari: Number(e.target.value) })}
+              />
+            </Field>
+            <Field label="Biaya (Rp)">
+              <input
+                type="number"
+                min="0"
+                value={service.biaya}
+                onChange={(e) => setService({ ...service, biaya: Number(e.target.value) })}
+              />
+            </Field>
+            <Field label="Metode">
+              <select
+                value={service.metode}
+                onChange={(e) => setService({ ...service, metode: e.target.value })}
+              >
+                <option value="online_dan_langsung">Online & Langsung</option>
+                <option value="online">Online</option>
+                <option value="langsung">Langsung</option>
+              </select>
+            </Field>
+            <label className={styles.check}>
+              <input
+                type="checkbox"
+                checked={service.aktif}
+                onChange={(e) => setService({ ...service, aktif: e.target.checked })}
+              />{" "}
+              Aktif dan tampil publik
+            </label>
+            <div className={styles.actions}>
+              <button
+                className={styles.primary}
+                disabled={busy || !service.nama.trim()}
+                onClick={() => void saveService()}
+              >
+                {editingService ? "Simpan Perubahan" : "Tambah Layanan"}
+              </button>
+              {editingService && (
+                <button
+                  className={styles.secondary}
+                  onClick={() => {
+                    setEditingService(null);
+                    setService({ ...blankService });
+                  }}
+                >
+                  Batal
+                </button>
+              )}
+            </div>
+          </div>
+          <div className={styles.tableWrap}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Nama Layanan</th>
+                  <th>Kategori</th>
+                  <th>Biaya</th>
+                  <th>Estimasi</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.layanan.map((item) => (
+                  <tr key={item.id}>
+                    <td>
+                      <strong>{item.nama}</strong>
+                      <small>{item.deskripsi}</small>
+                    </td>
+                    <td>{item.kategori}</td>
+                    <td>Rp {item.biaya.toLocaleString("id-ID")}</td>
+                    <td>{item.estimasiHari} hari</td>
+                    <td>
+                      <span className={item.aktif ? styles.statusOn : styles.statusOff}>
+                        {item.aktif ? "Aktif" : "Nonaktif"}
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        onClick={() => {
+                          setEditingService(item.id);
+                          setService({
+                            nama: item.nama,
+                            kategori: item.kategori,
+                            deskripsi: item.deskripsi ?? "",
+                            persyaratan: item.persyaratan ?? "",
+                            estimasiHari: item.estimasiHari,
+                            biaya: item.biaya,
+                            metode: item.metode,
+                            aktif: item.aktif,
+                          });
+                        }}
+                      >
+                        Ubah
+                      </button>{" "}
+                      <button
+                        className={styles.textDanger}
+                        onClick={() => void removeService(item)}
+                      >
+                        Nonaktifkan
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className={styles.muted}>
+            Perubahan katalog layanan juga digunakan oleh modul Pelayanan Publik.
+          </p>
+        </section>
+      )}
+      {tab === "integrasi" && <IntegrationManager />}
+      {tab === "backup" && (
+        <section className={styles.panel}>
+          <header>
+            <h2>▤　Backup & Data</h2>
+            <p>Cadangkan dan pulihkan konfigurasi desa.</p>
+          </header>
+          <div className={styles.backupGrid}>
+            <article>
+              <span>↓</span>
+              <h3>Backup Konfigurasi</h3>
+              <p>
+                Unduh identitas, profil publik, daftar layanan, tema, dan preferensi desa dalam
+                berkas JSON.
+              </p>
+              <a className={styles.primary} href="/api/pengaturan-desa/backup">
+                Unduh Backup JSON
+              </a>
+            </article>
+            <article>
+              <span>↥</span>
+              <h3>Pulihkan Konfigurasi</h3>
+              <p>
+                Pulihkan preferensi dan profil dari backup FlexiDesa. Data transaksi dan pengguna
+                tidak ditimpa.
+              </p>
+              <label className={styles.uploadButton}>
+                Pilih File Backup
+                <input
+                  type="file"
+                  accept="application/json,.json"
+                  onChange={(e) => void restoreBackup(e.target.files?.[0])}
+                />
+              </label>
+            </article>
+          </div>
+          <div className={styles.storageCard}>
+            <div>
+              <strong>Penyimpanan Media Desa</strong>
+              <small>Total seluruh berkas media desa, termasuk berkas publik dan privat</small>
+            </div>
+            <b>
+              {formatBytes(data.media.usedBytes)} /{" "}
+              {data.media.quotaMb === null
+                ? "Tanpa batas"
+                : formatBytes(data.media.quotaMb * 1024 * 1024)}
+            </b>
+            <progress
+              max="100"
+              value={
+                data.media.quotaMb
+                  ? Math.min(100, (data.media.usedBytes / (data.media.quotaMb * 1024 * 1024)) * 100)
+                  : 0
+              }
+            />
+          </div>
+          <div className={styles.notice}>
+            Backup ini khusus konfigurasi desa, bukan salinan penuh seluruh transaksi, dokumen,
+            akun, dan media. Backup database penuh dan pemulihan seluruh sistem tetap dikelola Super
+            Admin agar isolasi tenant dan konsistensi relasi tetap terjaga.
+          </div>
+          <div className={styles.linkCard}>
+            <strong>Penggunaan penyimpanan media</strong>
+            <p>Logo dan favicon tersimpan di penyimpanan media tenant.</p>
+            <Link href="/website/pengaturan">Kelola media website →</Link>
+          </div>
+        </section>
+      )}
+      {tab === "umum" && (
+        <section className={styles.panel}>
+          <header>
+            <h2>☷　Pengaturan Umum</h2>
+            <p>Atur preferensi publik, pendaftaran warga, dan penomoran surat.</p>
+          </header>
+          <div className={styles.preferences}>
+            <label>
+              <span>
+                <strong>Aktifkan komentar publik</strong>
+                <small>Izinkan pengunjung mengirim komentar pada halaman yang mendukung.</small>
+              </span>
+              <input
+                type="checkbox"
+                checked={general.komentarAktif}
+                onChange={(e) => setGeneral({ ...general, komentarAktif: e.target.checked })}
+              />
+            </label>
+            <label>
+              <span>
+                <strong>Pendaftaran akun warga</strong>
+                <small>
+                  Izinkan warga mengajukan akun. Pengajuan diverifikasi administrator desa; akun
+                  baru aktif setelah disetujui.
+                </small>
+              </span>
+              <input
+                type="checkbox"
+                checked={general.pendaftaranWargaAktif}
+                onChange={(e) =>
+                  setGeneral({ ...general, pendaftaranWargaAktif: e.target.checked })
+                }
+              />
+            </label>
+            <Field label="Jumlah berita pada beranda">
+              <select
+                value={general.beritaBeranda}
+                onChange={(e) => setGeneral({ ...general, beritaBeranda: Number(e.target.value) })}
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((n) => (
+                  <option key={n} value={n}>
+                    {n} berita
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Mode Penomoran Surat">
+              <select
+                value={general.penomoranSurat}
+                onChange={(e) => setGeneral({ ...general, penomoranSurat: Number(e.target.value) })}
+              >
+                <option value={1}>Nomor global per tahun</option>
+                <option value={2}>Per jenis surat</option>
+                <option value={3}>Gabungan surat layanan dan agenda masuk/keluar</option>
+                <option value={4}>Per klasifikasi surat</option>
+              </select>
+            </Field>
+          </div>
+          <div className={styles.actions}>
+            <button
+              className={styles.primary}
+              disabled={busy}
+              onClick={() => void save("umum", general)}
+            >
+              Simpan Pengaturan Umum
+            </button>
+          </div>
+        </section>
+      )}
+    </div>
+  );
 }

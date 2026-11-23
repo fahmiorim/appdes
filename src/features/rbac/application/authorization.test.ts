@@ -83,7 +83,9 @@ describe("hasPermission granular CRUD", () => {
     const permissions = {
       isSuperadmin: false,
       levelByResource: new Map([["penduduk", "write" as const]]),
-      actionByResource: new Map([["penduduk", { read: false, create: true, update: false, delete: false }]]),
+      actionByResource: new Map([
+        ["penduduk", { read: false, create: true, update: false, delete: false }],
+      ]),
     };
     expect(hasPermission(permissions, "penduduk", "create")).toBe(true);
     expect(hasPermission(permissions, "penduduk", "read")).toBe(false);

@@ -1,20 +1,18 @@
 import "server-only";
 
-import { and, asc, eq } from "drizzle-orm";
-import { db } from "@/db";
-import { layananPublik, pengaturanDesa } from "@/db/schema";
-
 import {
   countBerita,
   getAlbumBySlug,
   getBeritaBySlug,
   getHalamanBySlug,
+  getPengaturanKontakMentah,
   getProfilDesa,
   listAlbumGaleri,
   listBerita,
   listDokumenPublik,
   listFotoAlbum,
   listKategoriBerita,
+  listLayananDesaPublik,
   listPerangkatDesa,
   listPotensiDesa,
   listSliderBeranda,
@@ -111,41 +109,40 @@ export async function daftarPotensiDesa(villageId: number, includeInactive = fal
 
 /** Katalog layanan tambahan milik tenant yang boleh ditampilkan pada situs publik. */
 export async function daftarLayananDesaPublik(villageId: number) {
-  return db
-    .select({
-      id: layananPublik.id,
-      nama: layananPublik.nama,
-      kategori: layananPublik.kategori,
-      deskripsi: layananPublik.deskripsi,
-      persyaratan: layananPublik.persyaratan,
-      estimasiHari: layananPublik.estimasiHari,
-      biaya: layananPublik.biaya,
-      metode: layananPublik.metode,
-    })
-    .from(layananPublik)
-    .where(and(eq(layananPublik.villageId, villageId), eq(layananPublik.aktif, true)))
-    .orderBy(asc(layananPublik.nama));
+  return listLayananDesaPublik(villageId);
 }
 
 /** Pengaturan kontak publik tenant; hanya field kontak nonrahasia yang dibaca. */
 export async function pengaturanKontakPublik(villageId: number) {
-  const [row] = await db.select({ nilai: pengaturanDesa.nilai }).from(pengaturanDesa)
-    .where(and(eq(pengaturanDesa.villageId, villageId), eq(pengaturanDesa.kunci, "pengaturan.kontak"))).limit(1);
+  const mentah = await getPengaturanKontakMentah(villageId);
   try {
-    const parsed: unknown = row?.nilai ? JSON.parse(row.nilai) : {};
+    const parsed: unknown = mentah ? JSON.parse(mentah) : {};
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
     const data = parsed as Record<string, unknown>;
-    const safe = (key: string) => typeof data[key] === "string" ? (data[key] as string).trim() : "";
+    const safe = (key: string) =>
+      typeof data[key] === "string" ? (data[key] as string).trim() : "";
     const safeHttpUrl = (key: string) => {
       const value = safe(key);
       if (!value) return "";
-      try { const url = new URL(value); return ["http:", "https:"].includes(url.protocol) ? url.toString() : ""; }
-      catch { return ""; }
+      try {
+        const url = new URL(value);
+        return ["http:", "https:"].includes(url.protocol) ? url.toString() : "";
+      } catch {
+        return "";
+      }
     };
     return {
-      whatsapp: safe("whatsapp"), telepon: safe("telepon"), email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safe("email")) ? safe("email") : "", alamat: safe("alamat"),
-      website: safeHttpUrl("website"), instagram: safe("instagram"), facebook: safe("facebook"), youtube: safe("youtube"),
-      koordinat: safe("koordinat"), tautanPeta: safeHttpUrl("tautanPeta"), jamLayanan: safe("jamLayanan"),
+      whatsapp: safe("whatsapp"),
+      telepon: safe("telepon"),
+      email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safe("email")) ? safe("email") : "",
+      alamat: safe("alamat"),
+      website: safeHttpUrl("website"),
+      instagram: safe("instagram"),
+      facebook: safe("facebook"),
+      youtube: safe("youtube"),
+      koordinat: safe("koordinat"),
+      tautanPeta: safeHttpUrl("tautanPeta"),
+      jamLayanan: safe("jamLayanan"),
     };
   } catch {
     return {};

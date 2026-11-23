@@ -46,14 +46,18 @@ export default async function KontakPage() {
   const phoneDigits = phone.replace(/\D/g, "");
   const whatsapp = settings.whatsapp || phone;
   const whatsappDigits = whatsapp.replace(/\D/g, "");
-  const whatsappNumber = whatsappDigits.startsWith("0") ? "62" + whatsappDigits.slice(1) : whatsappDigits;
+  const whatsappNumber = whatsappDigits.startsWith("0")
+    ? "62" + whatsappDigits.slice(1)
+    : whatsappDigits;
   const email = settings.email || desa.emailDesa?.trim() || "";
   const address = settings.alamat || desa.alamatKantor?.trim() || "";
-  const mapQuery = [address, desa.namaDesa, location, settings.koordinat].filter(Boolean).join(", ");
+  const mapQuery = [address, desa.namaDesa, location, settings.koordinat]
+    .filter(Boolean)
+    .join(", ");
   const socialLinks = [
-    { label: "Instagram", href: socialUrl(settings.instagram, "https://instagram.com/") },
-    { label: "Facebook", href: socialUrl(settings.facebook, "https://facebook.com/") },
-    { label: "YouTube", href: socialUrl(settings.youtube, "https://youtube.com/") },
+    { label: "Instagram", href: socialUrl(settings.instagram ?? "", "https://instagram.com/") },
+    { label: "Facebook", href: socialUrl(settings.facebook ?? "", "https://facebook.com/") },
+    { label: "YouTube", href: socialUrl(settings.youtube ?? "", "https://youtube.com/") },
   ].filter((item): item is { label: string; href: string } => Boolean(item.href));
   return (
     <main className={styles.site}>
@@ -161,8 +165,13 @@ export default async function KontakPage() {
               {settings.website ? (
                 <article>
                   <span className={styles.addressIcon}>↗</span>
-                  <div><b>Website Resmi</b><p>{settings.website}</p></div>
-                  <a href={settings.website} target="_blank" rel="noreferrer">↗</a>
+                  <div>
+                    <b>Website Resmi</b>
+                    <p>{settings.website}</p>
+                  </div>
+                  <a href={settings.website} target="_blank" rel="noreferrer">
+                    ↗
+                  </a>
                 </article>
               ) : null}
               <article>
@@ -213,7 +222,10 @@ export default async function KontakPage() {
               {mapQuery ? (
                 <a
                   className={styles.mapLink}
-                  href={settings.tautanPeta || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`}
+                  href={
+                    settings.tautanPeta ||
+                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`
+                  }
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -237,10 +249,19 @@ export default async function KontakPage() {
               <section>
                 <div className={styles.sectionTitle}>
                   <span>◎</span>
-                  <div><h2>Media Sosial Resmi</h2><p>Ikuti informasi dari kanal desa.</p></div>
+                  <div>
+                    <h2>Media Sosial Resmi</h2>
+                    <p>Ikuti informasi dari kanal desa.</p>
+                  </div>
                 </div>
                 <div className={styles.contactNote}>
-                  {socialLinks.map((item) => <p key={item.label}><a href={item.href} target="_blank" rel="noreferrer">{item.label} ↗</a></p>)}
+                  {socialLinks.map((item) => (
+                    <p key={item.label}>
+                      <a href={item.href} target="_blank" rel="noreferrer">
+                        {item.label} ↗
+                      </a>
+                    </p>
+                  ))}
                 </div>
               </section>
             ) : null}

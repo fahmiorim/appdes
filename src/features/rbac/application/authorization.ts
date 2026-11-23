@@ -62,19 +62,28 @@ export const computeEffectivePermissions = cache(
     ]);
     const actionByResource = new Map<string, ModuleActions>();
     const childrenByParent = new Map<number, number[]>();
-    for (const module of modules) {
-      const parentId = module.parentId ?? 0;
-      if (parentId > 0) childrenByParent.set(parentId, [...(childrenByParent.get(parentId) ?? []), module.id]);
-      const actions = actionsById.get(module.id);
-      actionByResource.set(module.slug, actions ?? { read: false, create: false, update: false, delete: false });
+    for (const modul of modules) {
+      const parentId = modul.parentId ?? 0;
+      if (parentId > 0)
+        childrenByParent.set(parentId, [...(childrenByParent.get(parentId) ?? []), modul.id]);
+      const actions = actionsById.get(modul.id);
+      actionByResource.set(
+        modul.slug,
+        actions ?? { read: false, create: false, update: false, delete: false },
+      );
     }
     // Menu induk hanya mendapat izin lihat jika setidaknya satu anak memang dapat dibaca.
-    for (const module of modules) {
-      const childIds = childrenByParent.get(module.id) ?? [];
+    for (const modul of modules) {
+      const childIds = childrenByParent.get(modul.id) ?? [];
       const childReadable = childIds.some((childId) => actionsById.get(childId)?.read === true);
       if (childReadable) {
-        const current = actionByResource.get(module.slug) ?? { read: false, create: false, update: false, delete: false };
-        actionByResource.set(module.slug, { ...current, read: true });
+        const current = actionByResource.get(modul.slug) ?? {
+          read: false,
+          create: false,
+          update: false,
+          delete: false,
+        };
+        actionByResource.set(modul.slug, { ...current, read: true });
       }
     }
     return {

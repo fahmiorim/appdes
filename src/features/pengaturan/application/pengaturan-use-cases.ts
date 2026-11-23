@@ -1,16 +1,12 @@
 import "server-only";
 
-import { eq } from "drizzle-orm";
-
-import { db } from "@/db";
-import { villages } from "@/db/schema";
 import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
 import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { RESOURCES } from "@/features/rbac/domain/resources";
+import { normalizePenomoranMode } from "@/features/surat/domain/penomoran";
 import { requirePermission } from "@/lib/dal";
 import { validationError } from "@/lib/errors";
-import { normalizePenomoranMode } from "@/features/surat/domain/penomoran";
 
 import {
   parsePengaturan,
@@ -18,7 +14,12 @@ import {
   serialisasiPengaturan,
   type Pengaturan,
 } from "../domain/pengaturan";
-import { listPengaturan, simpanPengaturan } from "../infrastructure/pengaturan-repository";
+import {
+  bacaPenomoranSurat,
+  listPengaturan,
+  simpanPengaturan,
+  simpanPenomoranSurat,
+} from "../infrastructure/pengaturan-repository";
 
 /**
  * Baca pengaturan efektif satu desa tanpa pemeriksaan izin.
@@ -28,18 +29,15 @@ import { listPengaturan, simpanPengaturan } from "../infrastructure/pengaturan-r
  * klien.
  */
 export async function bacaPengaturan(villageId: number): Promise<Pengaturan> {
-  const [rows, [desa]] = await Promise.all([
+  const [rows, penomoranSurat] = await Promise.all([
     listPengaturan(villageId),
-    db.select({ penomoranSurat: villages.penomoranSurat })
-      .from(villages)
-      .where(eq(villages.id, villageId))
-      .limit(1),
+    bacaPenomoranSurat(villageId),
   ]);
   const parsed = parsePengaturan(rows);
   return {
     ...parsed,
     // Kolom tenant adalah sumber kebenaran yang dipakai mesin penomoran surat.
-    penomoranSurat: normalizePenomoranMode(desa?.penomoranSurat),
+    penomoranSurat: normalizePenomoranMode(penomoranSurat),
   };
 }
 
@@ -65,9 +63,7 @@ export async function simpanPengaturanTenant(
   }
 
   await simpanPengaturan(villageId, serialisasiPengaturan(parsed.data));
-  await db.update(villages)
-    .set({ penomoranSurat: parsed.data.penomoranSurat })
-    .where(eq(villages.id, villageId));
+  await simpanPenomoranSurat(villageId, parsed.data.penomoranSurat);
 
   await recordAuditEvent({
     villageId,

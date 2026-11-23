@@ -3,6 +3,7 @@ import "server-only";
 import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
 import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
+import { countPenggunaDenganRole } from "@/features/pengguna/infrastructure/pengguna-repository";
 import { GRUP_AKSES_RESOURCE, type RoleFormInput } from "@/features/rbac/domain/grup";
 import { fromCrudPermissions, toCrudPermissions } from "@/features/rbac/domain/permission";
 import {
@@ -18,7 +19,6 @@ import {
 } from "@/features/rbac/infrastructure/rbac-repository";
 import { requirePermission, requireUser } from "@/lib/dal";
 import { conflict, notFound } from "@/lib/errors";
-import { countPenggunaDenganRole } from "@/features/pengguna/infrastructure/pengguna-repository";
 
 /** Pastikan role yang diakses berada pada desa yang sama. */
 async function getScopedRole(id: number, villageId: number) {
@@ -58,7 +58,12 @@ export async function getRoleDetail(id: number) {
   const permissions = modules.map((m) => {
     const level = levels.get(m.id) ?? null;
     const legacy = toCrudPermissions(level);
-    const crud = actions.get(m.id) ?? { read: legacy.canRead, create: legacy.canCreate, update: legacy.canUpdate, delete: legacy.canDelete };
+    const crud = actions.get(m.id) ?? {
+      read: legacy.canRead,
+      create: legacy.canCreate,
+      update: legacy.canUpdate,
+      delete: legacy.canDelete,
+    };
     return {
       moduleId: m.id,
       slug: m.slug,
@@ -130,7 +135,12 @@ export async function deleteRoleData(id: number): Promise<void> {
   const role = await getScopedRole(id, villageId);
   if (role.isSystem) throw conflict("Grup sistem tidak dapat dihapus.");
   const assigned = await countPenggunaDenganRole(villageId, id);
-  if (assigned > 0) throw conflict("Role masih digunakan oleh " + assigned + " pengguna. Pindahkan pengguna ke role lain terlebih dahulu.");
+  if (assigned > 0)
+    throw conflict(
+      "Role masih digunakan oleh " +
+        assigned +
+        " pengguna. Pindahkan pengguna ke role lain terlebih dahulu.",
+    );
 
   await deleteRole(villageId, id);
 
@@ -145,7 +155,13 @@ export async function deleteRoleData(id: number): Promise<void> {
 
 export async function saveRolePermissions(
   roleId: number,
-  perms: Array<{ moduleId: number; read: boolean; create: boolean; update: boolean; delete: boolean }>,
+  perms: Array<{
+    moduleId: number;
+    read: boolean;
+    create: boolean;
+    update: boolean;
+    delete: boolean;
+  }>,
 ): Promise<void> {
   const user = await requirePermission(GRUP_AKSES_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
@@ -164,9 +180,23 @@ export async function saveRolePermissions(
     if (!validModuleIds.has(p.moduleId)) return [];
 
     const access = fromCrudPermissions({
-      canRead: p.read, canCreate: p.create, canUpdate: p.update, canDelete: p.delete,
+      canRead: p.read,
+      canCreate: p.create,
+      canUpdate: p.update,
+      canDelete: p.delete,
     });
-    return access === null ? [] : [{ moduleId: p.moduleId, access, read: p.read, create: p.create, update: p.update, delete: p.delete }];
+    return access === null
+      ? []
+      : [
+          {
+            moduleId: p.moduleId,
+            access,
+            read: p.read,
+            create: p.create,
+            update: p.update,
+            delete: p.delete,
+          },
+        ];
   });
 
   await setRolePermissions(villageId, roleId, mapped);
@@ -182,11 +212,21 @@ export async function saveRolePermissions(
 }
 
 /** Buat role kustom baru dengan menyalin matriks izin role sumber dalam tenant yang sama. */
-export async function duplicateRoleData(sourceRoleId: number, input: RoleFormInput): Promise<{ id: number }> {
+export async function duplicateRoleData(
+  sourceRoleId: number,
+  input: RoleFormInput,
+): Promise<{ id: number }> {
   const source = await getRoleDetail(sourceRoleId);
   const created = await createRoleData(input);
-  await saveRolePermissions(created.id, source.permissions.map((permission) => ({
-    moduleId: permission.moduleId, read: permission.read, create: permission.create, update: permission.update, delete: permission.delete,
-  })));
+  await saveRolePermissions(
+    created.id,
+    source.permissions.map((permission) => ({
+      moduleId: permission.moduleId,
+      read: permission.read,
+      create: permission.create,
+      update: permission.update,
+      delete: permission.delete,
+    })),
+  );
   return created;
 }

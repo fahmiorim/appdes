@@ -93,17 +93,38 @@ export default async function PenggunaPage() {
           </div>
         </article>
         <article className="pengguna-kpi" data-tone="ungu">
-          <StatIcon><path d="M4 5h16M4 12h16M4 19h16"/><path d="M8 5v14M16 5v14"/></StatIcon>
-          <div><span>Total Hak Akses</span><strong>{angka.format(data.totalHakAkses)}</strong><small>{angka.format(data.moduleCount)} modul tersedia</small></div>
+          <StatIcon>
+            <path d="M4 5h16M4 12h16M4 19h16" />
+            <path d="M8 5v14M16 5v14" />
+          </StatIcon>
+          <div>
+            <span>Total Hak Akses</span>
+            <strong>{angka.format(data.totalHakAkses)}</strong>
+            <small>{angka.format(data.moduleCount)} modul tersedia</small>
+          </div>
         </article>
       </div>
 
       <nav aria-label="Bagian manajemen pengguna" className="pengguna-tabs">
-        <Link aria-current="page" className="pengguna-tab" href="/pengaturan/pengguna">Pengguna</Link>
-        <Link className="pengguna-tab" href="/pengaturan/grup-akses">Peran &amp; Hak Akses</Link>
-        {data.canUpdate ? <Link className="pengguna-tab" href="/pengaturan/pengguna/pendaftaran">Pendaftaran Warga</Link> : null}
-        {bolehAudit ? <Link className="pengguna-tab" href="/pengaturan/pengguna/aktivitas">Aktivitas Pengguna</Link> : null}
-        <Link className="pengguna-tab" href="/pengaturan/pengguna/keamanan">Pengaturan Keamanan</Link>
+        <Link aria-current="page" className="pengguna-tab" href="/pengaturan/pengguna">
+          Pengguna
+        </Link>
+        <Link className="pengguna-tab" href="/pengaturan/grup-akses">
+          Peran &amp; Hak Akses
+        </Link>
+        {data.canUpdate ? (
+          <Link className="pengguna-tab" href="/pengaturan/pengguna/pendaftaran">
+            Pendaftaran Warga
+          </Link>
+        ) : null}
+        {bolehAudit ? (
+          <Link className="pengguna-tab" href="/pengaturan/pengguna/aktivitas">
+            Aktivitas Pengguna
+          </Link>
+        ) : null}
+        <Link className="pengguna-tab" href="/pengaturan/pengguna/keamanan">
+          Pengaturan Keamanan
+        </Link>
       </nav>
 
       <div className="pengguna-layout">

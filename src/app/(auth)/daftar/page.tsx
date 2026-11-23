@@ -17,12 +17,17 @@ export default async function DaftarWargaPage() {
   const pengaturan = await bacaPengaturan(desa.id);
 
   return (
-    <main className="page-container warga-page" style={{ maxWidth: 620, paddingTop: 48, paddingBottom: 64 }}>
+    <main
+      className="page-container warga-page"
+      style={{ maxWidth: 620, paddingTop: 48, paddingBottom: 64 }}
+    >
       <div className="page-heading">
         <div>
           <span className="eyebrow">Layanan Digital {desa.namaDesa ?? "Desa"}</span>
           <h1>Pendaftaran Akun Warga</h1>
-          <p>Ajukan akses layanan mandiri untuk mengurus layanan administrasi desa secara daring.</p>
+          <p>
+            Ajukan akses layanan mandiri untuk mengurus layanan administrasi desa secara daring.
+          </p>
         </div>
       </div>
       <section className="platform-card" style={{ padding: 28 }}>
@@ -35,10 +40,15 @@ export default async function DaftarWargaPage() {
         ) : (
           <>
             <h2>Pendaftaran Sedang Ditutup</h2>
-            <p>Pemerintah desa sedang tidak menerima pengajuan akun baru. Silakan hubungi kantor desa untuk informasi lebih lanjut.</p>
+            <p>
+              Pemerintah desa sedang tidak menerima pengajuan akun baru. Silakan hubungi kantor desa
+              untuk informasi lebih lanjut.
+            </p>
           </>
         )}
-        <p style={{ marginTop: 24 }}>Sudah memiliki akun? <Link href="/masuk">Masuk ke layanan warga</Link></p>
+        <p style={{ marginTop: 24 }}>
+          Sudah memiliki akun? <Link href="/masuk">Masuk ke layanan warga</Link>
+        </p>
       </section>
     </main>
   );

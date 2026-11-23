@@ -15,7 +15,9 @@ interface Row {
 }
 
 export function RegistrasiWargaConsole({ rows }: { rows: Row[] }) {
-  const [hasil, setHasil] = useState<Record<number, { message: string; pin?: string; username?: string }>>({});
+  const [hasil, setHasil] = useState<
+    Record<number, { message: string; pin?: string; username?: string }>
+  >({});
   const [pending, setPending] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -33,7 +35,10 @@ export function RegistrasiWargaConsole({ rows }: { rows: Row[] }) {
           },
         }));
       } catch {
-        setHasil((current) => ({ ...current, [id]: { message: "Koneksi bermasalah. Muat ulang halaman sebelum mencoba kembali." } }));
+        setHasil((current) => ({
+          ...current,
+          [id]: { message: "Koneksi bermasalah. Muat ulang halaman sebelum mencoba kembali." },
+        }));
       } finally {
         setPending(null);
       }
@@ -44,29 +49,86 @@ export function RegistrasiWargaConsole({ rows }: { rows: Row[] }) {
     <div className="platform-card" style={{ padding: 24 }}>
       <div className="tenant-table-scroll">
         <table className="tenant-table">
-          <thead><tr><th>Waktu</th><th>Nama &amp; NIK</th><th>Kontak</th><th>Status</th><th>Catatan</th><th>Aksi</th></tr></thead>
+          <thead>
+            <tr>
+              <th>Waktu</th>
+              <th>Nama &amp; NIK</th>
+              <th>Kontak</th>
+              <th>Status</th>
+              <th>Catatan</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
           <tbody>
             {rows.map((row) => {
               const result = hasil[row.id];
-              return <tr key={row.id}>
-                <td>{new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short" }).format(new Date(row.createdAt))}</td>
-                <td><strong>{row.nama}</strong><br/><small>••••••••{row.nik.slice(-4)}</small></td>
-                <td>{row.noHp || "—"}</td>
-                <td><span className="status-badge">{row.status}</span></td>
-                <td>{row.catatan || "—"}</td>
-                <td>
-                  {row.status === "menunggu" ? <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <button className="button button-primary" type="button" disabled={isPending} onClick={() => proses(row.id, "setujui")}>{pending === row.id ? "Memproses..." : "Setujui"}</button>
-                    <button className="button button-secondary" type="button" disabled={isPending} onClick={() => proses(row.id, "tolak")}>Tolak</button>
-                  </div> : "Selesai"}
-                  {result ? <div role="status" style={{ marginTop: 8, minWidth: 180 }}>
-                    <p>{result.message}</p>
-                    {result.pin ? <p><strong>Username:</strong> {result.username}<br/><strong>PIN awal:</strong> <code>{result.pin}</code><br/><small>PIN hanya ditampilkan pada sesi ini. Catat dan serahkan secara aman kepada warga.</small></p> : null}
-                  </div> : null}
-                </td>
-              </tr>;
+              return (
+                <tr key={row.id}>
+                  <td>
+                    {new Intl.DateTimeFormat("id-ID", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    }).format(new Date(row.createdAt))}
+                  </td>
+                  <td>
+                    <strong>{row.nama}</strong>
+                    <br />
+                    <small>••••••••{row.nik.slice(-4)}</small>
+                  </td>
+                  <td>{row.noHp || "—"}</td>
+                  <td>
+                    <span className="status-badge">{row.status}</span>
+                  </td>
+                  <td>{row.catatan || "—"}</td>
+                  <td>
+                    {row.status === "menunggu" ? (
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <button
+                          className="button button-primary"
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => proses(row.id, "setujui")}
+                        >
+                          {pending === row.id ? "Memproses..." : "Setujui"}
+                        </button>
+                        <button
+                          className="button button-secondary"
+                          type="button"
+                          disabled={isPending}
+                          onClick={() => proses(row.id, "tolak")}
+                        >
+                          Tolak
+                        </button>
+                      </div>
+                    ) : (
+                      "Selesai"
+                    )}
+                    {result ? (
+                      <div role="status" style={{ marginTop: 8, minWidth: 180 }}>
+                        <p>{result.message}</p>
+                        {result.pin ? (
+                          <p>
+                            <strong>Username:</strong> {result.username}
+                            <br />
+                            <strong>PIN awal:</strong> <code>{result.pin}</code>
+                            <br />
+                            <small>
+                              PIN hanya ditampilkan pada sesi ini. Catat dan serahkan secara aman
+                              kepada warga.
+                            </small>
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </td>
+                </tr>
+              );
             })}
-            {rows.length === 0 ? <tr><td colSpan={6}>Belum ada pengajuan pendaftaran warga.</td></tr> : null}
+            {rows.length === 0 ? (
+              <tr>
+                <td colSpan={6}>Belum ada pengajuan pendaftaran warga.</td>
+              </tr>
+            ) : null}
           </tbody>
         </table>
       </div>

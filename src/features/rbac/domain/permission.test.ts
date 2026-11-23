@@ -49,7 +49,9 @@ function node(id: number, slug: string, parentId: number | null = null): ModuleN
 
 describe("konversi izin CRUD", () => {
   it("mengembalikan null ketika tidak ada akses", () => {
-    expect(fromCrudPermissions({ canRead: false, canCreate: false, canUpdate: false, canDelete: false })).toBeNull();
+    expect(
+      fromCrudPermissions({ canRead: false, canCreate: false, canUpdate: false, canDelete: false }),
+    ).toBeNull();
   });
 
   it("memetakan tingkat ke izin CRUD dan sebaliknya", () => {
@@ -59,10 +61,11 @@ describe("konversi izin CRUD", () => {
   });
 });
 
-
-  it("mendukung izin tambah tanpa mengaktifkan ubah atau hapus", () => {
-    expect(fromCrudPermissions({ canRead: true, canCreate: true, canUpdate: false, canDelete: false })).toBe("write");
-  });
+it("mendukung izin tambah tanpa mengaktifkan ubah atau hapus", () => {
+  expect(
+    fromCrudPermissions({ canRead: true, canCreate: true, canUpdate: false, canDelete: false }),
+  ).toBe("write");
+});
 
 describe("applyParentInheritance", () => {
   const modules: readonly ModuleNode[] = [

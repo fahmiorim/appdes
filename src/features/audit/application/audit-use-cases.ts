@@ -1,7 +1,11 @@
 import "server-only";
 
 import type { AuditEventInput } from "@/features/audit/domain/audit";
-import { appendAuditLog, countAuditEvents, listAuditLogs } from "@/features/audit/infrastructure/audit-repository";
+import {
+  appendAuditLog,
+  countAuditEvents,
+  listAuditLogs,
+} from "@/features/audit/infrastructure/audit-repository";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { requirePermission } from "@/lib/dal";
@@ -19,12 +23,26 @@ export async function recordAuditEvent(input: AuditEventInput): Promise<void> {
   }
 }
 
-export async function getAuditLogPageData(input: { page?: number; search?: string; event?: string; createdAfter?: Date }) {
+export async function getAuditLogPageData(input: {
+  page?: number;
+  search?: string;
+  event?: string;
+  createdAfter?: Date;
+  /** Rentang hari untuk filter dan statistik; default 7. */
+  days?: number;
+}) {
   const user = await requirePermission(RESOURCES.auditLog, "read");
   const villageId = await resolveVillageId(user);
-  const createdAfter = input.createdAfter ?? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const createdAfter =
+    input.createdAfter ?? new Date(Date.now() - (input.days ?? 7) * 24 * 60 * 60 * 1000);
   const [page, stats] = await Promise.all([
-    listAuditLogs(villageId, { ...input, pageSize: 25 }),
+    listAuditLogs(villageId, {
+      page: input.page,
+      search: input.search,
+      event: input.event,
+      createdAfter,
+      pageSize: 25,
+    }),
     countAuditEvents(villageId, createdAfter),
   ]);
   return { ...page, stats };

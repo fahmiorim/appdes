@@ -58,12 +58,25 @@ export function FormIzin({ roleId, permissions, readOnly, aksi, resetAction }: P
 
       <div className="pengguna-izin-footer">
         <p>
-          Izin Lihat wajib aktif untuk memberikan Tambah, Ubah, atau Hapus. Setiap aksi lainnya dapat diatur terpisah. Reset menghapus semua izin (default-deny).
+          Izin Lihat wajib aktif untuk memberikan Tambah, Ubah, atau Hapus. Setiap aksi lainnya
+          dapat diatur terpisah. Reset menghapus semua izin (default-deny).
         </p>
         {readOnly ? (
           <span className="pengguna-rail-note">Grup sistem tidak dapat diubah.</span>
         ) : (
-          <div className="pengguna-izin-actions"><button className="button button-primary" disabled={pending} type="submit">{pending ? "Menyimpan..." : "Simpan izin"}</button><button className="button button-secondary" disabled={pending} formAction={resetAction} type="submit">Reset ke Default</button></div>
+          <div className="pengguna-izin-actions">
+            <button className="button button-primary" disabled={pending} type="submit">
+              {pending ? "Menyimpan..." : "Simpan izin"}
+            </button>
+            <button
+              className="button button-secondary"
+              disabled={pending}
+              formAction={resetAction}
+              type="submit"
+            >
+              Reset ke Default
+            </button>
+          </div>
         )}
       </div>
 
