@@ -6,7 +6,7 @@
 - **Branch task:** `task/PR-219-ci-fix` (dipublikasikan pada branch head PR `work/pengaturan-desa`).
 - **Base commit kerja:** `fc9dc3ef32fd833c8bf5f58740657afeca7817d4` (`origin/main` setelah PR #216 masuk).
 - **Commit implementasi dan laporan awal:** `971210ded5e9752e27d7b540ab3a3cbf71449e68`.
-- **Pembaruan laporan hasil Visual QA dan perbaikan schema:** tercakup dalam commit koreksi pada histori branch/penyerahan task.
+- **Commit koreksi schema dan regression test:** `af179bda3070054d5057ac2c8df93a08743b7576` (`fix(auth): selaraskan export schema two-factor`), dipush ke head PR `work/pengaturan-desa`.
 - **PR:** [#219](https://github.com/fahmiorim/appdes/pull/219).
 
 ## Kondisi awal dan analisis
@@ -54,24 +54,24 @@ Perintah berikut dijalankan pada working tree yang akan dipublikasikan:
 | PASS | `npm run typecheck` | `next typegen && tsc --noEmit` lulus setelah koreksi nama export. |
 | PASS | `npm run build` | Build produksi selesai. Turbopack mengeluarkan dua warning tracing akses filesystem dinamis pada modul ekspor/WhatsApp yang tidak diubah. |
 | PASS | `npm run format:check` | Semua file sesuai Prettier setelah koreksi schema dan regression test. |
-| PASS | `npx vitest run src/db/migrasi-paritas.test.ts` | 12 test lulus; regression test untuk key `twoFactors` gagal sebelum fix karena key schema tidak tersedia karena key schema tidak tersedia.\"twoFactors\"`. |
+| PASS | `npx vitest run src/db/migrasi-paritas.test.ts` | 12 test lulus; regression test untuk key `twoFactors` terbukti gagal sebelum fix karena key schema belum tersedia. |
 | PASS | `git diff --check` | Tidak menemukan whitespace error pada perubahan saat ini. |
 | SKIPPED | `npm run test:integration:ci` lokal | Tidak dijalankan karena MySQL disposable lokal tidak disiapkan; workflow GitHub menggunakan MySQL 8 disposable. |
-| PASS | CI GitHub Actions run #45113247301 pada head `4ec3d0d34b0094cbf716c7180127e0795cbb76d9` | Unit/quality, build produksi, dan integration MySQL 8 lulus. Run ini mendahului koreksi export schema. |
-| FAIL | Visual QA run #45113247331 pada head `4ec3d0d34b0094cbf716c7180127e0795cbb76d9` | `Start Next.js` gagal dengan `SCHEMA_MISMATCH`: Better Auth melaporkan missing schema key `twoFactors`; telah diperbaiki dengan export plural dan regression test. |
-| PENDING | CI GitHub Actions untuk koreksi export schema | Belum dipush atau dijalankan oleh GitHub Actions. |
-| PENDING | Visual QA GitHub Actions untuk koreksi export schema | Belum dipush atau dijalankan; harus diverifikasi pada run baru setelah push. |
+| PASS | CI GitHub Actions run #45113247301 pada head `4ec3d0d34b0094cbf716c7180127e0795cbb76d9` | Unit/quality, build produksi, dan integration MySQL 8 lulus; run ini mendahului koreksi export schema. |
+| FAIL (run lama, sebelum koreksi) | Visual QA run #45113247331 pada head `4ec3d0d34b0094cbf716c7180127e0795cbb76d9` | `Start Next.js` gagal dengan `SCHEMA_MISMATCH`: Better Auth melaporkan missing schema key `twoFactors`; koreksi kemudian dipush pada `af179bda`. |
+| PASS | CI GitHub Actions run #45114811041 pada head `af179bda3070054d5057ac2c8df93a08743b7576` | Semua job selesai sukses: unit/quality, build produksi, dan integration test MySQL 8. [Run CI](https://github.com/fahmiorim/appdes/actions/runs/45114811041). |
+| PASS | Visual QA run #45114810921 pada head `af179bda3070054d5057ac2c8df93a08743b7576` | Semua langkah selesai sukses, termasuk `Start Next.js`, capture desktop/mobile, dan halaman publik. [Run Visual QA](https://github.com/fahmiorim/appdes/actions/runs/45114810921). |
 
 ## Status Git/PR dan risiko tersisa
 
-PR #219 berstatus `OPEN`, head `work/pengaturan-desa`, base `main`. Perbaikan berlapis sebelumnya telah dipush (`971210ded5e9752e27d7b540ab3a3cbf71449e68` dan pembaruan laporan `4ec3d0d34b0094cbf716c7180127e0795cbb76d9`). CI utama lulus pada commit laporan itu, tetapi Visual QA gagal karena model schema Better Auth diekspor dengan key `twoFactor`, bukan `twoFactors`. Koreksi lokal sekarang mengganti nama export saja, mempertahankan tabel DB `two_factor`, dan menambahkan regression test statis; validasi lokal lulus. Koreksi ini belum dikomit/dipush dan belum diverifikasi ulang oleh Actions. Tidak ada migration yang diubah/dijalankan, merge, atau deployment.
+PR #219 berstatus `OPEN`, head `work/pengaturan-desa` pada `af179bda3070054d5057ac2c8df93a08743b7576`, base `main`. Run CI #45114811041 dan Visual QA #45114810921 untuk commit head ini keduanya berstatus sukses; semua check yang ditampilkan `gh pr checks 219` lulus. Status PR `CLEAN`; keputusan review belum tercatat. Run Visual QA #45113247331 yang gagal tetap terlihat dalam riwayat, tetapi berasal dari head lama sebelum koreksi. Koreksi export key dan regression test sudah dikomit/dipush; tabel DB tetap `two_factor`. Tidak ada migration yang diubah/dijalankan, merge, atau deployment.
 
 Risiko/keterbatasan:
-- CI utama PASS tetapi Visual QA FAIL pada commit sebelum koreksi; Visual QA ulang dan CI untuk koreksi export schema masih menunggu push/run.
-- Integration MySQL lulus di CI pada run sebelumnya; tidak dijalankan lokal.
-- Warning lint yang sudah ada dan warning tracing Turbopack pada build sebelumnya tetap di luar scope. Mismatch schema 2FA telah diperbaiki di working tree, tetapi belum mendapat konfirmasi dari Actions setelah push.
-- PR tetap menunggu review maintainer; perubahan tidak menyatakan PR siap merge sebelum seluruh required check remote lulus.
+- Run Visual QA lama tetap menunjukkan FAIL di histori GitHub, namun CI #45114811041 dan Visual QA #45114810921 pada head terbaru sama-sama PASS.
+- Integration MySQL 8 lulus di CI; tidak dijalankan lokal.
+- Warning lint yang sudah ada dan warning tracing Turbopack pada build sebelumnya tetap di luar scope.
+- PR masih menunggu keputusan review maintainer; checks lulus bukan persetujuan merge.
 
 ## Kesimpulan dan langkah berikutnya
 
-Perubahan lanjutan dipisahkan ke use case/repository dengan tenant berasal dari konteks server, disertai koreksi test. Akar kegagalan Visual QA pada run sebelumnya ditemukan di nama export schema Better Auth, diperbaiki tanpa mengubah migration, dan dilindungi regression test yang terbukti gagal sebelum fix. Validasi lokal lulus; push dan verifikasi ulang run GitHub CI/Visual QA masih perlu dilakukan sebelum checks dapat dinyatakan hijau.
+Perubahan lanjutan dipisahkan ke use case/repository dengan tenant berasal dari konteks server, disertai koreksi test. Akar kegagalan Visual QA pada run lama adalah nama export schema Better Auth; export key telah diperbaiki tanpa mengubah migration, dan regression test membuktikan kondisi gagal sebelum fix. Perbaikan ada pada head `af179bda`; CI #45114811041 dan Visual QA #45114810921 sama-sama sukses. Run gagal sebelumnya tetap tercatat sebagai histori dan bukan status check terkini PR.

@@ -4,7 +4,7 @@
 > Cakupan: 12 route Admin Desa yang sudah memiliki `page.tsx` pada branch `task/docs-implementation-audit` (base `36c595e`).
 > Dokumen ini adalah spesifikasi desain dan pemetaan implementasi, bukan acceptance test, bukan bukti bahwa seluruh mockup sudah setara, dan bukan izin untuk mengubah kode di luar task.
 >
-> **Jangan dibaca sebagai status terkini.** Per 23 November 2026 ada 89 halaman Admin Desa non-super-admin, dan beberapa status di bawah sudah berubah (mis. Keuangan, Berita, dan Galeri kini memiliki alur tulis). Gunakan dokumen ini untuk acuan layout, data, permission, dan test per layar; status route terbaru ada di [SID_FEATURE_MAP](../SID_FEATURE_MAP.md) dan [MODULE-INVENTORY](../architecture/MODULE-INVENTORY.md).
+> **Jangan dibaca sebagai status terkini.** Per 23 November 2026 ada 89 halaman Admin Desa non-super-admin, dan beberapa status di bawah sudah berubah (mis. Keuangan dan Galeri kini memiliki alur tulis, sedangkan Berita masih baca-saja). Gunakan dokumen ini untuk acuan layout, data, permission, dan test per layar; status route terbaru ada di [SID_FEATURE_MAP](../SID_FEATURE_MAP.md) dan [MODULE-INVENTORY](../architecture/MODULE-INVENTORY.md).
 
 ## 1. Tujuan dan batas
 
