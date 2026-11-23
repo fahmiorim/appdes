@@ -61,7 +61,7 @@ export async function listKeluarga(params: ListKeluargaParams): Promise<Keluarga
 /** Data referensi untuk mengisi formulir (butuh izin baca modul keluarga). */
 /** Referensi formulir tambah/ubah KK; hanya pengguna yang boleh mengelola keluarga. */
 export async function getKeluargaFormReference(): Promise<KeluargaReferenceData> {
-  const user = await requirePermission(KELUARGA_RESOURCE, "update");
+  const user = await requirePermission(KELUARGA_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
   const regions = await listWilayahOptions(villageId);
   return {
@@ -176,7 +176,7 @@ export async function getKeluargaDetail(familyId: number): Promise<KeluargaDetai
 }
 
 export async function createKeluarga(input: KeluargaFormInput): Promise<{ id: number }> {
-  const user = await requirePermission(KELUARGA_RESOURCE, "update");
+  const user = await requirePermission(KELUARGA_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   await validateKeluargaRegion(villageId, input.regionId);

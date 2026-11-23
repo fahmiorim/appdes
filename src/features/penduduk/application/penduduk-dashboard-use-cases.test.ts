@@ -105,7 +105,7 @@ describe("use case dashboard penduduk", () => {
       references: referensiKosong,
       penduduk: null,
     });
-    expect(dal.requirePermission).toHaveBeenCalledWith("penduduk", "update");
+    expect(dal.requirePermission).toHaveBeenCalledWith("penduduk", "create");
     expect(referenceRepo.getPendudukReferenceData).toHaveBeenCalledWith(7);
     expect(pendudukRepo.findPendudukById).not.toHaveBeenCalled();
   });

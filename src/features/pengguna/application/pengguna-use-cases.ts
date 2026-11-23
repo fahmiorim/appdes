@@ -3,6 +3,7 @@ import "server-only";
 import { recordAuditEvent } from "@/features/audit/application/audit-use-cases";
 import { AUDIT_EVENTS } from "@/features/audit/domain/audit";
 import { resolveVillageId } from "@/features/desa/application/resolve-village";
+import { validasiKataSandi, type KeamananInput } from "@/features/pengguna/domain/keamanan";
 import {
   fallbackEmail,
   PENGGUNA_RESOURCE,
@@ -11,6 +12,16 @@ import {
   type PenggunaUpdateInput,
   type RoleOption,
 } from "@/features/pengguna/domain/pengguna";
+import {
+  assertPasswordNotReused,
+  createBlockedIp,
+  deleteBlockedIp,
+  getSecurityOverview,
+  getSecuritySettings,
+  getUserSecurityProfile,
+  listBlockedIps,
+  saveSecuritySettings,
+} from "@/features/pengguna/infrastructure/keamanan-repository";
 import {
   createPengguna,
   deletePengguna,
@@ -24,6 +35,45 @@ import { isPlatformRole } from "@/features/rbac/domain/role";
 import { getRoleById, listRoles } from "@/features/rbac/infrastructure/rbac-repository";
 import { requirePermission, requireUser } from "@/lib/dal";
 import { conflict, notFound } from "@/lib/errors";
+
+export async function getKeamananAkunSaya(userId: string, villageId: number | null) {
+  const [account, policy] = await Promise.all([
+    getUserSecurityProfile(userId),
+    villageId === null ? Promise.resolve(null) : getSecuritySettings(villageId),
+  ]);
+  return { account, policy };
+}
+
+export async function getDataHalamanKeamanan(villageId: number, userId: string) {
+  const [settings, blockedIps, account, ringkasan] = await Promise.all([
+    getSecuritySettings(villageId),
+    listBlockedIps(villageId),
+    getUserSecurityProfile(userId),
+    getSecurityOverview(villageId),
+  ]);
+  return { settings, blockedIps, account, ringkasan };
+}
+
+export async function simpanKebijakanKeamanan(
+  villageId: number,
+  actorId: string,
+  settings: KeamananInput,
+): Promise<void> {
+  await saveSecuritySettings(villageId, actorId, settings);
+}
+
+export async function tambahIpBlokir(
+  villageId: number,
+  actorId: string,
+  ipAddress: string,
+  reason: string,
+): Promise<void> {
+  await createBlockedIp(villageId, actorId, ipAddress, reason);
+}
+
+export async function hapusIpBlokir(villageId: number, id: number): Promise<void> {
+  await deleteBlockedIp(villageId, id);
+}
 
 /** Data profil pengguna yang sedang login (halaman "Profil Saya"). */
 export async function getProfilSaya(): Promise<PenggunaDTO> {
@@ -88,11 +138,15 @@ async function getScopedPengguna(id: string, villageId: number) {
 }
 
 export async function createPenggunaData(input: PenggunaCreateInput): Promise<{ id: string }> {
-  const user = await requirePermission(PENGGUNA_RESOURCE, "update");
+  const user = await requirePermission(PENGGUNA_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const username = normalizeUsername(input.username);
   const email = input.email ?? fallbackEmail(username);
+
+  const policy = await getSecuritySettings(villageId);
+  const passwordError = validasiKataSandi(input.password, policy);
+  if (passwordError) throw conflict(passwordError);
 
   await ensureRoleExists(input.roleId, villageId);
   await ensureUsernameAvailable(username);
@@ -134,6 +188,13 @@ export async function updatePenggunaData(id: string, input: PenggunaUpdateInput)
 
   const username = normalizeUsername(input.username);
   const email = input.email ?? target.email;
+
+  if (input.password !== null) {
+    const policy = await getSecuritySettings(villageId);
+    const passwordError = validasiKataSandi(input.password, policy);
+    if (passwordError) throw conflict(passwordError);
+    await assertPasswordNotReused(id, input.password, policy.passwordReuseCount);
+  }
 
   await ensureRoleExists(input.roleId, villageId);
   await ensureUsernameAvailable(username, id);

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
+import { daftarLayananDesaPublik } from "@/features/publik/application/konten-publik";
 import { listJenisSuratPublik } from "@/features/surat/application/surat-publik-use-cases";
 
 import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
@@ -30,7 +31,10 @@ function mediaUrl(value: string | null, villageId: number): string | null {
 
 export default async function KatalogLayananPage() {
   const desa = await getIdentitasFromRequest();
-  const layanan = await listJenisSuratPublik(desa.id);
+  const [jenisSurat, layananDesa] = await Promise.all([
+    listJenisSuratPublik(desa.id),
+    daftarLayananDesaPublik(desa.id),
+  ]);
   const location = locationLabel(desa);
   const logoUrl = mediaUrl(desa.logo, desa.id);
 
@@ -109,14 +113,28 @@ export default async function KatalogLayananPage() {
           </article>
         </section>
         <KatalogLayanan
-          layanan={layanan.map((item) => ({
-            id: item.id,
-            nama: item.nama,
-            kode: item.kode,
-            klasifikasi: item.klasifikasi,
-            butuhPenduduk: item.butuhPenduduk,
-            masaBerlakuBulan: item.masaBerlakuBulan,
-          }))}
+          layanan={[
+            ...jenisSurat.map((item) => ({
+              source: "surat" as const,
+              id: item.id,
+              nama: item.nama,
+              kode: item.kode,
+              klasifikasi: item.klasifikasi,
+              butuhPenduduk: item.butuhPenduduk,
+              masaBerlakuBulan: item.masaBerlakuBulan,
+            })),
+            ...layananDesa.map((item) => ({
+              source: "desa" as const,
+              id: item.id,
+              nama: item.nama,
+              kategori: item.kategori,
+              deskripsi: item.deskripsi,
+              persyaratan: item.persyaratan,
+              estimasiHari: item.estimasiHari,
+              biaya: item.biaya,
+              metode: item.metode,
+            })),
+          ]}
         />
         <section className={styles.process}>
           <div className={styles.sectionTitle}>

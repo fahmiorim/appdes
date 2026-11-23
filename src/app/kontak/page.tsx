@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
+import { pengaturanKontakPublik } from "@/features/publik/application/konten-publik";
 
 import { PublicSiteFooter, PublicSiteHeader } from "../public-site-layout";
 import { KontakFaq } from "./kontak-faq";
@@ -24,16 +25,40 @@ function mediaUrl(value: string | null, villageId: number): string | null {
   const path = parts[0] === String(villageId) ? parts : [String(villageId), ...parts];
   return "/api/publik/media/" + path.map(encodeURIComponent).join("/");
 }
+
+function socialUrl(value: string, base: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  try {
+    const parsed = new URL(trimmed);
+    return ["http:", "https:"].includes(parsed.protocol) ? parsed.toString() : null;
+  } catch {
+    return base + encodeURIComponent(trimmed.replace(/^@/, ""));
+  }
+}
+
 export default async function KontakPage() {
   const desa = await getIdentitasFromRequest();
+  const settings = await pengaturanKontakPublik(desa.id);
   const location = locationLabel(desa);
   const logoUrl = mediaUrl(desa.logo, desa.id);
-  const phone = desa.telepon?.trim() ?? "";
-  const phoneDigits = phone.replace(/\\D/g, "");
-  const whatsappNumber = phoneDigits.startsWith("0") ? "62" + phoneDigits.slice(1) : phoneDigits;
-  const email = desa.emailDesa?.trim() ?? "";
-  const address = desa.alamatKantor?.trim() ?? "";
-  const mapQuery = [address, desa.namaDesa, location].filter(Boolean).join(", ");
+  const phone = settings.telepon || desa.telepon?.trim() || "";
+  const phoneDigits = phone.replace(/\D/g, "");
+  const whatsapp = settings.whatsapp || phone;
+  const whatsappDigits = whatsapp.replace(/\D/g, "");
+  const whatsappNumber = whatsappDigits.startsWith("0")
+    ? "62" + whatsappDigits.slice(1)
+    : whatsappDigits;
+  const email = settings.email || desa.emailDesa?.trim() || "";
+  const address = settings.alamat || desa.alamatKantor?.trim() || "";
+  const mapQuery = [address, desa.namaDesa, location, settings.koordinat]
+    .filter(Boolean)
+    .join(", ");
+  const socialLinks = [
+    { label: "Instagram", href: socialUrl(settings.instagram ?? "", "https://instagram.com/") },
+    { label: "Facebook", href: socialUrl(settings.facebook ?? "", "https://facebook.com/") },
+    { label: "YouTube", href: socialUrl(settings.youtube ?? "", "https://youtube.com/") },
+  ].filter((item): item is { label: string; href: string } => Boolean(item.href));
   return (
     <main className={styles.site}>
       <PublicSiteHeader desa={desa} location={location} logoUrl={logoUrl} activePath="/kontak" />
@@ -113,9 +138,9 @@ export default async function KontakPage() {
                 <span className={styles.whatsapp}>◉</span>
                 <div>
                   <b>Telepon / WhatsApp</b>
-                  <p>{phone || "Nomor telepon belum tersedia"}</p>
+                  <p>{whatsapp || "Nomor WhatsApp belum tersedia"}</p>
                 </div>
-                {phoneDigits ? (
+                {whatsappDigits ? (
                   <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer">
                     ↗
                   </a>
@@ -127,7 +152,7 @@ export default async function KontakPage() {
                   <b>Telepon Kantor Desa</b>
                   <p>{phone || "Nomor telepon belum tersedia"}</p>
                 </div>
-                {phoneDigits ? <a href={`tel:${phone.replace(/[^\\d+]/g, "")}`}>↗</a> : null}
+                {phoneDigits ? <a href={`tel:${phone.replace(/[^\d+]/g, "")}`}>↗</a> : null}
               </article>
               <article>
                 <span className={styles.email}>✉</span>
@@ -137,6 +162,18 @@ export default async function KontakPage() {
                 </div>
                 {email ? <a href={`mailto:${email}`}>↗</a> : null}
               </article>
+              {settings.website ? (
+                <article>
+                  <span className={styles.addressIcon}>↗</span>
+                  <div>
+                    <b>Website Resmi</b>
+                    <p>{settings.website}</p>
+                  </div>
+                  <a href={settings.website} target="_blank" rel="noreferrer">
+                    ↗
+                  </a>
+                </article>
+              ) : null}
               <article>
                 <span className={styles.addressIcon}>⌖</span>
                 <div>
@@ -155,7 +192,7 @@ export default async function KontakPage() {
                 pengaduan yang telah disetujui untuk ditampilkan kepada publik.
               </p>
               <div>
-                {phoneDigits ? (
+                {whatsappDigits ? (
                   <a href={`https://wa.me/${whatsappNumber}`} target="_blank" rel="noreferrer">
                     Hubungi via WhatsApp　→
                   </a>
@@ -185,7 +222,10 @@ export default async function KontakPage() {
               {mapQuery ? (
                 <a
                   className={styles.mapLink}
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`}
+                  href={
+                    settings.tautanPeta ||
+                    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`
+                  }
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -202,9 +242,29 @@ export default async function KontakPage() {
                 </div>
               </div>
               <p className={styles.hoursNote}>
-                Jadwal operasional belum dicantumkan pada profil desa.
+                {settings.jamLayanan || "Jadwal operasional belum dicantumkan pada profil desa."}
               </p>
             </section>
+            {socialLinks.length ? (
+              <section>
+                <div className={styles.sectionTitle}>
+                  <span>◎</span>
+                  <div>
+                    <h2>Media Sosial Resmi</h2>
+                    <p>Ikuti informasi dari kanal desa.</p>
+                  </div>
+                </div>
+                <div className={styles.contactNote}>
+                  {socialLinks.map((item) => (
+                    <p key={item.label}>
+                      <a href={item.href} target="_blank" rel="noreferrer">
+                        {item.label} ↗
+                      </a>
+                    </p>
+                  ))}
+                </div>
+              </section>
+            ) : null}
             <section className={styles.tracking}>
               <span>▣</span>
               <div>
@@ -236,14 +296,14 @@ export default async function KontakPage() {
           </div>
           <a
             href={
-              phoneDigits
+              whatsappDigits
                 ? `https://wa.me/${whatsappNumber}`
                 : email
                   ? `mailto:${email}`
                   : "#saluran-kontak"
             }
-            target={phoneDigits || email ? "_blank" : undefined}
-            rel={phoneDigits || email ? "noreferrer" : undefined}
+            target={whatsappDigits || email ? "_blank" : undefined}
+            rel={whatsappDigits || email ? "noreferrer" : undefined}
           >
             Sampaikan Saran　→
           </a>

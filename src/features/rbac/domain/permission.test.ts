@@ -16,7 +16,7 @@ describe("levelAllows", () => {
     expect(levelAllows(undefined, "delete")).toBe(false);
   });
 
-  it("memetakan read -> read, write -> update, manage -> delete", () => {
+  it("memetakan tingkat legacy ke aksi read, create, update, dan delete", () => {
     expect(levelAllows("read", "read")).toBe(true);
     expect(levelAllows("read", "create")).toBe(false);
     expect(levelAllows("read", "update")).toBe(false);
@@ -49,7 +49,9 @@ function node(id: number, slug: string, parentId: number | null = null): ModuleN
 
 describe("konversi izin CRUD", () => {
   it("mengembalikan null ketika tidak ada akses", () => {
-    expect(fromCrudPermissions({ canRead: false, canWrite: false, canManage: false })).toBeNull();
+    expect(
+      fromCrudPermissions({ canRead: false, canCreate: false, canUpdate: false, canDelete: false }),
+    ).toBeNull();
   });
 
   it("memetakan tingkat ke izin CRUD dan sebaliknya", () => {
@@ -57,6 +59,12 @@ describe("konversi izin CRUD", () => {
       expect(fromCrudPermissions(toCrudPermissions(level))).toBe(level);
     }
   });
+});
+
+it("mendukung izin tambah tanpa mengaktifkan ubah atau hapus", () => {
+  expect(
+    fromCrudPermissions({ canRead: true, canCreate: true, canUpdate: false, canDelete: false }),
+  ).toBe("write");
 });
 
 describe("applyParentInheritance", () => {

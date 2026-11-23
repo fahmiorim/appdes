@@ -52,7 +52,11 @@ describe("GET /statistik/penduduk/ekspor/pdf", () => {
 
   it("menolak pengguna tanpa izin laporan penduduk", async () => {
     getCurrentUser.mockResolvedValue({
-      permissions: { isSuperadmin: false, levelByResource: new Map() },
+      permissions: {
+        isSuperadmin: false,
+        actionByResource: new Map(),
+        levelByResource: new Map(),
+      },
     });
 
     const respons = await GET(permintaan(), { params: Promise.resolve({}) });
@@ -62,7 +66,11 @@ describe("GET /statistik/penduduk/ekspor/pdf", () => {
 
   it("mengembalikan PDF dengan header unduhan", async () => {
     getCurrentUser.mockResolvedValue({
-      permissions: { isSuperadmin: true, levelByResource: new Map() },
+      permissions: {
+        isSuperadmin: true,
+        actionByResource: new Map(),
+        levelByResource: new Map(),
+      },
     });
 
     const respons = await GET(permintaan(), { params: Promise.resolve({}) });
@@ -77,7 +85,11 @@ describe("GET /statistik/penduduk/ekspor/pdf", () => {
 
   it("memakai kind bawaan bila parameter tidak dikenal", async () => {
     getCurrentUser.mockResolvedValue({
-      permissions: { isSuperadmin: true, levelByResource: new Map() },
+      permissions: {
+        isSuperadmin: true,
+        actionByResource: new Map(),
+        levelByResource: new Map(),
+      },
     });
 
     const respons = await GET(

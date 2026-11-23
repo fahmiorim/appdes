@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { agendaMendatang } from "@/features/agenda/application/agenda-use-cases";
 import { getIdentitasFromRequest } from "@/features/desa/application/resolve-village";
+import { bacaPengaturan } from "@/features/pengaturan/application/pengaturan-use-cases";
 import {
   catatKunjunganBerita,
   daftarBerita,
@@ -72,7 +73,8 @@ export default async function DetailBeritaPage({ params }: Props) {
   if (!berita) notFound();
   await catatKunjunganBerita(berita.id);
 
-  const [semuaBerita, kategoriBerita, agenda, perangkat] = await Promise.all([
+  const [pengaturan, semuaBerita, kategoriBerita, agenda, perangkat] = await Promise.all([
+    bacaPengaturan(desa.id),
     daftarBerita(desa.id, { limit: 30 }),
     daftarKategoriBerita(desa.id),
     agendaMendatang(desa.id, 3),
@@ -241,7 +243,10 @@ export default async function DetailBeritaPage({ params }: Props) {
               )}
             </section>
 
-            <KomentarBerita slug={berita.slug} enabled={berita.bolehKomentar} />
+            <KomentarBerita
+              slug={berita.slug}
+              enabled={berita.bolehKomentar && pengaturan.komentarAktif}
+            />
           </div>
 
           <aside className={styles.detailSidebar}>

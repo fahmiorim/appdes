@@ -1,4 +1,10 @@
 export type Action = "read" | "create" | "update" | "delete";
+export interface ModuleActions {
+  read: boolean;
+  create: boolean;
+  update: boolean;
+  delete: boolean;
+}
 
 export const ACCESS_LEVELS = ["read", "write", "manage"] as const;
 export type AccessLevel = (typeof ACCESS_LEVELS)[number];
@@ -65,20 +71,22 @@ export function levelToActions(level: AccessLevel | null | undefined): Action[] 
 }
 export interface CrudPermissions {
   canRead: boolean;
-  canWrite: boolean;
-  canManage: boolean;
+  canCreate: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
 }
 export function toCrudPermissions(level: AccessLevel | null | undefined): CrudPermissions {
-  if (!level) return { canRead: false, canWrite: false, canManage: false };
+  if (!level) return { canRead: false, canCreate: false, canUpdate: false, canDelete: false };
   return {
     canRead: ACCESS_RANK[level as AccessLevel] >= ACCESS_RANK.read,
-    canWrite: ACCESS_RANK[level as AccessLevel] >= ACCESS_RANK.write,
-    canManage: ACCESS_RANK[level as AccessLevel] >= ACCESS_RANK.manage,
+    canCreate: ACCESS_RANK[level as AccessLevel] >= ACCESS_RANK.write,
+    canUpdate: ACCESS_RANK[level as AccessLevel] >= ACCESS_RANK.write,
+    canDelete: ACCESS_RANK[level as AccessLevel] >= ACCESS_RANK.manage,
   };
 }
 export function fromCrudPermissions(perms: CrudPermissions): AccessLevel | null {
-  if (perms.canManage) return "manage";
-  if (perms.canWrite) return "write";
+  if (perms.canDelete) return "manage";
+  if (perms.canCreate || perms.canUpdate) return "write";
   if (perms.canRead) return "read";
   return null;
 }

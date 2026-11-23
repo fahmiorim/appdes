@@ -331,7 +331,7 @@ export async function hapusInventaris(id: number) {
 }
 
 export async function ajukanMutasi(input: InventarisMutasiInput) {
-  const user = await requirePermission(MUTASI_RESOURCE, "update");
+  const user = await requirePermission(MUTASI_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const item = await getInventaris(villageId, input.inventarisId);
@@ -356,10 +356,7 @@ export async function ajukanMutasi(input: InventarisMutasiInput) {
     },
   );
 
-  await createMutasi(villageId, input, {
-    id: user.id,
-    name: namaPengguna(user),
-  });
+  await createMutasi(villageId, input, { id: user.id, name: namaPengguna(user) });
 }
 
 export async function setujuiMutasiData(id: number) {
@@ -368,9 +365,7 @@ export async function setujuiMutasiData(id: number) {
 
   const mutasi = await getMutasi(villageId, id);
   if (!mutasi) throw notFound("Pengajuan mutasi tidak ditemukan.");
-  if (mutasi.status !== "diajukan") {
-    throw conflict("Pengajuan mutasi sudah diproses.");
-  }
+  if (mutasi.status !== "diajukan") throw conflict("Pengajuan mutasi sudah diproses.");
 
   const step = nextMutasiStep(mutasi);
   if (!step) throw conflict("Mutasi sudah selesai diverifikasi.");
@@ -393,15 +388,11 @@ export async function tolakMutasiData(id: number, catatanPenolakan: string) {
 
   const mutasi = await getMutasi(villageId, id);
   if (!mutasi) throw notFound("Pengajuan mutasi tidak ditemukan.");
-  if (mutasi.status !== "diajukan") {
-    throw conflict("Pengajuan mutasi sudah diproses.");
-  }
+  if (mutasi.status !== "diajukan") throw conflict("Pengajuan mutasi sudah diproses.");
   if (mutasi.diajukanOlehId === user.id && !user.permissions.isSuperadmin) {
     throw forbidden("Pengaju mutasi tidak boleh menolak pengajuannya sendiri.");
   }
-  if (!catatanPenolakan.trim()) {
-    throw conflict("Catatan penolakan wajib diisi.");
-  }
+  if (!catatanPenolakan.trim()) throw conflict("Catatan penolakan wajib diisi.");
 
   const step = nextMutasiStep(mutasi);
   if (!step) throw conflict("Mutasi sudah selesai diverifikasi.");
@@ -583,9 +574,7 @@ export async function ubahStatusPemeliharaan(input: {
       throw validationError("Tanggal rencana tidak valid.");
   }
   if (input.status === "selesai") {
-    if (!input.tanggalRencana) {
-      throw validationError("Tanggal rencana wajib tersedia.");
-    }
+    if (!input.tanggalRencana) throw validationError("Tanggal rencana wajib tersedia.");
     if (!input.tanggalSelesai)
       throw validationError("Tanggal selesai wajib diisi untuk pemeliharaan yang selesai.");
     const selesai = new Date(input.tanggalSelesai + "T00:00:00Z");
@@ -641,9 +630,7 @@ export async function unggahDokumenInventaris(input: {
     throw validationError("Nama dokumen wajib diisi (maksimal 200 karakter).");
   if (!input.namaFile.trim() || input.namaFile.length > 255)
     throw validationError("Nama berkas tidak valid.");
-  if (input.ukuran <= 0) {
-    throw validationError("Berkas kosong tidak dapat diunggah.");
-  }
+  if (input.ukuran <= 0) throw validationError("Berkas kosong tidak dapat diunggah.");
   if (!["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(input.mime))
     throw validationError("Dokumen harus PDF, JPG, PNG, atau WEBP.");
   const batasUkuran = input.mime.startsWith("image/") ? 5 * 1024 * 1024 : 8 * 1024 * 1024;
@@ -653,12 +640,7 @@ export async function unggahDokumenInventaris(input: {
     );
   const jalurMedia = await simpanBerkasMedia(
     villageId,
-    {
-      nama: input.namaFile,
-      mime: input.mime,
-      ukuran: input.ukuran,
-      isi: input.isi,
-    },
+    { nama: input.namaFile, mime: input.mime, ukuran: input.ukuran, isi: input.isi },
     "inventaris",
     "berkas",
   );

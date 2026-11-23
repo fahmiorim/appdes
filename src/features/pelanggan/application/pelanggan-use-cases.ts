@@ -28,7 +28,7 @@ export async function daftarPelanggan(villageId: number, opts?: { q?: string }) 
 }
 
 export async function tambahPelanggan(villageId: number, input: unknown) {
-  await requirePermission(PELANGGAN_RESOURCE, "update");
+  await requirePermission(PELANGGAN_RESOURCE, "create");
   const parsed = pelangganFormSchema.parse(input);
   const id = await createPelanggan({
     villageId,
@@ -79,7 +79,7 @@ export async function simpanDokumenKerjasama(
   id: number,
   berkas: BerkasDokumenKerjasama,
 ) {
-  await requirePermission(PELANGGAN_RESOURCE, "update");
+  await requirePermission(PELANGGAN_RESOURCE, "create");
 
   const validasi = validasiDokumenKerjasama(berkas.mime, berkas.isi.byteLength);
   if (!validasi.ok) throw validationError(validasi.pesan);

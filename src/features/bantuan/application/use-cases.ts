@@ -115,7 +115,7 @@ async function getScopedProgram(villageId: number, id: number): Promise<BantuanD
 }
 
 export async function createBantuan(input: BantuanFormInput): Promise<{ id: number }> {
-  const user = await requirePermission(BANTUAN_RESOURCE, "update");
+  const user = await requirePermission(BANTUAN_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const slug = await slugBebas(villageId, input.nama, null);
@@ -240,7 +240,7 @@ export async function addPeserta(
   programId: number,
   input: PesertaFormInput,
 ): Promise<{ id: number }> {
-  const user = await requirePermission(BANTUAN_PESERTA_RESOURCE, "update");
+  const user = await requirePermission(BANTUAN_PESERTA_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const program = await getScopedProgram(villageId, programId);
@@ -402,7 +402,7 @@ export async function imporPesertaBantuan(
   programId: number,
   rows: readonly BarisImporPeserta[],
 ): Promise<ImporPesertaResult> {
-  const user = await requirePermission(BANTUAN_PESERTA_RESOURCE, "update");
+  const user = await requirePermission(BANTUAN_PESERTA_RESOURCE, "create");
   const villageId = await resolveVillageId(user);
 
   const program = await getScopedProgram(villageId, programId);

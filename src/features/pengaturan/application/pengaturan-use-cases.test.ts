@@ -18,7 +18,9 @@ vi.mock("@/lib/dal", () => ({ requirePermission: vi.fn() }));
 vi.mock("@/features/audit/application/audit-use-cases", () => ({ recordAuditEvent: vi.fn() }));
 
 vi.mock("../infrastructure/pengaturan-repository", () => ({
+  bacaPenomoranSurat: vi.fn(async () => null),
   listPengaturan: vi.fn(),
+  simpanPenomoranSurat: vi.fn(),
   simpanPengaturan: vi.fn(),
 }));
 

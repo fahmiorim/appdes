@@ -1,0 +1,255 @@
+.page {
+  display: grid;
+  gap: 16px;
+  color: #101a3b;
+}
+.page header h1 {
+  margin: 4px 0;
+  font-size: 26px;
+  font-weight: 800;
+}
+.page header p,
+.page header small {
+  color: #77738f;
+}
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #e5defa;
+  border-radius: 14px;
+}
+.tabs a {
+  padding: 10px 14px;
+  border-radius: 9px;
+  color: #30215f;
+  text-decoration: none;
+  font-weight: 650;
+}
+.tabs a[aria-current="page"] {
+  background: linear-gradient(110deg, #a200ff, #3214ed);
+  color: #fff;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.card {
+  padding: 18px;
+  background: #fff;
+  border: 1px solid #e4ddf8;
+  border-radius: 14px;
+  box-shadow: 0 5px 18px #29116a0d;
+}
+.card h2 {
+  margin: 0 0 16px;
+  font-size: 17px;
+}
+.card > label {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0;
+  font-size: 13px;
+  font-weight: 650;
+}
+.card input:not([type="checkbox"]),
+.card textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #dcd5ef;
+  border-radius: 9px;
+  background: #fff;
+  color: #101a3b;
+}
+.card textarea {
+  min-height: 90px;
+}
+.card .check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+  font-weight: 500;
+}
+.check input {
+  width: 17px;
+  height: 17px;
+  accent-color: #7218e8;
+}
+.note {
+  font-size: 12px;
+  color: #8b5a00;
+  background: #fff8e8;
+  padding: 10px;
+  border-radius: 8px;
+}
+.actions {
+  grid-column: 1/-1;
+}
+.actions button,
+.inline button,
+.list button {
+  border: 0;
+  border-radius: 9px;
+  padding: 11px 16px;
+  background: linear-gradient(110deg, #a200ff, #3214ed);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.actions .reset {
+  background: #fff;
+  color: #5920b8;
+  border: 1px solid #d7c9f5;
+}
+.inline {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.inline input {
+  flex: 1;
+  min-width: 180px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+.list {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+.list form {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: #faf9ff;
+  border-radius: 9px;
+}
+.list span {
+  display: grid;
+  gap: 3px;
+}
+.list small {
+  color: #777;
+}
+.list button {
+  background: #fee;
+  color: #b00;
+}
+.page > form,
+.page > section {
+  min-width: 0;
+}
+@media (max-width: 850px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .actions {
+    grid-column: auto;
+  }
+}
+.enabled {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: #e1f9e8;
+  color: #08752d;
+  font-weight: 700;
+  font-size: 12px;
+}
+.backup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 12px 0;
+}
+.backup code {
+  padding: 6px 8px;
+  background: #f2effa;
+  border-radius: 6px;
+  color: #38206c;
+}
+
+.setupForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: end;
+}
+.setupForm label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 650;
+}
+.setupForm input,
+.setupForm select {
+  padding: 10px;
+  border: 1px solid #ddd5ef;
+  border-radius: 8px;
+  background: #fff;
+}
+.setupForm button {
+  padding: 11px;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(110deg, #a200ff, #3214ed);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+@media (max-width: 620px) {
+  .setupForm {
+    grid-template-columns: 1fr;
+  }
+}
+
+.copyCodes {
+  padding: 8px 12px;
+  border: 1px solid #d7c9f5;
+  border-radius: 8px;
+  background: #fff;
+  color: #5622b7;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+.stats article {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid #e4ddf8;
+  border-radius: 12px;
+  background: #fff;
+}
+.stats span {
+  font-size: 11px;
+  color: #777;
+}
+.stats strong {
+  font-size: 20px;
+  color: #281052;
+}
+@media (max-width: 800px) {
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

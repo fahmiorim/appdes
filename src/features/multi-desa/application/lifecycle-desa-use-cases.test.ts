@@ -32,7 +32,9 @@ function pengguna(overrides: Partial<CurrentUser> = {}): CurrentUser {
     roleId: 3,
     residentId: null,
     mustChangePin: false,
-    permissions: { isSuperadmin: false, levelByResource: new Map() },
+    passwordExpired: false,
+    mustEnrollTwoFactor: false,
+    permissions: { isSuperadmin: false, levelByResource: new Map(), actionByResource: new Map() },
     ...overrides,
   };
 }
@@ -72,7 +74,14 @@ describe("lifecycle desa", () => {
 
   it("menolak administrator desa", async () => {
     vi.mocked(dal.requireUser).mockResolvedValue(
-      pengguna({ villageId: 7, permissions: { isSuperadmin: true, levelByResource: new Map() } }),
+      pengguna({
+        villageId: 7,
+        permissions: {
+          isSuperadmin: true,
+          levelByResource: new Map(),
+          actionByResource: new Map(),
+        },
+      }),
     );
     const repo = await modulRepo();
 

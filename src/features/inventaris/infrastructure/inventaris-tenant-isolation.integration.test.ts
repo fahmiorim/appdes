@@ -278,7 +278,9 @@ beforeAll(async () => {
     roleId: null,
     residentId: null,
     mustChangePin: false,
-    permissions: { isSuperadmin: false, levelByResource: new Map() },
+    passwordExpired: false,
+    mustEnrollTwoFactor: false,
+    permissions: { isSuperadmin: false, levelByResource: new Map(), actionByResource: new Map() },
   };
 
   vi.mocked(dal.requirePermission).mockImplementation(async () => penggunaSaatIni());

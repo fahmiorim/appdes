@@ -92,23 +92,39 @@ export default async function PenggunaPage() {
             <small>Role milik desa ini</small>
           </div>
         </article>
+        <article className="pengguna-kpi" data-tone="ungu">
+          <StatIcon>
+            <path d="M4 5h16M4 12h16M4 19h16" />
+            <path d="M8 5v14M16 5v14" />
+          </StatIcon>
+          <div>
+            <span>Total Hak Akses</span>
+            <strong>{angka.format(data.totalHakAkses)}</strong>
+            <small>{angka.format(data.moduleCount)} modul tersedia</small>
+          </div>
+        </article>
       </div>
 
       <nav aria-label="Bagian manajemen pengguna" className="pengguna-tabs">
         <Link aria-current="page" className="pengguna-tab" href="/pengaturan/pengguna">
-          Daftar Pengguna
+          Pengguna
         </Link>
         <Link className="pengguna-tab" href="/pengaturan/grup-akses">
-          Hak Akses (Role)
+          Peran &amp; Hak Akses
         </Link>
-        <Link className="pengguna-tab" href="/pengaturan/grup-akses#izin">
-          Grup &amp; Permission
-        </Link>
-        {bolehAudit ? (
-          <a className="pengguna-tab" href="#log-aktivitas">
-            Log Aktivitas
-          </a>
+        {data.canUpdate ? (
+          <Link className="pengguna-tab" href="/pengaturan/pengguna/pendaftaran">
+            Pendaftaran Warga
+          </Link>
         ) : null}
+        {bolehAudit ? (
+          <Link className="pengguna-tab" href="/pengaturan/pengguna/aktivitas">
+            Aktivitas Pengguna
+          </Link>
+        ) : null}
+        <Link className="pengguna-tab" href="/pengaturan/pengguna/keamanan">
+          Pengaturan Keamanan
+        </Link>
       </nav>
 
       <div className="pengguna-layout">
@@ -137,7 +153,7 @@ export default async function PenggunaPage() {
 
         <aside className="pengguna-rail">
           <section className="pengguna-rail-card pengguna-rail-aksi">
-            {data.canUpdate ? (
+            {data.canCreate ? (
               <DialogPengguna
                 aksi={buatPenggunaAction}
                 currentUserId={data.currentUserId}
@@ -203,7 +219,7 @@ export default async function PenggunaPage() {
           <section className="pengguna-rail-card">
             <header className="pengguna-rail-head">
               <h2>Aktivitas Terbaru</h2>
-              {bolehAudit ? <a href="#log-aktivitas">Lihat semua</a> : null}
+              {bolehAudit ? <Link href="/pengaturan/pengguna/aktivitas">Lihat semua</Link> : null}
             </header>
             {aktivitas.length === 0 ? (
               <p className="pengguna-rail-note">Belum ada aktivitas pengguna atau role.</p>

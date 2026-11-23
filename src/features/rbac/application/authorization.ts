@@ -7,9 +7,11 @@ import {
   levelAllows,
   type AccessLevel,
   type Action,
+  type ModuleActions,
 } from "@/features/rbac/domain/permission";
 import {
   findRoleById,
+  listActionsByRole,
   listLevelsByRole,
   listModules,
 } from "@/features/rbac/infrastructure/rbac-repository";
@@ -23,11 +25,13 @@ export const DEFAULT_RESOURCE = "beranda";
 export interface EffectivePermissions {
   isSuperadmin: boolean;
   levelByResource: Map<string, AccessLevel>;
+  actionByResource: Map<string, ModuleActions>;
 }
 
 const EMPTY_PERMISSIONS: EffectivePermissions = {
   isSuperadmin: false,
   levelByResource: new Map(),
+  actionByResource: new Map(),
 };
 
 /**
@@ -48,17 +52,44 @@ export const computeEffectivePermissions = cache(
       role.villageId === null &&
       villageId === null
     ) {
-      return { isSuperadmin: true, levelByResource: new Map() };
+      return { isSuperadmin: true, levelByResource: new Map(), actionByResource: new Map() };
     }
 
-    const [modules, levelById] = await Promise.all([
+    const [modules, levelById, actionsById] = await Promise.all([
       listModules(villageId),
       listLevelsByRole(roleId, villageId),
+      listActionsByRole(roleId, villageId),
     ]);
-
+    const actionByResource = new Map<string, ModuleActions>();
+    const childrenByParent = new Map<number, number[]>();
+    for (const modul of modules) {
+      const parentId = modul.parentId ?? 0;
+      if (parentId > 0)
+        childrenByParent.set(parentId, [...(childrenByParent.get(parentId) ?? []), modul.id]);
+      const actions = actionsById.get(modul.id);
+      actionByResource.set(
+        modul.slug,
+        actions ?? { read: false, create: false, update: false, delete: false },
+      );
+    }
+    // Menu induk hanya mendapat izin lihat jika setidaknya satu anak memang dapat dibaca.
+    for (const modul of modules) {
+      const childIds = childrenByParent.get(modul.id) ?? [];
+      const childReadable = childIds.some((childId) => actionsById.get(childId)?.read === true);
+      if (childReadable) {
+        const current = actionByResource.get(modul.slug) ?? {
+          read: false,
+          create: false,
+          update: false,
+          delete: false,
+        };
+        actionByResource.set(modul.slug, { ...current, read: true });
+      }
+    }
     return {
       isSuperadmin: false,
       levelByResource: applyParentInheritance(modules, levelById),
+      actionByResource,
     };
   },
 );
@@ -71,6 +102,8 @@ export function hasPermission(
 ): boolean {
   if (permissions.isSuperadmin) return true;
   if (resource === DEFAULT_RESOURCE) return action === "read";
+  const actions = permissions.actionByResource.get(resource);
+  if (actions) return actions[action];
   return levelAllows(permissions.levelByResource.get(resource), action);
 }
 
@@ -79,7 +112,8 @@ export function readableResources(permissions: EffectivePermissions): Set<string
   const slugs = new Set<string>();
 
   for (const [slug, level] of permissions.levelByResource) {
-    if (levelAllows(level, "read")) slugs.add(slug);
+    const actions = permissions.actionByResource.get(slug);
+    if (actions ? actions.read : levelAllows(level, "read")) slugs.add(slug);
   }
 
   return slugs;

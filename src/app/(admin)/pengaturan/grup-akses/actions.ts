@@ -81,18 +81,21 @@ export async function simpanIzinAction(
     const roleId = roleIdDari(formData);
     if (roleId === null) throw new Error("Grup akses tidak valid.");
 
-    const izin = new Map<number, { read: boolean; write: boolean; manage: boolean }>();
+    const izin = new Map<
+      number,
+      { read: boolean; create: boolean; update: boolean; delete: boolean }
+    >();
     for (const nilai of formData.getAll("moduleId")) {
       const moduleId = Number(nilai);
       if (Number.isInteger(moduleId) && moduleId > 0) {
-        izin.set(moduleId, { read: false, write: false, manage: false });
+        izin.set(moduleId, { read: false, create: false, update: false, delete: false });
       }
     }
 
     for (const [kunci] of formData.entries()) {
-      const cocok = /^(read|write|manage)-(\d+)$/.exec(kunci);
+      const cocok = /^(read|create|update|delete)-([0-9]+)$/.exec(kunci);
       if (!cocok) continue;
-      const akses = cocok[1] as "read" | "write" | "manage";
+      const akses = cocok[1] as "read" | "create" | "update" | "delete";
       const moduleId = Number(cocok[2]);
       const baris = izin.get(moduleId);
       if (baris) baris[akses] = true;
@@ -107,4 +110,11 @@ export async function simpanIzinAction(
   } catch (error) {
     return toErrorState(error);
   }
+}
+
+export async function resetIzinRoleAction(formData: FormData): Promise<void> {
+  const roleId = roleIdDari(formData);
+  if (roleId === null) throw new Error("Grup akses tidak valid.");
+  await saveRolePermissions(roleId, []);
+  revalidatePath(HALAMAN);
 }

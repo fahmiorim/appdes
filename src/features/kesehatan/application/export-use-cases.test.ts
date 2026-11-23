@@ -27,6 +27,7 @@ describe("export-use-cases", () => {
   const superadminPermissions: EffectivePermissions = {
     isSuperadmin: true,
     levelByResource: new Map(),
+    actionByResource: new Map(),
   };
 
   it("exportRekapIbuHamil throws when session is missing", async () => {
@@ -37,7 +38,7 @@ describe("export-use-cases", () => {
   it("exportRekapIbuHamil throws when user lacks permission", async () => {
     vi.mocked(dal.verifySession).mockResolvedValueOnce({
       user: { id: 1, name: "Test" },
-      permissions: { isSuperadmin: false, levelByResource: new Map() },
+      permissions: { isSuperadmin: false, levelByResource: new Map(), actionByResource: new Map() },
     } as unknown as CurrentUser);
 
     await expect(exportRekapIbuHamil()).rejects.toThrow("Anda tidak memiliki hak akses.");

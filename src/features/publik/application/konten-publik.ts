@@ -5,12 +5,14 @@ import {
   getAlbumBySlug,
   getBeritaBySlug,
   getHalamanBySlug,
+  getPengaturanKontakMentah,
   getProfilDesa,
   listAlbumGaleri,
   listBerita,
   listDokumenPublik,
   listFotoAlbum,
   listKategoriBerita,
+  listLayananDesaPublik,
   listPerangkatDesa,
   listPotensiDesa,
   listSliderBeranda,
@@ -103,4 +105,46 @@ export async function daftarVideoGaleriPublik(villageId: number, limit = 8) {
 
 export async function daftarPotensiDesa(villageId: number, includeInactive = false) {
   return listPotensiDesa(villageId, includeInactive);
+}
+
+/** Katalog layanan tambahan milik tenant yang boleh ditampilkan pada situs publik. */
+export async function daftarLayananDesaPublik(villageId: number) {
+  return listLayananDesaPublik(villageId);
+}
+
+/** Pengaturan kontak publik tenant; hanya field kontak nonrahasia yang dibaca. */
+export async function pengaturanKontakPublik(villageId: number) {
+  const mentah = await getPengaturanKontakMentah(villageId);
+  try {
+    const parsed: unknown = mentah ? JSON.parse(mentah) : {};
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    const data = parsed as Record<string, unknown>;
+    const safe = (key: string) =>
+      typeof data[key] === "string" ? (data[key] as string).trim() : "";
+    const safeHttpUrl = (key: string) => {
+      const value = safe(key);
+      if (!value) return "";
+      try {
+        const url = new URL(value);
+        return ["http:", "https:"].includes(url.protocol) ? url.toString() : "";
+      } catch {
+        return "";
+      }
+    };
+    return {
+      whatsapp: safe("whatsapp"),
+      telepon: safe("telepon"),
+      email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(safe("email")) ? safe("email") : "",
+      alamat: safe("alamat"),
+      website: safeHttpUrl("website"),
+      instagram: safe("instagram"),
+      facebook: safe("facebook"),
+      youtube: safe("youtube"),
+      koordinat: safe("koordinat"),
+      tautanPeta: safeHttpUrl("tautanPeta"),
+      jamLayanan: safe("jamLayanan"),
+    };
+  } catch {
+    return {};
+  }
 }

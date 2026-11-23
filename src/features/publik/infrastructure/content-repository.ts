@@ -26,7 +26,9 @@ import {
   galeriVideo,
   halamanStatis,
   jabatanPerangkat,
+  layananPublik,
   menuPublik,
+  pengaturanDesa,
   perangkatDesa,
   potensiDesa,
   potensiIndikator,
@@ -1146,4 +1148,34 @@ export async function hapusPotensiAdmin(villageId: number, id: number): Promise<
   await db
     .delete(potensiDesa)
     .where(and(eq(potensiDesa.id, id), eq(potensiDesa.villageId, villageId)));
+}
+
+/** Katalog layanan tambahan milik tenant yang aktif di situs publik. */
+export async function listLayananDesaPublik(villageId: number) {
+  return db
+    .select({
+      id: layananPublik.id,
+      nama: layananPublik.nama,
+      kategori: layananPublik.kategori,
+      deskripsi: layananPublik.deskripsi,
+      persyaratan: layananPublik.persyaratan,
+      estimasiHari: layananPublik.estimasiHari,
+      biaya: layananPublik.biaya,
+      metode: layananPublik.metode,
+    })
+    .from(layananPublik)
+    .where(and(eq(layananPublik.villageId, villageId), eq(layananPublik.aktif, true)))
+    .orderBy(asc(layananPublik.nama));
+}
+
+/** Nilai mentah pengaturan kontak publik (`pengaturan.kontak`) satu desa. */
+export async function getPengaturanKontakMentah(villageId: number): Promise<string | null> {
+  const [row] = await db
+    .select({ nilai: pengaturanDesa.nilai })
+    .from(pengaturanDesa)
+    .where(
+      and(eq(pengaturanDesa.villageId, villageId), eq(pengaturanDesa.kunci, "pengaturan.kontak")),
+    )
+    .limit(1);
+  return row?.nilai ?? null;
 }

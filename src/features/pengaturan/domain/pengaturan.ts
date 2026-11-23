@@ -11,7 +11,7 @@ export const PETA_KUNCI = {
   komentarAktif: "web.komentar_aktif",
   beritaBeranda: "web.berita_beranda",
   pendaftaranWargaAktif: "mandiri.pendaftaran_warga",
-  /** Mode penomoran surat (1–4). Dipindahkan dari identitas_desa. */
+  /** Mode penomoran surat (1–4); nilai efektif diselaraskan dengan villages.penomoran_surat. */
   penomoranSurat: "surat.penomoran_mode",
 } as const;
 
