@@ -8,9 +8,7 @@ import {
   type LaporanInventarisItem,
 } from "./laporan-inventaris";
 
-function item(
-  overrides: Partial<LaporanInventarisItem>,
-): LaporanInventarisItem {
+function item(overrides: Partial<LaporanInventarisItem>): LaporanInventarisItem {
   return {
     id: 1,
     kategoriId: 1,
@@ -154,7 +152,7 @@ describe("buildInventarisCsv", () => {
   it("menetralkan sel teks yang berpotensi menjadi formula spreadsheet", () => {
     const csv = buildInventarisCsv([
       item({
-        namaBarang: "=HYPERLINK(\"https://example.com\")",
+        namaBarang: '=HYPERLINK("https://example.com")',
         lokasi: " @SUM(A1:A2)",
       }),
     ]);
@@ -177,9 +175,7 @@ describe("buildInventarisCsv", () => {
 
 describe("inventarisCsvFilename", () => {
   it("membuat nama berkas dari nama desa", () => {
-    expect(inventarisCsvFilename("Desa Suka Maju")).toBe(
-      "laporan-inventaris-desa-suka-maju.csv",
-    );
+    expect(inventarisCsvFilename("Desa Suka Maju")).toBe("laporan-inventaris-desa-suka-maju.csv");
   });
 
   it("menambahkan slug kategori bila ada", () => {

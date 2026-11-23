@@ -56,13 +56,8 @@ import {
   updateInventarisKategori,
   updateStatusPemeliharaan,
 } from "@/features/inventaris/infrastructure/inventaris-repository";
-import {
-  simpanBerkasMedia,
-} from "@/features/publik/application/simpan-berkas-media";
-import {
-  bacaMedia,
-  hapusMedia,
-} from "@/features/publik/infrastructure/media-storage";
+import { simpanBerkasMedia } from "@/features/publik/application/simpan-berkas-media";
+import { bacaMedia, hapusMedia } from "@/features/publik/infrastructure/media-storage";
 import { hasPermission } from "@/features/rbac/application/authorization";
 import { RESOURCES } from "@/features/rbac/domain/resources";
 import { findRoleById } from "@/features/rbac/infrastructure/rbac-repository";
@@ -72,11 +67,7 @@ import { conflict, forbidden, notFound, validationError } from "@/lib/errors";
 const INVENTARIS_RESOURCE = RESOURCES.inventaris;
 const MUTASI_RESOURCE = RESOURCES.mutasiInventaris;
 
-function namaPengguna(user: {
-  name: string;
-  username: string | null;
-  email: string;
-}) {
+function namaPengguna(user: { name: string; username: string | null; email: string }) {
   return user.name || user.username || user.email;
 }
 
@@ -190,9 +181,7 @@ export async function getLaporanInventaris(kategoriId?: number) {
   ]);
   const rows = denganPenyusutan(data.rows);
   const items: LaporanInventarisItem[] =
-    kategoriId != null
-      ? rows.filter((row) => row.kategoriId === kategoriId)
-      : rows;
+    kategoriId != null ? rows.filter((row) => row.kategoriId === kategoriId) : rows;
   return {
     kategori,
     kategoriId: kategoriId ?? null,
@@ -224,23 +213,15 @@ export async function getLaporanInventarisCsv(kategoriId?: number) {
     listInventaris(villageId),
   ]);
   const kategoriNama =
-    kategoriId != null
-      ? (kategoriList.find((item) => item.id === kategoriId)?.nama ?? null)
-      : null;
+    kategoriId != null ? (kategoriList.find((item) => item.id === kategoriId)?.nama ?? null) : null;
   return {
     csv: buildInventarisCsv(denganPenyusutan(data.rows), kategoriId ?? null),
     kategoriNama,
   };
 }
 
-export async function saveInventarisKategori(
-  input: InventarisKategoriInput,
-  id?: number,
-) {
-  const user = await requirePermission(
-    INVENTARIS_RESOURCE,
-    id ? "update" : "create",
-  );
+export async function saveInventarisKategori(input: InventarisKategoriInput, id?: number) {
+  const user = await requirePermission(INVENTARIS_RESOURCE, id ? "update" : "create");
   const villageId = await resolveVillageId(user);
 
   if (await inventarisKategoriKodeExists(villageId, input.kode, id)) {
@@ -274,10 +255,7 @@ export async function hapusInventarisKategori(id: number) {
 }
 
 export async function saveInventaris(input: InventarisInput, id?: number) {
-  const user = await requirePermission(
-    INVENTARIS_RESOURCE,
-    id ? "update" : "create",
-  );
+  const user = await requirePermission(INVENTARIS_RESOURCE, id ? "update" : "create");
   const villageId = await resolveVillageId(user);
 
   // `kategoriId` berasal dari formulir. Composite FK juga menegakkan tenant
@@ -288,16 +266,10 @@ export async function saveInventaris(input: InventarisInput, id?: number) {
     input.nomorInventaris &&
     (await inventarisNomorExists(villageId, input.nomorInventaris, id))
   ) {
-    throw conflict(
-      `Nomor inventaris "${input.nomorInventaris}" sudah digunakan.`,
-    );
+    throw conflict(`Nomor inventaris "${input.nomorInventaris}" sudah digunakan.`);
   }
-  const kategoriId =
-    typeof input.kategoriId === "number" ? input.kategoriId : null;
-  if (
-    kategoriId !== null &&
-    !(await getInventarisKategori(villageId, kategoriId))
-  ) {
+  const kategoriId = typeof input.kategoriId === "number" ? input.kategoriId : null;
+  if (kategoriId !== null && !(await getInventarisKategori(villageId, kategoriId))) {
     throw validationError("Kategori inventaris tidak ditemukan.");
   }
 
@@ -309,7 +281,7 @@ export async function saveInventaris(input: InventarisInput, id?: number) {
     await updateInventaris(
       villageId,
       id,
-            {
+      {
         ...input,
         jumlah: Number(existing.jumlah),
         lokasi: existing.lokasi ?? "",
@@ -403,25 +375,12 @@ export async function setujuiMutasiData(id: number) {
   const step = nextMutasiStep(mutasi);
   if (!step) throw conflict("Mutasi sudah selesai diverifikasi.");
 
-  const role =
-    user.roleId === null
-      ? null
-      : await findRoleById(user.roleId, user.villageId);
-  if (
-    !roleCanApproveMutasiStep(
-      step,
-      role?.slug ?? null,
-      user.permissions.isSuperadmin,
-    )
-  ) {
-    throw forbidden(
-      `Tahap ${MUTASI_STEP_LABELS[step]} bukan wewenang role Anda.`,
-    );
+  const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
+  if (!roleCanApproveMutasiStep(step, role?.slug ?? null, user.permissions.isSuperadmin)) {
+    throw forbidden(`Tahap ${MUTASI_STEP_LABELS[step]} bukan wewenang role Anda.`);
   }
   if (mutasi.diajukanOlehId === user.id && !user.permissions.isSuperadmin) {
-    throw forbidden(
-      "Pengaju mutasi tidak boleh menyetujui pengajuannya sendiri.",
-    );
+    throw forbidden("Pengaju mutasi tidak boleh menyetujui pengajuannya sendiri.");
   }
 
   await setujuiMutasiTahap(villageId, id, step, namaPengguna(user));
@@ -447,28 +406,12 @@ export async function tolakMutasiData(id: number, catatanPenolakan: string) {
   const step = nextMutasiStep(mutasi);
   if (!step) throw conflict("Mutasi sudah selesai diverifikasi.");
 
-  const role =
-    user.roleId === null
-      ? null
-      : await findRoleById(user.roleId, user.villageId);
-  if (
-    !roleCanApproveMutasiStep(
-      step,
-      role?.slug ?? null,
-      user.permissions.isSuperadmin,
-    )
-  ) {
-    throw forbidden(
-      `Tahap ${MUTASI_STEP_LABELS[step]} bukan wewenang role Anda.`,
-    );
+  const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
+  if (!roleCanApproveMutasiStep(step, role?.slug ?? null, user.permissions.isSuperadmin)) {
+    throw forbidden(`Tahap ${MUTASI_STEP_LABELS[step]} bukan wewenang role Anda.`);
   }
 
-  await tolakMutasi(
-    villageId,
-    id,
-    catatanPenolakan.trim(),
-    mutasiLogBeforeStep(step),
-  );
+  await tolakMutasi(villageId, id, catatanPenolakan.trim(), mutasiLogBeforeStep(step));
 }
 
 export async function getMutasiPageData(inventarisId?: number) {
@@ -487,16 +430,9 @@ export async function getMutasiPageData(inventarisId?: number) {
     satuan: item.satuan,
   }));
 
-  const role =
-    user.roleId === null
-      ? null
-      : await findRoleById(user.roleId, user.villageId);
+  const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
   const approverSteps = MUTASI_STEPS.filter((step) =>
-    roleCanApproveMutasiStep(
-      step,
-      role?.slug ?? null,
-      user.permissions.isSuperadmin,
-    ),
+    roleCanApproveMutasiStep(step, role?.slug ?? null, user.permissions.isSuperadmin),
   );
 
   return {
@@ -511,8 +447,7 @@ export async function getMutasiPageData(inventarisId?: number) {
 export async function getInventarisDetailPageData(id: number) {
   const user = await requirePermission(INVENTARIS_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
-  const [item, kategori, riwayat, dokumen, riwayatPenanggungJawab] =
-    await Promise.all([
+  const [item, kategori, riwayat, dokumen, riwayatPenanggungJawab] = await Promise.all([
     getInventaris(villageId, id),
     listInventarisKategori(villageId),
     listMutasi(villageId, id),
@@ -542,30 +477,18 @@ export async function getInventarisDetailPageData(id: number) {
 export async function getPemeliharaanPageData() {
   const user = await requirePermission(INVENTARIS_RESOURCE, "read");
   const villageId = await resolveVillageId(user);
-  const [inventarisData, pemeliharaan, riwayatPemeliharaan] =
-    await Promise.all([
+  const [inventarisData, pemeliharaan, riwayatPemeliharaan] = await Promise.all([
     listInventaris(villageId),
     listPemeliharaan(villageId),
     listRiwayatPemeliharaan(villageId),
   ]);
-  const canReadMutation = hasPermission(
-    user.permissions,
-    MUTASI_RESOURCE,
-    "read",
-  );
+  const canReadMutation = hasPermission(user.permissions, MUTASI_RESOURCE, "read");
   const canMutate = hasPermission(user.permissions, MUTASI_RESOURCE, "update");
   const mutasi = canReadMutation ? await listMutasi(villageId) : [];
-  const role =
-    user.roleId === null
-      ? null
-      : await findRoleById(user.roleId, user.villageId);
+  const role = user.roleId === null ? null : await findRoleById(user.roleId, user.villageId);
   const approverSteps = canMutate
     ? MUTASI_STEPS.filter((step) =>
-        roleCanApproveMutasiStep(
-          step,
-          role?.slug ?? null,
-          user.permissions.isSuperadmin,
-        ),
+        roleCanApproveMutasiStep(step, role?.slug ?? null, user.permissions.isSuperadmin),
       )
     : [];
   return {
@@ -582,8 +505,7 @@ export async function getPemeliharaanPageData() {
     canWrite: hasPermission(user.permissions, INVENTARIS_RESOURCE, "update"),
     canCreate: hasPermission(user.permissions, INVENTARIS_RESOURCE, "create"),
     canManage: hasPermission(user.permissions, INVENTARIS_RESOURCE, "delete"),
-    canMutate:
-      hasPermission(user.permissions, MUTASI_RESOURCE, "create") || canMutate,
+    canMutate: hasPermission(user.permissions, MUTASI_RESOURCE, "create") || canMutate,
     canMutateCreate: hasPermission(user.permissions, MUTASI_RESOURCE, "create"),
     canMutateUpdate: canMutate,
     canReadMutation,
@@ -645,10 +567,7 @@ export async function ubahStatusPemeliharaan(input: {
 }) {
   const user = await requirePermission(INVENTARIS_RESOURCE, "update");
   const villageId = await resolveVillageId(user);
-  if (
-    input.biaya !== undefined &&
-    (!Number.isFinite(input.biaya) || input.biaya < 0)
-  )
+  if (input.biaya !== undefined && (!Number.isFinite(input.biaya) || input.biaya < 0))
     throw validationError("Biaya pemeliharaan tidak valid.");
   if (
     input.kondisiSetelah &&
@@ -668,9 +587,7 @@ export async function ubahStatusPemeliharaan(input: {
       throw validationError("Tanggal rencana wajib tersedia.");
     }
     if (!input.tanggalSelesai)
-      throw validationError(
-        "Tanggal selesai wajib diisi untuk pemeliharaan yang selesai.",
-      );
+      throw validationError("Tanggal selesai wajib diisi untuk pemeliharaan yang selesai.");
     const selesai = new Date(input.tanggalSelesai + "T00:00:00Z");
     const rencana = new Date((input.tanggalRencana ?? "") + "T00:00:00Z");
     if (
@@ -678,13 +595,9 @@ export async function ubahStatusPemeliharaan(input: {
       selesai.toISOString().slice(0, 10) !== input.tanggalSelesai ||
       selesai < rencana
     )
-      throw validationError(
-        "Tanggal selesai tidak boleh lebih awal dari tanggal rencana.",
-      );
+      throw validationError("Tanggal selesai tidak boleh lebih awal dari tanggal rencana.");
     if (!input.hasil?.trim())
-      throw validationError(
-        "Hasil pekerjaan wajib diisi ketika pemeliharaan selesai.",
-      );
+      throw validationError("Hasil pekerjaan wajib diisi ketika pemeliharaan selesai.");
     if (!input.kondisiSetelah)
       throw validationError("Pilih kondisi aset setelah pemeliharaan selesai.");
   }
@@ -731,20 +644,12 @@ export async function unggahDokumenInventaris(input: {
   if (input.ukuran <= 0) {
     throw validationError("Berkas kosong tidak dapat diunggah.");
   }
-  if (
-    !["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(
-      input.mime,
-    )
-  )
+  if (!["application/pdf", "image/jpeg", "image/png", "image/webp"].includes(input.mime))
     throw validationError("Dokumen harus PDF, JPG, PNG, atau WEBP.");
-  const batasUkuran = input.mime.startsWith("image/")
-    ? 5 * 1024 * 1024
-    : 8 * 1024 * 1024;
+  const batasUkuran = input.mime.startsWith("image/") ? 5 * 1024 * 1024 : 8 * 1024 * 1024;
   if (input.ukuran > batasUkuran)
     throw validationError(
-      input.mime.startsWith("image/")
-        ? "Ukuran foto maksimal 5 MB."
-        : "Ukuran PDF maksimal 8 MB.",
+      input.mime.startsWith("image/") ? "Ukuran foto maksimal 5 MB." : "Ukuran PDF maksimal 8 MB.",
     );
   const jalurMedia = await simpanBerkasMedia(
     villageId,
