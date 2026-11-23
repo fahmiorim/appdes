@@ -53,7 +53,7 @@ Ekspansi 46 layar Admin Desa pada hari yang sama tidak mengubah urutan fase. Bac
 |---|---|---|---|
 | Dashboard, tenant, domain, pengguna platform, audit, pengaturan | Tujuh route sudah ada; kedalaman berbeda dari mockup | Fase 2 lanjutan · P1/P2 | Perdalam dengan data nyata dan walkthrough staging. Tidak perlu model data baru untuk memperbaiki tampilan yang sudah didukung. |
 | Wizard provisioning, import tenant, dan matriks peran | Sebagian use case tersedia; alur belum satu paket | Fase 2/3 · P2 | Kerjakan setelah validasi tenant dan template stabil; import wajib memiliki validasi, batas ukuran, dan audit. |
-| Katalog template, editor template, dan tema website | Template fondasi ada; editor dan registry tema belum | Fase 2 (template fondasi) dan Fase 3 (tema situs) · P2 | Pisahkan kontrak "template fondasi tenant" dari "tema website" sebelum membuat UI. Jangan mencampur keduanya dalam satu menu. |
+| Katalog template, editor template, dan tema website | Template fondasi dan katalog template platform ada; tenant memilih template terbit lewat `/pengaturan-desa`; registry paket kode tema belum | Fase 2 (template fondasi) dan Fase 3 (tema situs) · P2 | Pisahkan kontrak "template fondasi tenant" dari "tema website" sebelum menambah registry paket kode tema. Jangan mencampur keduanya dalam satu menu. |
 | Langganan, paket, invoice, dan pembayaran | Belum ada model komersial | Kandidat Fase 7 · P3 | Ditunda sampai keputusan bisnis, provider pembayaran, rekonsiliasi, audit, dan kebijakan pajak/privasi tersedia. |
 | Monitoring, backup, dan manajemen insiden | Sebagian prosedur operasional; belum ada UI terpusat | Fase 5 · P1/P2 | Bangun sumber metrik dan prosedur operasi lebih dulu. UI konsol mengikuti, bukan menggantikan backup/restore yang terbukti. |
 | Pusat keamanan, sesi, firewall, dan pembatasan akses | Kontrol tersebar; firewall berada di infrastruktur | Fase 1/5 · P1 | Kontrol tetap di server/ingress. Dashboard hanya menampilkan status tepercaya dan aksi berizin; jangan menyamakan tampilan dengan jaminan keamanan. |
@@ -181,7 +181,7 @@ Pekerjaan:
 - Lakukan restore drill berkala di staging; catat RPO/RTO aktual.
 - Tambahkan monitoring disk, database, worker/queue, proses WhatsApp, sertifikat TLS, dan domain.
 - Sediakan log terpusat, alert, prosedur insiden, dan SOP operasional.
-- Perbaiki race condition agregasi keuangan, kuota media, dan transisi status surat. (**Selesai di kode** untuk tiga jalur utama: transaksi plus kunci MySQL per 16–17 November 2026, lihat [AUD-034](./reports/01-security/AUD-034-race-conditions.md). Sisa: `upsertKeuanganBatch` pada impor APBDes belum memakai kunci yang sama, sehingga impor bersamaan dengan simpan manual masih dapat membuat induk tidak konsisten; validasi beban nyata juga belum dilakukan.)
+- Perbaiki race condition agregasi keuangan, kuota media, dan transisi status surat. (**Selesai di kode** untuk tiga jalur utama: transaksi plus kunci MySQL per 16 November 2026, lihat [AUD-034](./reports/01-security/AUD-034-race-conditions.md). Impor APBDes kini memakai jalur `saveKeuanganNilai` yang sama, termasuk kunci `(desa, tahun)` dan agregasi ulang induk, dengan bukti `apbdes-import-concurrency.integration.test.ts`; validasi beban nyata belum dilakukan.)
 
 **Kriteria selesai:**
 - Restore DB dan media berhasil pada lingkungan bersih.

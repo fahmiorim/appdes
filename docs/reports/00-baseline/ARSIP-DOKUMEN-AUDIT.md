@@ -19,7 +19,6 @@ isinya, agar jejak audit tetap dapat dibaca reviewer.
 | Dokumen | Branch asal | Commit asal |
 |---|---|---|
 | `docs/decisions/ADR-001-mock-bsre-provider.md` | `docs/adr-mock-bsre-provider` | `621eccc` |
-| `docs/reports/01-security/ADR-001-mock-bsre-provider.md` | `docs/adr-mock-bsre-provider` | `621eccc` |
 | `docs/reports/01-security/AUD-002-composite-tenant-foreign-keys.md` | `task/AUD-002-composite-tenant-fk` | `f00cc9b` |
 | `docs/reports/01-security/AUD-011-family-join-tenant-scope.md` | `task/AUD-011-family-join-tenant-scope` | `99418b5` |
 | `docs/reports/01-security/AUD-012-resident-list-join-tenant-scope.md` | `task/AUD-012-resident-list-join-tenant-scope` | `35e78ac` |
@@ -35,7 +34,10 @@ TTE). Menyalinnya akan mengembalikan informasi yang sudah usang.
 ## File yang ditambahkan
 
 - `docs/decisions/ADR-001-mock-bsre-provider.md`
-- `docs/reports/01-security/ADR-001-mock-bsre-provider.md`
+
+> **Pembersihan 23 November 2026:** salinan laporan `docs/reports/01-security/ADR-001-mock-bsre-provider.md`
+> dihapus karena menduplikasi keputusan yang sama dengan versi kanonik di `docs/decisions/`.
+> Riwayat file tetap tersedia di Git.
 - `docs/reports/01-security/AUD-002-composite-tenant-foreign-keys.md`
 - `docs/reports/01-security/AUD-011-family-join-tenant-scope.md`
 - `docs/reports/01-security/AUD-012-resident-list-join-tenant-scope.md`

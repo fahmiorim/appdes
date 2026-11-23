@@ -1,8 +1,10 @@
 # Spesifikasi Layar Admin Desa — 12 Halaman Aktif
 
-> Status: **Draft 1 — 19 November 2026.**
+> Status: **Draft 1 — 19 November 2026; snapshot historis per 23 November 2026.**
 > Cakupan: 12 route Admin Desa yang sudah memiliki `page.tsx` pada branch `task/docs-implementation-audit` (base `36c595e`).
 > Dokumen ini adalah spesifikasi desain dan pemetaan implementasi, bukan acceptance test, bukan bukti bahwa seluruh mockup sudah setara, dan bukan izin untuk mengubah kode di luar task.
+>
+> **Jangan dibaca sebagai status terkini.** Per 23 November 2026 ada 89 halaman Admin Desa non-super-admin, dan beberapa status di bawah sudah berubah (mis. Keuangan, Berita, dan Galeri kini memiliki alur tulis). Gunakan dokumen ini untuk acuan layout, data, permission, dan test per layar; status route terbaru ada di [SID_FEATURE_MAP](../SID_FEATURE_MAP.md) dan [MODULE-INVENTORY](../architecture/MODULE-INVENTORY.md).
 
 ## 1. Tujuan dan batas
 
@@ -46,7 +48,7 @@ Urutan sumber kebenaran:
 | 11 | `/pengaturan/pengguna` | Manajemen Pengguna & Hak Akses | `pengguna` | [#42](#mockup-42), pendukung [#44](#mockup-44) | Dinamis, baca + CRUD |
 | 12 | `/pengaturan/grup-akses` | Hak Akses & Permission | `grup-akses` | [#43](#mockup-43) | Dinamis, baca + CRUD + izin |
 
-Lima halaman baca-saja adalah Keuangan, Berita, Galeri, Administrasi Surat, dan Pengaduan. Kelimanya sudah memiliki route dan guard baca, tetapi **belum memiliki baris modul dan grant di template tenant** (`src/db/templates/tenant-template.ts`). Untuk tenant baru, halaman dapat ditolak 403 dan tidak muncul di sidebar sampai modul/grant ditambahkan. Ini adalah gap rilis yang diketahui, bukan sesuatu yang boleh ditembus dengan melewati permission.
+Pada snapshot 19 November, lima halaman baca-saja adalah Keuangan, Berita, Galeri, Administrasi Surat, dan Pengaduan. Per 23 November 2026, Administrasi Surat sudah memiliki modul dan grant di template tenant, sedangkan Keuangan, Berita, Galeri, dan Pengaduan masih belum. Untuk tenant baru, halaman yang belum memiliki modul/grant dapat ditolak 403 dan tidak muncul di sidebar sampai modul/grant ditambahkan. Ini adalah gap rilis yang diketahui, bukan sesuatu yang boleh ditembus dengan melewati permission.
 
 ## 3. Aturan lintas layar
 
