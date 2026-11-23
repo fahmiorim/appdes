@@ -1,6 +1,10 @@
 export type Action = "read" | "create" | "update" | "delete";
-
-export interface ModuleActions { read: boolean; create: boolean; update: boolean; delete: boolean; }
+export interface ModuleActions {
+  read: boolean;
+  create: boolean;
+  update: boolean;
+  delete: boolean;
+}
 
 export const ACCESS_LEVELS = ["read", "write", "manage"] as const;
 export type AccessLevel = (typeof ACCESS_LEVELS)[number];
@@ -12,7 +16,10 @@ export const ACCESS_RANK: Readonly<Record<AccessLevel, number>> = {
 };
 
 const REQUIRED_LEVEL: Readonly<Record<Action, AccessLevel>> = {
-  read: "read", create: "write", update: "write", delete: "manage",
+  read: "read",
+  create: "write",
+  update: "write",
+  delete: "manage",
 };
 
 function rank(level: AccessLevel | null | undefined): number {

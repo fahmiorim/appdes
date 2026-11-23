@@ -18,14 +18,17 @@ describe("levelAllows", () => {
 
   it("memetakan tingkat legacy ke aksi read, create, update, dan delete", () => {
     expect(levelAllows("read", "read")).toBe(true);
+    expect(levelAllows("read", "create")).toBe(false);
     expect(levelAllows("read", "update")).toBe(false);
     expect(levelAllows("read", "delete")).toBe(false);
 
     expect(levelAllows("write", "read")).toBe(true);
+    expect(levelAllows("write", "create")).toBe(true);
     expect(levelAllows("write", "update")).toBe(true);
     expect(levelAllows("write", "delete")).toBe(false);
 
     expect(levelAllows("manage", "read")).toBe(true);
+    expect(levelAllows("manage", "create")).toBe(true);
     expect(levelAllows("manage", "update")).toBe(true);
     expect(levelAllows("manage", "delete")).toBe(true);
   });

@@ -32,12 +32,7 @@ interface Snapshot {
 function tabelSkema(): Set<string> {
   const hasil = new Set<string>();
   for (const berkas of fs.readdirSync(SCHEMA_DIR)) {
-    if (
-      !berkas.endsWith(".ts") ||
-      berkas.endsWith(".test.ts") ||
-      berkas === "index.ts"
-    )
-      continue;
+    if (!berkas.endsWith(".ts") || berkas.endsWith(".test.ts") || berkas === "index.ts") continue;
     const isi = fs.readFileSync(SCHEMA_DIR + berkas, "utf8");
     for (const cocok of isi.matchAll(/mysqlTable\(\s*"([a-z0-9_]+)"/g)) {
       const tabel = cocok[1];
@@ -68,9 +63,7 @@ function berkasSqlMigrasi(): Array<{ berkas: string; isi: string }> {
 function tabelMigrasi(): Set<string> {
   const hasil = new Set<string>();
   for (const isi of sqlMigrasi()) {
-    for (const cocok of isi.matchAll(
-      /CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)`/g,
-    )) {
+    for (const cocok of isi.matchAll(/CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)`/g)) {
       const tabel = cocok[1];
       if (tabel) hasil.add(tabel);
     }
@@ -87,13 +80,8 @@ function tabelMigrasi(): Set<string> {
  * badan `CREATE TABLE` mana pun. Tanpa cabang ini, paritas snapshot vs SQL
  * gagal palsu; dengan cabang ini, kolom tetap wajib ada di suatu migration.
  */
-const POLA_CREATE_TABLE = new RegExp(
-  "CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)` \\(\\n" +
-    "([\s\S]*?)\\n\\)(?:\s*[A-Z][A-Z0-9_]*(?:\s*=\s*[^;]+)?)*\s*;",
-  "gi",
-);
-const POLA_ALTER_TABLE = /ALTER TABLE `([a-z0-9_]+)`([\s\S]*?);/gi;
-const POLA_ADD_COLUMN = /\bADD (?:COLUMN )?`([a-z0-9_]+)`/gi;
+const POLA_CREATE_TABLE =
+  /CREATE TABLE (?:IF NOT EXISTS )?`([a-z0-9_]+)` \(\n([\s\S]*?)\n\)(?:\s*[A-Z][A-Z0-9_]*(?:\s*=\s*[^;]+)?)*\s*;/gi;
 
 function kolomMigrasi(): Map<string, Set<string>> {
   const hasil = new Map<string, Set<string>>();
@@ -116,15 +104,11 @@ function kolomMigrasi(): Map<string, Set<string>> {
     }
 
     // Satu ALTER TABLE dapat menambahkan beberapa kolom; proses tiap ADD.
-    for (const pernyataan of isi.matchAll(
-      /ALTER TABLE `([a-z0-9_]+)`([\s\S]*?);/gi,
-    )) {
+    for (const pernyataan of isi.matchAll(/ALTER TABLE `([a-z0-9_]+)`([\s\S]*?);/gi)) {
       const nama = pernyataan[1];
       const badan = pernyataan[2] ?? "";
       if (!nama) continue;
-      for (const tambahan of badan.matchAll(
-        /\bADD (?:COLUMN )?`([a-z0-9_]+)`/gi,
-      )) {
+      for (const tambahan of badan.matchAll(/\bADD (?:COLUMN )?`([a-z0-9_]+)`/gi)) {
         const kolom = tambahan[1];
         if (kolom) tambah(nama, kolom);
       }
@@ -153,9 +137,7 @@ function namaIndexMigrasi(): Set<string> {
     for (const cocok of isi.matchAll(/CONSTRAINT `([^`]+)` UNIQUE/g)) {
       hasil.add(cocok[1]!);
     }
-    for (const cocok of isi.matchAll(
-      /ALTER TABLE `[^`]+` ADD UNIQUE (?:KEY|INDEX) `([^`]+)`/g,
-    )) {
+    for (const cocok of isi.matchAll(/ALTER TABLE `[^`]+` ADD UNIQUE (?:KEY|INDEX) `([^`]+)`/g)) {
       hasil.add(cocok[1]!);
     }
   }
@@ -166,17 +148,11 @@ function namaIndexMigrasi(): Set<string> {
 function namaIndexSkema(): Set<string> {
   const hasil = new Set<string>();
   for (const berkas of fs.readdirSync(SCHEMA_DIR)) {
-    if (
-      !berkas.endsWith(".ts") ||
-      berkas.endsWith(".test.ts") ||
-      berkas === "index.ts"
-    ) {
+    if (!berkas.endsWith(".ts") || berkas.endsWith(".test.ts") || berkas === "index.ts") {
       continue;
     }
     const isi = fs.readFileSync(SCHEMA_DIR + berkas, "utf8");
-    for (const cocok of isi.matchAll(
-      /(?:unique)?index\\(\s*"([^"]+)"/gi,
-    )) {
+    for (const cocok of isi.matchAll(/(?:unique)?index\(\s*"([^"]+)"/gi)) {
       hasil.add(cocok[1]!);
     }
   }
@@ -184,9 +160,7 @@ function namaIndexSkema(): Set<string> {
 }
 
 function tagJournal(): string[] {
-  const journal = JSON.parse(
-    fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8"),
-  ) as {
+  const journal = JSON.parse(fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8")) as {
     entries: Array<{ idx: number; tag: string }>;
   };
   return journal.entries.map((entri) => entri.tag);
@@ -201,9 +175,7 @@ function snapshotTerakhir(): Snapshot {
   const terakhir = berkas.at(-1);
   if (!terakhir) throw new Error("Tidak ada snapshot migrasi.");
 
-  return JSON.parse(
-    fs.readFileSync(`${META_DIR}${terakhir}`, "utf8"),
-  ) as Snapshot;
+  return JSON.parse(fs.readFileSync(`${META_DIR}${terakhir}`, "utf8")) as Snapshot;
 }
 
 function berkasMigrasi(): string[] {
@@ -272,9 +244,7 @@ describe("paritas skema vs migrasi", () => {
     expect(hilang.sort()).toEqual([]);
   });
 
-  it(
-    "foreign key laporan statistik mempertahankan nama constraint migration",
-    () => {
+  it("foreign key laporan statistik mempertahankan nama constraint migration", () => {
     const isi = fs.readFileSync(`${SCHEMA_DIR}laporan-statistik.ts`, "utf8");
     const namaSchema = [...isi.matchAll(/name: "(laporan_desa_[a-z_]+_fk)"/g)]
       .map((cocok) => cocok[1])
@@ -318,9 +288,7 @@ describe("paritas skema vs migrasi", () => {
   });
 
   it("entri journal terakhir memakai timestamp terbesar", () => {
-    const journal = JSON.parse(
-      fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8"),
-    ) as {
+    const journal = JSON.parse(fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8")) as {
       entries: Array<{ idx: number; tag: string; when: number }>;
     };
 
@@ -329,15 +297,11 @@ describe("paritas skema vs migrasi", () => {
     // kecil akan dilewati walau `db:migrate` melaporkan sukses.
     const terakhir = journal.entries.at(-1);
     expect(terakhir).toBeDefined();
-    expect(terakhir!.when).toBe(
-      Math.max(...journal.entries.map((entri) => entri.when)),
-    );
+    expect(terakhir!.when).toBe(Math.max(...journal.entries.map((entri) => entri.when)));
   });
 
   it("setiap entri journal memiliki berkas snapshot", () => {
-    const journal = JSON.parse(
-      fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8"),
-    ) as {
+    const journal = JSON.parse(fs.readFileSync(MIGRATIONS_DIR + "meta/_journal.json", "utf8")) as {
       entries: Array<{ idx: number; tag: string }>;
     };
     const ada = new Set(

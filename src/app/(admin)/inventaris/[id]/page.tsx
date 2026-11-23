@@ -1,9 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import {
-  getInventarisDetailPageData,
-} from "@/features/inventaris/application/inventaris-use-cases";
+import { getInventarisDetailPageData } from "@/features/inventaris/application/inventaris-use-cases";
 import {
   INVENTARIS_ASAL,
   INVENTARIS_KONDISI_LABELS,
@@ -34,9 +32,7 @@ const dateLabel = (value: string | null) =>
     ? new Intl.DateTimeFormat("id-ID", {
         dateStyle: "long",
         timeZone: "UTC",
-      }).format(
-        new Date(value + "T00:00:00Z"),
-      )
+      }).format(new Date(value + "T00:00:00Z"))
     : "—";
 const ASAL_LABELS: Record<string, string> = {
   pembelian: "Pembelian",
@@ -45,20 +41,13 @@ const ASAL_LABELS: Record<string, string> = {
   sumbangan: "Sumbangan",
   lainnya: "Lainnya",
 };
-const asalLabel = (value: string | null) =>
-  value ? (ASAL_LABELS[value] ?? value) : "—";
+const asalLabel = (value: string | null) => (value ? (ASAL_LABELS[value] ?? value) : "—");
 
-export default async function DetailInventarisPage({
-  params,
-  searchParams,
-}: Props) {
+export default async function DetailInventarisPage({ params, searchParams }: Props) {
   const p = await params;
   const id = Number(p.id);
   if (!Number.isSafeInteger(id) || id < 1) notFound();
-  const [data, query] = await Promise.all([
-    getInventarisDetailPageData(id),
-    searchParams,
-  ]);
+  const [data, query] = await Promise.all([getInventarisDetailPageData(id), searchParams]);
   const x = data.item;
   return (
     <main className={styles.page}>
@@ -79,20 +68,14 @@ export default async function DetailInventarisPage({
         <Link className={styles.active} href={"/inventaris/" + id}>
           Detail Aset
         </Link>
-        <Link href={"/inventaris/mutasi?inventarisId=" + id}>
-          Riwayat Mutasi
-        </Link>
+        <Link href={"/inventaris/mutasi?inventarisId=" + id}>Riwayat Mutasi</Link>
         <Link href="/inventaris/laporan">Laporan &amp; Statistik</Link>
       </nav>
       {query.saved ? (
         <p className={styles.notice}>Perubahan inventaris berhasil disimpan.</p>
       ) : null}
-      {query.documentSaved ? (
-        <p className={styles.notice}>Dokumen berhasil diunggah.</p>
-      ) : null}
-      {query.documentDeleted ? (
-        <p className={styles.notice}>Dokumen berhasil dihapus.</p>
-      ) : null}
+      {query.documentSaved ? <p className={styles.notice}>Dokumen berhasil diunggah.</p> : null}
+      {query.documentDeleted ? <p className={styles.notice}>Dokumen berhasil dihapus.</p> : null}
       <section className={styles.detailGrid}>
         <article className={styles.panel}>
           <div className={styles.panelHead}>
@@ -123,10 +106,7 @@ export default async function DetailInventarisPage({
             </div>
             <div>
               <dt>Kategori</dt>
-              <dd>
-                {data.kategori.find((k) => k.id === x.kategoriId)?.nama ??
-                  "Tanpa kategori"}
-              </dd>
+              <dd>{data.kategori.find((k) => k.id === x.kategoriId)?.nama ?? "Tanpa kategori"}</dd>
             </div>
             <div>
               <dt>Kode Barang</dt>
@@ -193,29 +173,19 @@ export default async function DetailInventarisPage({
           </div>
           <div className={styles.statLine}>
             <span>Akumulasi Penyusutan s.d. Hari Ini</span>
-            <strong>
-              {formatRupiah(data.penyusutan.akumulasiPenyusutan.toFixed(2))}
-            </strong>
+            <strong>{formatRupiah(data.penyusutan.akumulasiPenyusutan.toFixed(2))}</strong>
           </div>
           <div className={styles.statLine}>
             <span>Nilai Buku Saat Ini</span>
-            <strong>
-              {formatRupiah(data.penyusutan.nilaiBuku.toFixed(2))}
-            </strong>
+            <strong>{formatRupiah(data.penyusutan.nilaiBuku.toFixed(2))}</strong>
           </div>
           <div className={styles.statLine}>
             <span>Umur Manfaat</span>
-            <strong>
-              {x.umurManfaatBulan
-                ? x.umurManfaatBulan + " bulan"
-                : "Belum diatur"}
-            </strong>
+            <strong>{x.umurManfaatBulan ? x.umurManfaatBulan + " bulan" : "Belum diatur"}</strong>
           </div>
           <div className={styles.statLine}>
             <span>Penyusutan per Bulan</span>
-            <strong>
-              {formatRupiah(data.penyusutan.penyusutanBulanan.toFixed(2))}
-            </strong>
+            <strong>{formatRupiah(data.penyusutan.penyusutanBulanan.toFixed(2))}</strong>
           </div>
           <div className={styles.statLine}>
             <span>Nilai Residu</span>
@@ -271,10 +241,7 @@ export default async function DetailInventarisPage({
                   {dateLabel(doc.createdAt.toISOString().slice(0, 10))}
                 </small>
                 <div className={styles.actions}>
-                  <a
-                    className={styles.secondary}
-                    href={"/inventaris/dokumen/" + doc.id}
-                  >
+                  <a className={styles.secondary} href={"/inventaris/dokumen/" + doc.id}>
                     Unduh
                   </a>
                   {data.canDelete ? (
@@ -300,10 +267,7 @@ export default async function DetailInventarisPage({
             <input type="hidden" name="inventarisId" value={x.id} />
             <label>
               Nama Dokumen
-              <input
-                name="nama"
-                placeholder="Contoh: BPKB / Sertifikat / Faktur"
-              />
+              <input name="nama" placeholder="Contoh: BPKB / Sertifikat / Faktur" />
             </label>
             <label className={styles.wide}>
               Berkas (PDF maks. 8 MB; gambar maks. 5 MB)
@@ -347,9 +311,7 @@ export default async function DetailInventarisPage({
             <div className={styles.timeline}>
               {data.riwayatPenanggungJawab.map((h) => (
                 <article key={h.id}>
-                  <strong>
-                    {h.namaSesudah ?? "Tidak ada penanggung jawab"}
-                  </strong>
+                  <strong>{h.namaSesudah ?? "Tidak ada penanggung jawab"}</strong>
                   <small>
                     {dateLabel(h.createdAt.toISOString().slice(0, 10))}
                     {" · Diubah oleh "}
@@ -382,12 +344,10 @@ export default async function DetailInventarisPage({
               {data.riwayat.map((m) => (
                 <article key={m.id}>
                   <strong>
-                    {MUTASI_JENIS_LABELS[m.jenis]} ·{" "}
-                    {MUTASI_STATUS_LABELS[m.status]}
+                    {MUTASI_JENIS_LABELS[m.jenis]} · {MUTASI_STATUS_LABELS[m.status]}
                   </strong>
                   <small>
-                    {dateLabel(m.tanggalMutasi)} ·{" "}
-                    {m.diajukanOleh ?? "Pengguna"}
+                    {dateLabel(m.tanggalMutasi)} · {m.diajukanOleh ?? "Pengguna"}
                   </small>
                   <small>
                     {m.alasan ?? "Tidak ada catatan"}{" "}
@@ -413,18 +373,11 @@ export default async function DetailInventarisPage({
             <input type="hidden" name="id" value={x.id} />
             <label>
               Nama Barang *
-              <input
-                name="namaBarang"
-                defaultValue={x.namaBarang}
-                required
-              />
+              <input name="namaBarang" defaultValue={x.namaBarang} required />
             </label>
             <label>
               Nomor Inventaris
-              <input
-                name="nomorInventaris"
-                defaultValue={x.nomorInventaris ?? ""}
-              />
+              <input name="nomorInventaris" defaultValue={x.nomorInventaris ?? ""} />
             </label>
             <label>
               Kategori
@@ -507,19 +460,11 @@ export default async function DetailInventarisPage({
             </label>
             <label>
               Tanggal Perolehan
-              <input
-                name="tanggalPembelian"
-                type="date"
-                defaultValue={x.tanggalPembelian ?? ""}
-              />
+              <input name="tanggalPembelian" type="date" defaultValue={x.tanggalPembelian ?? ""} />
             </label>
             <label>
               Tahun Perolehan
-              <input
-                name="tahunPembelian"
-                type="number"
-                defaultValue={x.tahunPembelian ?? ""}
-              />
+              <input name="tahunPembelian" type="number" defaultValue={x.tahunPembelian ?? ""} />
             </label>
             <label>
               Asal Perolehan
@@ -538,24 +483,15 @@ export default async function DetailInventarisPage({
             </label>
             <label>
               Penanggung Jawab
-              <input
-                name="penanggungJawab"
-                defaultValue={x.penanggungJawab ?? ""}
-              />
+              <input name="penanggungJawab" defaultValue={x.penanggungJawab ?? ""} />
             </label>
             <label>
               Jabatan Penanggung Jawab
-              <input
-                name="jabatanPenanggungJawab"
-                defaultValue={x.jabatanPenanggungJawab ?? ""}
-              />
+              <input name="jabatanPenanggungJawab" defaultValue={x.jabatanPenanggungJawab ?? ""} />
             </label>
             <label>
               Telepon Penanggung Jawab
-              <input
-                name="teleponPenanggungJawab"
-                defaultValue={x.teleponPenanggungJawab ?? ""}
-              />
+              <input name="teleponPenanggungJawab" defaultValue={x.teleponPenanggungJawab ?? ""} />
             </label>
             <label>
               Lokasi (perubahan melalui Mutasi)
@@ -582,18 +518,12 @@ export default async function DetailInventarisPage({
       ) : null}
       <div className={styles.actions}>
         {data.canUpdate ? (
-          <Link
-            className={styles.primary}
-            href={"/inventaris/" + id + "?edit=1"}
-          >
+          <Link className={styles.primary} href={"/inventaris/" + id + "?edit=1"}>
             ✎ Edit Aset
           </Link>
         ) : null}
         {data.canMutateCreate ? (
-          <Link
-            className={styles.secondary}
-            href={"/inventaris/mutasi?inventarisId=" + id}
-          >
+          <Link className={styles.secondary} href={"/inventaris/mutasi?inventarisId=" + id}>
             ＋ Ajukan Mutasi / Perawatan
           </Link>
         ) : null}
